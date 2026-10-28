@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理後台｜BNASDAQ</title>
+<meta name="description" content="BNASDAQ 管理後台。">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script><script src="assets/auth.js"></script>
+
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<div class="gov"><div class="wrap"><span>BNASDAQ 是以 AI 模型持續探勘、驗證、回測 QQQ 月線策略的研究站；本站所有數字都是歷史回測，不是保證報酬，也不是投資建議。</span><span class="right"><span>市場資料截至 <b class="num" data-asof>—</b></span><button type="button" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></span></div></div>
+<header class="brand"><div class="wrap">
+  <a class="mark" href="index.html"><svg class="seal" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="none" stroke="#0b2a4a" stroke-width="2.5"/><circle cx="32" cy="32" r="24" fill="none" stroke="#b7791f" stroke-width="1.2"/><path d="M20 44V20h11c6 0 9 3 9 7 0 3-2 5-4 6 3 1 6 3 6 7 0 5-4 8-10 8H20zm6-14h5c2.5 0 4-1.5 4-3.5S33.5 23 31 23h-5v7zm0 10h6c3 0 4.5-1.5 4.5-4S35 32 32 32h-6v8z" fill="#0b2a4a"/><path d="M14 32h6M44 32h6" stroke="#b7791f" stroke-width="2"/></svg><span><span class="word">B<b>NASDAQ</b></span><span class="sub">AI 探勘的納斯達克 100 月線策略研究</span></span></a>
+  <p class="tagline">BNASDAQ 用 AI 模型找出以 QQQ 月線為訊號、只在 QLD 與 SHV 之間切換的交易規則，並以 26 年資料反覆驗證；規則本身不公開，統一用 AI 模型找出的交易規則自行交易。</p>
+  <form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form>
+</div></header>
+<div class="util"><div class="wrap"><a href="data.html">資料口徑與免責</a><a href="news.html#video">影片</a><a href="faq.html">常見問題</a><a href="search.html">搜尋</a><a class="acct" href="login.html" data-acct>登入／會員專區</a></div></div>
+<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">台股對比</a></li><li><a href="calculator.html">目標試算器</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li></ul></div></nav>
+<main id="main">
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 管理後台</div><h1>管理後台</h1><p class="lede">管理員可以看到一切資訊、管理一切帳號與公告。</p></div></div>
+<div class="main"><div class="wrap">
+  <div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>管理員：<b id="who">—</b></div><div class="actions"><a class="btn line" href="member.html">會員專區畫面</a><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div></div>
+
+  <h2 id="signals">訊號明細（所有策略）</h2>
+  <p class="small" id="mstat">載入中…</p>
+  <div class="panel" id="sig-cur"></div>
+  <div class="panel" id="sig-prov"></div>
+  <div class="panel"><div class="field" style="max-width:320px"><label for="custom">自訂 QQQ 月底收盤價試算</label><input id="custom" type="number" step="0.01" placeholder="例如 687.29"></div><div id="sig-custom"></div></div>
+  <details><summary>最近 24 個月的正式訊號</summary><div class="ans"><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">訊號月</th><th>還原收盤</th><th>五項成立</th><th>煞車</th><th>B.2 持有</th><th>B.3 持有</th></tr></thead><tbody id="hist-body"></tbody></table></div></div></details>
+  <div class="panel"><h3>市場資料</h3><p class="small">每個交易日美股收盤後由 GitHub Actions 自動更新（Yahoo Finance）；也可以手動觸發。</p><div class="actions"><button class="btn navy" type="button" id="dispatch">立即更新市場資料並重新部署</button><a class="btn line" href="https://github.com/WUYANLIN8866/BNASDAQ/actions" target="_blank" rel="noopener">查看自動更新紀錄</a></div><div id="data-msg"></div></div>
+
+  <h2 id="accounts">帳號管理</h2>
+  <div class="panel">
+    <h3>GitHub 寫入權限（PAT）</h3>
+    <p class="small">本站沒有伺服器；新增／修改帳號與公告是由你的瀏覽器直接寫回 GitHub。請在 GitHub 建立 <b>fine-grained personal access token</b>：Settings → Developer settings → Personal access tokens → Fine-grained → Repository access 只選 <b>BNASDAQ</b> → Permissions：<b>Contents: Read and write</b>（要手動觸發更新再加 <b>Actions: Read and write</b>）。貼進下方一次即可。</p>
+    <div class="row2"><div class="field"><label for="pat">Personal access token</label><input id="pat" type="password" autocomplete="off" placeholder="github_pat_…"></div><div class="field" style="align-self:end"><div class="actions"><button class="btn navy" type="button" id="pat-save">測試並儲存</button><button class="btn line" type="button" id="pat-clear">清除</button></div></div></div>
+    <p class="small" id="pat-status"></p><div id="pat-msg"></div>
+  </div>
+  <div class="panel">
+    <h3>帳號清單 <span class="small">（最後更新 <span id="acct-updated">—</span>）</span></h3>
+    <div class="tblwrap"><table class="tbl" id="acct-table"><thead><tr><th class="l">帳號</th><th class="l">角色</th><th class="l">建立</th><th class="l">狀態</th><th class="l">備註</th><th class="l">操作</th></tr></thead><tbody id="acct-body"><tr><td colspan="6">載入中…</td></tr></tbody></table></div>
+    <div id="acct-msg"></div><a id="dl" class="btn line" download="accounts.json" hidden>下載 accounts.json（手動上傳用）</a>
+    <h3>新增會員</h3>
+    <form class="form" id="add"><div class="row2"><div class="field"><label for="nu">帳號</label><input id="nu" type="text" required pattern="[A-Za-z0-9_.-]{3,32}"></div><div class="field"><label for="np">密碼（留空＝自動產生）</label><input id="np" type="text" autocomplete="off"></div></div><div class="field"><label for="nn">備註（例：姓名、來源）</label><input id="nn" type="text"></div><div class="actions"><button class="btn navy" type="submit">建立帳號</button></div></form>
+    <h3>更改管理員密碼</h3>
+    <form class="form" id="chpw"><div class="row2"><div class="field"><label for="pw1">新密碼（至少 10 碼）</label><input id="pw1" type="password" autocomplete="new-password"></div><div class="field"><label for="pw2">再輸入一次</label><input id="pw2" type="password" autocomplete="new-password"></div></div><div class="actions"><button class="btn line" type="submit">更改密碼</button></div></form>
+  </div>
+
+  <h2 id="ann">公告</h2>
+  <div class="panel">
+    <div class="tblwrap"><table class="tbl" id="ann-table"><thead><tr><th class="l">日期</th><th class="l">內容</th><th class="l">操作</th></tr></thead><tbody id="ann-body"></tbody></table></div>
+    <div id="ann-msg"></div><a id="dl2" class="btn line" download="site.json" hidden>下載 site.json（手動上傳用）</a>
+    <form class="form" id="annf"><div class="row2"><div class="field"><label for="ad">日期</label><input id="ad" type="date"></div><div class="field"><label for="at">標題</label><input id="at" type="text" required></div></div><div class="field"><label for="ab">內文（可留空）</label><textarea id="ab" rows="3"></textarea></div><div class="actions"><button class="btn navy" type="submit">發布公告</button></div></form>
+  </div>
+  <div class="note"><p>安全提醒：accounts.json 是公開檔案，只存密碼雜湊（PBKDF2 310,000 次）與包裝後的金鑰；請給會員夠長的密碼。管理員的 PAT 只存在這台瀏覽器（以你的金鑰加密），不會進入 repo。</p></div>
+</div></div>
+<script>
+(async function(){
+  const sess=BN.auth.require('admin'); if(!sess) return;
+  const $=s=>document.querySelector(s); const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  $('#who').textContent=sess.user;
+  const msg=(id,t,cls)=>{$(id).innerHTML=t?'<p class="msg '+(cls||'info')+'">'+esc(t)+'</p>':'';};
+  let pat=await BN.auth.loadPAT(sess); let DB=null; let SITE=null; let rules=null, market=null;
+  function patStatus(){$('#pat-status').innerHTML=pat?'<span class="ok-dot"></span>已儲存 PAT（只存在這台瀏覽器，已用你的金鑰加密）':'<span style="color:var(--bad)">尚未設定 PAT</span>：沒有 PAT 時可以看一切資料，但新增／修改帳號與公告無法寫回 GitHub（可改用下方「下載 JSON 手動上傳」）。';}
+  patStatus();
+  $('#pat-save').addEventListener('click',async()=>{const v=$('#pat').value.trim();if(!v)return;msg('#pat-msg','測試中…');try{await BN.auth.ghTest(v);await BN.auth.savePAT(sess,v);pat=v;$('#pat').value='';patStatus();msg('#pat-msg','PAT 可用並已儲存。','ok');}catch(e){msg('#pat-msg',e.message,'err');}});
+  $('#pat-clear').addEventListener('click',()=>{BN.auth.clearPAT();pat=null;patStatus();msg('#pat-msg','已清除。','ok');});
+
+  // ---------- accounts ----------
+  async function loadDB(){DB=await BN.auth.fetchAccounts();renderAccounts();}
+  function renderAccounts(){const rows=(DB.accounts||[]).map((a,i)=>'<tr><td class="l"><b>'+esc(a.user)+'</b></td><td class="l">'+(a.role==='admin'?'管理員':'會員')+'</td><td class="l">'+esc(a.created||'')+'</td><td class="l">'+(a.active===false?'<span style="color:var(--bad)">停用</span>':'啟用')+'</td><td class="l">'+esc(a.note||'')+'</td><td class="l"><button class="sm" data-act="reset" data-i="'+i+'">重設密碼</button> '+(a.role==='admin'?'':'<button class="sm" data-act="toggle" data-i="'+i+'">'+(a.active===false?'啟用':'停用')+'</button> <button class="sm danger" data-act="del" data-i="'+i+'">刪除</button>')+'</td></tr>').join('');
+    $('#acct-body').innerHTML=rows||'<tr><td colspan="6">沒有帳號</td></tr>';$('#acct-updated').textContent=DB.updated||'—';}
+  async function saveDB(message){DB.updated=new Date().toISOString();const text=JSON.stringify({schema:DB.schema||'bnasdaq-accounts/1',updated:DB.updated,accounts:DB.accounts},null,1);
+    if(!pat){msg('#acct-msg','沒有 PAT，無法寫回 GitHub。已產生檔案內容，請用「下載 JSON」後手動上傳到 data/accounts.json。','err');$('#dl').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#dl').hidden=false;return false;}
+    msg('#acct-msg','寫入 GitHub 中…');try{await BN.auth.ghPut(pat,'data/accounts.json',text,message);msg('#acct-msg','已儲存（'+message+'）。網站約 1 分鐘後更新；登入頁會直接讀 GitHub，所以新帳號可立即登入。','ok');renderAccounts();return true;}catch(e){msg('#acct-msg',e.message,'err');return false;}}
+  $('#acct-table').addEventListener('click',async e=>{const b=e.target.closest('button[data-act]');if(!b)return;const i=+b.dataset.i,a=DB.accounts[i];
+    if(b.dataset.act==='del'){if(!confirm('刪除帳號 '+a.user+'？'))return;DB.accounts.splice(i,1);await saveDB('admin: delete account '+a.user);}
+    if(b.dataset.act==='toggle'){a.active=(a.active===false);await saveDB('admin: '+(a.active?'enable ':'disable ')+a.user);}
+    if(b.dataset.act==='reset'){const np=prompt('輸入 '+a.user+' 的新密碼（留空＝自動產生 14 碼）')||BN.auth.genPassword();const rec=await BN.auth.makeRecord(a.user,np,a.role,BN.auth.b64.dec(sess.ck),a.note);rec.created=a.created;rec.active=a.active!==false;DB.accounts[i]=rec;const ok=await saveDB('admin: reset password '+a.user);if(ok)alert('新密碼（只顯示這一次）：\n'+a.user+' / '+np);}});
+  $('#add').addEventListener('submit',async e=>{e.preventDefault();const u=$('#nu').value.trim(),note=$('#nn').value.trim();let p=$('#np').value;if(!/^[A-Za-z0-9_.-]{3,32}$/.test(u)){msg('#acct-msg','帳號只能用英數、底線、點、減號，3～32 字。','err');return;}
+    if(DB.accounts.some(a=>a.user.toLowerCase()===u.toLowerCase())){msg('#acct-msg','帳號已存在。','err');return;}if(!p)p=BN.auth.genPassword();if(p.length<8){msg('#acct-msg','密碼至少 8 碼。','err');return;}
+    const rec=await BN.auth.makeRecord(u,p,'member',BN.auth.b64.dec(sess.ck),note);DB.accounts.push(rec);const ok=await saveDB('admin: add account '+u);if(ok){alert('帳號已建立（密碼只顯示這一次）：\n'+u+' / '+p);$('#nu').value='';$('#np').value='';$('#nn').value='';}});
+  $('#chpw').addEventListener('submit',async e=>{e.preventDefault();const p1=$('#pw1').value,p2=$('#pw2').value;if(p1.length<10){msg('#acct-msg','管理員密碼至少 10 碼。','err');return;}if(p1!==p2){msg('#acct-msg','兩次輸入不同。','err');return;}
+    const i=DB.accounts.findIndex(a=>a.user===sess.user);const a=DB.accounts[i];const rec=await BN.auth.makeRecord(a.user,p1,a.role,BN.auth.b64.dec(sess.ck),a.note);rec.created=a.created;DB.accounts[i]=rec;const ok=await saveDB('admin: change admin password');if(ok){$('#pw1').value='';$('#pw2').value='';alert('管理員密碼已更改，下次登入請用新密碼。');}});
+
+  // ---------- announcements ----------
+  async function loadSite(){try{SITE=await BN.auth.fetchJSON('data/site.json');}catch(e){SITE={announcements:[]};}renderAnn();}
+  function renderAnn(){$('#ann-body').innerHTML=(SITE.announcements||[]).map((a,i)=>'<tr><td class="l">'+esc(a.date)+'</td><td class="l"><b>'+esc(a.title)+'</b><br><span class="small">'+esc(a.body||'')+'</span></td><td class="l"><button class="sm danger" data-del="'+i+'">刪除</button></td></tr>').join('')||'<tr><td colspan="3">沒有公告</td></tr>';}
+  async function saveSite(message){const text=JSON.stringify(SITE,null,1);if(!pat){msg('#ann-msg','沒有 PAT，無法寫回；請下載後手動上傳到 data/site.json。','err');$('#dl2').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#dl2').hidden=false;return;}msg('#ann-msg','寫入中…');try{await BN.auth.ghPut(pat,'data/site.json',text,message);msg('#ann-msg','已儲存，網站約 1 分鐘後更新。','ok');}catch(e){msg('#ann-msg',e.message,'err');}}
+  $('#ann-table').addEventListener('click',async e=>{const b=e.target.closest('button[data-del]');if(!b)return;SITE.announcements.splice(+b.dataset.del,1);renderAnn();await saveSite('admin: remove announcement');});
+  $('#annf').addEventListener('submit',async e=>{e.preventDefault();const t=$('#at').value.trim();if(!t)return;SITE.announcements=SITE.announcements||[];SITE.announcements.unshift({date:$('#ad').value||new Date().toISOString().slice(0,10),title:t,body:$('#ab').value.trim()});renderAnn();$('#at').value='';$('#ab').value='';await saveSite('admin: add announcement');});
+  $('#ad').value=new Date().toISOString().slice(0,10);
+
+  // ---------- signals (full detail) ----------
+  const f2=x=>(x==null||isNaN(x))?'—':(+x).toFixed(4);
+  function condRows(e,P,H){const c=e.cond,h=e.hedge;const yn=b=>b?'<b style="color:var(--good)">成立</b>':'<span style="color:var(--bad)">不成立</span>';
+    const rows=[['MV'+P.v1+' < '+P.t1,f2(c.mv3),yn(c.c1),(c.mv3-P.t1).toFixed(2)],['MV'+P.v2+' < '+P.t2,f2(c.mv5),yn(c.c2),(c.mv5-P.t2).toFixed(2)],['MV'+P.v3+' < '+P.t3,f2(c.mv11),yn(c.c3),(c.mv11-P.t3).toFixed(2)],[P.mp+'MP：收盤 > '+P.mp+' 個月前收盤',f2(e.close)+' vs '+f2(c.close3),yn(c.mp),((e.close/c.close3-1)*100).toFixed(2)+'%'],['MA'+P.ma+'：收盤 > 近 '+P.ma+' 月均價',f2(e.close)+' vs '+f2(c.ma5),yn(c.ma),((e.close/c.ma5-1)*100).toFixed(2)+'%'],
+      ['煞車 A：RSV'+H.rsv_n+' 在 ['+H.lo+','+H.hi+') 且下降','本月 '+f2(h.rsv)+'／上月 '+f2(h.rsvPrev),yn(h.A),''],['煞車 B：RSI'+H.rsi_n+' > '+H.rsi_t,f2(h.rsi),yn(h.B),(h.rsi-H.rsi_t).toFixed(2)]];
+    return '<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">條件</th><th>數值</th><th>成立？</th><th>距離</th></tr></thead><tbody>'+rows.map(r=>'<tr><td class="l">'+r[0]+'</td><td>'+r[1]+'</td><td class="c">'+r[2]+'</td><td>'+r[3]+'</td></tr>').join('')+'</tbody><tfoot><tr><td colspan="4">五項成立 '+e.votes+' 項 → B.2：'+rules.holdingText(e.w['B.2'])+'；B.3：'+rules.holdingText(e.w['B.3'])+'</td></tr></tfoot></table></div>';}
+  async function loadSignals(){rules=await BN.auth.loadRules(sess);market=await fetch('data/market.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json());const L=rules.latest(market);const S=L.series;const c=market.current;
+    $('#mstat').innerHTML='資料截至 <b>'+market.asof+'</b>｜QQQ 收盤 '+c.c.toFixed(2)+'（U '+c.U.toFixed(4)+'，本月高 '+c.H.toFixed(4)+'／低 '+c.L.toFixed(4)+'）｜來源 '+esc(market.source)+'｜更新 '+esc(market.updated);
+    $('#sig-cur').innerHTML='<h4>正式訊號：'+L.lastComplete.month+' 月底（決定 '+nextMonth(L.lastComplete.month)+' 持有）</h4>'+condRows(L.lastComplete,rules.P,rules.H);
+    $('#sig-prov').innerHTML='<h4>推算：把最新收盤 '+c.c.toFixed(2)+' 當作 '+c.m+' 月底收盤（決定 '+nextMonth(c.m)+' 持有）</h4>'+condRows(L.provisional,rules.P,rules.H)+(L.flips?'<p class="small">翻轉價位（原始價）：往下 '+(L.flips.down?(L.flips.down.price/market.k).toFixed(2)+' → B.2 '+rules.holdingText(L.flips.down.w['B.2'])+'／B.3 '+rules.holdingText(L.flips.down.w['B.3']):'無')+'；往上 '+(L.flips.up?(L.flips.up.price/market.k).toFixed(2)+' → B.2 '+rules.holdingText(L.flips.up.w['B.2'])+'／B.3 '+rules.holdingText(L.flips.up.w['B.3']):'無')+'</p>':'');
+    $('#custom').addEventListener('input',()=>{const px=+$('#custom').value;if(!(px>0))return;const e=rules.provisional(S,px*market.k,c);$('#sig-custom').innerHTML='<h4>自訂收盤 '+px.toFixed(2)+' 的推算</h4>'+condRows(e,rules.P,rules.H);});
+    // history (last 24 complete months)
+    const hist=[];for(let k=S.M.length-1;k>=Math.max(0,S.M.length-24);k--){const e=rules.evaluate(S,k);hist.push('<tr><td class="l">'+e.month+'</td><td>'+f2(e.close)+'</td><td>'+e.votes+'</td><td class="c">'+(e.hedge.A?'A':'')+(e.hedge.B?'B':'')+'</td><td>'+rules.holdingText(e.w['B.2'])+'</td><td>'+rules.holdingText(e.w['B.3'])+'</td></tr>');}
+    $('#hist-body').innerHTML=hist.join('');}
+  function nextMonth(m){const [y,mm]=m.split('-').map(Number);const d=new Date(y,mm,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+  $('#dispatch').addEventListener('click',async()=>{if(!pat){msg('#data-msg','需要 PAT（Actions: Read and write）。','err');return;}msg('#data-msg','觸發中…');try{await BN.auth.ghDispatch(pat);msg('#data-msg','已觸發，約 2～3 分鐘後重新整理本頁。','ok');}catch(e){msg('#data-msg',e.message,'err');}});
+  try{await loadDB();}catch(e){msg('#acct-msg',e.message,'err');}
+  await loadSite();
+  try{await loadSignals();}catch(e){$('#sig-cur').innerHTML='<p class="msg err">'+esc(e.message||e)+'</p>';}
+})();
+</script>
+</main>
+<footer>
+  <div class="wrap">
+    <div><h4>BNASDAQ 研究站</h4><p style="max-width:40ch;font-size:13.5px;color:rgba(255,255,255,.8)">以 AI 模型探勘交易策略 → 驗證 → 回測 → 進入市場驗證 → 優化 → 回到第一步，無限循環。本站公開回測結果、風險與代價，不公開買賣規則。</p></div>
+    <div><h4>研究</h4><ul><li><a href="research.html">26 年成績單</a></li><li><a href="research.html#crises">6 次大跌</a></li><li><a href="risk.html#robust">是不是湊巧？</a></li><li><a href="taiwan.html">台股對比</a></li></ul></div>
+    <div><h4>工具</h4><ul><li><a href="calculator.html">目標試算器</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="news.html#video">完整影片</a></li><li><a href="search.html">站內搜尋</a></li></ul></div>
+    <div><h4>帳號</h4><ul><li><a href="login.html">登入</a></li><li><a href="member.html">會員專區</a></li><li><a href="faq.html#account">如何申請帳號</a></li><li><a href="data.html">資料口徑與免責聲明</a></li></ul></div>
+  </div>
+  <div class="legal"><div class="wrap">回測區間 2000-05-31～2026-09-30（美元、含股息、換倉單邊成本 0.1%）。QLD 2006-06 上市前以合成序列代理、QQQ 1999-03 上市前以 NDX 代理；台股對比自 2013-12-31 起、台幣含息。所有績效數字為歷史回測，不保證未來報酬。© 2026 BNASDAQ／BEST NASDAQ。頁面產生日期 2026-10-28。</div></div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>關於 BNASDAQ｜BNASDAQ</title>
+<meta name="description" content="BNASDAQ 是什麼、在買什麼、為什麼不公開買賣規則、AI 無限循環。">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script><script src="assets/charts.js"></script>
+
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<div class="gov"><div class="wrap"><span>BNASDAQ 是以 AI 模型持續探勘、驗證、回測 QQQ 月線策略的研究站；本站所有數字都是歷史回測，不是保證報酬，也不是投資建議。</span><span class="right"><span>市場資料截至 <b class="num" data-asof>—</b></span><button type="button" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></span></div></div>
+<header class="brand"><div class="wrap">
+  <a class="mark" href="index.html"><svg class="seal" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="none" stroke="#0b2a4a" stroke-width="2.5"/><circle cx="32" cy="32" r="24" fill="none" stroke="#b7791f" stroke-width="1.2"/><path d="M20 44V20h11c6 0 9 3 9 7 0 3-2 5-4 6 3 1 6 3 6 7 0 5-4 8-10 8H20zm6-14h5c2.5 0 4-1.5 4-3.5S33.5 23 31 23h-5v7zm0 10h6c3 0 4.5-1.5 4.5-4S35 32 32 32h-6v8z" fill="#0b2a4a"/><path d="M14 32h6M44 32h6" stroke="#b7791f" stroke-width="2"/></svg><span><span class="word">B<b>NASDAQ</b></span><span class="sub">AI 探勘的納斯達克 100 月線策略研究</span></span></a>
+  <p class="tagline">BNASDAQ 用 AI 模型找出以 QQQ 月線為訊號、只在 QLD 與 SHV 之間切換的交易規則，並以 26 年資料反覆驗證；規則本身不公開，統一用 AI 模型找出的交易規則自行交易。</p>
+  <form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form>
+</div></header>
+<div class="util"><div class="wrap"><a href="data.html">資料口徑與免責</a><a href="news.html#video">影片</a><a href="faq.html">常見問題</a><a href="search.html">搜尋</a><a class="acct" href="login.html" data-acct>登入／會員專區</a></div></div>
+<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html" aria-current=page>關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">台股對比</a></li><li><a href="calculator.html">目標試算器</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li></ul></div></nav>
+<main id="main">
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 關於 BNASDAQ</div><h1>關於 BNASDAQ</h1><p class="lede">BNASDAQ 是一套以 QQQ 月線為訊號、只在 QLD 與 SHV 之間切換的策略，由 AI 模型探勘、驗證、回測，再進入市場驗證、優化，無限循環。</p></div></div>
+<div class="main"><div class="wrap"><div class="cols">
+<div>
+  <h2 id="loop">BNASDAQ 在做什麼</h2>
+  <p>BNASDAQ 主要是透過 AI 模型主動<b>探勘交易策略 → 驗證交易策略 → 回測交易策略 → 進入市場驗證 → 優化交易策略 → 回到第一點</b>，並無限循環。每一圈都把上一圈的真實結果餵回模型，所以策略不是一次定案，而是持續演進。</p>
+  <div class="fig" id="ring"></div>
+  <div class="loop"><div class="step"><b>探勘交易策略</b><span>AI 模型在 QQQ 月線上搜尋規則</span></div><div class="step"><b>驗證交易策略</b><span>鄰域、挪動決策日、逐步前推</span></div><div class="step"><b>回測交易策略</b><span>26 年含成本、次日開盤執行</span></div><div class="step"><b>進入市場驗證</b><span>用真實資金照規則執行</span></div><div class="step"><b>優化交易策略</b><span>把實戰結果餵回模型</span></div><div class="step"><b>回到第一步</b><span>無限循環，持續改進</span></div></div>
+
+  <h2 id="what">BNASDAQ 到底在買什麼</h2>
+  <p>它只有兩個抽屜：<b>進攻放 QLD</b>（漲跌都是 QQQ 2 倍的 ETF），<b>防守放 SHV</b>（很安全、像定存的短期美債 ETF）。每個月最後一個交易日收盤後檢查一次，決定下個月是<b>全放進攻、各放一半、還是全放防守</b>，隔天一開盤就照做，其他日子都不用看盤，月中也不再平衡。</p>
+  <p>就像開車：路況好踩油門，變差先放掉一半，真的不對就停到路邊。2000 年 5 月底到 2026 年 9 月底一共調整 59 次，一年平均 2.24 次；全力抱 QLD 231 個月、只留一半 29 個月、完全躲在 SHV 56 個月。</p>
+  <div class="kv">
+    <div class="tile"><div class="k">訊號來源</div><div class="v">QQQ 月線</div><div class="s">每月最後一個交易日收盤後判斷</div></div>
+    <div class="tile"><div class="k">交易商品</div><div class="v">QLD／SHV</div><div class="s">只用這兩檔，不用其他商品</div></div>
+    <div class="tile"><div class="k">三種狀態</div><div class="v">100／50／0</div><div class="s">QLD 的比例；其餘放 SHV</div></div>
+    <div class="tile"><div class="k">執行</div><div class="v">次日開盤</div><div class="s">換倉單邊成本 0.1%，不做盤中停損</div></div>
+  </div>
+
+  <h2 id="rules">為什麼不公開買賣規則</h2>
+  <div class="note navy"><p><b>本站不公開策略的買進與賣出邏輯；統一用 AI 模型找出的交易規則自行交易。</b></p><p>我們公開的是：交易商品、檢查頻率、三種狀態、全部回測結果（含每一次大跌、最深回撤、換倉次數）、以及防止「事後挑好設定」的驗證方法。規則本身由 AI 模型探勘後持續優化，公開精準門檻只會讓它更容易被複製與失效，也容易讓人誤以為某一組數字是「唯一正解」。</p></div>
+  <p>取而代之，我們公開「規則有多穩」：把全部 13 個設定各往上或往下調 10%，一共 78,732 種組合，最差的一組年化仍有 20.9%、中位數 29.5%，100% 都贏過 QQQ 和 QLD；把月底檢查的日子提早或延後 1～10 個交易日，21 種情況也全部贏 QQQ。詳見<a href="risk.html#robust">是不是湊巧？</a></p>
+
+  <h2 id="who">我們是誰</h2>
+  <p>BNASDAQ 是 YouTube 頻道「BEST NASDAQ」的研究專案，頻道以台灣投資人的角度，用公開資料做可回溯的回測，影片中的每個數字都能在本站找到出處。本站所有績效數字都在 2026-10-28 用同一套資料與程式重新計算，與影片 v6 的結果完全一致。</p>
+  <p>想看各策略「本月持有」與「以最新收盤推算的下月持有」，請<a href="login.html">登入會員專區</a>；帳號由管理員核發，<a href="faq.html#account">申請方式見常見問題</a>。</p>
+</div>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#loop">AI 無限循環</a></li><li><a href="#what">在買什麼</a></li><li><a href="#rules">為什麼不公開規則</a></li><li><a href="#who">我們是誰</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">26 年成績單</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
+</div></div></div>
+<script>
+BN.charts.ring(document.getElementById('ring'),{center:'AI 無限循環',center2:'每一圈都用真實結果改進下一圈',steps:[{t:'探勘交易策略',s:'AI 在 QQQ 月線找規則'},{t:'驗證交易策略',s:'鄰域、挪動、逐步前推'},{t:'回測交易策略',s:'26 年、含成本'},{t:'進入市場驗證',s:'真實資金照規則做'},{t:'優化交易策略',s:'實戰結果餵回模型'},{t:'回到第一步',s:'無限循環'}]});
+</script>
+</main>
+<footer>
+  <div class="wrap">
+    <div><h4>BNASDAQ 研究站</h4><p style="max-width:40ch;font-size:13.5px;color:rgba(255,255,255,.8)">以 AI 模型探勘交易策略 → 驗證 → 回測 → 進入市場驗證 → 優化 → 回到第一步，無限循環。本站公開回測結果、風險與代價，不公開買賣規則。</p></div>
+    <div><h4>研究</h4><ul><li><a href="research.html">26 年成績單</a></li><li><a href="research.html#crises">6 次大跌</a></li><li><a href="risk.html#robust">是不是湊巧？</a></li><li><a href="taiwan.html">台股對比</a></li></ul></div>
+    <div><h4>工具</h4><ul><li><a href="calculator.html">目標試算器</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="news.html#video">完整影片</a></li><li><a href="search.html">站內搜尋</a></li></ul></div>
+    <div><h4>帳號</h4><ul><li><a href="login.html">登入</a></li><li><a href="member.html">會員專區</a></li><li><a href="faq.html#account">如何申請帳號</a></li><li><a href="data.html">資料口徑與免責聲明</a></li></ul></div>
+  </div>
+  <div class="legal"><div class="wrap">回測區間 2000-05-31～2026-09-30（美元、含股息、換倉單邊成本 0.1%）。QLD 2006-06 上市前以合成序列代理、QQQ 1999-03 上市前以 NDX 代理；台股對比自 2013-12-31 起、台幣含息。所有績效數字為歷史回測，不保證未來報酬。© 2026 BNASDAQ／BEST NASDAQ。頁面產生日期 2026-10-28。</div></div>
+</footer>
+</body>
+</html>

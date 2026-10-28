@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>定期定額與退休金｜BNASDAQ</title>
+<meta name="description" content="每月 1 萬存 26 年、六種做法一起比、退休金 A/B、花掉的錢值多少。">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script><script src="assets/data.js"></script><script src="assets/charts.js"></script>
+
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<div class="gov"><div class="wrap"><span>BNASDAQ 是以 AI 模型持續探勘、驗證、回測 QQQ 月線策略的研究站；本站所有數字都是歷史回測，不是保證報酬，也不是投資建議。</span><span class="right"><span>市場資料截至 <b class="num" data-asof>—</b></span><button type="button" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></span></div></div>
+<header class="brand"><div class="wrap">
+  <a class="mark" href="index.html"><svg class="seal" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="none" stroke="#0b2a4a" stroke-width="2.5"/><circle cx="32" cy="32" r="24" fill="none" stroke="#b7791f" stroke-width="1.2"/><path d="M20 44V20h11c6 0 9 3 9 7 0 3-2 5-4 6 3 1 6 3 6 7 0 5-4 8-10 8H20zm6-14h5c2.5 0 4-1.5 4-3.5S33.5 23 31 23h-5v7zm0 10h6c3 0 4.5-1.5 4.5-4S35 32 32 32h-6v8z" fill="#0b2a4a"/><path d="M14 32h6M44 32h6" stroke="#b7791f" stroke-width="2"/></svg><span><span class="word">B<b>NASDAQ</b></span><span class="sub">AI 探勘的納斯達克 100 月線策略研究</span></span></a>
+  <p class="tagline">BNASDAQ 用 AI 模型找出以 QQQ 月線為訊號、只在 QLD 與 SHV 之間切換的交易規則，並以 26 年資料反覆驗證；規則本身不公開，統一用 AI 模型找出的交易規則自行交易。</p>
+  <form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form>
+</div></header>
+<div class="util"><div class="wrap"><a href="data.html">資料口徑與免責</a><a href="news.html#video">影片</a><a href="faq.html">常見問題</a><a href="search.html">搜尋</a><a class="acct" href="login.html" data-acct>登入／會員專區</a></div></div>
+<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html" aria-current=page>定期定額與退休</a></li><li><a href="taiwan.html">台股對比</a></li><li><a href="calculator.html">目標試算器</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li></ul></div></nav>
+<main id="main">
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 定期定額與退休金</div><h1>定期定額與退休金</h1><p class="lede">每月 1 萬，存 26 年會怎樣？六種做法從 2013 年底一起比、退休金 A／B 兩種算法、花掉的每一塊錢 20 年後值多少。</p></div></div>
+<div class="main"><div class="wrap"><div class="cols">
+<div>
+  <h2 id="dca26">每月存 1 萬，26 年後？</h2>
+  <p>從 2000 年 5 月底開始，每個月月底扣款 1 萬，連續扣 316 個月，總共投入 316 萬（美元計、含股息、每次扣款成本 0.1%）：</p>
+  <div class="kv">
+    <div class="tile"><div class="k"><span class="sw" style="background:var(--s-save)"></span>完全不投資</div><div class="v">316 萬</div><div class="s">本金</div></div>
+    <div class="tile"><div class="k"><span class="sw" style="background:var(--s-qqq)"></span>QQQ</div><div class="v">3,947 萬</div><div class="s">本金的 12.5 倍｜IRR 16.0%</div></div>
+    <div class="tile"><div class="k"><span class="sw" style="background:var(--s-qld)"></span>QLD</div><div class="v">1.65 億</div><div class="s">本金的 52.2 倍｜IRR 24.1%</div></div>
+    <div class="tile"><div class="k"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ</div><div class="v">25.84 億</div><div class="s">本金的 818 倍｜IRR 40.1%</div></div>
+  </div>
+  <div id="c-dca"></div>
+  <p>QLD 中間有一段超痛：2002 年 9 月，你投了 29 萬，帳上只剩 7.6 萬（本金的 26%）。BNASDAQ 則從第二個月起，每個月底都沒有賠到本金（第一個月因 0.1% 扣款成本是本金的 99.9%，之後每個月底都在本金之上）。</p>
+
+  <h2 id="six">0050、台積電也加進來：六個一起比</h2>
+  <p>0050 跟台積電的完整資料從 2013 年底才有，所以六個一起比就從 2013-12-31 開始：每月存 1 萬、存 153 個月、本金 153 萬，全部換算成台幣、含股息（美元部位用當月平均匯率扣款、2026-09-30 以 31.852 換回台幣）。這 12 年多是大多頭，後面會講跌的時候怎樣。</p>
+  <div class="tblwrap"><table class="tbl"><caption>定期定額 2013-12-31～2026-09-30，每月 1 萬、153 期</caption><thead><tr><th class=l>做法</th><th>期末價值（台幣）</th><th>本金倍數</th></tr></thead><tbody><tr><td class=l><span class="sw" style="background:var(--s-save)"></span>只存不投資</td><td>153 萬</td><td>1.0 倍</td></tr><tr><td class=l><span class="sw" style="background:var(--s-qqq)"></span>QQQ</td><td>645 萬</td><td>4.2 倍</td></tr><tr><td class=l><span class="sw" style="background:var(--s-tw)"></span>0050</td><td>899 萬</td><td>5.9 倍</td></tr><tr><td class=l><span class="sw" style="background:var(--s-tsmc)"></span>台積電 2330</td><td>1,707 萬</td><td>11.2 倍</td></tr><tr><td class=l><span class="sw" style="background:var(--s-qld)"></span>QLD</td><td>1,510 萬</td><td>9.9 倍</td></tr><tr><td class=l><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ</td><td>4,302 萬</td><td>28.1 倍</td></tr></tbody></table></div>
+  <div id="c-six"></div>
+
+  <h2 id="retireA">存退休金 A：每月 1 萬，無腦存會有多少？</h2>
+  <p>最無腦的存法：每個月固定存 1 萬，什麼都不管。這張表用 2013-12-31 到 2026-09-30、跟台股同一段時間的平均報酬，BNASDAQ 用參數 ±10% 鄰域的第 5～95 百分位（台幣）。這段剛好是大多頭，所以每個選項都偏樂觀。</p>
+  <div class="tblwrap"><table class="tbl"><caption>每月 1 萬、月底投入、月複利；不含成本、稅與通膨</caption><thead><tr><th class=l>做法</th><th>年化報酬</th><th>存 10 年</th><th>存 20 年</th></tr></thead><tbody><tr><td class=l><span class="sw" style="background:var(--s-save)"></span>只存不投資</td><td>0.0%</td><td>120 萬</td><td>240 萬</td></tr><tr><td class=l><span class="sw" style="background:var(--s-qqq)"></span>QQQ</td><td>19.7%</td><td>334 萬</td><td>2,353 萬</td></tr><tr><td class=l><span class="sw" style="background:var(--s-tw)"></span>0050</td><td>20.8%</td><td>354 萬</td><td>2,704 萬</td></tr><tr><td class=l><span class="sw" style="background:var(--s-tsmc)"></span>台積電 2330</td><td>31.5%</td><td>628 萬</td><td>1.04 億</td></tr><tr><td class=l><span class="sw" style="background:var(--s-qld)"></span>QLD</td><td>31.6%</td><td>631 萬</td><td>1.05 億</td></tr><tr><td class=l><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ</td><td>30.4%～43.1%</td><td>590 萬～1,154 萬</td><td>8,968 萬～4.27 億</td></tr></tbody></table></div>
+
+  <h2 id="retireB">存退休金 B：想存到 2,000 萬，要幾年？</h2>
+  <p>反過來，如果你心裡有目標：目標 2,000 萬、每月存 1 萬，只存不投資要 167 年，這輩子存不到；QQQ 要 19.1 年、0050 18.4 年、台積電 14.1 年、QLD 14.0 年，BNASDAQ 大約 11.5 到 14.4 年。目標從 1,000 萬加到 2,000 萬，只要再多不到 3 年，因為後面幾年是錢在幫你賺錢。</p>
+  <div class="tblwrap"><table class="tbl"><caption>每月 1 萬要存幾年；同上假設</caption><thead><tr><th class=l>做法</th><th>年化報酬</th><th>存到 1,000 萬</th><th>存到 2,000 萬</th><th>存到 3,000 萬</th></tr></thead><tbody><tr><td class=l><span class="sw" style="background:var(--s-save)"></span>只存不投資</td><td>0.0%</td><td>83 年</td><td>167 年</td><td>250 年</td></tr><tr><td class=l><span class="sw" style="background:var(--s-qqq)"></span>QQQ</td><td>19.7%</td><td>15.4 年</td><td>19.1 年</td><td>21.3 年</td></tr><tr><td class=l><span class="sw" style="background:var(--s-tw)"></span>0050</td><td>20.8%</td><td>14.9 年</td><td>18.4 年</td><td>20.5 年</td></tr><tr><td class=l><span class="sw" style="background:var(--s-tsmc)"></span>台積電 2330</td><td>31.5%</td><td>11.6 年</td><td>14.1 年</td><td>15.5 年</td></tr><tr><td class=l><span class="sw" style="background:var(--s-qld)"></span>QLD</td><td>31.6%</td><td>11.6 年</td><td>14.0 年</td><td>15.5 年</td></tr><tr><td class=l><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ</td><td>30.4%～43.1%</td><td>9.6～11.9 年</td><td>11.5～14.4 年</td><td>12.6～15.9 年</td></tr></tbody></table></div>
+  <p><a class="btn navy" href="calculator.html">用自己的金額與目標試算 ›</a></p>
+
+  <h2 id="opp">花掉的每一塊錢，值多少？</h2>
+  <p>算一個很實際的帳：花掉 1 塊，就是少存 1 塊；存著，20 年後還是 1 塊。六種做法一起比，報酬率都用 2013 年底到 2026 年 9 月同一段的平均（台幣含息）。放 20 年：QQQ 變 37 塊、0050 44 塊、台積電 241 塊、QLD 244 塊，BNASDAQ 是 201 到 1,295 塊。</p>
+  <div class="tblwrap"><table class="tbl"><caption>20 年後的價值（價格為假設的整數，不是實際報價）</caption><thead><tr><th class=l>做法</th><th>1 元放 20 年</th><th>100 萬的車</th><th>10 萬的名牌包</th><th>5 萬的出國旅行</th></tr></thead><tbody><tr><td class=l><span class="sw" style="background:var(--s-save)"></span>只存不投資</td><td>1 元</td><td>100 萬</td><td>10 萬</td><td>5.0 萬</td></tr><tr><td class=l><span class="sw" style="background:var(--s-qqq)"></span>QQQ</td><td>37 元</td><td>3,655 萬</td><td>365 萬</td><td>183 萬</td></tr><tr><td class=l><span class="sw" style="background:var(--s-tw)"></span>0050</td><td>44 元</td><td>4,396 萬</td><td>440 萬</td><td>220 萬</td></tr><tr><td class=l><span class="sw" style="background:var(--s-tsmc)"></span>台積電 2330</td><td>241 元</td><td>2.41 億</td><td>2,408 萬</td><td>1,204 萬</td></tr><tr><td class=l><span class="sw" style="background:var(--s-qld)"></span>QLD</td><td>244 元</td><td>2.44 億</td><td>2,435 萬</td><td>1,218 萬</td></tr><tr><td class=l><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ</td><td>201 元～1,295 元</td><td>2.01 億～12.95 億</td><td>2,015 萬～1.30 億</td><td>1,007 萬～6,477 萬</td></tr></tbody></table></div>
+  <p>放 BNASDAQ 的話，每晚 1 年開始，最後的錢就少掉 23%～30%。所以下次想花錢前，先問自己：這筆錢，值得 20 年後的 201 倍嗎？</p>
+  <div class="note"><p>提醒：這是用過去資料推估，不是保證報酬。26 年全期（2000 年起、美元）的鄰域區間比較保守：每年 25.4%～33.8%，1 元放 20 年是 93～336 元（中位數 177 元）；<a href="calculator.html">試算器</a>可以切換這兩種基準。</p></div>
+</div>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#dca26">每月 1 萬、26 年</a></li><li><a href="#six">六個一起比</a></li><li><a href="#retireA">退休金 A</a></li><li><a href="#retireB">退休金 B</a></li><li><a href="#opp">花掉的錢值多少</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="calculator.html">目標試算器</a></li><li><a href="taiwan.html">台股對比</a></li><li><a href="risk.html">風險與代價</a></li></ul></div></aside>
+</div></div></div>
+<script>
+(function(){const S=window.SITE,f=BN.fmt;
+BN.charts.line(document.getElementById('c-dca'),{title:'每月 1 萬定期定額：帳戶價值（對數刻度）',sub:S.window.start+' 至 '+S.window.end+'，美元、含股息、每次扣款成本 0.1%',x:S.window.months,log:true,yfmt:f.big,tipfmt:f.big,series:[{name:'BNASDAQ',values:S.dca_series.fund,color:'var(--s-fund)'},{name:'QLD',values:S.dca_series.qld,color:'var(--s-qld)'},{name:'QQQ',values:S.dca_series.qqq,color:'var(--s-qqq)'},{name:'SHV',values:S.dca_series.shv,color:'var(--s-shv)'},{name:'投入本金',values:S.dca_series.inv,color:'var(--s-save)',dash:'4 3'}]});
+const nm=S.six.names,col={save:'var(--s-save)',qqq:'var(--s-qqq)',tw:'var(--s-tw)',tsmc:'var(--s-tsmc)',qld:'var(--s-qld)',fund:'var(--s-fund)'};
+BN.charts.hbars(document.getElementById('c-six'),{title:'六種做法定期定額的期末價值（台幣）',sub:S.six.window[0]+' 至 '+S.six.window[1]+'，每月 1 萬、'+S.six.n_contrib+' 期、本金 '+f.wan(S.six.principal),items:S.six.order.map(k=>({name:nm[k],value:S.six.dca[k],color:col[k],hl:k==='fund'})),fmt:f.big});
+})();
+</script>
+</main>
+<footer>
+  <div class="wrap">
+    <div><h4>BNASDAQ 研究站</h4><p style="max-width:40ch;font-size:13.5px;color:rgba(255,255,255,.8)">以 AI 模型探勘交易策略 → 驗證 → 回測 → 進入市場驗證 → 優化 → 回到第一步，無限循環。本站公開回測結果、風險與代價，不公開買賣規則。</p></div>
+    <div><h4>研究</h4><ul><li><a href="research.html">26 年成績單</a></li><li><a href="research.html#crises">6 次大跌</a></li><li><a href="risk.html#robust">是不是湊巧？</a></li><li><a href="taiwan.html">台股對比</a></li></ul></div>
+    <div><h4>工具</h4><ul><li><a href="calculator.html">目標試算器</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="news.html#video">完整影片</a></li><li><a href="search.html">站內搜尋</a></li></ul></div>
+    <div><h4>帳號</h4><ul><li><a href="login.html">登入</a></li><li><a href="member.html">會員專區</a></li><li><a href="faq.html#account">如何申請帳號</a></li><li><a href="data.html">資料口徑與免責聲明</a></li></ul></div>
+  </div>
+  <div class="legal"><div class="wrap">回測區間 2000-05-31～2026-09-30（美元、含股息、換倉單邊成本 0.1%）。QLD 2006-06 上市前以合成序列代理、QQQ 1999-03 上市前以 NDX 代理；台股對比自 2013-12-31 起、台幣含息。所有績效數字為歷史回測，不保證未來報酬。© 2026 BNASDAQ／BEST NASDAQ。頁面產生日期 2026-10-28。</div></div>
+</footer>
+</body>
+</html>

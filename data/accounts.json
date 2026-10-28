@@ -1,0 +1,24 @@
+{
+ "schema": "bnasdaq-accounts/1",
+ "updated": "2026-10-28T00:00:00Z",
+ "accounts": [
+  {
+   "user": "BNASDAQ",
+   "role": "admin",
+   "created": "2026-10-28",
+   "active": true,
+   "note": "網站管理員",
+   "auth": {
+    "salt": "2LCqush3JYg56zRlKEuYaA==",
+    "iter": 310000,
+    "hash": "KToX9dHr+pmMkSUaelGq5vc8B3I1u5sXqGc91vK6t+g="
+   },
+   "wrap": {
+    "salt": "fjUZjOswZkosPgjpX/lhAA==",
+    "iter": 310000,
+    "iv": "QLEzKTIVNVlDPU0U",
+    "ct": "9ZPWbwoJBqrbXLlujandnsJg+RvgbQhF44fPHcnpkni3YvPwtdNPa8AXMrlqSs4X"
+   }
+  }
+ ]
+}

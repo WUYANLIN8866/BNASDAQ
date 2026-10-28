@@ -1,4 +1,113 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BNASDAQ 研究站（建置中）</title>
-<style>body{font-family:system-ui,"Noto Sans TC",sans-serif;background:#f4f6f8;color:#0b2a4a;display:grid;place-items:center;min-height:100vh;margin:0}main{text-align:center;padding:32px}h1{letter-spacing:.08em}</style></head>
-<body><main><h1>BNASDAQ</h1><p>研究站建置中，稍後重新整理。</p></main></body></html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>首頁｜BNASDAQ</title>
+<meta name="description" content="BNASDAQ：以 AI 模型探勘、驗證、回測的 QQQ 月線策略研究站。26 年回測、定期定額、台股對比、目標試算器、風險揭露。">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script><script src="assets/data.js"></script><script src="assets/charts.js"></script>
+
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<div class="gov"><div class="wrap"><span>BNASDAQ 是以 AI 模型持續探勘、驗證、回測 QQQ 月線策略的研究站；本站所有數字都是歷史回測，不是保證報酬，也不是投資建議。</span><span class="right"><span>市場資料截至 <b class="num" data-asof>—</b></span><button type="button" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></span></div></div>
+<header class="brand"><div class="wrap">
+  <a class="mark" href="index.html"><svg class="seal" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="none" stroke="#0b2a4a" stroke-width="2.5"/><circle cx="32" cy="32" r="24" fill="none" stroke="#b7791f" stroke-width="1.2"/><path d="M20 44V20h11c6 0 9 3 9 7 0 3-2 5-4 6 3 1 6 3 6 7 0 5-4 8-10 8H20zm6-14h5c2.5 0 4-1.5 4-3.5S33.5 23 31 23h-5v7zm0 10h6c3 0 4.5-1.5 4.5-4S35 32 32 32h-6v8z" fill="#0b2a4a"/><path d="M14 32h6M44 32h6" stroke="#b7791f" stroke-width="2"/></svg><span><span class="word">B<b>NASDAQ</b></span><span class="sub">AI 探勘的納斯達克 100 月線策略研究</span></span></a>
+  <p class="tagline">BNASDAQ 用 AI 模型找出以 QQQ 月線為訊號、只在 QLD 與 SHV 之間切換的交易規則，並以 26 年資料反覆驗證；規則本身不公開，統一用 AI 模型找出的交易規則自行交易。</p>
+  <form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form>
+</div></header>
+<div class="util"><div class="wrap"><a href="data.html">資料口徑與免責</a><a href="news.html#video">影片</a><a href="faq.html">常見問題</a><a href="search.html">搜尋</a><a class="acct" href="login.html" data-acct>登入／會員專區</a></div></div>
+<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html" aria-current=page>首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">台股對比</a></li><li><a href="calculator.html">目標試算器</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li></ul></div></nav>
+<main id="main">
+
+<section class="hero"><div class="wrap">
+  <div>
+    <div class="kicker">歷史回測｜2000-05-31～2026-09-30（26.3 年）｜每月扣款 1 萬、共 316 期</div>
+    <h1>同樣每個月存 1 萬，26 年後：只存是 316 萬，照 BNASDAQ 回測是 25.84 億。</h1>
+    <p>先講清楚：以下全部是歷史回測，不是保證報酬。QQQ 買了放著是 3,947 萬（本金的 12.5 倍），2 倍槓桿的 QLD 是 1.65 億，BNASDAQ 是完全不投資的 818 倍。</p>
+    <div class="cta"><a class="btn primary" href="research.html">看 26 年成績單</a><a class="btn ghost" href="calculator.html">算我的目標要幾年</a><a class="btn ghost" href="risk.html">先看風險</a></div>
+  </div>
+  <div><div class="kicker">每月 1 萬、316 個月，期末價值</div><div class="big">25.8 億</div><div class="kicker" style="margin-top:8px">IRR 年化 40.1%｜本金 316 萬｜從第 2 個月起每個月底都沒有賠到本金</div></div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <div class="sechead"><h2>最新發布</h2><a class="more" href="news.html">全部發布 ›</a></div>
+  <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="ann">公告</button><button role="tab" aria-selected="false" data-tab="res">研究更新</button><button role="tab" aria-selected="false" data-tab="vid">影片</button></div>
+  <ul class="dev" id="dev-ann"><li><time>載入中</time><span>公告由管理員發布，請稍候。</span></li></ul>
+  <ul class="dev" id="dev-res" hidden>
+    <li><time>2026-10-28</time><span><a href="research.html">BNASDAQ 研究站上線：影片 v6 全部數字重算，與影片 0 差異</a><span class="tag">研究</span></span></li>
+    <li><time>2026-10-26</time><span><a href="research.html#periods">全策略 CAGR 回測更新（資料至 2026-10-23）</a><span class="tag">回測</span></span></li>
+    <li><time>2026-10-23</time><span><a href="risk.html#robust">壓力測試：參數鄰域、決策日挪動、逐步前推</a><span class="tag">驗證</span></span></li>
+    <li><time>2026-10-20</time><span><a href="risk.html#walk">穩健性檢查與週線引擎比對</a><span class="tag">驗證</span></span></li>
+  </ul>
+  <ul class="dev" id="dev-vid" hidden>
+    <li><time>2026-10-26</time><span><a href="news.html#video">BNASDAQ 半倉煞車版 v6：六個一起比（只存／QQQ／0050／台積電／QLD／BNASDAQ）</a><span class="tag">影片</span></span></li>
+    <li><time>2026-10-19</time><span><a href="news.html#video">v5：半倉煞車版完整回測</a><span class="tag">影片</span></span></li>
+    <li><time>2026-10-13</time><span><a href="news.html#video">v4：台股對比版</a><span class="tag">影片</span></span></li>
+  </ul>
+</div></section>
+
+<section class="band alt"><div class="wrap">
+  <div class="features">
+    <div class="feature"><div class="fig" id="f-dca"></div><div class="body"><h3>定期定額與退休金</h3><p>每月 1 萬存 26 年、六種做法一起比、存到 2,000 萬要幾年、花掉的每一塊錢 20 年後值多少。</p><a class="more" href="dca.html">查看定期定額與退休 ›</a></div></div>
+    <div class="feature"><div class="fig" id="f-tw"></div><div class="body"><h3>台股對比：0050、台積電</h3><p>2013 年底各放 100 萬台幣、含股息抱到 2026 年 9 月底，六種做法的期末價值、年化報酬與老實列出的台股贏的年份。</p><a class="more" href="taiwan.html">查看台股對比 ›</a></div></div>
+    <div class="feature"><div class="fig" id="f-risk"></div><div class="body"><h3>風險與代價</h3><p>最深跌 42.3%、每年震盪 33.2%、晚一天檢查報酬砍半、煞車誤判 7 次——心動之前一定要知道的 6 點。</p><a class="more" href="risk.html">查看風險與代價 ›</a></div></div>
+  </div>
+</div></section>
+
+<section class="band"><div class="wrap">
+  <div class="cols">
+    <div>
+      <div class="sechead"><h2>主要指標</h2><a class="more" href="research.html">完整回測 ›</a></div>
+      <ul class="ind">
+        <li><span class="label">年化報酬（單筆 100 萬，2000-05-31～2026-09-30）<small>QQQ 同期 9.4%、QLD 8.2%、SHV 1.7%</small></span><span class="val">38.3%</span></li>
+        <li><span class="label">比較實際的期待（參數 ±10% 鄰域、78,732 種組合的第 5～95 百分位）<small>中位數 29.5%；全部 78,732 組都贏 QQQ 與 QLD</small></span><span class="val">25.4%～33.8%</span></li>
+        <li><span class="label">最深回撤<small>2024-12-16 高點 → 2025-04-08 低點（2025 關稅衝擊），3 個月後回到原高點</small></span><span class="val neg">-42.3%</span></li>
+        <li><span class="label">每年震盪（年化波動）<small>QQQ 25.7%、QLD 51.5%</small></span><span class="val">33.2%</span></li>
+        <li><span class="label">26 年多來的調整次數<small>平均每年 2.24 次；17 次全進全出、42 次半倉進出</small></span><span class="val">59 次</span></li>
+        <li><span class="label">年度成績<small>25 個年度中 24 年正報酬、23 年贏 QQQ；QQQ 下跌的 5 年裡有 4 年仍是正報酬</small></span><span class="val">24／25</span></li>
+      </ul>
+    </div>
+    <aside>
+      <div class="side"><h3>BNASDAQ 怎麼運作</h3><ul><li>只有兩個抽屜：進攻放 QLD、防守放短期美債 SHV</li><li>每月最後一個交易日收盤後檢查一次，隔天開盤照做</li><li>三種狀態：全放進攻、各放一半、全放防守</li><li>買賣規則不公開，統一用 AI 模型找出的交易規則自行交易</li><li><a href="about.html">更多說明 ›</a></li></ul></div>
+      <div class="side"><h3>會員專區</h3><ul><li>登入後可看各策略「本月持有」與「以最新收盤推算的下月持有」</li><li><a href="login.html">登入</a>｜<a href="faq.html#account">如何申請帳號</a></li></ul></div>
+    </aside>
+  </div>
+</div></section>
+
+<section class="band alt"><div class="wrap">
+  <div class="sechead"><h2>BNASDAQ 在做什麼：AI 無限循環</h2><a class="more" href="about.html">關於 BNASDAQ ›</a></div>
+  <p>BNASDAQ 主要是透過 AI 模型主動探勘交易策略 → 驗證交易策略 → 回測交易策略 → 進入市場驗證 → 優化交易策略 → 回到第一點，並無限循環。</p>
+  <div class="loop"><div class="step"><b>探勘交易策略</b><span>AI 模型在 QQQ 月線上搜尋規則</span></div><div class="step"><b>驗證交易策略</b><span>鄰域、挪動決策日、逐步前推</span></div><div class="step"><b>回測交易策略</b><span>26 年含成本、次日開盤執行</span></div><div class="step"><b>進入市場驗證</b><span>用真實資金照規則執行</span></div><div class="step"><b>優化交易策略</b><span>把實戰結果餵回模型</span></div><div class="step"><b>回到第一步</b><span>無限循環，持續改進</span></div></div>
+</div></section>
+
+<script>
+(function(){
+  const S=window.SITE, f=BN.fmt;
+  // tabs
+  document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabs [data-tab]').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');['ann','res','vid'].forEach(k=>document.getElementById('dev-'+k).hidden=(k!==b.dataset.tab));}));
+  fetch('data/site.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{const ul=document.getElementById('dev-ann');ul.innerHTML='';(j.announcements||[]).slice(0,5).forEach(a=>{const li=document.createElement('li');li.innerHTML='<time>'+a.date+'</time><span>'+a.title.replace(/[<>]/g,'')+(a.body?'<br><small>'+a.body.replace(/[<>]/g,'')+'</small>':'')+'</span>';ul.appendChild(li);});if(!ul.children.length)ul.innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';}).catch(()=>{document.getElementById('dev-ann').innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';});
+  // mini figures
+  const mini=(id,items,fmt)=>{const h=document.getElementById(id);h.innerHTML='';BN.charts.hbars(h,{items,fmt,rowH:30,labelW:84,W:420,padR:96});const fig=h.querySelector('.fig');fig.style.border='0';fig.style.margin='0';fig.style.padding='0';fig.style.background='transparent';};
+  mini('f-dca',[{name:'只存',value:S.dca.inv.end,color:'var(--s-save)'},{name:'QQQ',value:S.dca.qqq.end,color:'var(--s-qqq)'},{name:'QLD',value:S.dca.qld.end,color:'var(--s-qld)'},{name:'BNASDAQ',value:S.dca.fund.end,color:'var(--s-fund)',hl:1}],f.big);
+  mini('f-tw',[{name:'0050',value:S.six.lump.tw,color:'var(--s-tw)'},{name:'台積電',value:S.six.lump.tsmc,color:'var(--s-tsmc)'},{name:'QLD',value:S.six.lump.qld,color:'var(--s-qld)'},{name:'BNASDAQ',value:S.six.lump.fund,color:'var(--s-fund)',hl:1}],f.big);
+  mini('f-risk',[{name:'QLD',value:-S.dd.qld.mdd,color:'var(--s-qld)'},{name:'QQQ',value:-S.dd.qqq.mdd,color:'var(--s-qqq)'},{name:'BNASDAQ',value:-S.dd.fund.mdd,color:'var(--s-fund)',hl:1}],v=>'最深跌 '+(v*100).toFixed(1)+'%');
+})();
+</script>
+</main>
+<footer>
+  <div class="wrap">
+    <div><h4>BNASDAQ 研究站</h4><p style="max-width:40ch;font-size:13.5px;color:rgba(255,255,255,.8)">以 AI 模型探勘交易策略 → 驗證 → 回測 → 進入市場驗證 → 優化 → 回到第一步，無限循環。本站公開回測結果、風險與代價，不公開買賣規則。</p></div>
+    <div><h4>研究</h4><ul><li><a href="research.html">26 年成績單</a></li><li><a href="research.html#crises">6 次大跌</a></li><li><a href="risk.html#robust">是不是湊巧？</a></li><li><a href="taiwan.html">台股對比</a></li></ul></div>
+    <div><h4>工具</h4><ul><li><a href="calculator.html">目標試算器</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="news.html#video">完整影片</a></li><li><a href="search.html">站內搜尋</a></li></ul></div>
+    <div><h4>帳號</h4><ul><li><a href="login.html">登入</a></li><li><a href="member.html">會員專區</a></li><li><a href="faq.html#account">如何申請帳號</a></li><li><a href="data.html">資料口徑與免責聲明</a></li></ul></div>
+  </div>
+  <div class="legal"><div class="wrap">回測區間 2000-05-31～2026-09-30（美元、含股息、換倉單邊成本 0.1%）。QLD 2006-06 上市前以合成序列代理、QQQ 1999-03 上市前以 NDX 代理；台股對比自 2013-12-31 起、台幣含息。所有績效數字為歷史回測，不保證未來報酬。© 2026 BNASDAQ／BEST NASDAQ。頁面產生日期 2026-10-28。</div></div>
+</footer>
+</body>
+</html>
