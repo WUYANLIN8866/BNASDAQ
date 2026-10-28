@@ -1,0 +1,74 @@
+name: Update market data and deploy site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 每個交易日美股收盤後（22:45 UTC ＝ 台北 06:45；夏令美股 20:00 UTC 收盤、冬令 21:00 UTC 收盤）
+    - cron: '45 22 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install optional data libraries
+        run: pip install --quiet yfinance || true
+
+      - name: Fetch QQQ market data (public prices only)
+        id: fetch
+        continue-on-error: true
+        run: python3 scripts/fetch_market.py
+
+      - name: Commit market.json if it changed
+        if: github.event_name != 'push' || steps.fetch.outcome == 'success'
+        run: |
+          git config user.name "bnasdaq-bot"
+          git config user.email "bnasdaq-bot@users.noreply.github.com"
+          git add data/market.json
+          if git diff --cached --quiet; then
+            echo "market.json unchanged"
+          else
+            ASOF=$(python3 -c "import json;print(json.load(open('data/market.json'))['asof'])")
+            git commit -m "data: market update ${ASOF}"
+            git pull --rebase origin main || true
+            git push origin HEAD:main
+          fi
+
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
