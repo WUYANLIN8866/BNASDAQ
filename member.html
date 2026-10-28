@@ -47,6 +47,8 @@
     const L=rules.latest(market); const S=L.series; const k=S.M.length-1; const prev=rules.evaluate(S,k-1); const cur=L.lastComplete; const c=market.current;
     const holdMonth=m=>{const [y,mm]=m.split('-').map(Number); const d=new Date(y,mm,1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');};
     const hm=holdMonth(cur.month), pm=holdMonth(prev.month), nm=c?holdMonth(c.m):'—';
+    const lastWeekday=m=>{const [y,mm]=m.split('-').map(Number);const d=new Date(Date.UTC(y,mm,0));while(d.getUTCDay()===0||d.getUTCDay()===6)d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);};
+    const isME=c&&market.asof>=lastWeekday(c.m);
     $('#status').innerHTML='市場資料截至 <b>'+market.asof+'</b>（QQQ 收盤 <b class="num">'+c.c.toFixed(2)+'</b>）｜來源：'+market.source+'｜更新 '+market.updated.replace('T',' ').replace('Z',' UTC');
     const badge=w=>'<span class="badge '+(w>=1?'qld':w===0.5?'half':'shv')+'">'+rules.holdingText(w)+'</span>';
     const cards=rules.STRATEGIES.map(st=>{
@@ -60,7 +62,7 @@
       return '<div class="card"><h4>'+st.id+'　'+st.name+'</h4>'
         +'<div class="small">本月持有（'+hm+'，依 '+cur.month+' 月底訊號）</div><div class="hold">'+rules.holdingText(wNow)+'</div>'
         +'<div class="small">上月持有（'+pm+'）：'+badge(wPrev)+'　'+(change?'<b style="color:var(--bad)">本月要換倉</b>':'<span class="ok-dot"></span>本月不用動')+'</div>'
-        +'<div class="next"><div class="small">用最新收盤（'+market.asof+'，'+c.c.toFixed(2)+'）當作 '+c.m+' 月底收盤推算 → <b>'+nm+' 持有</b></div><div class="hold" style="font-size:22px">'+(wProv==null?'—':rules.holdingText(wProv))+'</div><div class="small">'+flip+'</div></div></div>';
+        +'<div class="next"><div class="small">用最新收盤（'+market.asof+'，'+c.c.toFixed(2)+'）當作 '+c.m+' 月底收盤推算 → <b>'+nm+' 持有</b>'+(isME?'<br><b style="color:var(--good)">最新收盤已是本月最後一個交易日，此結果即為正式判斷。</b>':'')+'</div><div class="hold" style="font-size:22px">'+(wProv==null?'—':rules.holdingText(wProv))+'</div><div class="small">'+flip+'</div></div></div>';
     }).join('');
     $('#cards').innerHTML=cards;
     $('#sched-list').innerHTML='<li>正式判斷：<b>'+c.m+' 最後一個交易日收盤後</b>（美東時間），用當月收盤重新判斷。</li><li>執行：下一個交易日<b>開盤</b>調整到目標比例（台北時間約 21:30 夏令／22:30 冬令）。</li><li>上面的「下月持有」只是把最新收盤當作月底收盤的推算，月底前會隨價格變動。</li>';

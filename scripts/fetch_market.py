@@ -152,6 +152,14 @@ def main():
                 log('fetched data older than existing (', old.get('asof'), '>', out['asof'], '); keeping existing'); return 1
         except Exception:
             pass
+    # skip the write when nothing but the timestamp changed (keeps the git history quiet)
+    if os.path.exists(OUT):
+        try:
+            old = json.load(open(OUT, encoding='utf-8'))
+            if {k: v for k, v in old.items() if k != 'updated'} == {k: v for k, v in out.items() if k != 'updated'}:
+                log('market data unchanged (asof', out['asof'], '); not rewriting'); return 0
+        except Exception:
+            pass
     with open(OUT, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
     log('written', OUT, 'asof', out['asof'], 'ext months', [e['m'] for e in out['ext']], 'current', out['current']['m'], 'U', round(out['current']['U'], 4))
