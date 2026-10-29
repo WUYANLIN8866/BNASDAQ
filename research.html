@@ -9,8 +9,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261029k">
-<script src="assets/site.js?v=20261029k"></script><script src="assets/data.js?v=20261029k"></script><script src="assets/compare.js?v=20261029k"></script><script src="assets/charts.js?v=20261029k"></script>
+<link rel="stylesheet" href="assets/site.css?v=20261029l">
+<script src="assets/site.js?v=20261029l"></script><script src="assets/data.js?v=20261029l"></script><script src="assets/rebase.js?v=20261029l"></script><script src="assets/compare.js?v=20261029l"></script><script src="assets/charts.js?v=20261029l"></script>
 
 </head>
 <body>
@@ -36,23 +36,24 @@
     <div id="rschips" class="chips"></div>
   </div>
 
-  <h2 id="report">26 年成績單</h2>
-  <p>如果 2000 年 5 月底單筆放 100 萬（美元計、含股息、換倉單邊成本 0.1%），抱到 2026 年 9 月底：</p>
+  <div id="rbnote"></div>
+  <h2 id="report"><span data-rb-title>26 年成績單</span></h2>
+  <p id="p-report">如果 2000 年 5 月底單筆放 100 萬（美元計、含股息、換倉單邊成本 0.1%），抱到 2026 年 9 月底：</p>
   <div class="kv">
-    <div class="tile"><div class="k"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ</div><div class="v">50.56 億</div><div class="s">年化 38.3%，約每 2.1 年翻一倍</div></div>
-    <div class="tile"><div class="k"><span class="sw" style="background:var(--s-qqq)"></span>QQQ 買了放著</div><div class="v">1,056 萬</div><div class="s">年化 9.4%，要 7.7 年才翻一倍</div></div>
-    <div class="tile"><div class="k"><span class="sw" style="background:var(--s-qld)"></span>QLD 買了放著</div><div class="v">798 萬</div><div class="s">年化 8.2%；2 倍槓桿長抱反而輸 QQQ</div></div>
-    <div class="tile"><div class="k"><span class="sw" style="background:var(--s-shv)"></span>SHV 短期美債</div><div class="v">157 萬</div><div class="s">年化 1.7%；只存不投資還是 100 萬</div></div>
+    <div class="tile base"><div class="k"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ</div><div class="v">50.56 億</div><div class="s">年化 38.3%，約每 2.1 年翻一倍</div></div>
+    <div class="tile base"><div class="k"><span class="sw" style="background:var(--s-qqq)"></span>QQQ 買了放著</div><div class="v">1,056 萬</div><div class="s">年化 9.4%，要 7.7 年才翻一倍</div></div>
+    <div class="tile base"><div class="k"><span class="sw" style="background:var(--s-qld)"></span>QLD 買了放著</div><div class="v">798 萬</div><div class="s">年化 8.2%；2 倍槓桿長抱反而輸 QQQ</div></div>
+    <div class="tile base"><div class="k"><span class="sw" style="background:var(--s-shv)"></span>SHV 短期美債</div><div class="v">157 萬</div><div class="s">年化 1.7%；只存不投資還是 100 萬</div></div>
   </div>
   <div id="c-eq"></div>
-  <div class="note"><p>圖的縱軸是對數刻度：每往上一格，錢就多 10 倍。別只看 38.3%：這組設定在 78,732 組鄰域裡排第 3，比較實際的期待是每年 25.4%～33.8%（<a href="risk.html#robust">為什麼</a>）。</p></div>
+  <div class="note fullonly"><p>圖的縱軸是對數刻度：每往上一格，錢就多 10 倍。別只看 38.3%：這組設定在 78,732 組鄰域裡排第 3，比較實際的期待是每年 25.4%～33.8%（<a href="risk.html#robust">為什麼</a>）。</p></div>
 
   <h2 id="periods">每個區間都贏 QQQ？</h2>
   <div id="t-per"></div>
   <div id="c-per"></div>
 
   <h2 id="years">年度成績：25 年裡 24 年正報酬</h2>
-  <p>25 個年度（2001～2026，2026 年只到 9 月底）裡，BNASDAQ 有 24 年正報酬、23 年贏過 QQQ；QQQ 下跌的 5 年（2001、2002、2008、2018、2022）裡，BNASDAQ 有 4 年仍是正報酬。最好的一年是 2009 年的 +171.0%。</p>
+  <p class="fullonly">25 個年度（2001～2026，2026 年只到 9 月底）裡，BNASDAQ 有 24 年正報酬、23 年贏過 QQQ；QQQ 下跌的 5 年（2001、2002、2008、2018、2022）裡，BNASDAQ 有 4 年仍是正報酬。最好的一年是 2009 年的 +171.0%。</p>
   <div id="c-cal"></div>
   <details><summary>展開年度明細表</summary><div class="ans"><div id="t-cal"></div></div></details>
 
@@ -65,12 +66,12 @@
   <div id="c-avg"></div>
 
   <h2 id="crises">回顧 6 次大跌：哪些躲得掉？</h2>
-  <p>一路跌好幾個月的大跌（網路泡沫、金融海嘯、2022 年升息空頭），它靠每月檢查提早躲進短期美債，跌完的時候 100 萬還有 97 萬、87 萬、105 萬，同一時間 QQQ 只剩 20 萬、47 萬、65 萬。但 2018 年底、2020 年新冠、2025 年關稅衝擊這種幾週內的暴跌，月底才檢查來不及反應，又抱著 2 倍槓桿，反而跌得比 QQQ 還深。</p>
+  <p class="fullonly">一路跌好幾個月的大跌（網路泡沫、金融海嘯、2022 年升息空頭），它靠每月檢查提早躲進短期美債，跌完的時候 100 萬還有 97 萬、87 萬、105 萬，同一時間 QQQ 只剩 20 萬、47 萬、65 萬。但 2018 年底、2020 年新冠、2025 年關稅衝擊這種幾週內的暴跌，月底才檢查來不及反應，又抱著 2 倍槓桿，反而跌得比 QQQ 還深。</p>
   <div id="t-cr"></div>
   <div id="c-cr"></div>
 
   <h2 id="dd">最慘跌多少？回撤水位圖</h2>
-  <p>把每一次從高點跌下來多少畫成水位圖：QLD 最深跌 98.2%（2000-07 高點、2009-03 低點），從高點到回本花了 19.6 年；QQQ 最深跌 80.5%，花了 13.8 年；BNASDAQ 最深跌 42.3%，發生在 2025 年關稅衝擊（2024-12-16 高點、2025-04-08 低點），3 個月後（2025-07-17）就回到原來的高點。跌幅超過 20% 的回撤，BNASDAQ 26 年裡出現 20 次。</p>
+  <p class="fullonly">把每一次從高點跌下來多少畫成水位圖：QLD 最深跌 98.2%（2000-07 高點、2009-03 低點），從高點到回本花了 19.6 年；QQQ 最深跌 80.5%，花了 13.8 年；BNASDAQ 最深跌 42.3%，發生在 2025 年關稅衝擊（2024-12-16 高點、2025-04-08 低點），3 個月後（2025-07-17）就回到原來的高點。跌幅超過 20% 的回撤，BNASDAQ 26 年裡出現 20 次。</p>
   <div id="c-dd"></div>
   <div id="t-dd"></div>
   <div class="note warn"><p>這不是「不會跌」的策略：它躲得掉慢慢跌，躲不掉突然跌。請先看<a href="risk.html">風險與代價</a>。</p></div>
@@ -86,34 +87,69 @@ let ADDED=[];
 const w26=a=>a.data.w26||{};
 const noteOf=a=>{const w=w26(a);return w.partial?'自 '+w.start_used+' 起算':(w.partial_end?'資料到 '+w.end_used:'');};
 const tag=a=>a.market==='US'?'':'（台股，美元計）';
+const RB=BN.rebase;
 function render(list){
   ADDED=list||ADDED;
-  // 成績單方塊
+  const months=S.window.months,M1=months.length-1;
+  const starts=ADDED.map(a=>w26(a).monthly?RB.firstValid(w26(a).monthly):-1).filter(i=>i>=0);
+  const i0=starts.length?Math.max(0,...starts):0,common=i0>0;
+  document.querySelectorAll('.fullonly').forEach(e=>e.style.display=common?'none':'');
   document.querySelectorAll('.kv .tile.added').forEach(e=>e.remove());
+  document.querySelectorAll('.kv .tile.base').forEach(e=>e.style.display=common?'none':'');
   const kv=document.querySelector('.kv');
-  ADDED.forEach(a=>{const w=w26(a);if(w.lump==null)return;const dbl=w.cagr>0?Math.log(2)/Math.log(1+w.cagr):null;const t=document.createElement('div');t.className='tile added';t.innerHTML='<div class="k">'+sw(a.color)+a.label+'</div><div class="v">'+f.big(w.lump)+'</div><div class="s">年化 '+(w.cagr*100).toFixed(1)+'%'+(dbl?'，約每 '+dbl.toFixed(1)+' 年翻一倍':'')+(noteOf(a)?'；'+noteOf(a):'')+(tag(a)?'；'+tag(a).replace(/[（）]/g,''):'')+'</div>';kv.appendChild(t);});
+  const late=common?ADDED.filter(a=>w26(a).monthly&&RB.firstValid(w26(a).monthly)===i0)[0]:null;
+  const startYMD=RB.ymd(months[i0]);
+  $('rbnote').innerHTML=common?'<div class="note navy"><p><b>回測區間已自動改為共同區間 '+startYMD+'～'+S.window.end+'</b>（以最晚上市的 '+late.label+' 為準）。BNASDAQ、QQQ、QLD、SHV 與你加入的標的全部用同一段月底資料重算（美元、含息）；移除該標的即恢復 26 年全期。</p></div>':'';
+  document.querySelector('[data-rb-title]').textContent=common?RB.yearsBetween(months[i0],months[M1]).toFixed(1)+' 年成績單（共同區間）':'26 年成績單';
+  $('p-report').textContent=common?'如果 '+startYMD+' 單筆放 100 萬（美元計、含股息），抱到 '+S.window.end+'：':'如果 2000 年 5 月底單筆放 100 萬（美元計、含股息、換倉單邊成本 0.1%），抱到 2026 年 9 月底：';
+  const tile=(label,color,m,extra)=>{const dbl=m.cagr>0?Math.log(2)/Math.log(1+m.cagr):null;const t=document.createElement('div');t.className='tile added';t.innerHTML='<div class="k">'+sw(color)+label+'</div><div class="v">'+f.big(m.lump)+'</div><div class="s">年化 '+(m.cagr*100).toFixed(1)+'%'+(dbl?'，約每 '+dbl.toFixed(1)+' 年翻一倍':'')+(extra?'；'+extra:'')+'</div>';kv.appendChild(t);};
+  if(!common){
+    ADDED.forEach(a=>{const w=w26(a);if(w.lump==null)return;tile(a.label,a.color,{lump:w.lump,cagr:w.cagr},[noteOf(a),tag(a).replace(/[（）]/g,'')].filter(Boolean).join('；'));});
+  }
+  // ---- 基礎序列與指標 ----
+  const U=RB.baseUSD();
+  const base=[['BNASDAQ','fund','var(--s-fund)',U.fund],['QQQ','qqq','var(--s-qqq)',U.qqq],['QLD','qld','var(--s-qld)',U.qld],['SHV','shv','var(--s-shv)',U.shv]];
+  const BM={};base.forEach(b=>{BM[b[1]]=common?RB.metrics(b[3],months,i0,M1):null;});
+  const AM={};ADDED.forEach(a=>{AM[a.code]=(common&&w26(a).monthly)?RB.metrics(w26(a).monthly,months,i0,M1):null;});
+  if(common){base.forEach(b=>tile(b[0]+(b[1]==='shv'?' 短期美債':b[1]==='fund'?'':' 買了放著'),b[2],BM[b[1]]));ADDED.forEach(a=>{if(AM[a.code])tile(a.label,a.color,AM[a.code],tag(a).replace(/[（）]/g,''));});}
   // 成長曲線
-  $('c-eq').innerHTML='';BN.charts.line($('c-eq'),{title:'單筆 100 萬的成長曲線（對數刻度）',sub:S.window.start+' 至 '+S.window.end+'，美元、含股息、換倉成本 0.1%',x:S.window.months,log:true,yfmt:v=>f.big(v*1e6),tipfmt:v=>f.big(v*1e6),series:[{name:'BNASDAQ',values:S.eq.fund,color:'var(--s-fund)'},{name:'QQQ',values:S.eq.qqq,color:'var(--s-qqq)'},{name:'QLD',values:S.eq.qld,color:'var(--s-qld)'}].concat(ADDED.filter(a=>w26(a).monthly).map(a=>({name:a.label,values:w26(a).monthly,color:a.color}))),note:'每往上一格，錢就多 10 倍。'+(ADDED.some(a=>w26(a).partial)?' 上市較晚的標的從第一個交易日起、以當時的 100 萬換算，起點不同。':'')});
+  const eqSeries=common?base.filter(b=>b[1]!=='shv').map(b=>({name:b[0],values:BM[b[1]].norm,color:b[2]})).concat(ADDED.filter(a=>AM[a.code]).map(a=>({name:a.label,values:AM[a.code].norm,color:a.color})))
+    :[{name:'BNASDAQ',values:S.eq.fund,color:'var(--s-fund)'},{name:'QQQ',values:S.eq.qqq,color:'var(--s-qqq)'},{name:'QLD',values:S.eq.qld,color:'var(--s-qld)'}].concat(ADDED.filter(a=>w26(a).monthly).map(a=>({name:a.label,values:w26(a).monthly,color:a.color})));
+  $('c-eq').innerHTML='';BN.charts.line($('c-eq'),{title:'單筆 100 萬的成長曲線（對數刻度）',sub:(common?startYMD:S.window.start)+' 至 '+S.window.end+'，美元、含股息'+(common?'、月底資料（共同區間）':'、換倉成本 0.1%'),x:months,log:true,yfmt:v=>f.big(v*1e6),tipfmt:v=>f.big(v*1e6),series:eqSeries,note:'每往上一格，錢就多 10 倍。'+(!common&&ADDED.some(a=>w26(a).partial)?' 上市較晚的標的從第一個交易日起、以當時的 100 萬換算，起點不同。':'')});
   // 各區間
-  const per=[['BNASDAQ 年化',p=>p.fund,'var(--s-fund)'],['QQQ 年化',p=>p.qqq,'var(--s-qqq)'],['QLD 年化',p=>p.qld,'var(--s-qld)']].concat(ADDED.map(a=>[a.label,p=>(w26(a).periods||{})[p.name],a.color]));
-  let h='<div class="tblwrap"><table class="tbl"><caption>各區間年化報酬（終點 '+S.window.end+'；同資料、同成本）；粗體＝該區間最高</caption><thead><tr><th class=l>區間</th>'+per.map(x=>'<th>'+x[0]+'</th>').join('')+'<th>起點</th></tr></thead><tbody>';
-  S.periods.forEach(p=>{const vals=per.map(x=>x[1](p));const mx=Math.max(...vals.filter(v=>v!=null));h+='<tr><td class=l>'+p.name+'</td>'+vals.map(v=>v==null?'<td>—</td>':(v===mx?'<td><b>'+(v*100).toFixed(1)+'%</b></td>':'<td>'+(v*100).toFixed(1)+'%</td>')).join('')+'<td>'+p.start+'</td></tr>';});
+  const per=common?base.filter(b=>b[1]!=='shv').map(b=>[b[0]+' 年化',p=>RB.periodCagr(b[3],months,p.start,M1),b[2]]).concat(ADDED.filter(a=>AM[a.code]).map(a=>[a.label,p=>RB.periodCagr(w26(a).monthly,months,p.start,M1),a.color]))
+    :[['BNASDAQ 年化',p=>p.fund,'var(--s-fund)'],['QQQ 年化',p=>p.qqq,'var(--s-qqq)'],['QLD 年化',p=>p.qld,'var(--s-qld)']].concat(ADDED.map(a=>[a.label,p=>(w26(a).periods||{})[p.name],a.color]));
+  const periods=common?S.periods.filter(p=>p.start>=startYMD):S.periods;
+  let h='<div class="tblwrap"><table class="tbl"><caption>各區間年化報酬（終點 '+S.window.end+'；'+(common?'共同區間內、月底資料':'同資料、同成本')+'）；粗體＝該區間最高</caption><thead><tr><th class=l>區間</th>'+per.map(x=>'<th>'+x[0]+'</th>').join('')+'<th>起點</th></tr></thead><tbody>';
+  periods.forEach(p=>{const vals=per.map(x=>x[1](p));const mx=Math.max(...vals.filter(v=>v!=null));h+='<tr><td class=l>'+p.name+'</td>'+vals.map(v=>v==null?'<td>—</td>':(v===mx?'<td><b>'+(v*100).toFixed(1)+'%</b></td>':'<td>'+(v*100).toFixed(1)+'%</td>')).join('')+'<td>'+p.start+'</td></tr>';});
+  if(common&&!periods.length)h+='<tr><td colspan="'+(per.length+2)+'">共同區間比最短的「近 1 年」還短，沒有可比的區間。</td></tr>';
   $('t-per').innerHTML=h+'</tbody></table></div>';
-  $('c-per').innerHTML='';BN.charts.bars($('c-per'),{title:'各區間年化報酬',sub:'終點 '+S.window.end,groups:S.periods.map(p=>p.name),series:per.map(x=>({name:x[0].replace(' 年化',''),values:S.periods.map(p=>x[1](p)),color:x[2]})),yfmt:v=>(v*100).toFixed(0)+'%',valfmt:v=>(v*100).toFixed(1)+'%',tipfmt:v=>(v*100).toFixed(2)+'%'});
+  $('c-per').innerHTML='';if(periods.length)BN.charts.bars($('c-per'),{title:'各區間年化報酬',sub:'終點 '+S.window.end,groups:periods.map(p=>p.name),series:per.map(x=>({name:x[0].replace(' 年化',''),values:periods.map(p=>x[1](p)),color:x[2]})),yfmt:v=>(v*100).toFixed(0)+'%',valfmt:v=>(v*100).toFixed(1)+'%',tipfmt:v=>(v*100).toFixed(2)+'%'});
   // 年度
-  const cal=[['BNASDAQ',c=>c.fund,'var(--s-fund)'],['QQQ',c=>c.qqq,'var(--s-qqq)'],['QLD',c=>c.qld,'var(--s-qld)']].concat(ADDED.map(a=>[a.label,c=>{const v=(w26(a).annual||{})[String(c.y)];return v==null?null:v;},a.color]));
+  const calRows=common?(BM.fund?BM.fund.annual:[]):S.cal.map(c=>({y:c.y,label:c.y+(c.partial?'（至 '+endM+' 月底）':''),partial:c.partial}));
+  const annualOf=(m,y)=>{if(!m)return null;const r=m.annual.find(x=>x.y===y);return r?r.ret:null;};
+  const cal=common?base.filter(b=>b[1]!=='shv').map(b=>[b[0],y=>annualOf(BM[b[1]],y),b[2]]).concat(ADDED.filter(a=>AM[a.code]).map(a=>[a.label,y=>annualOf(AM[a.code],y),a.color]))
+    :[['BNASDAQ',y=>S.cal.find(c=>c.y===y).fund,'var(--s-fund)'],['QQQ',y=>S.cal.find(c=>c.y===y).qqq,'var(--s-qqq)'],['QLD',y=>S.cal.find(c=>c.y===y).qld,'var(--s-qld)']].concat(ADDED.map(a=>[a.label,y=>{const v=(w26(a).annual||{})[String(y)];return v==null?null:v;},a.color]));
   let t='<div class="tblwrap"><table class="tbl"><thead><tr><th class=l>年度</th>'+cal.map(x=>'<th>'+x[0]+'</th>').join('')+'<th>贏 QQQ</th></tr></thead><tbody>';
-  S.cal.forEach(c=>{t+='<tr><td class=l>'+c.y+(c.partial?'（至 '+endM+' 月底）':'')+'</td>'+cal.map(x=>cell(x[1](c))).join('')+'<td>'+(c.fund>c.qqq?'✓':'')+'</td></tr>';});
+  calRows.forEach(c=>{const fv=cal[0][1](c.y),qv=cal[1][1](c.y);t+='<tr><td class=l>'+c.label+'</td>'+cal.map(x=>cell(x[1](c.y))).join('')+'<td>'+(fv!=null&&qv!=null&&fv>qv?'✓':'')+'</td></tr>';});
   $('t-cal').innerHTML=t+'</tbody></table></div>';
-  $('c-cal').innerHTML='';BN.charts.bars($('c-cal'),{title:'年度報酬：BNASDAQ 與 QQQ'+(ADDED.length?'（＋你加入的標的）':''),sub:S.window.end.slice(0,4)+' 年只到 '+endM+' 月底',groups:S.cal.map(c=>String(c.y).slice(2)),series:[{name:'BNASDAQ',values:S.cal.map(c=>c.fund),color:'var(--s-fund)'},{name:'QQQ',values:S.cal.map(c=>c.qqq),color:'var(--s-qqq)'}].concat(ADDED.map(a=>({name:a.label,values:S.cal.map(c=>{const v=(w26(a).annual||{})[String(c.y)];return v==null?null:v;}),color:a.color}))),labels:false,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',height:300});
-  // 6 次大跌
-  let cr='<div class="tblwrap"><table class="tbl"><caption>6 次大跌期間（QQQ 高點到低點）的報酬；只存不投資一律 0%</caption><thead><tr><th class=l>大跌</th><th class=l>高點→低點</th><th class=l>長度</th><th>BNASDAQ</th><th>QQQ</th><th>QLD</th>'+ADDED.map(a=>'<th>'+a.label+'</th>').join('')+'<th>躲在 SHV 的資金比例</th></tr></thead><tbody>';
-  S.crises.forEach(c=>{cr+='<tr><td class=l>'+c.name+'</td><td class=l>'+c.peak+'→'+c.trough+'</td><td class=l>'+c.days+' 個交易日</td>'+cell(c.fund)+cell(c.qqq)+cell(c.qld)+ADDED.map(a=>cell((w26(a).crises||{})[c.name])).join('')+'<td>'+Math.round(c.shv_share*100)+'%</td></tr>';});
+  $('c-cal').innerHTML='';BN.charts.bars($('c-cal'),{title:'年度報酬：BNASDAQ 與 QQQ'+(ADDED.length?'（＋你加入的標的）':''),sub:S.window.end.slice(0,4)+' 年只到 '+endM+' 月底'+(common?'；共同區間第一年自 '+startYMD.slice(5,7)+' 月底起':''),groups:calRows.map(c=>String(c.y).slice(2)),series:[{name:'BNASDAQ',values:calRows.map(c=>cal[0][1](c.y)),color:'var(--s-fund)'},{name:'QQQ',values:calRows.map(c=>cal[1][1](c.y)),color:'var(--s-qqq)'}].concat(cal.slice(3).map(x=>({name:x[0],values:calRows.map(c=>x[1](c.y)),color:x[2]}))),labels:false,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',height:300});
+  // 6 次大跌（共同區間只列區間內的）
+  const crises=common?S.crises.filter(c=>c.peak>=startYMD):S.crises;
+  let cr='<div class="tblwrap"><table class="tbl"><caption>'+(common?'共同區間內的大跌':'6 次大跌')+'期間（QQQ 高點到低點）的報酬；只存不投資一律 0%</caption><thead><tr><th class=l>大跌</th><th class=l>高點→低點</th><th class=l>長度</th><th>BNASDAQ</th><th>QQQ</th><th>QLD</th>'+ADDED.map(a=>'<th>'+a.label+'</th>').join('')+'<th>躲在 SHV 的資金比例</th></tr></thead><tbody>';
+  crises.forEach(c=>{cr+='<tr><td class=l>'+c.name+'</td><td class=l>'+c.peak+'→'+c.trough+'</td><td class=l>'+c.days+' 個交易日</td>'+cell(c.fund)+cell(c.qqq)+cell(c.qld)+ADDED.map(a=>cell((w26(a).crises||{})[c.name])).join('')+'<td>'+Math.round(c.shv_share*100)+'%</td></tr>';});
+  if(common&&!crises.length)cr+='<tr><td colspan="'+(7+ADDED.length)+'">共同區間內沒有本站定義的大跌。</td></tr>';
   $('t-cr').innerHTML=cr+'</tbody></table></div>';
-  $('c-cr').innerHTML='';BN.charts.bars($('c-cr'),{title:'6 次大跌期間的報酬',sub:'QQQ 高點到低點；只存不投資一律 0%',groups:S.crises.map(c=>c.name),series:[{name:'BNASDAQ',values:S.crises.map(c=>c.fund),color:'var(--s-fund)'},{name:'QQQ',values:S.crises.map(c=>c.qqq),color:'var(--s-qqq)'},{name:'QLD',values:S.crises.map(c=>c.qld),color:'var(--s-qld)'}].concat(ADDED.map(a=>({name:a.label,values:S.crises.map(c=>(w26(a).crises||{})[c.name]),color:a.color}))),yfmt:v=>(v*100).toFixed(0)+'%',valfmt:v=>(v*100).toFixed(1)+'%',tipfmt:v=>(v*100).toFixed(1)+'%'});
-  // 最深跌幅（加入的標的）
-  $('t-dd').innerHTML=ADDED.length?'<div class="tblwrap"><table class="tbl"><caption>你加入的標的：'+S.window.start+' 起的最深跌幅（日收盤、含息、美元）</caption><thead><tr><th class=l>標的</th><th>最深跌幅</th><th class=l>高點 → 低點</th><th class=l>回到前高</th><th>回本要漲</th></tr></thead><tbody>'+
-    ADDED.map(a=>{const m=w26(a).mdd||{};return '<tr><td class=l>'+sw(a.color)+a.label+(noteOf(a)?' <small class="muted">（'+noteOf(a)+'）</small>':'')+'</td><td>'+(m.mdd!=null?(m.mdd*100).toFixed(1)+'%':'—')+'</td><td class=l>'+(m.peak||'—')+' → '+(m.trough||'—')+'</td><td class=l>'+(m.recover||'尚未')+'</td><td>'+(m.need!=null?m.need.toFixed(2)+' 倍':'—')+'</td></tr>';}).join('')+'</tbody><tfoot><tr><td colspan="5">對照：BNASDAQ '+(S.dd.fund.mdd*100).toFixed(1)+'%（回本 '+S.dd.fund.recover+'）、QQQ '+(S.dd.qqq.mdd*100).toFixed(1)+'%（'+S.dd.qqq.recover+'）、QLD '+(S.dd.qld.mdd*100).toFixed(1)+'%。</td></tr></tfoot></table></div>':'';
+  $('c-cr').innerHTML='';if(crises.length)BN.charts.bars($('c-cr'),{title:(common?'共同區間內的大跌':'6 次大跌')+'期間的報酬',sub:'QQQ 高點到低點；只存不投資一律 0%',groups:crises.map(c=>c.name),series:[{name:'BNASDAQ',values:crises.map(c=>c.fund),color:'var(--s-fund)'},{name:'QQQ',values:crises.map(c=>c.qqq),color:'var(--s-qqq)'},{name:'QLD',values:crises.map(c=>c.qld),color:'var(--s-qld)'}].concat(ADDED.map(a=>({name:a.label,values:crises.map(c=>(w26(a).crises||{})[c.name]),color:a.color}))),yfmt:v=>(v*100).toFixed(0)+'%',valfmt:v=>(v*100).toFixed(1)+'%',tipfmt:v=>(v*100).toFixed(1)+'%'});
+  // 最深跌幅
+  $('c-dd').style.display=common?'none':'';
+  if(common){
+    const rows=base.map(b=>({label:b[0],color:b[2],m:BM[b[1]].mdd})).concat(ADDED.filter(a=>AM[a.code]).map(a=>({label:a.label,color:a.color,m:AM[a.code].mdd}))).sort((x,y)=>x.m.mdd-y.m.mdd);
+    $('t-dd').innerHTML='<div class="tblwrap"><table class="tbl"><caption>共同區間 '+startYMD+' 起的最深跌幅（月底收盤、含息、美元）</caption><thead><tr><th class=l>標的</th><th>最深跌幅</th><th class=l>高點 → 低點</th><th>回本要漲</th></tr></thead><tbody>'+rows.map(r=>'<tr><td class=l>'+sw(r.color)+r.label+'</td><td>'+(r.m.mdd*100).toFixed(1)+'%</td><td class=l>'+(r.m.peak||'—')+' → '+(r.m.trough||'—')+'</td><td>'+(r.m.need!=null?r.m.need.toFixed(2)+' 倍':'—')+'</td></tr>').join('')+'</tbody><tfoot><tr><td colspan="4">月底資料算出的跌幅會比日資料淺；全期（2000 年起）的日資料水位圖請移除加入的標的後查看。</td></tr></tfoot></table></div>';
+  }else{
+    $('t-dd').innerHTML=ADDED.length?'<div class="tblwrap"><table class="tbl"><caption>你加入的標的：'+S.window.start+' 起的最深跌幅（日收盤、含息、美元）</caption><thead><tr><th class=l>標的</th><th>最深跌幅</th><th class=l>高點 → 低點</th><th class=l>回到前高</th><th>回本要漲</th></tr></thead><tbody>'+
+      ADDED.map(a=>{const m=w26(a).mdd||{};return '<tr><td class=l>'+sw(a.color)+a.label+(noteOf(a)?' <small class="muted">（'+noteOf(a)+'）</small>':'')+'</td><td>'+(m.mdd!=null?(m.mdd*100).toFixed(1)+'%':'—')+'</td><td class=l>'+(m.peak||'—')+' → '+(m.trough||'—')+'</td><td class=l>'+(m.recover||'尚未')+'</td><td>'+(m.need!=null?m.need.toFixed(2)+' 倍':'—')+'</td></tr>';}).join('')+'</tbody><tfoot><tr><td colspan="5">對照：BNASDAQ '+(S.dd.fund.mdd*100).toFixed(1)+'%（回本 '+S.dd.fund.recover+'）、QQQ '+(S.dd.qqq.mdd*100).toFixed(1)+'%（'+S.dd.qqq.recover+'）、QLD '+(S.dd.qld.mdd*100).toFixed(1)+'%。</td></tr></tfoot></table></div>':'';
+  }
 }
 const q=S.qld_avg_month;BN.charts.bars($('c-avg'),{title:'BNASDAQ 在三種狀態時，QLD 當月平均報酬',sub:'全力抱 QLD '+q['1.0'].n+' 個月／只留一半 '+q['0.5'].n+' 個月／完全躲掉 '+q['0.0'].n+' 個月',groups:['全力抱 QLD','只留一半','完全躲掉'],series:[{name:'QLD 當月平均',values:[q['1.0'].mean,q['0.5'].mean,q['0.0'].mean],color:'var(--s-qld)'}],yfmt:v=>(v*100).toFixed(0)+'%',valfmt:v=>(v*100).toFixed(1)+'%',tipfmt:v=>(v*100).toFixed(2)+'%',height:240});
 const ds=S.dd_series;BN.charts.line($('c-dd'),{title:'回撤水位圖：距離前高還差多少',sub:'0% 代表創新高；愈低代表跌得愈深',x:ds.d,xLabel:s=>s,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',zero:true,yMax:0.02,series:[{name:'BNASDAQ',values:ds.fund,color:'var(--s-fund)',fill:true},{name:'QQQ',values:ds.qqq,color:'var(--s-qqq)'},{name:'QLD',values:ds.qld,color:'var(--s-qld)'}],noEndLabels:true,note:'BNASDAQ 最深 '+(ds.mins.fund[1]*100).toFixed(1)+'%（'+ds.mins.fund[0]+'）、QQQ '+(ds.mins.qqq[1]*100).toFixed(1)+'%（'+ds.mins.qqq[0]+'）、QLD '+(ds.mins.qld[1]*100).toFixed(1)+'%（'+ds.mins.qld[0]+'）'});
