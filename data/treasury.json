@@ -1,1 +1,1 @@
-{"schema":"bnasdaq-treasury/1","asof":null,"source":null,"updated":null,"unit":"% 年化（par yield）","tenors":{},"note":"尚未抓取；GitHub Actions 每個交易日自動更新。"}
+{"schema":"bnasdaq-treasury/1","asof":"2026-10-28","source":"美國財政部 Daily Treasury Par Yield Curve","updated":"2026-10-29T02:43:01Z","unit":"% 年化（par yield）","tenors":{"1m":4.07,"2m":4.16,"3m":4.18,"4m":4.22,"6m":4.32,"1y":4.47,"2y":4.67,"3y":4.8,"5y":4.85,"7y":4.95,"10y":5.05,"20y":5.41,"30y":5.37},"note":"公開市場資料（美國公債殖利率），供估值試算器折現用；不含任何策略規則。"}
