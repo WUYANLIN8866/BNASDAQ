@@ -281,7 +281,9 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 
 /* ---------- footer ---------- */
 footer { background: var(--navy); color: rgba(255,255,255,.85); margin-top: 40px; font-size: 14px; }
-footer .wrap { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; padding: 34px 16px 28px; }
+footer .wrap { display: block; padding: 30px 16px 32px; }
+footer .disc p { max-width: 78ch; font-size: 14px; line-height: 1.8; margin: 0 0 10px; color: rgba(255,255,255,.85); }
+footer .disc .more { font-size: 13px; margin: 0; }
 footer h4 { color: #fff; font-family: var(--sans); font-size: 14px; margin: 0 0 10px; letter-spacing: .04em; }
 footer ul { list-style: none; margin: 0; padding: 0; }
 footer li { margin-bottom: 6px; }
