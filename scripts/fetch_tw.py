@@ -137,8 +137,29 @@ def _at_or_before(rows, d):
     return lo - 1
 
 
+def clean_adj(rows):
+    """修掉 Yahoo 還原收盤在分割／除權邊界常見的錯誤：某一天還原序列暴跌或暴漲（|還原日報酬| > 50%），
+    但原始收盤當天幾乎沒動（在 0.7～1.4 之間）→ 這天之前的還原值整段乘上修正倍率，使還原日報酬等於原始日報酬。
+    台股有 10% 漲跌幅限制，真正的還原日報酬不可能超過 ±50%；真正的分割是原始收盤跳、還原值不跳，不會被誤判。
+    回傳 (new_rows, fixes)；fixes 為修正日期與倍率清單。"""
+    rows = [list(r) for r in rows]
+    fixes = []
+    for i in range(len(rows) - 1, 0, -1):
+        d, c, a = rows[i]; d0, c0, a0 = rows[i - 1]
+        if c0 <= 0 or a0 <= 0:
+            continue
+        r_adj, r_close = a / a0, c / c0
+        if (r_adj < 0.5 or r_adj > 2.0) and 0.7 <= r_close <= 1.4:
+            k = r_adj / r_close            # 之前的還原值要乘上 k
+            for j in range(i):
+                rows[j][2] *= k
+            fixes.append((d.isoformat(), round(k, 6)))
+    return [tuple(r) for r in rows], fixes
+
+
 def compute(rows, start, end, crises):
     """rows: [(date, close, adj)] sorted. start/end: date. crises: [{name,peak,trough}]"""
+    rows, fixes = clean_adj(rows)
     rows = [r for r in rows if r[0] <= end]
     if len(rows) < 20:
         raise RuntimeError(f'too few rows ({len(rows)})')
@@ -199,7 +220,7 @@ def compute(rows, start, end, crises):
                 years=round(years, 4), lump=round(lump, 0), cagr=round(cagr, 6), annual={k: (None if v is None else round(v, 6)) for k, v in annual.items()},
                 mdd=dict(mdd=round(mdd, 6), peak=peak_d.isoformat() if peak_d else None, trough=trough_d.isoformat() if trough_d else None, need=round(need, 4) if need else None),
                 crises={k: (None if v is None else round(v, 6)) for k, v in cr.items()}, monthly=monthly,
-                last_close=rows[i1][1], n_days=i1 - i0 + 1)
+                last_close=rows[i1][1], n_days=i1 - i0 + 1, adj_fixes=fixes)
 
 
 # ------------------------------------------------------------------ main
