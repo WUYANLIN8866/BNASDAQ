@@ -370,6 +370,10 @@ def main():
         except Exception as e:  # noqa
             errors[code] = dict(error='compute: ' + repr(e), when=today); failed += 1
             log('FAIL compute', code, repr(e)); continue
+        if code in BASE_CODES:   # 口徑核對用：原始日資料（含 Yahoo 分割事件）
+            json.dump(dict(code=code, splits=[[d.isoformat(), f] for d, f in splits],
+                           rows=[[r[0].isoformat(), round(r[1], 4), round(r[2], 5)] for r in rows if r[0] <= end]),
+                      open(os.path.join(OUT_DIR, f'_debug_{code}.json'), 'w', encoding='utf-8'), separators=(',', ':'))
         out = dict(schema='bnasdaq-tw/1', code=code, name=rec[1] if rec[1] != code else '', market=used_market,
                    listed=rec[3] or None, window=[start.isoformat(), end.isoformat()], updated=today,
                    source='Yahoo Finance 還原收盤（含息、分割還原），台幣', **m)
