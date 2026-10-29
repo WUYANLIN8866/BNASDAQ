@@ -28,8 +28,8 @@
   <div class="panel" id="dcaadd">
     <form class="form" id="dcaform" onsubmit="return false" novalidate style="max-width:none">
       <div class="row2" style="grid-template-columns:220px 1fr auto;align-items:end">
-        <div class="field"><label for="dcaamt">每月投入（元）</label><input id="dcaamt" type="number" inputmode="numeric" min="100" step="100" value="10000"><div class="help">全頁的定期定額與退休金試算都跟著改</div></div>
-        <div class="field"><label for="dcacode">加入台股或美股一起定期定額（輸入代號）</label><input id="dcacode" list="dcalist" autocomplete="off" inputmode="text" placeholder="例：2330、0050、NVDA、SPY"><datalist id="dcalist"></datalist><div class="help">同一段 26 年、美元計、含息、每次扣款成本 0.1%（台股以每日匯率換算成美元）；上市較晚的自第一個有資料的月底開始扣款並標註。</div></div>
+        <div class="field"><label for="dcaamt">每月投入（元）</label><input id="dcaamt" type="number" inputmode="numeric" min="100" step="100" value="10000"></div>
+        <div class="field"><label for="dcacode">加入台股或美股一起定期定額（輸入代號）</label><input id="dcacode" list="dcalist" autocomplete="off" inputmode="text" placeholder="例：2330、0050、NVDA、SPY"><datalist id="dcalist"></datalist></div>
         <div class="field"><button type="submit" class="btn primary" id="dcabtn">加入比較</button></div>
       </div>
     </form>
