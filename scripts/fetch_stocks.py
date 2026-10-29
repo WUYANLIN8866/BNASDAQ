@@ -101,42 +101,90 @@ def _cells(row_html):
 
 
 def parse_wiki_table(html_text, sym_col, name_col, must_header):
-    """找第一個表頭含 must_header 的表格，回傳 [(symbol, name)]"""
+    """找表頭含 must_header 的 wikitable；欄位先用表頭文字自動辨認（Symbol／Ticker、Security／Company），
+    辨認不到才用 sym_col／name_col。回傳 [(symbol, name)]。"""
     out = []
     for tbl in re.findall(r'<table[^>]*>.*?</table>', html_text, re.S):
         if must_header not in tbl:
             continue
-        for tr in re.findall(r'<tr>.*?</tr>', tbl, re.S):
+        rows = re.findall(r'<tr[^>]*>.*?</tr>', tbl, re.S)
+        sc, nc = sym_col, name_col
+        for tr in rows:
+            ths = [TAG_RE.sub('', h).replace('&amp;', '&').strip() for h in re.findall(r'<th[^>]*>(.*?)</th>', tr, re.S)]
+            if len(ths) >= 2:
+                for k, h in enumerate(ths):
+                    hl = h.lower()
+                    if hl.startswith('symbol') or hl.startswith('ticker'):
+                        sc = k
+                    elif hl.startswith('security') or hl.startswith('company'):
+                        nc = k
+                break
+        for tr in rows:
             cells = _cells(tr)
-            if len(cells) <= max(sym_col, name_col):
+            if len(cells) <= max(sc, nc):
                 continue
-            sym = cells[sym_col].strip().upper().replace('.', '-')
+            sym = cells[sc].strip().upper().replace('.', '-')
             if re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', sym):
-                out.append((sym, cells[name_col].strip()))
-        if out:
+                out.append((sym, cells[nc].strip()))
+        if len(out) >= 50:
             break
+        out = []
     return out
 
 
-def fetch_universe_us():
+# Nasdaq-100 成分（2026 年中；只在線上來源都失敗時當備援，抓不到的代號會被 Yahoo 404 自動略過）
+NDX_FALLBACK = ['AAPL', 'MSFT', 'NVDA', 'AMZN', 'META', 'AVGO', 'GOOGL', 'GOOG', 'TSLA', 'COST', 'NFLX', 'TMUS', 'ASML', 'CSCO', 'AZN',
+                'LIN', 'PLTR', 'ISRG', 'AMD', 'PEP', 'INTU', 'ADBE', 'BKNG', 'QCOM', 'TXN', 'AMGN', 'AMAT', 'HON', 'CMCSA', 'ARM', 'GILD',
+                'PANW', 'ADP', 'VRTX', 'MU', 'APP', 'SBUX', 'MELI', 'ADI', 'LRCX', 'KLAC', 'INTC', 'CRWD', 'MSTR', 'PDD', 'CTAS', 'CEG',
+                'MDLZ', 'CDNS', 'SNPS', 'ORLY', 'MAR', 'FTNT', 'DASH', 'REGN', 'MRVL', 'CSX', 'PYPL', 'ADSK', 'ROP', 'WDAY', 'PCAR', 'ABNB',
+                'CHTR', 'TTD', 'NXPI', 'CPRT', 'MNST', 'AEP', 'PAYX', 'FAST', 'ROST', 'KDP', 'AXON', 'EXC', 'DDOG', 'CCEP', 'FANG', 'BKR',
+                'VRSK', 'XEL', 'EA', 'TEAM', 'CTSH', 'IDXX', 'TTWO', 'ZS', 'LULU', 'KHC', 'ODFL', 'GEHC', 'CSGP', 'DXCM', 'WBD', 'MCHP',
+                'ON', 'CDW', 'GFS', 'BIIB', 'TSCO', 'SHOP', 'ALNY', 'INSM', 'STX', 'WDC', 'ANSS', 'ILMN', 'MRNA', 'ARGX', 'CRSP']
+
+
+def fetch_universe_us(report=None):
+    """美股 universe：S&P 500（GitHub datasets CSV → 維基備援）＋ Nasdaq-100（維基 → 內建備援）＋常見 ETF／熱門個股。
+    report（dict）會記錄每個來源抓到幾檔、失敗原因，給 --universe-check 用。"""
     names = {}
+    rep = report if report is not None else {}
+    # S&P 500：datasets/s-and-p-500-companies（CSV：Symbol,Security,...）
     try:
-        t = _get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', timeout=60).decode('utf-8', errors='replace')
-        for s, n in parse_wiki_table(t, 0, 1, 'Symbol'):
-            names.setdefault(s, n)
-        log('wiki sp500', len(names))
+        raw = _get('https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv', timeout=60).decode('utf-8', errors='replace')
+        n0 = len(names)
+        for rec in csv.DictReader(io.StringIO(raw)):
+            sym = (rec.get('Symbol') or '').strip().upper().replace('.', '-')
+            if re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', sym):
+                names.setdefault(sym, (rec.get('Security') or '').strip())
+        rep['sp500_csv'] = len(names) - n0; log('sp500 csv', len(names) - n0)
     except Exception as e:  # noqa
-        log('wiki sp500 failed:', repr(e))
+        rep['sp500_csv'] = 'FAIL ' + repr(e)[:160]; log('sp500 csv failed:', repr(e))
+    if len(names) < 400:
+        try:
+            t = _get('https://en.wikipedia.org/wiki/List_of_S%26P_500_companies', timeout=60).decode('utf-8', errors='replace')
+            n0 = len(names)
+            for s, n in parse_wiki_table(t, 0, 1, 'Symbol'):
+                names.setdefault(s, n)
+            rep['sp500_wiki'] = len(names) - n0; log('wiki sp500 +', len(names) - n0)
+        except Exception as e:  # noqa
+            rep['sp500_wiki'] = 'FAIL ' + repr(e)[:160]; log('wiki sp500 failed:', repr(e))
+    # Nasdaq-100：維基 Components 表（Company / Ticker）
+    got_ndx = 0
     try:
         t = _get('https://en.wikipedia.org/wiki/Nasdaq-100', timeout=60).decode('utf-8', errors='replace')
-        n0 = len(names)
-        for s, n in parse_wiki_table(t, 1, 0, 'Ticker'):
+        pairs = parse_wiki_table(t, 1, 0, 'Ticker')
+        for s, n in pairs:
             names.setdefault(s, n)
-        log('wiki ndx100 +', len(names) - n0)
+        got_ndx = len(pairs); rep['ndx_wiki'] = got_ndx; log('wiki ndx100', got_ndx)
     except Exception as e:  # noqa
-        log('wiki ndx100 failed:', repr(e))
+        rep['ndx_wiki'] = 'FAIL ' + repr(e)[:160]; log('wiki ndx100 failed:', repr(e))
+    if got_ndx < 80:
+        n0 = len(names)
+        for s in NDX_FALLBACK:
+            names.setdefault(s, '')
+        rep['ndx_fallback'] = len(names) - n0; log('ndx fallback +', len(names) - n0)
     for s in US_ETFS + US_EXTRA:
         names.setdefault(s, '')
+    rep['us_total'] = len(names)
     return [(s, n, 'US', '') for s, n in sorted(names.items())]
 
 
@@ -446,8 +494,20 @@ def main():
     ap.add_argument('--force', action='store_true')
     ap.add_argument('--budget-sec', type=int, default=19000)
     ap.add_argument('--sleep', type=float, default=0.4)
+    ap.add_argument('--universe-check', action='store_true', help='只抓 universe，寫 data/tw/_universe_check.json 後結束')
     args = ap.parse_args()
     os.makedirs(OUT_DIR, exist_ok=True)
+    if args.universe_check:
+        rep = dict(when=dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds'))
+        try:
+            tw = fetch_universe_tw(); rep['tw_total'] = len(tw); rep['tw_sample'] = [list(x) for x in tw[:5]]
+        except Exception as e:  # noqa
+            rep['tw_total'] = 'FAIL ' + repr(e)[:200]
+        us = fetch_universe_us(report=rep); rep['us_sample'] = [list(x) for x in us[:5]]
+        rep['us_named'] = sum(1 for x in us if x[1])
+        json.dump(rep, open(os.path.join(OUT_DIR, '_universe_check.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+        log('universe check', rep)
+        return 0
     site = load_site()
     end13 = site['six']['window'][1]
     log('windows', site['six']['window'], [site['window']['start'], site['window']['end']])

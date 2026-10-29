@@ -11,6 +11,10 @@ on:
         description: '全部重抓（true/false）'
         required: false
         default: 'false'
+      mode:
+        description: 'fetch（預設）或 universe-check（只檢查代號清單來源，不抓價格）'
+        required: false
+        default: 'fetch'
   schedule:
     # 每月 2 日 02:00 UTC（台北 10:00）：對比期末隨 data.js 更新後重算
     - cron: '0 2 2 * *'
@@ -37,7 +41,9 @@ jobs:
 
       - name: Fetch Taiwan stock data (Yahoo Finance adjusted close)
         run: |
-          if [ -n "${{ github.event.inputs.codes }}" ]; then
+          if [ "${{ github.event.inputs.mode }}" = "universe-check" ]; then
+            python3 scripts/fetch_stocks.py --universe-check
+          elif [ -n "${{ github.event.inputs.codes }}" ]; then
             python3 scripts/fetch_stocks.py --codes "${{ github.event.inputs.codes }}" $([ "${{ github.event.inputs.force }}" = "true" ] && echo --force)
           else
             python3 scripts/fetch_stocks.py --all --budget-sec 19000 $([ "${{ github.event.inputs.force }}" = "true" ] && echo --force)
