@@ -174,6 +174,39 @@ def clean_raw(rows, splits):
     return [tuple(r) for r in rows], fixes
 
 
+def clean_div(rows, factors):
+    """Yahoo 的除息還原偶爾把「分割前單位」的股息套在「分割後單位」的價格上（例 0050 2014-10 把 1.55 元套在 ÷4 後的 16 元價格，
+    變成 9.4% 的除息還原，實際只有 2.3%）。偵測：某天還原報酬÷原始報酬換算出的「股息率」> 6%，但當天原始收盤只跌不到
+    該股息率 − 6.5pp（除息日參考價會直接扣掉股息，原始收盤理應跌差不多）；若股息率乘上某個分割倍率（0.5／0.25／0.2／0.1
+    或 clean_raw 用過的倍率）後與當天實際跌幅相差 ≤ 1.5pp，就改用那個數字重算之前的還原值。"""
+    rows = [list(r) for r in rows]
+    cands = set([0.5, 0.25, 0.2, 0.1]) | set(f for f in factors if 0 < f < 1)
+    fixes = []
+    for i in range(len(rows) - 1, 0, -1):
+        d, c, a = rows[i]; d0, c0, a0 = rows[i - 1]
+        if c0 <= 0 or a0 <= 0 or c <= 0:
+            continue
+        q = (a / a0) / (c / c0)
+        if q <= 1:
+            continue
+        d_claim = 1 - 1 / q
+        observed = 1 - c / c0
+        if d_claim < 0.06 or d_claim - observed < 0.065:
+            continue
+        best = None
+        for f in cands:
+            dn = d_claim * f
+            if abs(dn - observed) <= 0.015 and (best is None or abs(dn - observed) < abs(best - observed)):
+                best = dn
+        if best is None:
+            continue
+        k = (1 - best) / (1 - d_claim)
+        for j in range(i):
+            rows[j][2] *= k
+        fixes.append(('div', d.isoformat(), round(d_claim, 4), round(best, 4)))
+    return [tuple(r) for r in rows], fixes
+
+
 def clean_adj(rows):
     """修掉 Yahoo 還原收盤在分割／除權邊界常見的錯誤：某一天還原序列暴跌或暴漲（|還原日報酬| > 50%），
     但原始收盤當天幾乎沒動（在 0.7～1.4 之間）→ 這天之前的還原值整段乘上修正倍率，使還原日報酬等於原始日報酬。
@@ -199,7 +232,8 @@ def compute(rows, start, end, crises, splits=()):
     raw_rows = rows
     rows, fixes_raw = clean_raw(rows, list(splits))
     rows, fixes = clean_adj(rows)
-    fixes = fixes_raw + [('adj',) + f for f in fixes]
+    rows, fixes_div = clean_div(rows, [f[2] for f in fixes_raw] + [f for _, f in splits])
+    fixes = fixes_raw + [('adj',) + f for f in fixes] + fixes_div
     rows = [r for r in rows if r[0] <= end]
     k0 = _at_or_before(raw_rows, start)
     boundary = [[r[0].isoformat(), round(r[1], 3), round(r[2], 4)] for r in raw_rows[max(0, k0 - 3):k0 + 4]]
