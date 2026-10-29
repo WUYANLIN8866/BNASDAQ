@@ -1,5 +1,5 @@
 {
- "when": "2026-10-29T07:29:54+00:00",
+ "when": "2026-10-29T07:43:39+00:00",
  "tw_total": 2317,
  "tw_sample": [
   [
@@ -34,9 +34,9 @@
   ]
  ],
  "sp500_csv": 503,
- "ndx_wiki": 0,
- "ndx_fallback": 19,
- "us_total": 646,
+ "ndx_invesco": 0,
+ "ndx_nasdaq_api": 101,
+ "us_total": 644,
  "us_sample": [
   [
    "A",
@@ -69,5 +69,5 @@
    ""
   ]
  ],
- "us_named": 503
+ "us_named": 518
 }
