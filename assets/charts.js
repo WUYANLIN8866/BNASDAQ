@@ -63,7 +63,11 @@
     (o.marks || []).forEach(m => { const x = xOf(m.i), y = yOf(m.v); el('circle', { cx: x, cy: y, r: 5, fill: 'var(--paper)', stroke: m.color || 'var(--ink)', 'stroke-width': 2 }, svg); if (m.label) text(svg, x + (m.dx || 8), y + (m.dy || -8), m.label, { class: 'viz-txt', 'font-weight': 600 }); });
     hover(svg, pad, W, H, xOf, n, (i, cx, cy) => {
       let h = '<b>' + (o.xLabel ? o.xLabel(o.x[i]) : o.x[i]) + '</b>';
-      o.series.forEach((s, k) => { const v = s.values[i]; if (v == null) { dots[k].style.display = 'none'; return; } dots[k].setAttribute('cx', xOf(i)); dots[k].setAttribute('cy', yOf(v)); dots[k].style.display = ''; h += '<br><span style="color:' + s.color + '">●</span> ' + s.name + '：' + (o.tipfmt || yfmt)(v); });
+      const items = o.series.map((s, k) => ({ s, k, v: s.values[i] }));
+      items.forEach(({ k, v }) => { if (v == null || !isFinite(v)) { dots[k].style.display = 'none'; return; } dots[k].setAttribute('cx', xOf(i)); dots[k].setAttribute('cy', yOf(v)); dots[k].style.display = ''; });
+      // 提示框依該點數值由高到低排列（tipSort:false 可改回序列順序）
+      const order = o.tipSort === false ? items : items.slice().sort((a, b) => ((b.v == null || !isFinite(b.v)) ? -Infinity : b.v) - ((a.v == null || !isFinite(a.v)) ? -Infinity : a.v));
+      order.forEach(({ s, v }) => { if (v == null || !isFinite(v)) return; h += '<br><span style="color:' + s.color + '">●</span> ' + s.name + '：' + (o.tipfmt || yfmt)(v); });
       BN.tip.show(h, cx, cy);
     }, () => dots.forEach(d => d.style.display = 'none'));
     return svg;
