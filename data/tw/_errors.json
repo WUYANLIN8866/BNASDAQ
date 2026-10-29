@@ -22,5 +22,9 @@
 "SPLG": {
 "error": "RuntimeError('yahoo 404 (no such symbol)')",
 "when": "2026-10-29"
+},
+"VYLR": {
+"error": "<HTTPError 400: 'Bad Request'>",
+"when": "2026-10-29"
 }
 }
