@@ -45,6 +45,9 @@ def roc_to_iso(s):
     return s
 
 
+RWD_NOTE = []
+
+
 def fetch_twse():
     """先用 rwd 端點（含日期），失敗或沒資料再用 OpenAPI（日期取自 MI_INDEX）。"""
     try:
@@ -65,17 +68,19 @@ def fetch_twse():
                     continue
             if items:
                 return date, items
-        log('twse rwd: no rows (stat=%s)' % j.get('stat'))
+        log('twse rwd: no rows (stat=%s)' % j.get('stat')); RWD_NOTE.append('rwd stat=%s' % j.get('stat'))
     except Exception as e:  # noqa
-        log('twse rwd failed:', repr(e))
+        log('twse rwd failed:', repr(e)); RWD_NOTE.append('rwd ' + repr(e)[:200])
     j = _get_json('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL')
     date = ''
-    try:
-        mi = _get_json('https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX')
-        if mi and isinstance(mi, list) and mi[0].get('Date'):
-            date = roc_to_iso(mi[0]['Date'])
+    try:   # 日期：FMTQIK（每日市場成交資訊）最後一列的 Date 就是最近一個有收盤資料的交易日
+        fm = _get_json('https://openapi.twse.com.tw/v1/exchangeReport/FMTQIK')
+        if fm and isinstance(fm, list):
+            ds = [roc_to_iso(r.get('Date', '')) for r in fm if r.get('Date')]
+            if ds:
+                date = max(ds)
     except Exception as e:  # noqa
-        log('twse MI_INDEX failed:', repr(e))
+        log('twse FMTQIK failed:', repr(e))
     items = {}
     for r in j:
         code = str(r.get('Code', '')).strip(); close = _num(r.get('ClosingPrice')); chg = _num(r.get('Change'))
@@ -137,11 +142,15 @@ def main():
                 items.update({k: v for k, v in old.get('items', {}).items() if (v[3] if len(v) > 3 else None) == name})
     if not items:
         log('nothing fetched; keeping existing'); return 1
+    if 'TW' in asof and not asof['TW']:
+        now_tpe = dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
+        asof['TW'] = asof.get('TWO') or (now_tpe.date().isoformat() if now_tpe.hour * 60 + now_tpe.minute >= 14 * 60 + 30 else '')
+        RWD_NOTE.append('TW date fallback=' + asof['TW'])
     # 日期沒前進就不覆蓋
     if old and old.get('asof') and set(asof) == set(old['asof']) and all(asof.get(k, '') <= old['asof'].get(k, '') for k in asof) and old.get('items'):
         log('no newer date than existing', old['asof'], '; not rewriting'); return 0
     out = dict(schema='bnasdaq-tw-latest/1', asof=asof, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               source='證交所 STOCK_DAY_ALL（上市）、櫃買中心 OpenAPI（上櫃）', errors=errors, items=items)
+               source='證交所 STOCK_DAY_ALL（上市）、櫃買中心 OpenAPI（上櫃）', errors=errors, notes=RWD_NOTE, items=items)
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     log('written', OUT, asof, len(items), 'items')
     return 0
