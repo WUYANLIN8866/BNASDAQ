@@ -9,8 +9,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261029g">
-<script src="assets/site.js?v=20261029g"></script><script src="assets/data.js?v=20261029g"></script><script src="assets/charts.js?v=20261029g"></script>
+<link rel="stylesheet" href="assets/site.css?v=20261029h">
+<script src="assets/site.js?v=20261029h"></script><script src="assets/data.js?v=20261029h"></script><script src="assets/charts.js?v=20261029h"></script>
 
 </head>
 <body>
@@ -28,13 +28,14 @@
   <div class="panel" id="twadd">
     <form class="form" id="twform" onsubmit="return false" style="max-width:none">
       <div class="row2" style="grid-template-columns:1fr auto;align-items:end">
-        <div class="field"><label for="twcode">加入其他台股一起比（輸入代號）</label><input id="twcode" list="twlist" autocomplete="off" inputmode="text" placeholder="例：2454、0056、00631L"><datalist id="twlist"></datalist><div class="help">上市、上櫃股票與 ETF 都可以；輸入後會直接加進下面每一張表和圖，同一段期間、同樣台幣含息。</div></div>
+        <div class="field"><label for="twcode">加入其他台股一起比（輸入代號）</label><input id="twcode" list="twlist" autocomplete="off" inputmode="text" placeholder="例：2454、0056、00631L"><datalist id="twlist"></datalist><div class="help">上市、上櫃股票與 ETF 都可以；輸入後會直接加進下面每一張表和圖，同一段期間、同樣台幣含息。最新收盤每個交易日收盤後自動更新。</div></div>
         <div class="field"><button type="submit" class="btn primary" id="twbtn">加入比較</button></div>
       </div>
     </form>
     <div id="twmsg"></div>
     <div id="twchips" class="chips"></div>
   </div>
+  <div id="t-latest"></div>
 
   <h2 id="lump">各放 100 萬台幣，抱 12.7 年</h2>
   <p>從 2013-12-31 各放 100 萬台幣，抱到 2026-09-30，全部換算成台幣、含股息（美元部位用 29.95 買進、31.852 換回）：</p>
@@ -71,7 +72,7 @@ const cell=v=>v==null?'<td>—</td>':'<td><span class="'+(v>=0?'pos':'neg')+'">'
 const sw=c=>'<span class="sw" style="background:'+c+'"></span>';
 const BASE_CODES={'0050':'0050','2330':'台積電 2330'};
 let ADDED=[];   // {code,name,data,color}
-let INDEX=null;
+let INDEX=null,LATEST=null,MKT=null,BASEJ={};   // latest.json、market.json、0050／2330 的 tw 檔
 
 // ---------- 基礎六種做法（來自 data.js，與原靜態表同一組數字） ----------
 function baseLump(){return S.six.order.map(k=>({key:k,name:nm[k],value:S.six.lump[k],cagr:S.six.cagr[k],color:col[k],hl:k==='fund'}));}
@@ -110,6 +111,7 @@ function render(){
   CR.forEach(cr=>{const t=CTW[cr.name]||{};c+='<tr><td class=l>'+cr.name+'</td><td class=l>'+cr.peak+'→'+cr.trough+'</td>'+cell(cr.fund)+cell(cr.qqq)+cell(cr.qld)+cell(t.tw?t.tw.ret:null)+cell(t.tsmc?t.tsmc.ret:null)+ADDED.map(a=>cell(a.data.crises[cr.name])).join('')+'</tr>';});
   c+='</tbody></table></div>';
   $('t-cr').innerHTML=c;
+  renderLatest();
   // 來源說明、標題、晶片、網址
   $('twsrc').textContent=ADDED.length?'你加入的台股（'+ADDED.map(a=>a.label).join('、')+'）：Yahoo Finance 還原收盤（股息再投入、分割還原）、台幣；資料到 '+ADDED.map(a=>a.data.end_used).sort().pop()+'，每月自動更新。0050 與台積電原本兩列用證交所資料。':'';
   document.querySelector('.pagehead h1').textContent='台股對比：0050、台積電'+(ADDED.length?'、'+ADDED.map(a=>a.name||a.code).join('、'):'');
@@ -118,6 +120,28 @@ function render(){
   const url=new URL(location.href);url.hash=ADDED.length?'add='+ADDED.map(a=>a.code).join(','):'';history.replaceState(null,'',url.pathname+url.search+(url.hash||''));
 }
 
+// ---------- 最新行情（每個交易日收盤後自動更新） ----------
+function renderLatest(){
+  const host=$('t-latest');if(!host)return;
+  if(!LATEST||!LATEST.items||!Object.keys(LATEST.items).length){host.innerHTML='';return;}
+  const rows=[];
+  const push=(name,color,code,lastClose,endUsed,lump,note)=>{const it=LATEST.items[code];if(!it||!lastClose)return;const pct=it[0]/lastClose-1;const mk=(INDEX&&(INDEX.list||[]).find(x=>x[0]===code)||[])[2]||'TW';rows.push({name,color,close:it[0],chg:it[1],date:LATEST.asof[mk]||LATEST.asof.TW||'',pct,lumpNow:lump!=null?lump*(1+pct):null,note});};
+  ADDED.forEach(a=>push(a.label,a.color,a.code,a.data.last_close,a.data.end_used,a.data.lump,''));
+  if(BASEJ['0050'])push('0050','var(--s-tw)','0050',BASEJ['0050'].last_close,BASEJ['0050'].end_used,S.six.lump.tw,'');
+  if(BASEJ['2330'])push('台積電 2330','var(--s-tsmc)','2330',BASEJ['2330'].last_close,BASEJ['2330'].end_used,S.six.lump.tsmc,'');
+  if(MKT&&MKT.current&&MKT.months&&MKT.months.length){const m0=MKT.months[MKT.months.length-1];const pct=MKT.current.U/m0.U-1;rows.push({name:'QQQ（美元、含息）',color:'var(--s-qqq)',close:MKT.current.c,chg:null,date:MKT.current.asof,pct,lumpNow:S.six.lump.qqq*(1+pct),note:'美元計、含息；台幣換算未更新匯率'});}
+  if(!rows.length){host.innerHTML='';return;}
+  host.innerHTML='<div class="tblwrap"><table class="tbl"><caption>最新行情：對比期末 '+W[1]+' 之後到最近一個交易日（每個交易日收盤後自動更新，'+(LATEST.updated||'').slice(0,10)+'）</caption><thead><tr><th class=l>標的</th><th>最新收盤</th><th>日期</th><th>較 '+W[1]+'</th><th>100 萬到最新 ≈</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr><td class=l>'+sw(r.color)+r.name+(r.note?' <small class="muted">（'+r.note+'）</small>':'')+'</td><td>'+(r.close>=100?r.close.toFixed(1):r.close.toFixed(2))+(r.chg!=null?' <small class="'+(r.chg>=0?'pos':'neg')+'">'+(r.chg>=0?'+':'')+r.chg+'</small>':'')+'</td><td>'+r.date+'</td><td>'+cell(r.pct).replace(/^<td>|<\/td>$/g,'')+'</td><td>'+(r.lumpNow!=null?f.big(r.lumpNow):'—')+'</td></tr>').join('')+
+    '</tbody><tfoot><tr><td colspan="5">台股用證交所／櫃買中心收盤價，期末之後的股息未計入（只用收盤價換算）；上面各表的對比期間仍以 '+W[1]+' 為準，每月重算。</td></tr></tfoot></table></div>';
+}
+async function loadLatest(){
+  try{const r=await fetch('data/tw/latest.json',{cache:'no-store'});if(r.ok)LATEST=await r.json();}catch(e){}
+  try{const r=await fetch('data/market.json',{cache:'no-store'});if(r.ok)MKT=await r.json();}catch(e){}
+  for(const c of ['0050','2330']){try{const r=await fetch('data/tw/'+c+'.json',{cache:'no-store'});if(r.ok)BASEJ[c]=await r.json();}catch(e){}}
+  await loadIndex();
+  renderLatest();
+}
 // ---------- 加入台股 ----------
 function msg(t,kind){$('twmsg').innerHTML=t?'<p class="msg '+(kind||'info')+'">'+t+'</p>':'';}
 function norm(v){return String(v||'').trim().toUpperCase().replace(/\.TWO?$/,'').replace(/\s.*$/,'');}
@@ -147,7 +171,7 @@ async function add(codeRaw,silent){
 $('twform').addEventListener('submit',()=>add($('twcode').value));
 $('twcode').addEventListener('focus',loadIndex,{once:true});
 const m=location.hash.match(/add=([0-9A-Za-z,]+)/);
-render();
+render();loadLatest();
 if(m){(async()=>{for(const c of m[1].split(',')){await add(c,true);}})();}
 })();
 </script>
