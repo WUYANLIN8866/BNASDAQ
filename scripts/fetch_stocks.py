@@ -167,16 +167,46 @@ def fetch_universe_us(report=None):
             rep['sp500_wiki'] = len(names) - n0; log('wiki sp500 +', len(names) - n0)
         except Exception as e:  # noqa
             rep['sp500_wiki'] = 'FAIL ' + repr(e)[:160]; log('wiki sp500 failed:', repr(e))
-    # Nasdaq-100：維基 Components 表（Company / Ticker）
+    # Nasdaq-100：Invesco QQQ 持股 CSV（官方）→ Nasdaq API → 維基表 → 內建備援
     got_ndx = 0
     try:
-        t = _get('https://en.wikipedia.org/wiki/Nasdaq-100', timeout=60).decode('utf-8', errors='replace')
-        pairs = parse_wiki_table(t, 1, 0, 'Ticker')
+        raw = _get('https://www.invesco.com/us/financial-products/etfs/holdings/main/holdings/0?audienceType=Investor&action=download&ticker=QQQ', timeout=60).decode('utf-8-sig', errors='replace')
+        pairs = []
+        for rec in csv.DictReader(io.StringIO(raw)):
+            sym = (rec.get('Holding Ticker') or rec.get('HoldingTicker') or '').strip().upper().replace('.', '-').replace('/', '-')
+            if re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', sym):
+                pairs.append((sym, (rec.get('Name') or '').strip().title()))
         for s, n in pairs:
             names.setdefault(s, n)
-        got_ndx = len(pairs); rep['ndx_wiki'] = got_ndx; log('wiki ndx100', got_ndx)
+        got_ndx = len(pairs); rep['ndx_invesco'] = got_ndx; log('invesco qqq holdings', got_ndx)
     except Exception as e:  # noqa
-        rep['ndx_wiki'] = 'FAIL ' + repr(e)[:160]; log('wiki ndx100 failed:', repr(e))
+        rep['ndx_invesco'] = 'FAIL ' + repr(e)[:160]; log('invesco qqq failed:', repr(e))
+    if got_ndx < 80:
+        try:
+            req = urllib.request.Request('https://api.nasdaq.com/api/quote/list-type/nasdaq100',
+                                         headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+                                                  'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'en-US,en;q=0.9', 'Origin': 'https://www.nasdaq.com', 'Referer': 'https://www.nasdaq.com/'})
+            with urllib.request.urlopen(req, timeout=40) as r:
+                j = json.loads(r.read().decode('utf-8'))
+            pairs = []
+            for row in ((j.get('data') or {}).get('data') or {}).get('rows') or []:
+                sym = (row.get('symbol') or '').strip().upper().replace('.', '-').replace('/', '-')
+                if re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', sym):
+                    pairs.append((sym, (row.get('companyName') or '').strip()))
+            for s, n in pairs:
+                names.setdefault(s, n)
+            got_ndx = len(pairs); rep['ndx_nasdaq_api'] = got_ndx; log('nasdaq api ndx100', got_ndx)
+        except Exception as e:  # noqa
+            rep['ndx_nasdaq_api'] = 'FAIL ' + repr(e)[:160]; log('nasdaq api failed:', repr(e))
+    if got_ndx < 80:
+        try:
+            t = _get('https://en.wikipedia.org/wiki/Nasdaq-100', timeout=60).decode('utf-8', errors='replace')
+            pairs = parse_wiki_table(t, 1, 0, 'Ticker')
+            for s, n in pairs:
+                names.setdefault(s, n)
+            got_ndx = len(pairs); rep['ndx_wiki'] = got_ndx; log('wiki ndx100', got_ndx)
+        except Exception as e:  # noqa
+            rep['ndx_wiki'] = 'FAIL ' + repr(e)[:160]; log('wiki ndx100 failed:', repr(e))
     if got_ndx < 80:
         n0 = len(names)
         for s in NDX_FALLBACK:
