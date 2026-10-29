@@ -159,8 +159,11 @@ def clean_adj(rows):
 
 def compute(rows, start, end, crises):
     """rows: [(date, close, adj)] sorted. start/end: date. crises: [{name,peak,trough}]"""
+    raw_rows = rows
     rows, fixes = clean_adj(rows)
     rows = [r for r in rows if r[0] <= end]
+    k0 = _at_or_before(raw_rows, start)
+    boundary = [[r[0].isoformat(), round(r[1], 3), round(r[2], 4)] for r in raw_rows[max(0, k0 - 3):k0 + 4]]
     if len(rows) < 20:
         raise RuntimeError(f'too few rows ({len(rows)})')
     i0 = _at_or_before(rows, start)
@@ -220,7 +223,7 @@ def compute(rows, start, end, crises):
                 years=round(years, 4), lump=round(lump, 0), cagr=round(cagr, 6), annual={k: (None if v is None else round(v, 6)) for k, v in annual.items()},
                 mdd=dict(mdd=round(mdd, 6), peak=peak_d.isoformat() if peak_d else None, trough=trough_d.isoformat() if trough_d else None, need=round(need, 4) if need else None),
                 crises={k: (None if v is None else round(v, 6)) for k, v in cr.items()}, monthly=monthly,
-                last_close=rows[i1][1], n_days=i1 - i0 + 1, adj_fixes=fixes)
+                last_close=rows[i1][1], n_days=i1 - i0 + 1, adj_fixes=fixes, boundary_raw=boundary)
 
 
 # ------------------------------------------------------------------ main
