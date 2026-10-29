@@ -1,1 +1,18 @@
-{}
+{
+"00972": {
+"error": "RuntimeError('yahoo 404 (no such symbol)')",
+"when": "2026-10-29"
+},
+"00838B": {
+"error": "RuntimeError('yahoo 404 (no such symbol)')",
+"when": "2026-10-29"
+},
+"3718": {
+"error": "RuntimeError('yahoo 404 (no such symbol)')",
+"when": "2026-10-29"
+},
+"7856": {
+"error": "RuntimeError('yahoo 404 (no such symbol)')",
+"when": "2026-10-29"
+}
+}
