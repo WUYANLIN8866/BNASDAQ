@@ -46,20 +46,41 @@ def roc_to_iso(s):
 
 
 def fetch_twse():
-    j = _get_json('https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY_ALL?response=json')
-    date = roc_to_iso(j.get('date', ''))
-    fields = j.get('fields') or []
-    rows = j.get('data') or []
-    idx = {f: i for i, f in enumerate(fields)}
-    ci = idx.get('證券代號', 0); ni = idx.get('證券名稱', 1); pi = idx.get('收盤價', 7); di = idx.get('漲跌價差', 8)
+    """先用 rwd 端點（含日期），失敗或沒資料再用 OpenAPI（日期取自 MI_INDEX）。"""
+    try:
+        j = _get_json('https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY_ALL?response=json')
+        date = roc_to_iso(j.get('date', ''))
+        fields = j.get('fields') or []
+        rows = j.get('data') or []
+        if rows:
+            idx = {f: i for i, f in enumerate(fields)}
+            ci = idx.get('證券代號', 0); ni = idx.get('證券名稱', 1); pi = idx.get('收盤價', 7); di = idx.get('漲跌價差', 8)
+            items = {}
+            for r in rows:
+                try:
+                    code = str(r[ci]).strip(); close = _num(r[pi]); chg = _num(r[di])
+                    if code and close is not None:
+                        items[code] = [close, chg, str(r[ni]).strip()]
+                except Exception:
+                    continue
+            if items:
+                return date, items
+        log('twse rwd: no rows (stat=%s)' % j.get('stat'))
+    except Exception as e:  # noqa
+        log('twse rwd failed:', repr(e))
+    j = _get_json('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL')
+    date = ''
+    try:
+        mi = _get_json('https://openapi.twse.com.tw/v1/exchangeReport/MI_INDEX')
+        if mi and isinstance(mi, list) and mi[0].get('Date'):
+            date = roc_to_iso(mi[0]['Date'])
+    except Exception as e:  # noqa
+        log('twse MI_INDEX failed:', repr(e))
     items = {}
-    for r in rows:
-        try:
-            code = str(r[ci]).strip(); close = _num(r[pi]); chg = _num(r[di])
-            if code and close is not None:
-                items[code] = [close, chg, str(r[ni]).strip()]
-        except Exception:
-            continue
+    for r in j:
+        code = str(r.get('Code', '')).strip(); close = _num(r.get('ClosingPrice')); chg = _num(r.get('Change'))
+        if code and close is not None:
+            items[code] = [close, chg, str(r.get('Name', '')).strip()]
     return date, items
 
 
@@ -76,8 +97,25 @@ def fetch_tpex():
     return date, items
 
 
+def load_keep():
+    """只保留股票與 ETF：以 data/tw/index.json 的清單為準；沒有清單時用代號型式判斷（4 碼、或 00 開頭的 ETF）。"""
+    import re
+    p = os.path.join(ROOT, 'data', 'tw', 'index.json')
+    try:
+        lst = json.load(open(p, encoding='utf-8')).get('list') or []
+        keep = set(r[0] for r in lst)
+        if keep:
+            return lambda c: c in keep
+    except Exception:
+        pass
+    pat = re.compile(r'^\d{4}$|^00\d{2,3}[A-Z]?$')
+    return lambda c: bool(pat.match(c))
+
+
 def main():
     old = None
+    keep = load_keep()
+    errors = {}
     if os.path.exists(OUT):
         try:
             old = json.load(open(OUT, encoding='utf-8'))
@@ -87,22 +125,23 @@ def main():
     for name, fn in (('TW', fetch_twse), ('TWO', fetch_tpex)):
         try:
             d, it = fn()
+            it = {k: v for k, v in it.items() if keep(k)}
             if not it:
-                raise RuntimeError('empty')
+                raise RuntimeError('empty after filter')
             asof[name] = d; items.update(it)
             log(name, d, len(it), 'items')
         except Exception as e:  # noqa
-            log(name, 'failed:', repr(e))
+            log(name, 'failed:', repr(e)); errors[name] = repr(e)[:300]
             if old and old.get('asof', {}).get(name):
                 asof[name] = old['asof'][name]
                 items.update({k: v for k, v in old.get('items', {}).items() if (v[3] if len(v) > 3 else None) == name})
     if not items:
         log('nothing fetched; keeping existing'); return 1
     # 日期沒前進就不覆蓋
-    if old and old.get('asof') and all(asof.get(k, '') <= old['asof'].get(k, '') for k in asof) and old.get('items'):
+    if old and old.get('asof') and set(asof) == set(old['asof']) and all(asof.get(k, '') <= old['asof'].get(k, '') for k in asof) and old.get('items'):
         log('no newer date than existing', old['asof'], '; not rewriting'); return 0
     out = dict(schema='bnasdaq-tw-latest/1', asof=asof, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               source='證交所 STOCK_DAY_ALL（上市）、櫃買中心 OpenAPI（上櫃）', items=items)
+               source='證交所 STOCK_DAY_ALL（上市）、櫃買中心 OpenAPI（上櫃）', errors=errors, items=items)
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     log('written', OUT, asof, len(items), 'items')
     return 0
