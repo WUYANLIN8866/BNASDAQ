@@ -513,6 +513,12 @@ def build_record(code, rec, rows, splits, fx, site):
                source='Yahoo Finance 還原收盤（含息、分割還原）' + ('，以 FRED 每日匯率換算台幣' if market == 'US' else ''),
                fx=fxinfo, adj_fixes=fixes, boundary_raw=boundary, **b13)
     out['w26'] = dict(window=[start26.isoformat(), end26.isoformat()], currency='USD', **b26)
+    if market != 'US' and 'error' not in b26:
+        # 原幣（台幣）對齊 SITE.window.months 的月底序列（相對第一個有效月＝1），首頁走勢圖用；美股的 w26.monthly 本來就是原幣
+        try:
+            out['w26']['monthly_native'] = compute_block(rows, start26, end26, crises, None, site['window']['months'])['monthly']
+        except Exception as e:  # noqa
+            out['w26']['monthly_native_error'] = repr(e)[:120]
     return out
 
 

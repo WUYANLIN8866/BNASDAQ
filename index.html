@@ -9,8 +9,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261029o">
-<script src="assets/site.js?v=20261029o"></script><script src="assets/data.js?v=20261029o"></script><script src="assets/charts.js?v=20261029o"></script>
+<link rel="stylesheet" href="assets/site.css?v=20261029p">
+<script src="assets/site.js?v=20261029p"></script><script src="assets/data.js?v=20261029p"></script><script src="assets/charts.js?v=20261029p"></script>
 
 </head>
 <body>
@@ -50,6 +50,7 @@
 
 <section class="band alt"><div class="wrap">
   <div class="sechead"><h2>報酬率走勢：BNASDAQ、QQQ、QLD、SPY、0050、台積電與 10 個國際股市指數</h2></div>
+  <div class="tabs" role="tablist" id="world-tabs" aria-label="起點"></div>
   <div id="c-world"></div>
   <div id="t-world"></div>
   <p class="small" id="world-note"></p>
@@ -110,23 +111,36 @@
 </script>
 <script>
 (function(){const S=window.SITE,f=BN.fmt,$=id=>document.getElementById(id);
-const W=S.six.window,months=S.window.months,off=months.indexOf(W[0].slice(0,7)),M=months.slice(off);
+const months=S.window.months,END=S.window.end;
 const pal=['#2a78d6','#e8622a','#1baf7a','#c9a227','#7b3fa0','#d14d8b','#0e8f80','#c85a17','#4a6fa5','#b02a2a','#5c8a2e','#8a6d3b','#3b7dd8','#6f7f93','#a0522d','#2c7a7b'];
+const STARTS=[['2000-05','2000-05 起（26 年）'],['2009-01','2009-01 起（含 0050）'],['2013-12','2013-12 起（同個股對比）']];
+const mEnd=ym=>{const [y,m]=ym.split('-').map(Number);return new Date(Date.UTC(y,m,0));};
+const ymd=ym=>mEnd(ym).toISOString().slice(0,10);
+const yrsBetween=(a,b)=>(mEnd(b)-mEnd(a))/86400000/365.25;
 async function getJ(u){try{const r=await fetch(u,{cache:'no-store'});return r.ok?await r.json():null;}catch(e){return null;}}
+// 台股 JSON → 對齊 months 的台幣月底序列：優先 w26.monthly_native（2000-05 起），否則用頂層 monthly（2013-12 起）
+const fromTw=j=>{if(!j)return null;if(j.w26&&j.w26.monthly_native)return j.w26.monthly_native;if(!j.monthly)return null;const m={};j.monthly.forEach(x=>{m[x[0]]=x[1];});return months.map(ym=>m[ym]==null?null:m[ym]);};
+let ALL=null,idxUpdated='';
+function render(start){
+  const off=months.indexOf(start),M=months.slice(off),W0=ymd(start),yrs=yrsBetween(start,months[months.length-1]);
+  const series=[],skipped=[];
+  ALL.forEach(a=>{const vals=a.vals.slice(off);const b=vals[0];if(b==null){const i0=a.vals.findIndex(v=>v!=null);skipped.push(a.name+'（資料自 '+(i0>=0?months[i0]:'—')+'）');return;}series.push({name:a.name,values:vals.map(v=>v==null?null:v/b*100),color:a.color,cur:a.cur,end:vals[vals.length-1]/b-1});});
+  $('world-tabs').querySelectorAll('[data-start]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.start===start)));
+  $('c-world').innerHTML='';
+  BN.charts.line($('c-world'),{title:'起點＝100 的累積走勢（對數刻度）',sub:W0+' 至 '+END+'，每月月底；ETF／個股含息，指數為價格指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',series:series.map(s=>({name:s.name,values:s.values,color:s.color}))});
+  const rows=series.slice().sort((a,b)=>b.end-a.end);
+  $('t-world').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+W0+' 至 '+END+'（'+yrs.toFixed(1)+' 年）的累積報酬與年化</caption><thead><tr><th class=l>標的</th><th>累積報酬</th><th>年化</th><th class=l>幣別／口徑</th></tr></thead><tbody>'+rows.map(s=>{const cagr=Math.pow(1+s.end,1/yrs)-1;return '<tr><td class=l><span class="sw" style="background:'+s.color+'"></span>'+s.name+'</td><td>'+(s.end>=0?'+':'')+(s.end*100).toLocaleString('zh-Hant-TW',{maximumFractionDigits:0})+'%</td><td>'+(cagr*100).toFixed(1)+'%</td><td class=l>'+s.cur+'</td></tr>';}).join('')+'</tbody></table></div>';
+  $('world-note').textContent=(skipped.length?'未列入：'+skipped.join('、')+'，選較晚的起點即可納入。':'')+'BNASDAQ、QQQ、QLD 為本站回測序列（美元、含息）；SPY、0050、台積電為 Yahoo 還原收盤（含息）；10 個指數為價格指數（不含息、當地幣別），所以指數會比同市場的含息 ETF 略低。各自以本身幣別計，未換匯。'+(idxUpdated?' 指數資料更新：'+idxUpdated+'。':'');
+}
 (async()=>{try{
   const [idx,spy,tw,tsmc]=await Promise.all([getJ('data/indices.json'),getJ('data/tw/SPY.json'),getJ('data/tw/0050.json'),getJ('data/tw/2330.json')]);
-  const series=[];
-  const norm=(vals,label,color,cur)=>{const i0=vals.findIndex(v=>v!=null);if(i0<0)return;const b=vals[i0];series.push({name:label,values:vals.map(v=>v==null?null:v/b*100),color,cur,end:vals[vals.length-1]/b-1});};
-  norm(S.eq.fund.slice(off),'BNASDAQ',pal[0],'美元，含息');norm(S.eq.qqq.slice(off),'QQQ',pal[1],'美元，含息');norm(S.eq.qld.slice(off),'QLD',pal[2],'美元，含息');
-  if(spy&&spy.w26&&spy.w26.monthly)norm(spy.w26.monthly.slice(off),'SPY',pal[3],'美元，含息');
-  const fromTw=j=>{if(!j||!j.monthly)return null;const m={};j.monthly.forEach(x=>{m[x[0]]=x[1];});return M.map(ym=>m[ym]==null?null:m[ym]);};
-  const v0050=fromTw(tw),v2330=fromTw(tsmc);if(v0050)norm(v0050,'0050',pal[4],'台幣，含息');if(v2330)norm(v2330,'台積電 2330',pal[5],'台幣，含息');
-  let k=6;if(idx&&idx.series){for(const sym of Object.keys(idx.series)){const it=idx.series[sym];norm(it.values.slice(off),it.name,pal[k++%pal.length],'當地幣別，價格指數不含息');}}
-  if(!series.length){$('world-note').textContent='資料載入中或尚未建立。';return;}
-  BN.charts.line($('c-world'),{title:'起點＝100 的累積走勢（對數刻度）',sub:W[0]+' 至 '+W[1]+'，每月月底；ETF／個股含息，指數為價格指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',series:series.map(s=>({name:s.name,values:s.values,color:s.color}))});
-  const rows=series.slice().sort((a,b)=>b.end-a.end);
-  $('t-world').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+W[0]+' 至 '+W[1]+' 的累積報酬與年化</caption><thead><tr><th class=l>標的</th><th>累積報酬</th><th>年化</th><th class=l>幣別／口徑</th></tr></thead><tbody>'+rows.map(s=>{const yrs=S.six.years;const cagr=Math.pow(1+s.end,1/yrs)-1;return '<tr><td class=l><span class="sw" style="background:'+s.color+'"></span>'+s.name+'</td><td>'+(s.end>=0?'+':'')+(s.end*100).toFixed(0)+'%</td><td>'+(cagr*100).toFixed(1)+'%</td><td class=l>'+s.cur+'</td></tr>';}).join('')+'</tbody></table></div>';
-  $('world-note').textContent='BNASDAQ、QQQ、QLD 為本站回測序列（美元、含息）；SPY、0050、台積電為 Yahoo 還原收盤（含息）；10 個指數為價格指數（不含息、當地幣別），所以指數會比同市場的含息 ETF 略低。各自以本身幣別計，未換匯。'+(idx&&idx.updated?' 指數資料更新：'+idx.updated+'。':'');
+  ALL=[{name:'BNASDAQ',vals:S.eq.fund,color:pal[0],cur:'美元，含息'},{name:'QQQ',vals:S.eq.qqq,color:pal[1],cur:'美元，含息'},{name:'QLD',vals:S.eq.qld,color:pal[2],cur:'美元，含息'}];
+  if(spy&&spy.w26&&spy.w26.monthly)ALL.push({name:'SPY',vals:spy.w26.monthly,color:pal[3],cur:'美元，含息'});
+  const v0050=fromTw(tw),v2330=fromTw(tsmc);if(v0050)ALL.push({name:'0050',vals:v0050,color:pal[4],cur:'台幣，含息'});if(v2330)ALL.push({name:'台積電 2330',vals:v2330,color:pal[5],cur:'台幣，含息'});
+  let k=6;if(idx&&idx.series){idxUpdated=idx.updated||'';for(const sym of Object.keys(idx.series)){const it=idx.series[sym];ALL.push({name:it.name,vals:it.values,color:pal[k++%pal.length],cur:'當地幣別，價格指數不含息'});}}
+  const tabs=$('world-tabs');tabs.innerHTML=STARTS.map(([s,l])=>'<button type="button" role="tab" data-start="'+s+'" aria-selected="false">'+l+'</button>').join('');
+  tabs.querySelectorAll('[data-start]').forEach(b=>b.addEventListener('click',()=>render(b.dataset.start)));
+  render(STARTS[0][0]);
 }catch(e){$('world-note').textContent='走勢圖載入失敗：'+(e&&e.message||e);}})();
 })();
 </script>
