@@ -14,5 +14,13 @@
 "7856": {
 "error": "RuntimeError('yahoo 404 (no such symbol)')",
 "when": "2026-10-29"
+},
+"PSTG": {
+"error": "RuntimeError('yahoo 404 (no such symbol)')",
+"when": "2026-10-29"
+},
+"SPLG": {
+"error": "RuntimeError('yahoo 404 (no such symbol)')",
+"when": "2026-10-29"
 }
 }
