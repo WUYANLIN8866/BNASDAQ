@@ -9,8 +9,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261029m">
-<script src="assets/site.js?v=20261029m"></script><script src="assets/data.js?v=20261029m"></script><script src="assets/charts.js?v=20261029m"></script>
+<link rel="stylesheet" href="assets/site.css?v=20261029n">
+<script src="assets/site.js?v=20261029n"></script><script src="assets/data.js?v=20261029n"></script><script src="assets/charts.js?v=20261029n"></script>
 
 </head>
 <body>
@@ -86,11 +86,26 @@
   // tabs
   document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabs [data-tab]').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');['ann','res','vid'].forEach(k=>document.getElementById('dev-'+k).hidden=(k!==b.dataset.tab));}));
   fetch('data/site.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{const ul=document.getElementById('dev-ann');ul.innerHTML='';(j.announcements||[]).slice(0,5).forEach(a=>{const li=document.createElement('li');li.innerHTML='<time>'+a.date+'</time><span>'+a.title.replace(/[<>]/g,'')+(a.body?'<br><small>'+a.body.replace(/[<>]/g,'')+'</small>':'')+'</span>';ul.appendChild(li);});if(!ul.children.length)ul.innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';}).catch(()=>{document.getElementById('dev-ann').innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';});
-  // mini figures
-  const mini=(id,items,fmt)=>{const h=document.getElementById(id);h.innerHTML='';BN.charts.hbars(h,{items,fmt,rowH:30,labelW:84,W:420,padR:96});const fig=h.querySelector('.fig');fig.style.border='0';fig.style.margin='0';fig.style.padding='0';fig.style.background='transparent';};
-  mini('f-dca',[{name:'只存',value:S.dca.inv.end,color:'var(--s-save)'},{name:'QQQ',value:S.dca.qqq.end,color:'var(--s-qqq)'},{name:'QLD',value:S.dca.qld.end,color:'var(--s-qld)'},{name:'BNASDAQ',value:S.dca.fund.end,color:'var(--s-fund)',hl:1}],f.big);
-  mini('f-tw',[{name:'0050',value:S.six.lump.tw,color:'var(--s-tw)'},{name:'台積電',value:S.six.lump.tsmc,color:'var(--s-tsmc)'},{name:'QLD',value:S.six.lump.qld,color:'var(--s-qld)'},{name:'BNASDAQ',value:S.six.lump.fund,color:'var(--s-fund)',hl:1}],f.big);
-  mini('f-risk',[{name:'QLD',value:-S.dd.qld.mdd,color:'var(--s-qld)'},{name:'QQQ',value:-S.dd.qqq.mdd,color:'var(--s-qqq)'},{name:'BNASDAQ',value:-S.dd.fund.mdd,color:'var(--s-fund)',hl:1}],v=>'最深跌 '+(v*100).toFixed(1)+'%');
+  // mini figures：三張都用走勢圖（長條圖在手機上太不明顯）；viewBox 窄一點、字放大、x 軸只標幾個年份
+  const strip=h=>{const fig=h.querySelector('.fig');if(fig){fig.style.border='0';fig.style.margin='0';fig.style.padding='0';fig.style.background='transparent';fig.style.width='100%';}};
+  const months=S.window.months;
+  const yearTicks=(xs,step,first)=>{const out=[];let last=null;xs.forEach((s,i)=>{const y=+String(s).slice(0,4);if(y!==last){last=y;if(y%step===first%step)out.push([i,String(y)]);}});return out;};
+  const MINI={W:380,height:220,padL:66};
+  const cpt=v=>Math.abs(v)>=1e8?(+(v/1e8).toFixed(1))+' 億':Math.abs(v)>=1e4?(+(v/1e4).toFixed(0)).toLocaleString('zh-Hant-TW')+' 萬':Math.round(v).toLocaleString('zh-Hant-TW');
+  (()=>{const h=document.getElementById('f-dca');h.innerHTML='';BN.charts.line(h,Object.assign({},MINI,{padR:70,x:months,xTicks:yearTicks(months,5,2005),log:true,yfmt:cpt,tipfmt:f.big,series:[{name:'BNASDAQ',values:S.dca_series.fund,color:'var(--s-fund)'},{name:'QLD',values:S.dca_series.qld,color:'var(--s-qld)'},{name:'QQQ',values:S.dca_series.qqq,color:'var(--s-qqq)'},{name:'投入本金',short:'本金',values:S.dca_series.inv,color:'var(--s-save)',dash:'5 4'}],noLegend:true,note:'每月 1 萬定期定額的帳戶價值，2000-05 起、美元含息、對數刻度'}));strip(h);})();
+  (()=>{const h=document.getElementById('f-risk');h.innerHTML='';const ds=S.dd_series;BN.charts.line(h,Object.assign({},MINI,{x:ds.d,xTicks:yearTicks(ds.d.map(d=>d.slice(0,7)),5,2005),yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',zero:true,yMax:0.02,series:[{name:'BNASDAQ',values:ds.fund,color:'var(--s-fund)',fill:true},{name:'QQQ',values:ds.qqq,color:'var(--s-qqq)'},{name:'QLD',values:ds.qld,color:'var(--s-qld)'}],noEndLabels:true,note:'回撤水位（距離前高還差多少）：BNASDAQ 最深 '+(ds.mins.fund[1]*100).toFixed(1)+'%、QQQ '+(ds.mins.qqq[1]*100).toFixed(1)+'%、QLD '+(ds.mins.qld[1]*100).toFixed(1)+'%'}));strip(h);})();
+  (async()=>{const h=document.getElementById('f-tw');const W=S.six.window;const off=months.indexOf(W[0].slice(0,7));const M=months.slice(off);
+    const getJ=async u=>{try{const r=await fetch(u,{cache:'no-store'});return r.ok?await r.json():null;}catch(e){return null;}};
+    const [fx,tw,tsmc]=await Promise.all([getJ('data/tw/_fx.json'),getJ('data/tw/0050.json'),getJ('data/tw/2330.json')]);
+    const conv=arr=>{const base=arr[off]*fx.months[M[0]];return M.map((ym,i)=>{const v=arr[off+i],r=fx.months[ym];return (v==null||r==null)?null:v*r/base*1e6;});};
+    const fromTw=j=>{if(!j||!j.monthly)return null;const m={};j.monthly.forEach(x=>{m[x[0]]=x[1];});const b=m[M[0]];return b?M.map(ym=>m[ym]==null?null:m[ym]/b*1e6):null;};
+    const series=[];
+    if(fx&&fx.months&&fx.months[M[0]]){series.push({name:'BNASDAQ',values:conv(S.eq.fund),color:'var(--s-fund)'},{name:'QLD',values:conv(S.eq.qld),color:'var(--s-qld)'},{name:'QQQ',values:conv(S.eq.qqq),color:'var(--s-qqq)'});}
+    const v0050=fromTw(tw),v2330=fromTw(tsmc);if(v2330)series.push({name:'台積電',values:v2330,color:'var(--s-tsmc)'});if(v0050)series.push({name:'0050',values:v0050,color:'var(--s-tw)'});
+    h.innerHTML='';
+    if(series.length){BN.charts.line(h,Object.assign({},MINI,{padR:70,x:M,xTicks:yearTicks(M,3,2014),log:true,yTicks:[1e6,2e6,5e6,1e7,2e7,5e7,1e8],yfmt:cpt,tipfmt:f.big,series,noLegend:true,note:'2013-12-31 各放 100 萬台幣、含息、月底資料、對數刻度'}));}
+    else{BN.charts.hbars(h,{items:[{name:'0050',value:S.six.lump.tw,color:'var(--s-tw)'},{name:'台積電',value:S.six.lump.tsmc,color:'var(--s-tsmc)'},{name:'QLD',value:S.six.lump.qld,color:'var(--s-qld)'},{name:'BNASDAQ',value:S.six.lump.fund,color:'var(--s-fund)',hl:1}],fmt:f.big,rowH:30,labelW:84,W:380,padR:96});}
+    strip(h);})();
 })();
 </script>
 <script>

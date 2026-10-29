@@ -28,7 +28,7 @@
   // ---------------- line chart ----------------
   function line(host, o) {
     const body = wrapFig(host, o);
-    const W = 820, H = o.height || 360, pad = { l: 64, r: 16, t: 14, b: 34 };
+    const W = o.W || 820, H = o.height || 360, pad = { l: o.padL || 64, r: o.padR || 16, t: 14, b: 34 };
     const svg = frame(body, W, H);
     const n = o.x.length; const xOf = i => pad.l + (W - pad.l - pad.r) * (n > 1 ? i / (n - 1) : 0);
     let lo = Infinity, hi = -Infinity;
@@ -36,7 +36,7 @@
     if (o.yMin != null) lo = o.yMin; if (o.yMax != null) hi = o.yMax;
     if (!o.log) { const pd = (hi - lo) * 0.06; if (o.zero) lo = Math.min(lo, 0); hi += pd; if (!o.zero) lo -= pd; }
     const yOf = o.log ? v => H - pad.b - (H - pad.t - pad.b) * (Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo)) : v => H - pad.b - (H - pad.t - pad.b) * (v - lo) / (hi - lo);
-    const g = el('g', { class: 'viz-grid' }, svg); const ticks = o.log ? logTicks(lo, hi) : niceTicks(lo, hi, 5);
+    const g = el('g', { class: 'viz-grid' }, svg); const ticks = o.yTicks ? o.yTicks.filter(v => v >= lo / 1.0001 && v <= hi * 1.0001) : o.log ? logTicks(lo, hi) : niceTicks(lo, hi, 5);
     const yfmt = o.yfmt || fmtDef;
     ticks.forEach(v => { const y = yOf(v); el('line', { x1: pad.l, x2: W - pad.r, y1: y, y2: y }, g); text(svg, pad.l - 8, y + 4, yfmt(v), { 'text-anchor': 'end', class: 'viz-lbl' }); });
     // x ticks
@@ -59,7 +59,7 @@
       if (o.series.length <= 6 && !o.noEndLabels) { let li = s.values.length - 1; while (li >= 0 && (s.values[li] == null || !isFinite(s.values[li]))) li--; if (li >= 0) endLabels.push({ x: xOf(li), y: yOf(s.values[li]), t: s.short || s.name, c: s.color }); }
     });
     endLabels.sort((a, b) => a.y - b.y); for (let i = 1; i < endLabels.length; i++) if (endLabels[i].y - endLabels[i - 1].y < 13) endLabels[i].y = endLabels[i - 1].y + 13;
-    endLabels.forEach(l => text(svg, Math.min(l.x + 4, W - 2), l.y + 4, l.t, { class: 'viz-txt', 'font-weight': 600, 'text-anchor': l.x > W - 70 ? 'end' : 'start', fill: l.c }));
+    endLabels.forEach(l => text(svg, Math.min(l.x + 4, W - 2), l.y + 4, l.t, { class: 'viz-txt', 'font-weight': 600, 'text-anchor': (W - l.x) < 70 ? 'end' : 'start', fill: l.c }));
     (o.marks || []).forEach(m => { const x = xOf(m.i), y = yOf(m.v); el('circle', { cx: x, cy: y, r: 5, fill: 'var(--paper)', stroke: m.color || 'var(--ink)', 'stroke-width': 2 }, svg); if (m.label) text(svg, x + (m.dx || 8), y + (m.dy || -8), m.label, { class: 'viz-txt', 'font-weight': 600 }); });
     hover(svg, pad, W, H, xOf, n, (i, cx, cy) => {
       let h = '<b>' + (o.xLabel ? o.xLabel(o.x[i]) : o.x[i]) + '</b>';
