@@ -147,12 +147,12 @@ function run(){
   $('vSens').innerHTML=h;
 }
 function band(q,P,zi){
-  const W=820,H=120,L=40,R=40;const lo=Math.min(q.min,P)*0.95,hi=Math.max(q.max,P)*1.05;const x=v=>L+(W-L-R)*(v-lo)/(hi-lo);
+  const W=820,H=128,L=48,R=48;const lo=Math.min(q.min,P)*0.95,hi=Math.max(q.max,P)*1.05;const x=v=>L+(W-L-R)*(v-lo)/(hi-lo);
   const cols=['rgba(31,122,58,.55)','rgba(31,122,58,.28)','rgba(183,121,31,.25)','rgba(179,38,30,.28)','rgba(179,38,30,.55)'];
   const edges=[lo,q.p5,q.p25,q.p75,q.p95,hi];
   let s='<div class="fig"><p class="ftitle">目前股價落在哪一段</p><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="合理價區間帶">';
   for(let i=0;i<5;i++){s+='<rect x="'+x(edges[i])+'" y="40" width="'+Math.max(0,x(edges[i+1])-x(edges[i]))+'" height="28" fill="'+cols[i]+'"'+(i===zi?' stroke="var(--gold)" stroke-width="3"':'')+'/>';}
-  [['p5',q.p5],['p25',q.p25],['中位',q.p50],['p75',q.p75],['p95',q.p95]].forEach(([l,v],i)=>{s+='<line x1="'+x(v)+'" x2="'+x(v)+'" y1="36" y2="72" stroke="var(--ink)" stroke-width="1"/><text x="'+x(v)+'" y="'+(i%2?92:84)+'" text-anchor="middle" class="viz-lbl" font-size="11">'+l+' '+fp(v)+'</text>';});
+  [['p5',q.p5],['p25',q.p25],['中位',q.p50],['p75',q.p75],['p95',q.p95]].forEach(([l,v],i)=>{s+='<line x1="'+x(v)+'" x2="'+x(v)+'" y1="36" y2="72" stroke="var(--ink)" stroke-width="1"/><text x="'+x(v)+'" y="'+(i%2?104:86)+'" text-anchor="middle" class="viz-lbl" font-size="11.5">'+l+' '+fp(v)+'</text>';});
   s+='<polygon points="'+x(P)+',38 '+(x(P)-7)+',24 '+(x(P)+7)+',24" fill="var(--gold)" stroke="var(--ink)" stroke-width="1"/><text x="'+x(P)+'" y="16" text-anchor="middle" class="viz-txt" font-weight="700" font-size="13">目前 '+fp(P)+'</text>';
   s+='</svg><p class="fnote">綠＝便宜、黃＝合理、紅＝昂貴；三角形＝目前股價。</p></div>';
   $('vBand').innerHTML=s;
