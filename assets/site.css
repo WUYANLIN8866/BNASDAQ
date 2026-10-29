@@ -321,3 +321,12 @@ pre.code { background: var(--band); border: 1px solid var(--line); padding: 10px
 .print-only { display: none; }
 @media print { .nav, .util, .gov, .search, footer, .cta, .burger { display: none !important; } body { background: #fff; } .fig { break-inside: avoid; } }
 ul.ind { max-width: none; }
+
+/* ---------- 台股對比：加入自選台股 ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; font-size: 13.5px; padding: 4px 8px 4px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--band); }
+.chip button { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; padding: 0 2px; line-height: 1; }
+.chip button:hover { color: var(--bad); }
+.muted { color: var(--muted); font-weight: 400; }
+#twadd .form .field button { width: 100%; }
+@media (max-width: 560px) { #twadd .row2 { grid-template-columns: 1fr !important; } }

@@ -12,7 +12,8 @@
 - `data/treasury.json`：美國公債各年期殖利率（財政部 par yield curve；備援 Yahoo ^IRX/^FVX/^TNX/^TYX），供估值試算器折現用，同樣每個交易日自動更新
 - `data/rules.enc.json`：加密後的策略規則（會員登入後在瀏覽器解密執行）
 - `data/accounts.json`：帳號（只有密碼雜湊與包裝後的金鑰）；`data/site.json`：公告
-- `scripts/fetch_market.py`、`scripts/fetch_treasury.py`：市場資料更新腳本；`.github/workflows/site.yml`：每日更新＋部署 Pages
+- `data/tw/<代號>.json`、`data/tw/index.json`：台股對比頁「加入其他台股」用的預算結果（Yahoo 還原收盤、與六種做法同一段期間），由 `.github/workflows/tw-data.yml` 每月重算（可手動觸發、可指定代號）
+- `scripts/fetch_market.py`、`scripts/fetch_treasury.py`、`scripts/fetch_tw.py`：市場資料更新腳本；`.github/workflows/site.yml`：每日更新＋部署 Pages
 
 ## 管理
 管理員登入後台後，貼一次 fine-grained PAT（Contents: Read and write；Actions: Read and write 可手動觸發更新）即可新增／停用／刪除帳號、重設密碼、發布公告。

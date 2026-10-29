@@ -1,0 +1,58 @@
+name: Update Taiwan stock comparison data
+
+on:
+  workflow_dispatch:
+    inputs:
+      codes:
+        description: '逗號分隔的台股代號（留空＝全部上市上櫃股票與 ETF）'
+        required: false
+        default: ''
+      force:
+        description: '全部重抓（true/false）'
+        required: false
+        default: 'false'
+  schedule:
+    # 每月 2 日 02:00 UTC（台北 10:00）：對比期末隨 data.js 更新後重算
+    - cron: '0 2 2 * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tw-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch Taiwan stock data (Yahoo Finance adjusted close)
+        run: |
+          if [ -n "${{ github.event.inputs.codes }}" ]; then
+            python3 scripts/fetch_tw.py --codes "${{ github.event.inputs.codes }}" $([ "${{ github.event.inputs.force }}" = "true" ] && echo --force)
+          else
+            python3 scripts/fetch_tw.py --all --budget-sec 19000 $([ "${{ github.event.inputs.force }}" = "true" ] && echo --force)
+          fi
+
+      - name: Commit data/tw if it changed
+        run: |
+          git config user.name "bnasdaq-bot"
+          git config user.email "bnasdaq-bot@users.noreply.github.com"
+          git add data/tw
+          if git diff --cached --quiet; then
+            echo "tw data unchanged"
+          else
+            N=$(ls data/tw/*.json | grep -v '/_' | grep -v index.json | wc -l)
+            git commit -m "data: tw compare update ($N codes)"
+            git pull --rebase origin main || true
+            git push origin HEAD:main
+          fi
