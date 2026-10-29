@@ -177,10 +177,10 @@ def clean_raw(rows, splits):
 def clean_div(rows, factors):
     """Yahoo 的除息還原偶爾把「分割前單位」的股息套在「分割後單位」的價格上（例 0050 2014-10 把 1.55 元套在 ÷4 後的 16 元價格，
     變成 9.4% 的除息還原，實際只有 2.3%）。偵測：某天還原報酬÷原始報酬換算出的「股息率」> 6%，但當天原始收盤只跌不到
-    該股息率 − 6.5pp（除息日參考價會直接扣掉股息，原始收盤理應跌差不多）；若股息率乘上某個分割倍率（0.5／0.25／0.2／0.1
-    或 clean_raw 用過的倍率）後與當天實際跌幅相差 ≤ 1.5pp，就改用那個數字重算之前的還原值。"""
+    該股息率 − 4pp（除息日參考價會直接扣掉股息，原始收盤理應跌差不多）；若股息率乘上某個分割倍率（0.5／0.25／0.2／0.1
+    （只用 clean_raw 或分割事件實際出現過的倍率）後與當天實際跌幅相差 ≤ 1.5pp，就改用那個數字重算之前的還原值。"""
     rows = [list(r) for r in rows]
-    cands = set([0.5, 0.25, 0.2, 0.1]) | set(f for f in factors if 0 < f < 1)
+    cands = set(f for f in factors if 0 < f < 1)   # 只用這檔實際出現過的單位倍率，避免誤修真正的高股息
     fixes = []
     for i in range(len(rows) - 1, 0, -1):
         d, c, a = rows[i]; d0, c0, a0 = rows[i - 1]
@@ -191,7 +191,7 @@ def clean_div(rows, factors):
             continue
         d_claim = 1 - 1 / q
         observed = 1 - c / c0
-        if d_claim < 0.06 or d_claim - observed < 0.065:
+        if d_claim < 0.05 or d_claim - observed < 0.04:
             continue
         best = None
         for f in cands:
