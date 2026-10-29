@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>估值試算器｜BNASDAQ</title>
+<meta name="description" content="輸入現在每股賺多少、未來成長多快多久、賣出時別人願出幾倍，用最接近年期的美債殖利率＋股市風險溢價折現，算出便宜到昂貴的合理價區間。免登入。">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<script src="assets/site.js"></script><script src="assets/data.js"></script><script src="assets/charts.js"></script>
+
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<div class="gov"><div class="wrap"><span>BNASDAQ 是以 AI 模型持續探勘、驗證、回測 QQQ 月線策略的研究站；本站所有數字都是歷史回測，不是保證報酬，也不是投資建議。</span><span class="right"><span>市場資料截至 <b class="num" data-asof>—</b></span><button type="button" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></span></div></div>
+<header class="brand"><div class="wrap">
+  <a class="mark" href="index.html"><svg class="seal" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="32" cy="32" r="24" fill="none" stroke="#b7791f" stroke-width="1.2"/><path d="M20 44V20h11c6 0 9 3 9 7 0 3-2 5-4 6 3 1 6 3 6 7 0 5-4 8-10 8H20zm6-14h5c2.5 0 4-1.5 4-3.5S33.5 23 31 23h-5v7zm0 10h6c3 0 4.5-1.5 4.5-4S35 32 32 32h-6v8z" fill="currentColor"/><path d="M14 32h6M44 32h6" stroke="#b7791f" stroke-width="2"/></svg><span><span class="word">B<b>NASDAQ</b></span><span class="sub">AI 探勘的納斯達克 100 月線策略研究</span></span></a>
+  <p class="tagline">BNASDAQ 用 AI 模型找出以 QQQ 月線為訊號、只在 QLD 與 SHV 之間切換的交易規則，並以 26 年資料反覆驗證；規則本身不公開，統一用 AI 模型找出的交易規則自行交易。</p>
+  <form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form>
+</div></header>
+<div class="util"><div class="wrap"><a href="data.html">資料口徑與免責</a><a href="news.html#video">影片</a><a href="faq.html">常見問題</a><a href="search.html">搜尋</a><a class="acct" href="login.html" data-acct>登入／會員專區</a></div></div>
+<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">台股對比</a></li><li><a href="calculator.html">目標試算器</a></li><li><a href="valuation.html" aria-current=page>估值試算器</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li></ul></div></nav>
+<main id="main">
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 估值試算器</div><h1>估值試算器</h1><p class="lede">把「未來會賺多少」換算回「今天值多少」。只要填四件事（現在賺多少、會成長多快、至少成長多久、賣出時別人願出幾倍），每一項都給最低與最高；試算器用最接近成長年數的美債殖利率加上股市風險溢價來折現，算出從便宜到昂貴的合理價區間，再告訴你現在的股價落在哪一段。免登入。</p></div></div>
+<div class="main"><div class="wrap"><div class="cols">
+<div>
+  <div class="panel">
+    <form class="form" id="vf" onsubmit="return false">
+      <div class="row2">
+        <div class="field"><label for="px">目前股價</label><input id="px" type="number" inputmode="decimal" min="0.01" step="0.01" value="100"><div class="help">要判斷「合不合理」就得有個比較對象；幣別不限，和每股盈餘同幣別即可</div></div>
+        <div class="field"><label for="eps">① 現在一年賺多少（每股盈餘 EPS）</label><input id="eps" type="number" inputmode="decimal" step="0.01" value="4"><div class="help">最近 12 個月的每股盈餘；虧損公司（≤ 0）本工具不適用</div></div>
+      </div>
+      <fieldset class="rng"><legend>② 生意會成長多快（每年盈餘成長率 %）</legend><div class="row2">
+        <div class="field"><label for="gLo">最低</label><input id="gLo" type="number" inputmode="decimal" step="0.5" value="10"></div>
+        <div class="field"><label for="gHi">最高</label><input id="gHi" type="number" inputmode="decimal" step="0.5" value="20"></div>
+      </div><div class="help">填一個你覺得「至少／頂多」的範圍，而不是單一數字；可以用分析師預估或歷史平均打折</div></fieldset>
+      <fieldset class="rng"><legend>③ 至少會成長多久（年）</legend><div class="row2">
+        <div class="field"><label for="nLo">最短</label><input id="nLo" type="number" inputmode="numeric" min="1" max="30" step="1" value="5"></div>
+        <div class="field"><label for="nHi">最長</label><input id="nHi" type="number" inputmode="numeric" min="1" max="30" step="1" value="10"></div>
+      </div><div class="help">成長期結束就假設賣掉；折現率用「最接近這個年數的美債殖利率」</div></fieldset>
+      <fieldset class="rng"><legend>④ 成長期結束賣掉時，別人願意出「年獲利的幾倍」（出場本益比）</legend><div class="row2">
+        <div class="field"><label for="peLo">最低</label><input id="peLo" type="number" inputmode="decimal" min="1" step="1" value="15"></div>
+        <div class="field"><label for="peHi">最高</label><input id="peHi" type="number" inputmode="decimal" min="1" step="1" value="25"></div>
+      </div><div class="help">成長期過後公司會變「成熟」，成熟公司本益比通常比現在低；填太高等於假設它永遠是成長股</div></fieldset>
+      <details class="adv"><summary>進階：折現率設定（預設自動）</summary>
+        <div class="row2" style="margin-top:10px">
+          <div class="field"><label for="erp">股市風險溢價（%）</label><input id="erp" type="number" inputmode="decimal" step="0.5" value="4"><div class="help">買股票比買美債多承擔的風險，要求多給的報酬；常見假設 3～5%，可自行調整</div></div>
+          <div class="field"><label for="yOv">美債殖利率手動覆寫（%，留空＝自動）</label><input id="yOv" type="number" inputmode="decimal" step="0.01" placeholder="自動用右表"><div class="help">留空時每個成長年數各自對應最接近年期的殖利率</div></div>
+        </div>
+      </details>
+    </form>
+  </div>
+
+  <h2 id="verdict">結論</h2>
+  <div id="vOut"></div>
+  <div id="vBand"></div>
+
+  <h2 id="range">合理價區間（便宜 → 昂貴）</h2>
+  <div id="vTable"></div>
+
+  <h2 id="sens">哪個假設最關鍵？</h2>
+  <p class="small">固定成長年數為中位數，看成長率 × 出場本益比的合理價。顏色＝相對於目前股價的高低。</p>
+  <div id="vSens"></div>
+
+  <h2 id="how">這是怎麼算的</h2>
+  <div class="note navy"><p><b>合理價 ＝ 現在 EPS × (1 + 成長率)<sup>年數</sup> × 出場本益比 ÷ (1 + 折現率)<sup>年數</sup></b></p><p>折現率 ＝ 最接近「年數」的美債殖利率 ＋ 股市風險溢價。前面三個乘出來是「賣掉那天能拿到多少」，除以 (1＋折現率)<sup>年數</sup> 是「那筆錢換成今天值多少」。</p><p>②④ 各自在最低～最高之間平均取 11 個點、③ 每一年取一點（超過 11 年則平均取 11 個），最多組合成 11 × 11 × 11 ＝ 1,331 種情境，每種算一個合理價，再排序成第 5／25／50／75／95 百分位。目前股價落在哪一段，就是結論。所有數字都在你的瀏覽器即時現算，沒有任何數字寫死在頁面裡。</p></div>
+  <div class="note warn"><p><b>不是投資建議，也不是保證。</b>這個模型的答案完全取決於你填的假設——成長率從 30% 改成 20%，合理價可能差三成以上。它適合用來看「現在的價格隱含了多樂觀的假設」，不適合當買賣訊號。對虧損公司、盈餘大起大落的公司、金融股，本益比法會失真。</p></div>
+</div>
+<aside>
+  <div class="side toc"><h3>本頁</h3><ul><li><a href="#verdict">結論</a></li><li><a href="#range">合理價區間</a></li><li><a href="#sens">哪個假設最關鍵</a></li><li><a href="#how">這是怎麼算的</a></li></ul></div>
+  <div class="side"><h3>美債殖利率（自動更新）</h3><div id="vTsy"><p class="small">載入中…</p></div></div>
+  <div class="side"><h3>相關頁面</h3><ul><li><a href="calculator.html">目標試算器</a></li><li><a href="risk.html">先看風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li></ul></div>
+</aside>
+</div></div></div>
+<style>
+.rng{border:1px solid var(--line);border-radius:3px;padding:10px 12px 8px;margin:0}
+.rng legend{font-size:14px;font-weight:600;padding:0 6px}
+.rng .help{font-size:12.5px;color:var(--muted);margin-top:4px}
+.adv summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--navy-ink)}
+.vz{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:12px 0 6px}
+.vz div{padding:8px 6px;text-align:center;font-size:13px;border-radius:3px;background:var(--band);color:var(--ink-2);border:1px solid var(--line)}
+.vz div b{display:block;font-size:14px;color:var(--ink)}
+.vz div.on{outline:3px solid var(--gold);background:var(--paper);font-weight:600}
+.big{font-family:var(--serif);font-size:28px;line-height:1.2;margin:6px 0 2px}
+.sens td{font-variant-numeric:tabular-nums}
+.sens td.c0{background:rgba(31,122,58,.22)}.sens td.c1{background:rgba(31,122,58,.10)}.sens td.c2{background:rgba(183,121,31,.10)}.sens td.c3{background:rgba(179,38,30,.10)}.sens td.c4{background:rgba(179,38,30,.22)}
+@media(max-width:640px){.vz{grid-template-columns:repeat(5,1fr);font-size:11px}.vz div{padding:6px 2px}.vz div b{font-size:12px}}
+</style>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const nf=new Intl.NumberFormat('zh-Hant-TW',{maximumFractionDigits:2,minimumFractionDigits:2});
+const fp=v=>nf.format(v);
+const TENORS=[['1m',1/12],['2m',2/12],['3m',3/12],['4m',4/12],['6m',6/12],['1y',1],['2y',2],['3y',3],['5y',5],['7y',7],['10y',10],['20y',20],['30y',30]];
+let TSY=null;  // data/treasury.json
+
+function nearestTenor(n){const avail=TENORS.filter(t=>TSY&&TSY.tenors&&TSY.tenors[t[0]]!=null);if(!avail.length)return null;let best=avail[0];avail.forEach(t=>{if(Math.abs(t[1]-n)<Math.abs(best[1]-n))best=t;});return {code:best[0],y:TSY.tenors[best[0]]};}
+function steps(lo,hi,k){if(hi<lo){const t=lo;lo=hi;hi=t;}const out=[];for(let i=0;i<k;i++)out.push(lo+(hi-lo)*i/(k-1));return out;}
+function pct(sorted,p){const i=(sorted.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return sorted[lo]+(sorted[hi]-sorted[lo])*(i-lo);}
+function fair(E,g,n,pe,r){return E*Math.pow(1+g,n)*pe/Math.pow(1+r,n);}
+function rateFor(n,erp,ov){if(ov!=null&&isFinite(ov))return {r:ov/100+erp,code:'手動',y:ov};const t=nearestTenor(n);if(!t)return null;return {r:t.y/100+erp,code:t.code,y:t.y};}
+const ZONES=[['非常便宜','p5 以下'],['便宜','p5～p25'],['合理','p25～p75'],['偏貴','p75～p95'],['昂貴','p95 以上']];
+
+function run(){
+  const P=+$('px').value,E=+$('eps').value,gLo=+$('gLo').value/100,gHi=+$('gHi').value/100,nLo=Math.round(+$('nLo').value),nHi=Math.round(+$('nHi').value),peLo=+$('peLo').value,peHi=+$('peHi').value,erp=+$('erp').value/100;
+  const ovRaw=$('yOv').value.trim();const ov=ovRaw===''?null:+ovRaw;
+  const out=$('vOut');
+  if(!(P>0)||!(E>0)){out.innerHTML='<p class="msg err">請輸入大於 0 的目前股價與每股盈餘（虧損公司本工具不適用）。</p>';$('vBand').innerHTML='';$('vTable').innerHTML='';$('vSens').innerHTML='';return;}
+  if(!(nLo>=1)||!(nHi>=1)||!(peLo>0)||!(peHi>0)){out.innerHTML='<p class="msg err">成長年數至少 1 年、出場本益比必須大於 0。</p>';return;}
+  if(ov==null&&!(TSY&&TSY.asof)){out.innerHTML='<p class="msg info">美債殖利率尚未載入（資料檔尚未更新）。請在「進階」手動填入殖利率，或稍後再試。</p>';$('vBand').innerHTML='';$('vTable').innerHTML='';$('vSens').innerHTML='';return;}
+  const K=11;const gs=steps(gLo,gHi,K),pes=steps(peLo,peHi,K);
+  const nl=Math.min(nLo,nHi),nh=Math.max(nLo,nHi);const ns=[];for(let n=nl;n<=nh;n++)ns.push(n);
+  const nsUse=ns.length>K?steps(nl,nh,K).map(Math.round).filter((v,i,a)=>a.indexOf(v)===i):ns;
+  const rates={};nsUse.forEach(n=>rates[n]=rateFor(n,erp,ov));
+  const vals=[];gs.forEach(g=>nsUse.forEach(n=>pes.forEach(pe=>vals.push(fair(E,g,n,pe,rates[n].r)))));
+  vals.sort((a,b)=>a-b);
+  const q={min:vals[0],p5:pct(vals,.05),p25:pct(vals,.25),p50:pct(vals,.5),p75:pct(vals,.75),p95:pct(vals,.95),max:vals[vals.length-1]};
+  const zi=P<q.p5?0:P<q.p25?1:P<=q.p75?2:P<=q.p95?3:4;
+  const rank=vals.filter(v=>v<P).length/vals.length;
+  // 中位情境
+  const gM=(gLo+gHi)/2,nM=nsUse[Math.floor((nsUse.length-1)/2)],peM=(peLo+peHi)/2,rM=rates[nM];
+  const fairM=fair(E,gM,nM,peM,rM.r);
+  // 損益兩平成長率：用中位年數、中位本益比，股價＝合理價時需要的成長率
+  const gBE=Math.pow(P*Math.pow(1+rM.r,nM)/(E*peM),1/nM)-1;
+  const pe0=P/E,ey=E/P;
+  const usedTenors=nsUse.map(n=>n+' 年→'+rates[n].code+(rates[n].code==='手動'?'':' ')+fp(rates[n].y)+'%');
+  const uniqT=usedTenors.filter((v,i,a)=>a.indexOf(v)===i);
+  out.innerHTML=
+   '<div class="panel" style="border-top-color:var(--gold)"><p class="small" style="margin:0">目前股價 '+fp(P)+'，落在 '+vals.length.toLocaleString()+' 種情境合理價的第 '+(rank*100).toFixed(0)+' 百分位</p><p class="big">'+ZONES[zi][0]+'</p>'+
+   '<p>合理價中位數 <b class="num">'+fp(q.p50)+'</b>（目前股價'+(q.p50>=P?'再漲 '+((q.p50/P-1)*100).toFixed(0)+'% 才到':'比它高 '+((P/q.p50-1)*100).toFixed(0)+'%')+'）；第 5～95 百分位 <b class="num">'+fp(q.p5)+'～'+fp(q.p95)+'</b>。</p>'+
+   '<div class="vz">'+ZONES.map((z,i)=>'<div'+(i===zi?' class="on"':'')+'>'+z[0]+'<b>'+z[1]+'</b></div>').join('')+'</div>'+
+   '<p class="small">目前本益比 '+pe0.toFixed(1)+' 倍（盈餘殖利率 '+(ey*100).toFixed(2)+'%）。若成長 '+nM+' 年、出場 '+peM.toFixed(1)+' 倍、折現率 '+(rM.r*100).toFixed(2)+'%（'+rM.code+' 殖利率 '+fp(rM.y)+'% ＋ 風險溢價 '+(erp*100).toFixed(1)+'%），目前股價隱含的每年成長率是 <b>'+(gBE*100).toFixed(1)+'%</b>'+(gBE>gHi?'——高於你填的最高值，市場比你樂觀。':gBE<gLo?'——低於你填的最低值，市場比你悲觀。':'——在你填的範圍內。')+'</p>'+
+   '<p class="small">折現率用到的殖利率：'+uniqT.join('；')+'（'+(ov==null?'資料日期 '+TSY.asof:'手動覆寫')+'）</p></div>';
+  // 區間帶
+  band(q,P,zi);
+  // 表
+  const rows=[['非常便宜','低於 '+fp(q.p5),'最低 '+fp(q.min)],['便宜',fp(q.p5)+' ～ '+fp(q.p25),''],['合理',fp(q.p25)+' ～ '+fp(q.p75),'中位 '+fp(q.p50)],['偏貴',fp(q.p75)+' ～ '+fp(q.p95),''],['昂貴','高於 '+fp(q.p95),'最高 '+fp(q.max)]];
+  $('vTable').innerHTML='<div class="tblwrap"><table class="tbl"><caption>合理價區間｜EPS '+fp(E)+'、成長 '+(gLo*100).toFixed(1)+'～'+(gHi*100).toFixed(1)+'%、'+nl+'～'+nh+' 年、出場 '+peLo+'～'+peHi+' 倍、風險溢價 '+(erp*100).toFixed(1)+'%</caption><thead><tr><th class="l">區段</th><th>合理價範圍</th><th>備註</th><th>目前股價</th></tr></thead><tbody>'+rows.map((r,i)=>'<tr'+(i===zi?' class="hl"':'')+'><td class="l">'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+(i===zi?'◀ '+fp(P):'')+'</td></tr>').join('')+'</tbody><tfoot><tr><td colspan="4">'+vals.length.toLocaleString()+' 種情境（②④ 各 11 點、③ 每一年一點）排序後的百分位；單位與你輸入的股價相同。</td></tr></tfoot></table></div>';
+  // 敏感度表 5×5
+  const g5=steps(gLo,gHi,5),pe5=steps(peLo,peHi,5);
+  let h='<div class="tblwrap"><table class="tbl sens"><caption>合理價｜固定成長 '+nM+' 年、折現率 '+(rM.r*100).toFixed(2)+'%；列＝成長率、欄＝出場本益比</caption><thead><tr><th class="l">成長率 ＼ 出場 PE</th>'+pe5.map(p=>'<th>'+p.toFixed(1)+' 倍</th>').join('')+'</tr></thead><tbody>';
+  g5.forEach(g=>{h+='<tr><td class="l">'+(g*100).toFixed(1)+'%</td>'+pe5.map(pe=>{const v=fair(E,g,nM,pe,rM.r);const d=v/P-1;const c=d>.3?'c0':d>.1?'c1':d>-.1?'c2':d>-.3?'c3':'c4';return '<td class="'+c+'">'+fp(v)+'<br><span class="small">'+(d>=0?'+':'')+(d*100).toFixed(0)+'%</span></td>';}).join('')+'</tr>';});
+  h+='</tbody><tfoot><tr><td colspan="6">括號內＝合理價相對目前股價的差距；綠＝股價比合理價便宜 10% 以上，紅＝貴 10% 以上。</td></tr></tfoot></table></div>';
+  $('vSens').innerHTML=h;
+}
+function band(q,P,zi){
+  const W=820,H=120,L=40,R=40;const lo=Math.min(q.min,P)*0.95,hi=Math.max(q.max,P)*1.05;const x=v=>L+(W-L-R)*(v-lo)/(hi-lo);
+  const cols=['rgba(31,122,58,.55)','rgba(31,122,58,.28)','rgba(183,121,31,.25)','rgba(179,38,30,.28)','rgba(179,38,30,.55)'];
+  const edges=[lo,q.p5,q.p25,q.p75,q.p95,hi];
+  let s='<div class="fig"><p class="ftitle">目前股價落在哪一段</p><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="合理價區間帶">';
+  for(let i=0;i<5;i++){s+='<rect x="'+x(edges[i])+'" y="40" width="'+Math.max(0,x(edges[i+1])-x(edges[i]))+'" height="28" fill="'+cols[i]+'"'+(i===zi?' stroke="var(--gold)" stroke-width="3"':'')+'/>';}
+  [['p5',q.p5],['p25',q.p25],['中位',q.p50],['p75',q.p75],['p95',q.p95]].forEach(([l,v],i)=>{s+='<line x1="'+x(v)+'" x2="'+x(v)+'" y1="36" y2="72" stroke="var(--ink)" stroke-width="1"/><text x="'+x(v)+'" y="'+(i%2?92:84)+'" text-anchor="middle" class="viz-lbl" font-size="11">'+l+' '+fp(v)+'</text>';});
+  s+='<polygon points="'+x(P)+',38 '+(x(P)-7)+',24 '+(x(P)+7)+',24" fill="var(--gold)" stroke="var(--ink)" stroke-width="1"/><text x="'+x(P)+'" y="16" text-anchor="middle" class="viz-txt" font-weight="700" font-size="13">目前 '+fp(P)+'</text>';
+  s+='</svg><p class="fnote">綠＝便宜、黃＝合理、紅＝昂貴；三角形＝目前股價。</p></div>';
+  $('vBand').innerHTML=s;
+}
+function showTsy(){
+  const el=$('vTsy');
+  if(!(TSY&&TSY.asof)){el.innerHTML='<p class="small">殖利率資料尚未更新（GitHub Actions 每個交易日自動抓取）。可在進階欄手動填入。</p>';return;}
+  const order=TENORS.filter(t=>TSY.tenors[t[0]]!=null);
+  el.innerHTML='<table class="tbl" style="font-size:13px;margin:4px 0 6px"><tbody>'+order.map(t=>'<tr><td class="l">'+t[0].replace('m',' 個月').replace('y',' 年')+'</td><td>'+fp(TSY.tenors[t[0]])+'%</td></tr>').join('')+'</tbody></table><p class="small">資料日期 '+TSY.asof+'｜來源：'+(TSY.source||'')+'</p>';
+}
+fetch('data/treasury.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{TSY=j;showTsy();run();}).catch(()=>{TSY=null;showTsy();run();});
+['px','eps','gLo','gHi','nLo','nHi','peLo','peHi','erp','yOv'].forEach(id=>$(id).addEventListener('input',run));
+})();
+</script>
+</main>
+<footer>
+  <div class="wrap">
+    <div><h4>BNASDAQ 研究站</h4><p style="max-width:40ch;font-size:13.5px;color:rgba(255,255,255,.8)">以 AI 模型探勘交易策略 → 驗證 → 回測 → 進入市場驗證 → 優化 → 回到第一步，無限循環。本站公開回測結果、風險與代價，不公開買賣規則。</p></div>
+    <div><h4>研究</h4><ul><li><a href="research.html">26 年成績單</a></li><li><a href="research.html#crises">6 次大跌</a></li><li><a href="risk.html#robust">是不是湊巧？</a></li><li><a href="taiwan.html">台股對比</a></li></ul></div>
+    <div><h4>工具</h4><ul><li><a href="calculator.html">目標試算器</a></li><li><a href="valuation.html">估值試算器</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="news.html#video">完整影片</a></li><li><a href="search.html">站內搜尋</a></li></ul></div>
+    <div><h4>帳號</h4><ul><li><a href="login.html">登入</a></li><li><a href="member.html">會員專區</a></li><li><a href="faq.html#account">如何申請帳號</a></li><li><a href="data.html">資料口徑與免責聲明</a></li></ul></div>
+  </div>
+  <div class="legal"><div class="wrap">回測區間 2000-05-31～2026-09-30（美元、含股息、換倉單邊成本 0.1%）。QLD 2006-06 上市前以合成序列代理、QQQ 1999-03 上市前以 NDX 代理；台股對比自 2013-12-31 起、台幣含息。所有績效數字為歷史回測，不保證未來報酬。© 2026 BNASDAQ／BEST NASDAQ。頁面產生日期 2026-10-29。</div></div>
+</footer>
+</body>
+</html>
