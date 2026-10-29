@@ -121,7 +121,15 @@ def fetch_yahoo(code, market, start, end):
         d = dt.datetime.fromtimestamp(t, tz=TPE).date()
         rows.append((d, float(c), float(a)))
     rows.sort()
-    return rows
+    splits = []
+    for ev in (res.get('events') or {}).get('splits', {}).values():
+        try:
+            num, den = float(ev.get('numerator')), float(ev.get('denominator'))
+            if num > 0 and den > 0:
+                splits.append((dt.datetime.fromtimestamp(int(ev['date']), tz=TPE).date(), den / num))
+        except Exception:
+            pass
+    return rows, splits
 
 
 # ------------------------------------------------------------------ metrics (pure)
@@ -135,6 +143,35 @@ def _at_or_before(rows, d):
         else:
             hi = mid
     return lo - 1
+
+
+def clean_raw(rows, splits):
+    """Yahoo 台股歷史常見錯誤：原始收盤與還原收盤在同一天同時跳 1/4、1/2、2、4 倍，但那天並沒有分割事件
+    （例 0050 的 2013-12-31 → 2014-01-02）。處理：那天之前的原始收盤與還原收盤整段乘上 k，使序列連續；
+    k 取事件清單中最接近的分割倍率（15% 內），否則取當天原始收盤比值。真正的分割日（±5 日內有事件）不處理。"""
+    rows = [list(r) for r in rows]
+    split_days = [d for d, _ in splits]
+    cands = set()
+    for _, f in splits:
+        cands.add(f); cands.add(1 / f)
+    fixes = []
+    for i in range(len(rows) - 1, 0, -1):
+        d, c, a = rows[i]; d0, c0, a0 = rows[i - 1]
+        if c0 <= 0 or c <= 0:
+            continue
+        r_close = c / c0
+        if 0.5 <= r_close <= 2.0:
+            continue
+        if any(abs((d - sd).days) <= 5 for sd in split_days):
+            continue
+        k = r_close
+        for f in cands:
+            if abs(r_close / f - 1) <= 0.15:
+                k = f; break
+        for j in range(i):
+            rows[j][1] *= k; rows[j][2] *= k
+        fixes.append(('raw', d.isoformat(), round(k, 6)))
+    return [tuple(r) for r in rows], fixes
 
 
 def clean_adj(rows):
@@ -157,10 +194,12 @@ def clean_adj(rows):
     return [tuple(r) for r in rows], fixes
 
 
-def compute(rows, start, end, crises):
+def compute(rows, start, end, crises, splits=()):
     """rows: [(date, close, adj)] sorted. start/end: date. crises: [{name,peak,trough}]"""
     raw_rows = rows
+    rows, fixes_raw = clean_raw(rows, list(splits))
     rows, fixes = clean_adj(rows)
+    fixes = fixes_raw + [('adj',) + f for f in fixes]
     rows = [r for r in rows if r[0] <= end]
     k0 = _at_or_before(raw_rows, start)
     boundary = [[r[0].isoformat(), round(r[1], 3), round(r[2], 4)] for r in raw_rows[max(0, k0 - 3):k0 + 4]]
@@ -279,10 +318,10 @@ def main():
                 pass
         rec = names.get(code, [code, code, 'TW', ''])
         markets = [rec[2]] + [m for m in ('TW', 'TWO') if m != rec[2]]
-        rows, used_market, err = None, None, None
+        rows, splits, used_market, err = None, [], None, None
         for mk in markets:
             try:
-                rows = fetch_yahoo(code, mk, start, end); used_market = mk
+                rows, splits = fetch_yahoo(code, mk, start, end); used_market = mk
                 if rows and len(rows) >= 20:
                     break
                 rows = None
@@ -293,7 +332,7 @@ def main():
             errors[code] = dict(error=err or 'no data', when=today); failed += 1
             log('FAIL', code, err); continue
         try:
-            m = compute(rows, start, end, crises)
+            m = compute(rows, start, end, crises, splits)
         except Exception as e:  # noqa
             errors[code] = dict(error='compute: ' + repr(e), when=today); failed += 1
             log('FAIL compute', code, repr(e)); continue
