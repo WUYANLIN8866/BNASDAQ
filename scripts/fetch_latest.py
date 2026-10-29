@@ -152,6 +152,48 @@ def fetch_fx():
     return dict(rate=close, date=d, source='Yahoo TWD=X')
 
 
+def build_fx_monthly():
+    """月底匯率（台幣／美元）：FRED DEXTAUS 每日 → 每月最後一個有值的日子；備援 Yahoo TWD=X。寫到 data/tw/_fx.json。"""
+    import csv, io
+    out_path = os.path.join(ROOT, 'data', 'tw', '_fx.json')
+    months, source = {}, ''
+    try:
+        req = urllib.request.Request('https://fred.stlouisfed.org/graph/fredgraph.csv?id=DEXTAUS', headers=UA)
+        with urllib.request.urlopen(req, timeout=60) as r:
+            raw = r.read().decode('utf-8')
+        for rec in csv.DictReader(io.StringIO(raw)):
+            d = rec.get('observation_date') or rec.get('DATE'); v = rec.get('DEXTAUS')
+            if d and v and v != '.':
+                months[d[:7]] = float(v)      # 依日期遞增覆寫 → 留下月底最後一筆
+        source = 'FRED DEXTAUS（每日，取每月最後一筆）'
+    except Exception as e:  # noqa
+        log('fx FRED failed:', repr(e))
+    if len(months) < 100:
+        try:
+            j = _get_json('https://query2.finance.yahoo.com/v8/finance/chart/TWD%3DX?period1=915148800&period2=' + str(int(dt.datetime.now().timestamp()) + 86400) + '&interval=1mo')
+            res = j['chart']['result'][0]; ts = res['timestamp']; cl = res['indicators']['quote'][0]['close']
+            months = {}
+            for t, c in zip(ts, cl):
+                if c is not None:
+                    months[dt.datetime.fromtimestamp(t, tz=dt.timezone.utc).strftime('%Y-%m')] = float(c)
+            source = 'Yahoo TWD=X（月線收盤）'
+        except Exception as e:  # noqa
+            log('fx Yahoo failed:', repr(e))
+    if len(months) < 100:
+        log('fx monthly: too few; keeping existing'); return
+    old = None
+    if os.path.exists(out_path):
+        try:
+            old = json.load(open(out_path, encoding='utf-8'))
+        except Exception:
+            old = None
+    if old and old.get('months') == months:
+        log('fx monthly unchanged'); return
+    json.dump(dict(schema='bnasdaq-fx-monthly/1', source=source, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), unit='台幣／美元，月底', months=months),
+              open(out_path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+    log('fx monthly written', len(months), 'months', min(months), max(months))
+
+
 def load_keep():
     """只保留股票與 ETF：以 data/tw/index.json 的清單為準；沒有清單時用代號型式判斷（4 碼、或 00 開頭的 ETF）。"""
     import re
@@ -168,6 +210,10 @@ def load_keep():
 
 
 def main():
+    try:
+        build_fx_monthly()
+    except Exception as e:  # noqa
+        log('fx monthly error:', repr(e))
     old = None
     keep = load_keep()
     errors = {}
