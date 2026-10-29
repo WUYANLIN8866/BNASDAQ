@@ -1,4 +1,4 @@
-name: Update Taiwan latest closes
+name: Update latest closes (TW official + US Yahoo)
 
 on:
   workflow_dispatch:
@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Fetch latest closes (TWSE + TPEx official)
-        run: python3 scripts/fetch_tw_latest.py
+        run: python3 scripts/fetch_latest.py
       - name: Commit if changed
         run: |
           git config user.name "bnasdaq-bot"

@@ -1,10 +1,10 @@
-name: Update Taiwan stock comparison data
+name: Update stock comparison data (TW + US)
 
 on:
   workflow_dispatch:
     inputs:
       codes:
-        description: '逗號分隔的台股代號（留空＝全部上市上櫃股票與 ETF）'
+        description: '逗號分隔的代號（台股或美股，留空＝全部）'
         required: false
         default: ''
       force:
@@ -38,9 +38,9 @@ jobs:
       - name: Fetch Taiwan stock data (Yahoo Finance adjusted close)
         run: |
           if [ -n "${{ github.event.inputs.codes }}" ]; then
-            python3 scripts/fetch_tw.py --codes "${{ github.event.inputs.codes }}" $([ "${{ github.event.inputs.force }}" = "true" ] && echo --force)
+            python3 scripts/fetch_stocks.py --codes "${{ github.event.inputs.codes }}" $([ "${{ github.event.inputs.force }}" = "true" ] && echo --force)
           else
-            python3 scripts/fetch_tw.py --all --budget-sec 19000 $([ "${{ github.event.inputs.force }}" = "true" ] && echo --force)
+            python3 scripts/fetch_stocks.py --all --budget-sec 19000 $([ "${{ github.event.inputs.force }}" = "true" ] && echo --force)
           fi
 
       - name: Commit data/tw if it changed

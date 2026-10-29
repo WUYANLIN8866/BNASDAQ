@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""BNASDAQ｜台股最新收盤 data/tw/latest.json（每個交易日收盤後更新；公開資料，不含任何策略規則）。
+"""BNASDAQ｜最新收盤 data/tw/latest.json（每個交易日收盤後更新；公開資料，不含任何策略規則）。
+台股：證交所／櫃買中心官方；美股：Yahoo Finance（index.json 裡 market=US 的代號）；匯率：Yahoo TWD=X。
 
 來源（官方）：
   上市：證交所 https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY_ALL?response=json（含日期、全部上市證券含 ETF）
@@ -12,11 +13,11 @@ import json, os, sys, datetime as dt, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'tw', 'latest.json')
-UA = {'User-Agent': 'Mozilla/5.0 (BNASDAQ tw latest fetch)', 'Accept': 'application/json'}
+UA = {'User-Agent': 'Mozilla/5.0 (BNASDAQ latest fetch)', 'Accept': 'application/json'}
 
 
 def log(*a):
-    print('[fetch_tw_latest]', *a, flush=True)
+    print('[fetch_latest]', *a, flush=True)
 
 
 def _get_json(url, timeout=60):
@@ -63,7 +64,7 @@ def fetch_twse():
                 try:
                     code = str(r[ci]).strip(); close = _num(r[pi]); chg = _num(r[di])
                     if code and close is not None:
-                        items[code] = [close, chg, str(r[ni]).strip()]
+                        items[code] = [close, chg, str(r[ni]).strip(), 'TW']
                 except Exception:
                     continue
             if items:
@@ -85,7 +86,7 @@ def fetch_twse():
     for r in j:
         code = str(r.get('Code', '')).strip(); close = _num(r.get('ClosingPrice')); chg = _num(r.get('Change'))
         if code and close is not None:
-            items[code] = [close, chg, str(r.get('Name', '')).strip()]
+            items[code] = [close, chg, str(r.get('Name', '')).strip(), 'TW']
     return date, items
 
 
@@ -98,8 +99,57 @@ def fetch_tpex():
         if not date and r.get('Date'):
             date = roc_to_iso(r['Date'])
         if code and close is not None:
-            items[code] = [close, chg, str(r.get('CompanyName', '')).strip()]
+            items[code] = [close, chg, str(r.get('CompanyName', '')).strip(), 'TWO']
     return date, items
+
+
+def _yahoo_chart_last(sym, rng='5d'):
+    j = _get_json(f'https://query2.finance.yahoo.com/v8/finance/chart/{urllib.request.quote(sym)}?range={rng}&interval=1d')
+    res = j['chart']['result'][0]
+    ts = res.get('timestamp') or []; cl = res['indicators']['quote'][0]['close']
+    pairs = [(t, c) for t, c in zip(ts, cl) if c is not None]
+    if not pairs:
+        raise RuntimeError('no closes')
+    t, c = pairs[-1]; prev = pairs[-2][1] if len(pairs) > 1 else None
+    d = dt.datetime.fromtimestamp(t, tz=dt.timezone(dt.timedelta(hours=-4))).date().isoformat()
+    return d, float(c), (round(float(c) - prev, 4) if prev is not None else None)
+
+
+def fetch_us(codes, sleep=0.25):
+    """美股最新收盤：先用 spark 批次（每批 20），失敗的用單檔 chart。回傳 (date, items)"""
+    import time
+    items, date = {}, ''
+    todo = list(codes)
+    for i in range(0, len(todo), 20):
+        batch = todo[i:i + 20]
+        try:
+            j = _get_json('https://query1.finance.yahoo.com/v7/finance/spark?symbols=' + ','.join(urllib.request.quote(c) for c in batch) + '&range=5d&interval=1d')
+            for r in (j.get('spark', {}).get('result') or []):
+                sym = r.get('symbol'); resp = (r.get('response') or [{}])[0]
+                ts = resp.get('timestamp') or []; cl = (resp.get('indicators', {}).get('quote') or [{}])[0].get('close') or []
+                pairs = [(t, c) for t, c in zip(ts, cl) if c is not None]
+                if not sym or not pairs:
+                    continue
+                t, c = pairs[-1]; prev = pairs[-2][1] if len(pairs) > 1 else None
+                d = dt.datetime.fromtimestamp(t, tz=dt.timezone(dt.timedelta(hours=-4))).date().isoformat()
+                items[sym] = [float(c), (round(float(c) - prev, 4) if prev is not None else None), '', 'US']
+                date = max(date, d)
+        except Exception as e:  # noqa
+            log('spark batch failed:', repr(e)[:120])
+        time.sleep(sleep)
+    missing = [c for c in todo if c not in items]
+    for c in missing[:400]:
+        try:
+            d, close, chg = _yahoo_chart_last(c); items[c] = [close, chg, '', 'US']; date = max(date, d)
+        except Exception as e:  # noqa
+            log('us', c, 'failed:', repr(e)[:100])
+        time.sleep(sleep)
+    return date, items
+
+
+def fetch_fx():
+    d, close, chg = _yahoo_chart_last('TWD=X')
+    return dict(rate=close, date=d, source='Yahoo TWD=X')
 
 
 def load_keep():
@@ -140,6 +190,25 @@ def main():
             if old and old.get('asof', {}).get(name):
                 asof[name] = old['asof'][name]
                 items.update({k: v for k, v in old.get('items', {}).items() if (v[3] if len(v) > 3 else None) == name})
+    # 美股 + 匯率
+    try:
+        us_codes = [r[0] for r in (json.load(open(os.path.join(ROOT, 'data', 'tw', 'index.json'), encoding='utf-8')).get('list') or []) if r[2] == 'US']
+    except Exception:
+        us_codes = []
+    if us_codes:
+        try:
+            d, it = fetch_us(us_codes)
+            if it:
+                asof['US'] = d; items.update(it); log('US', d, len(it), 'items of', len(us_codes))
+        except Exception as e:  # noqa
+            log('US failed:', repr(e)); errors['US'] = repr(e)[:300]
+    fx = None
+    try:
+        fx = fetch_fx(); log('fx', fx)
+    except Exception as e:  # noqa
+        log('fx failed:', repr(e)); errors['FX'] = repr(e)[:300]
+        if old and old.get('fx'):
+            fx = old['fx']
     if not items:
         log('nothing fetched; keeping existing'); return 1
     if 'TW' in asof and not asof['TW']:
@@ -150,7 +219,7 @@ def main():
     if old and old.get('asof') and set(asof) == set(old['asof']) and all(asof.get(k, '') <= old['asof'].get(k, '') for k in asof) and old.get('items'):
         log('no newer date than existing', old['asof'], '; not rewriting'); return 0
     out = dict(schema='bnasdaq-tw-latest/1', asof=asof, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               source='證交所 STOCK_DAY_ALL（上市）、櫃買中心 OpenAPI（上櫃）', errors=errors, notes=RWD_NOTE, items=items)
+               source='證交所 STOCK_DAY_ALL（上市）、櫃買中心 OpenAPI（上櫃）、Yahoo Finance（美股、匯率）', errors=errors, notes=RWD_NOTE, fx=fx, items=items)
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     log('written', OUT, asof, len(items), 'items')
     return 0
