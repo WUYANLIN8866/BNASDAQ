@@ -34,8 +34,8 @@
 
   // ---- nav ----
   document.addEventListener('DOMContentLoaded', () => {
-    const b = $('.nav .burger'), ul = $('.nav ul');
-    if (b && ul) b.addEventListener('click', () => { const o = ul.classList.toggle('open'); b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
+    const b = $('.nav .burger'), uls = $$('.nav ul');
+    if (b && uls.length) b.addEventListener('click', () => { const o = !uls[0].classList.contains('open'); uls.forEach(u => u.classList.toggle('open', o)); b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
     const here = location.pathname.split('/').pop() || 'index.html';
     $$('.nav a').forEach(a => { const h = a.getAttribute('href'); if (h === here || (here === '' && h === 'index.html')) a.setAttribute('aria-current', 'page'); });
     // theme label
