@@ -50,49 +50,74 @@ def ysym(code, market):
     return code if market == 'US' else code + ('.TWO' if market == 'TWO' else '.TW')
 
 
-def summary(sym):
-    u = f'https://query2.finance.yahoo.com/v10/finance/quoteSummary/{urllib.parse.quote(sym)}?modules={MODS}&crumb={urllib.parse.quote(CRUMB or "")}'
+TS_TYPES = 'trailingDilutedEPS,annualDilutedEPS,quarterlyDilutedEPS'
+
+
+def timeseries(sym):
+    """Yahoo fundamentals-timeseries（不需 crumb）：近 12 個月／年度／季度稀釋 EPS。"""
+    now = int(time.time())
+    u = f'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{urllib.parse.quote(sym)}?type={TS_TYPES}&period1=1356998400&period2={now}'
     j = json.loads(get(u))
-    r = (j.get('quoteSummary') or {}).get('result') or []
-    if not r: raise RuntimeError('no result')
-    return r[0]
+    out = {}
+    for r in (j.get('timeseries') or {}).get('result') or []:
+        t = (r.get('meta') or {}).get('type', [None])[0]
+        rows = [(x.get('asOfDate'), raw(x.get('reportedValue')), x.get('currencyCode')) for x in (r.get(t) or []) if x and x.get('reportedValue')]
+        out[t] = sorted(rows)
+    if not any(out.values()): raise RuntimeError('no eps data')
+    return out
 
 
 def news(sym, name):
     try:
-        u = 'https://query1.finance.yahoo.com/v1/finance/search?' + urllib.parse.urlencode(dict(q=sym, newsCount=8, quotesCount=0, lang='zh-Hant-TW', region='TW'))
+        u = 'https://query1.finance.yahoo.com/v1/finance/search?' + urllib.parse.urlencode(dict(q=sym, newsCount=8, quotesCount=0))
         j = json.loads(get(u))
         return [dict(t=n.get('title'), u=n.get('link'), p=n.get('publisher'), d=dt.datetime.utcfromtimestamp(n.get('providerPublishTime', 0)).date().isoformat())
                 for n in (j.get('news') or [])[:8] if n.get('title')]
-    except Exception:
-        return []
+    except Exception as e:
+        DIAG.append(f'news {sym}: {e!r}'[:120]); return []
 
 
-def extract(code, market, s):
-    pr, sd, ks, fd, et, ap, ea = (s.get(k) or {} for k in ('price', 'summaryDetail', 'defaultKeyStatistics', 'financialData', 'earningsTrend', 'assetProfile', 'earnings'))
-    o = dict(code=code, market=market, name=pr.get('longName') or pr.get('shortName') or '', currency=pr.get('currency'),
-             fin_currency=fd.get('financialCurrency'), price=raw(pr.get('regularMarketPrice')),
-             eps_ttm=raw(ks.get('trailingEps')), eps_fwd=raw(ks.get('forwardEps')),
-             pe_ttm=raw(sd.get('trailingPE')), pe_fwd=raw(sd.get('forwardPE')) or raw(ks.get('forwardPE')),
-             sector=ap.get('sector') or '', industry=ap.get('industry') or '',
-             target_mean=raw(fd.get('targetMeanPrice')), target_lo=raw(fd.get('targetLowPrice')), target_hi=raw(fd.get('targetHighPrice')),
-             analysts=raw(fd.get('numberOfAnalystOpinions')), rev_growth=raw(fd.get('revenueGrowth')), earn_growth=raw(fd.get('earningsGrowth')))
+def industries():
+    """台股：證交所 ISIN 產業別；美股：S&P 500 CSV 的 GICS 類股／子產業。"""
+    ind = {}
+    for mode in (2, 4):
+        try:
+            t = get(f'https://isin.twse.com.tw/isin/C_public.jsp?strMode={mode}', timeout=60).decode('cp950', errors='replace')
+            for tr in re.findall(r'<tr>(.*?)</tr>', t, re.S):
+                td = [re.sub(r'<[^>]+>', '', x).strip() for x in re.findall(r'<td[^>]*>(.*?)</td>', tr, re.S)]
+                if len(td) >= 5 and '\u3000' in td[0]:
+                    code = td[0].split('\u3000')[0].strip()
+                    if td[4]: ind[code] = ('', td[4])
+        except Exception as e: DIAG.append(f'isin {mode}: {e!r}'[:120])
+    try:
+        import csv, io
+        t = get('https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv').decode()
+        for r in csv.DictReader(io.StringIO(t)):
+            ind[r['Symbol'].replace('.', '-')] = (r.get('GICS Sector', ''), r.get('GICS Sub-Industry', ''))
+    except Exception as e: DIAG.append(f'sp500 csv: {e!r}'[:120])
+    return ind
+
+
+def extract(code, market, ts, price, cur, ind):
+    o = dict(code=code, market=market, currency=cur, price=price)
+    sec, sub = ind.get(code, ('', ''))
+    o['sector'] = sec or ('台股' if market != 'US' else ''); o['industry'] = sub
+    ttm = ts.get('trailingDilutedEPS') or []; ann = ts.get('annualDilutedEPS') or []; q = ts.get('quarterlyDilutedEPS') or []
+    if ttm: o['eps_ttm'], o['eps_asof'], o['fin_currency'] = ttm[-1][1], ttm[-1][0], ttm[-1][2]
+    elif len(q) >= 4: o['eps_ttm'], o['eps_asof'], o['fin_currency'] = sum(x[1] for x in q[-4:]), q[-1][0], q[-1][2]
+    elif ann: o['eps_ttm'], o['eps_asof'], o['fin_currency'] = ann[-1][1], ann[-1][0], ann[-1][2]
+    else: o['eps_ttm'] = None
+    o['eps_annual'] = [[d, round(v, 4)] for d, v, c in ann[-6:]]
     g = {}
-    for t in et.get('trend') or []:
-        v = raw((t.get('growth') or {}))
-        if v is None: continue
-        if t.get('period') == '+1y': g['analyst_next_year'] = v
-        if t.get('period') == '+5y': g['analyst_5y'] = v
-        if t.get('period') == '0y': g['analyst_this_year'] = v
-    yr = [(y.get('date'), raw(y.get('earnings'))) for y in ((ea.get('financialsChart') or {}).get('yearly') or [])]
-    yr = [(d, v) for d, v in yr if v]
-    if len(yr) >= 2 and yr[0][1] > 0 and yr[-1][1] > 0:
-        g['hist_net_income_cagr'] = (yr[-1][1] / yr[0][1]) ** (1 / (len(yr) - 1)) - 1
-        o['hist_years'] = f'{yr[0][0]}→{yr[-1][0]}'
-    if o['earn_growth'] is not None: g['latest_quarter_yoy'] = o['earn_growth']
+    a = [x for x in ann[-4:]]
+    if len(a) >= 2 and a[0][1] > 0 and a[-1][1] > 0:
+        g['hist_eps_cagr'] = (a[-1][1] / a[0][1]) ** (1 / (len(a) - 1)) - 1; o['hist_years'] = f'{a[0][0][:4]}→{a[-1][0][:4]}'
+    if len(q) >= 5 and q[-5][1] > 0:
+        g['latest_quarter_yoy'] = q[-1][1] / q[-5][1] - 1
+    if len(q) >= 8 and sum(x[1] for x in q[-8:-4]) > 0:
+        g['ttm_yoy'] = sum(x[1] for x in q[-4:]) / sum(x[1] for x in q[-8:-4]) - 1
     o['growth_inputs'] = {k: round(v, 4) for k, v in g.items()}
-    if o['pe_ttm'] is None and o['price'] and o['eps_ttm'] and o['eps_ttm'] > 0:
-        o['pe_ttm'] = o['price'] / o['eps_ttm']
+    o['pe_ttm'] = price / o['eps_ttm'] if price and o.get('eps_ttm') and o['eps_ttm'] > 0 else None
     return o
 
 
@@ -105,11 +130,11 @@ def params(o, peers):
     why = []
     p = dict()
     p['px'] = o['price']; p['eps'] = o['eps_ttm']
-    why.append(f"股價＝最新收盤 {o['price']}；EPS＝近 12 個月每股盈餘 {o['eps_ttm']}")
+    why.append(f"股價＝最新收盤 {o['price']}；EPS＝近 12 個月稀釋每股盈餘 {round(o['eps_ttm'],2)}（財報截至 {o.get('eps_asof')}）")
     if o.get('fin_currency') and o.get('currency') and o['fin_currency'] != o['currency']:
         why.append(f"注意：財報幣別 {o['fin_currency']} 與股價幣別 {o['currency']} 不同（常見於 ADR），EPS 可能需換算")
     gs = [v for v in o['growth_inputs'].values() if v is not None]
-    lab = dict(analyst_next_year='分析師明年 EPS 成長', analyst_5y='分析師 5 年長期成長', analyst_this_year='分析師今年 EPS 成長', hist_net_income_cagr='近幾年淨利年化', latest_quarter_yoy='最近一季獲利年增')
+    lab = dict(hist_eps_cagr='近幾年 EPS 年化成長', latest_quarter_yoy='最近一季 EPS 年增', ttm_yoy='近 12 個月 EPS 年增')
     if gs:
         lo, hi = max(0.0, min(gs)), min(0.6, max(gs))
         if hi < lo: hi = lo
@@ -140,23 +165,35 @@ def main():
     idx = json.load(open(IDX, encoding='utf-8'))['list']
     mk = {x[0]: x[2] for x in idx}
     codes = [c.strip().upper() for c in a.codes.split(',') if c.strip()] or [x[0] for x in idx if x[4]]
-    try: crumb()
-    except Exception as e: DIAG.append(repr(e)[:200])
-    t0 = time.time(); ok = fail = 0
+    latest = {}
+    try:
+        L = json.load(open(os.path.join(ROOT, 'data', 'tw', 'latest.json'), encoding='utf-8'))
+        for k, v in (L.get('items') or {}).items():
+            latest[k] = v
+    except Exception as e: DIAG.append(f'latest: {e!r}'[:120])
+    ind = industries(); t0 = time.time(); ok = fail = 0
     for c in codes:
         if time.time() - t0 > a.budget_sec: log('budget reached'); break
         m = mk.get(c, 'US' if c.isalpha() else 'TW'); sym = ysym(c, m)
         try:
-            try: s = summary(sym)
-            except urllib.error.HTTPError as e:
-                if e.code == 401: crumb(); s = summary(sym)
-                elif m == 'TW': sym = c + '.TWO'; s = summary(sym)
+            lq = latest.get(c) or {}
+            price = lq.get('close') if isinstance(lq, dict) else (lq[0] if isinstance(lq, list) and lq else None)
+            cur = 'USD' if m == 'US' else 'TWD'
+            if price is None:
+                try:
+                    cj_ = json.loads(get(f'https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range=5d&interval=1d'))
+                    price = cj_['chart']['result'][0]['meta']['regularMarketPrice']
+                except Exception: pass
+            try: ts = timeseries(sym)
+            except Exception:
+                if m == 'TW': sym = c + '.TWO'; ts = timeseries(sym)
                 else: raise
-            o = extract(c, m, s); o['news'] = news(sym, o['name']); o['updated'] = dt.date.today().isoformat()
+            o = extract(c, m, ts, price, cur, ind); o['news'] = news(sym, ''); o['updated'] = dt.date.today().isoformat()
+            nm = [x for x in idx if x[0] == c]; o['name'] = (nm[0][1] if nm and nm[0][1] else c)
             json.dump(o, open(os.path.join(OUT, c + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':')); ok += 1
         except Exception as e:  # noqa
             fail += 1; log('FAIL', c, repr(e)[:120]); DIAG.append(f'{c}: {e!r}'[:200])
-        time.sleep(0.35)
+        time.sleep(0.4)
     # 第二輪：產業本益比 → 參數
     peers = {}
     files = [f for f in os.listdir(OUT) if f.endswith('.json') and not f.startswith('_')]
@@ -168,10 +205,10 @@ def main():
             for k in (('i', o.get('industry')), ('s', o.get('sector'))):
                 if k[1]: peers.setdefault(k, []).append(pe)
     for f, o in allo:
-        if o.get('price') and o.get('eps_ttm') and o['eps_ttm'] > 0:
+        if o.get('price') and o.get('eps_ttm') and o['eps_ttm'] > 0 and not (o.get('fin_currency') and o['fin_currency'] != o.get('currency') and o['market'] == 'US'):
             o['params'] = params(o, peers)
         else:
-            o['params'] = None; o['why_none'] = '虧損或查無 EPS（≤ 0），本工具不適用'
+            o['params'] = None; o['why_none'] = ('財報幣別 ' + str(o.get('fin_currency')) + ' 與股價幣別不同（ADR），EPS 需自行換算') if o.get('eps_ttm') and o['eps_ttm'] > 0 else '虧損、ETF 或查無 EPS（≤ 0），本工具不適用'
         json.dump(o, open(os.path.join(OUT, f), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     ind = {f'{k[0]}:{k[1]}': dict(n=len(v), p25=round(pct(v, .25), 1), p50=round(pct(v, .5), 1), p75=round(pct(v, .75), 1)) for k, v in peers.items()}
     json.dump(dict(diag=DIAG[:40], updated=dt.date.today().isoformat(), ok=ok, fail=fail, files=len(files), industry=ind), open(os.path.join(OUT, '_industry.json'), 'w', encoding='utf-8'), ensure_ascii=False)
