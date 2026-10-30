@@ -1,0 +1,26 @@
+name: Update valuation fundamentals (TW + US)
+on:
+  workflow_dispatch:
+    inputs:
+      codes:
+        description: '逗號分隔代號（留空＝全部）'
+        required: false
+        default: ''
+  schedule:
+    - cron: '0 20 * * 6'   # 每週日 04:00 台北
+permissions:
+  contents: write
+concurrency: { group: fund, cancel-in-progress: false }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: python3 scripts/fetch_fundamentals.py --codes "${{ github.event.inputs.codes }}"
+      - run: |
+          git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
+          git add data/fund
+          git diff --cached --quiet || { git commit -m "data: valuation fundamentals"; git pull --rebase origin main || true; git push origin HEAD:main; }
