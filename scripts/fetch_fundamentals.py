@@ -233,8 +233,7 @@ def params(o, peers):
     gs = [v for v in o['growth_inputs'].values() if v is not None]
     lab = dict(hist_eps_cagr='近幾年 EPS 年化成長', latest_quarter_yoy='最近一季 EPS 年增', ttm_yoy='近 12 個月 EPS 年增')
     if gs:
-        lo, hi = max(0.0, min(gs)), min(0.6, max(gs))
-        if hi < lo: hi = lo
+        lo, hi = min(0.6, max(0.0, min(gs))), min(0.6, max(0.0, max(gs)))
         if hi - lo < 0.02: lo, hi = max(0, lo - 0.02), hi + 0.02
         why.append('成長率＝下列數字的最小～最大（夾在 0～60%）：' + '、'.join(f"{lab[k]} {v*100:.1f}%" for k, v in o['growth_inputs'].items()))
     else:
