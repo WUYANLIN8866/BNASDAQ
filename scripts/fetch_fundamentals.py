@@ -133,6 +133,24 @@ def sec_tickers():
         DIAG.append(f'sec tickers txt: {e!r}'[:120]); return {}
 
 
+NQ_H = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36', 'Accept': 'application/json, text/plain, */*'}
+
+
+def _num(x):
+    try: return float(str(x).replace('$', '').replace(',', '').strip())
+    except Exception: return None
+
+
+def nasdaq_eps(sym):
+    """SEC 被擋時的備援：Nasdaq 報價摘要（EPS、本益比、預估本益比）→ 成長＝本益比 ÷ 預估本益比 − 1。"""
+    j = json.loads(urllib.request.urlopen(urllib.request.Request(f'https://api.nasdaq.com/api/quote/{sym}/summary?assetclass=stocks', headers=NQ_H), timeout=30).read())
+    sd = ((j.get('data') or {}).get('summaryData')) or {}
+    v = {k: _num((x or {}).get('value')) for k, x in sd.items()}
+    eps = v.get('EarningsPerShare'); pe = v.get('PERatio'); fpe = v.get('ForwardPE1Yr')
+    if not eps: raise RuntimeError('nasdaq: no eps ' + ','.join(sd.keys())[:80])
+    return dict(nasdaq=dict(eps=eps, pe=pe, fpe=fpe, sector=(sd.get('Sector') or {}).get('value'), industry=(sd.get('Industry') or {}).get('value')))
+
+
 def sec_eps(cik):
     """SEC EDGAR companyfacts：稀釋 EPS（10-K 年度、10-Q 單季）。"""
     if not cik: raise RuntimeError('not in SEC list (foreign/ETF)')
@@ -204,7 +222,12 @@ def extract(code, market, ts, price, cur, ind):
     sec_, sub = ind.get(code, ('', ''))
     o['sector'] = sec_ or ('台股' if market != 'US' else ''); o['industry'] = sub
     g = {}
-    if 'implied' in ts:
+    if 'nasdaq' in ts:
+        n = ts['nasdaq']; o['eps_ttm'] = n['eps']; o['eps_asof'] = 'Nasdaq 報價摘要，近四季'
+        if not o['industry']: o['industry'] = n.get('industry') or ''
+        if not o['sector']: o['sector'] = n.get('sector') or ''
+        if n.get('pe') and n.get('fpe') and n['fpe'] > 0: g['analyst_next_year'] = n['pe'] / n['fpe'] - 1
+    elif 'implied' in ts:
         h = sorted(ts['implied']); o['eps_ttm'] = round(h[-1][1], 4); o['eps_asof'] = h[-1][0] + '（收盤÷本益比，近四季）'
         o['eps_hist'] = [[d, round(v, 3)] for d, v in h]
         if len(h) >= 2 and h[0][1] > 0 and h[-1][1] > 0:
@@ -242,11 +265,12 @@ def params(o, peers):
     if False:
         why.append(f"注意：財報幣別 {o['fin_currency']} 與股價幣別 {o['currency']} 不同（常見於 ADR），EPS 可能需換算")
     gs = [v for v in o['growth_inputs'].values() if v is not None]
-    lab = dict(hist_eps_cagr='近幾年 EPS 年化成長', latest_quarter_yoy='最近一季 EPS 年增', ttm_yoy='近 12 個月 EPS 年增')
+    lab = dict(analyst_next_year='分析師明年 EPS 成長（本益比÷預估本益比）', hist_eps_cagr='近幾年 EPS 年化成長', latest_quarter_yoy='最近一季 EPS 年增', ttm_yoy='近 12 個月 EPS 年增')
     if gs:
         lo, hi = min(gs), max(gs)
         if hi - lo < 0.02: lo, hi = lo - 0.02, hi + 0.02
         lo, hi = min(0.6, max(0.0, lo)), min(0.6, max(0.0, hi))
+        if hi - lo < 0.02: lo = max(0.0, hi - 0.2)   # 兩端都被夾到上限（或下限）時，給 20 個百分點的區間
         why.append('成長率＝下列數字的最小～最大（夾在 0～60%）：' + '、'.join(f"{lab[k]} {v*100:.1f}%" for k, v in o['growth_inputs'].items()))
     else:
         lo, hi = 0.05, 0.10; why.append('查無成長預估與歷年獲利，成長率先用 5～10%，請自行調整')
@@ -287,7 +311,8 @@ def main():
             lq = latest.get(c)
             price = lq[0] if isinstance(lq, list) and lq else None
             if m == 'US':
-                ts = sec_eps(sec.get(c.replace('-', '.')) or sec.get(c))
+                try: ts = sec_eps(sec.get(c.replace('-', '.')) or sec.get(c))
+                except Exception: ts = nasdaq_eps(c.replace('-', '.')); time.sleep(0.3)
             else:
                 h = tw_eps.get(c)
                 if not h: raise RuntimeError('no TWSE/TPEx PE')
