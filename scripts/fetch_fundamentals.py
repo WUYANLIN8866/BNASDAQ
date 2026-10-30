@@ -284,7 +284,7 @@ def params(o, peers):
     why = []
     p = dict()
     p['px'] = o['price']; p['eps'] = o['eps_ttm']
-    why.append(f"股價＝最新收盤 {o['price']}；EPS＝近四季每股盈餘 {round(o['eps_ttm'],2)}（{o.get('eps_asof')}；美股來源 SEC 財報、台股來源證交所／櫃買中心本益比）")
+    why.append(f"股價＝最新收盤 {o['price']}；EPS＝近四季每股盈餘 {round(o['eps_ttm'],2)}（" + (f"來源 Nasdaq，{o.get('eps_asof','')}" if o['market'] == 'US' else f"{o.get('eps_asof','')}，由證交所／櫃買中心公布的本益比反推") + '）')
     if False:
         why.append(f"注意：財報幣別 {o['fin_currency']} 與股價幣別 {o['currency']} 不同（常見於 ADR），EPS 可能需換算")
     gs = [v for v in o['growth_inputs'].values() if v is not None]
@@ -316,6 +316,7 @@ def params(o, peers):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--codes', default=''); ap.add_argument('--budget-sec', type=int, default=9000)
+    ap.add_argument('--params-only', action='store_true', help='不抓資料，只用現有檔案重算產業本益比與參數')
     a = ap.parse_args(); os.makedirs(OUT, exist_ok=True)
     idx = json.load(open(IDX, encoding='utf-8'))['list']
     mk = {x[0]: x[2] for x in idx}
@@ -325,9 +326,13 @@ def main():
         L = json.load(open(os.path.join(ROOT, 'data', 'tw', 'latest.json'), encoding='utf-8'))
         latest = L.get('items') or {}; LATEST.update(latest)
     except Exception as e: DIAG.append(f'latest: {e!r}'[:120])
-    ind = industries(); ok = fail = 0
-    tw_eps = twse_eps_history()      # {code: [(date, implied_ttm_eps)]}
-    sec = sec_tickers()              # {TICKER: cik}
+    ok = fail = 0
+    if a.params_only:
+        ind, tw_eps, sec, codes = {}, {}, {}, []
+    else:
+        ind = industries()
+        tw_eps = twse_eps_history()      # {code: [(date, implied_ttm_eps)]}
+        sec = sec_tickers()              # {TICKER: cik}
     names = {x[0]: x[1] for x in idx}
     t0 = time.time(); stopped = False
 
@@ -383,7 +388,7 @@ def main():
         if o.get('price') and o.get('eps_ttm') and o['eps_ttm'] > 0 :
             o['params'] = params(o, peers)
         else:
-            o['params'] = None; o['why_none'] = ('財報幣別 ' + str(o.get('fin_currency')) + ' 與股價幣別不同（ADR），EPS 需自行換算') if o.get('eps_ttm') and o['eps_ttm'] > 0 else '虧損、ETF 或查無 EPS（≤ 0），本工具不適用'
+            o['params'] = None; o['why_none'] = '沒有最新股價（最新行情檔沒有這檔）' if not o.get('price') else '虧損、ETF 或查無 EPS（≤ 0），本工具不適用'
         json.dump(o, open(os.path.join(OUT, f), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     ind = {f'{k[0]}:{k[1]}': dict(n=len(v), p25=round(pct(v, .25), 1), p50=round(pct(v, .5), 1), p75=round(pct(v, .75), 1)) for k, v in peers.items()}
     src=[x for x in DIAG if not re.match(r'^[0-9A-Z-]+: ', x)]
