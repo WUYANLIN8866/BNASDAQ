@@ -178,9 +178,9 @@ async function loadCode(raw){let c=String(raw||'').trim().toUpperCase().replace(
   if(!d.params){$('cMsg').innerHTML='<p class="msg err">'+esc(d.name||c)+'：'+esc(d.why_none||'無法自動帶入')+'。</p>';return;}
   const P=d.params;['px','eps','gLo','gHi','nLo','nHi','peLo','peHi'].forEach(k=>{if(P[k]!=null)$(k).value=+(+P[k]).toFixed(k==='px'||k==='eps'?2:1);});run();
   $('cMsg').innerHTML='<p class="msg ok">已帶入 '+esc(d.name)+'（'+esc(c)+'）的參數，資料日 '+esc(d.updated)+'；下面每個數字都可以再改。</p>';
-  const gi=d.growth_inputs||{},L={analyst_this_year:'分析師今年 EPS 成長',analyst_next_year:'分析師明年 EPS 成長',analyst_5y:'分析師 5 年長期成長',hist_net_income_cagr:'近幾年淨利年化'+(d.hist_years?'（'+d.hist_years+'）':''),latest_quarter_yoy:'最近一季獲利年增'};
+  const gi=d.growth_inputs||{},L={hist_eps_cagr:'近幾年 EPS 年化成長'+(d.hist_years?'（'+d.hist_years+'）':''),latest_quarter_yoy:'最近一季 EPS 年增',ttm_yoy:'近四季 EPS 年增'};
   let h='<div class="tblwrap"><table class="tbl"><caption>'+esc(d.name)+'｜'+esc(d.sector||'—')+' / '+esc(d.industry||'—')+'</caption><tbody>';
-  h+='<tr><td class=l>股價／EPS（近 12 個月）</td><td>'+esc(d.price)+' '+esc(d.currency||'')+'／'+esc(d.eps_ttm)+'</td></tr><tr><td class=l>本益比（近 12 個月／預估）</td><td>'+(d.pe_ttm?d.pe_ttm.toFixed(1):'—')+'／'+(d.pe_fwd?d.pe_fwd.toFixed(1):'—')+'</td></tr>';
+  h+='<tr><td class=l>股價／EPS（近四季）</td><td>'+esc(d.price)+' '+esc(d.currency||'')+'／'+esc(d.eps_ttm)+'</td></tr><tr><td class=l>本益比（近四季）</td><td>'+(d.pe_ttm?d.pe_ttm.toFixed(1):'—')+'</td></tr>';
   Object.keys(gi).forEach(k=>{h+='<tr><td class=l>'+(L[k]||k)+'</td><td>'+pctS(gi[k])+'</td></tr>';});
   if(d.target_mean)h+='<tr><td class=l>分析師目標價（'+(d.analysts||'?')+' 位；低／平均／高）</td><td>'+esc(d.target_lo)+'／'+esc(d.target_mean)+'／'+esc(d.target_hi)+'</td></tr>';
   h+='</tbody></table></div><div class="note"><p><b>參數怎麼來的</b></p><ul>'+P.why.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>';

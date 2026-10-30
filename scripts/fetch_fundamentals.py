@@ -107,24 +107,112 @@ def industries():
     return ind
 
 
+SEC_UA = {'User-Agent': 'BNASDAQ research site bnasdaq-bot@users.noreply.github.com'}
+
+
+def sec_get(u):
+    return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers=SEC_UA), timeout=60).read())
+
+
+def sec_tickers():
+    try:
+        j = sec_get('https://www.sec.gov/files/company_tickers.json')
+        return {v['ticker'].upper(): v['cik_str'] for v in j.values()}
+    except Exception as e:
+        DIAG.append(f'sec tickers: {e!r}'[:120]); return {}
+
+
+def sec_eps(cik):
+    """SEC EDGAR companyfacts：稀釋 EPS（10-K 年度、10-Q 單季）。"""
+    if not cik: raise RuntimeError('not in SEC list (foreign/ETF)')
+    j = sec_get(f'https://data.sec.gov/api/xbrl/companyfacts/CIK{int(cik):010d}.json')
+    g = j.get('facts', {}).get('us-gaap', {})
+    f = g.get('EarningsPerShareDiluted') or g.get('EarningsPerShareBasic')
+    if not f: raise RuntimeError('no EPS facts')
+    units = f['units'].get('USD/shares') or next(iter(f['units'].values()))
+    ann, q = {}, {}
+    for x in units:
+        if not x.get('start') or not x.get('end'): continue
+        days = (dt.date.fromisoformat(x['end']) - dt.date.fromisoformat(x['start'])).days
+        if 350 <= days <= 380: ann[x['end']] = x['val']
+        elif 80 <= days <= 100: q[x['end']] = x['val']
+    ann = sorted(ann.items()); q = sorted(q.items())
+    # 第四季常只有年報：用 年度 − 前三季 補
+    qd = dict(q)
+    for e, v in ann:
+        ed = dt.date.fromisoformat(e)
+        prev = [k for k in qd if 250 <= (ed - dt.date.fromisoformat(k)).days <= 290 or 160 <= (ed - dt.date.fromisoformat(k)).days <= 200 or 70 <= (ed - dt.date.fromisoformat(k)).days <= 110]
+        if e not in qd and len(prev) == 3: qd[e] = v - sum(qd[k] for k in prev)
+    q = sorted(qd.items())
+    return dict(annual=ann, quarterly=q)
+
+
+def _twse_json(u):
+    return json.loads(get(u, timeout=60))
+
+
+def twse_eps_history():
+    """證交所 BWIBBU（個股本益比）在今天與 1、2、3 年前 → 推算近四季 EPS＝收盤 ÷ 本益比；上櫃用櫃買中心 OpenAPI 最新一天。"""
+    out = {}
+    today = dt.date.today()
+    for yrs in (3, 2, 1, 0):
+        d = today - dt.timedelta(days=365 * yrs)
+        for back in range(8):
+            dd = d - dt.timedelta(days=back)
+            try:
+                j = _twse_json(f'https://www.twse.com.tw/rwd/zh/afterTrading/BWIBBU_d?date={dd:%Y%m%d}&selectType=ALL&response=json')
+            except Exception as e:
+                DIAG.append(f'bwibbu {dd}: {e!r}'[:100]); continue
+            rows = j.get('data') or []
+            if not rows: continue
+            f = j.get('fields') or []
+            ic = f.index('收盤價') if '收盤價' in f else 2
+            ip = next((k for k, n in enumerate(f) if '本益比' in n), 4)
+            for r in rows:
+                try:
+                    px, pe = float(str(r[ic]).replace(',', '')), float(str(r[ip]).replace(',', ''))
+                    if pe > 0: out.setdefault(r[0].strip(), []).append((dd.isoformat(), px / pe))
+                except Exception: pass
+            break
+            time.sleep(1)
+        time.sleep(2)
+    try:
+        for r in _twse_json('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_peratio_analysis'):
+            code = (r.get('SecuritiesCompanyCode') or '').strip()
+            try:
+                pe = float(r.get('PriceEarningRatio') or 0); px = float(r.get('ClosingPrice') or r.get('Close') or 0)
+                if pe > 0 and px > 0: out.setdefault(code, []).append((today.isoformat(), px / pe))
+            except Exception: pass
+    except Exception as e: DIAG.append(f'tpex pe: {e!r}'[:100])
+    DIAG.append(f'tw implied eps codes={len(out)}')
+    return out
+
+
 def extract(code, market, ts, price, cur, ind):
     o = dict(code=code, market=market, currency=cur, price=price)
-    sec, sub = ind.get(code, ('', ''))
-    o['sector'] = sec or ('台股' if market != 'US' else ''); o['industry'] = sub
-    ttm = ts.get('trailingDilutedEPS') or []; ann = ts.get('annualDilutedEPS') or []; q = ts.get('quarterlyDilutedEPS') or []
-    if ttm: o['eps_ttm'], o['eps_asof'], o['fin_currency'] = ttm[-1][1], ttm[-1][0], ttm[-1][2]
-    elif len(q) >= 4: o['eps_ttm'], o['eps_asof'], o['fin_currency'] = sum(x[1] for x in q[-4:]), q[-1][0], q[-1][2]
-    elif ann: o['eps_ttm'], o['eps_asof'], o['fin_currency'] = ann[-1][1], ann[-1][0], ann[-1][2]
-    else: o['eps_ttm'] = None
-    o['eps_annual'] = [[d, round(v, 4)] for d, v, c in ann[-6:]]
+    sec_, sub = ind.get(code, ('', ''))
+    o['sector'] = sec_ or ('台股' if market != 'US' else ''); o['industry'] = sub
     g = {}
-    a = [x for x in ann[-4:]]
-    if len(a) >= 2 and a[0][1] > 0 and a[-1][1] > 0:
-        g['hist_eps_cagr'] = (a[-1][1] / a[0][1]) ** (1 / (len(a) - 1)) - 1; o['hist_years'] = f'{a[0][0][:4]}→{a[-1][0][:4]}'
-    if len(q) >= 5 and q[-5][1] > 0:
-        g['latest_quarter_yoy'] = q[-1][1] / q[-5][1] - 1
-    if len(q) >= 8 and sum(x[1] for x in q[-8:-4]) > 0:
-        g['ttm_yoy'] = sum(x[1] for x in q[-4:]) / sum(x[1] for x in q[-8:-4]) - 1
+    if 'implied' in ts:
+        h = sorted(ts['implied']); o['eps_ttm'] = round(h[-1][1], 4); o['eps_asof'] = h[-1][0] + '（收盤÷本益比，近四季）'
+        o['eps_hist'] = [[d, round(v, 3)] for d, v in h]
+        if len(h) >= 2 and h[0][1] > 0 and h[-1][1] > 0:
+            yrs = (dt.date.fromisoformat(h[-1][0]) - dt.date.fromisoformat(h[0][0])).days / 365.25
+            if yrs > 0.9: g['hist_eps_cagr'] = (h[-1][1] / h[0][1]) ** (1 / yrs) - 1; o['hist_years'] = f'{h[0][0][:4]}→{h[-1][0][:4]}'
+        if len(h) >= 2 and h[-2][1] > 0 and 0.9 < (dt.date.fromisoformat(h[-1][0]) - dt.date.fromisoformat(h[-2][0])).days / 365.25 < 1.1:
+            g['ttm_yoy'] = h[-1][1] / h[-2][1] - 1
+    else:
+        ann, q = ts['annual'], ts['quarterly']
+        if len(q) >= 4 and (dt.date.fromisoformat(q[-1][0]) - dt.date.fromisoformat(q[-4][0])).days < 300:
+            o['eps_ttm'] = round(sum(v for _, v in q[-4:]), 4); o['eps_asof'] = q[-1][0]
+        elif ann: o['eps_ttm'] = ann[-1][1]; o['eps_asof'] = ann[-1][0]
+        else: o['eps_ttm'] = None
+        o['eps_hist'] = [[d, v] for d, v in ann[-6:]]
+        a = ann[-4:]
+        if len(a) >= 2 and a[0][1] > 0 and a[-1][1] > 0:
+            g['hist_eps_cagr'] = (a[-1][1] / a[0][1]) ** (1 / (len(a) - 1)) - 1; o['hist_years'] = f'{a[0][0][:4]}→{a[-1][0][:4]}'
+        if len(q) >= 5 and q[-5][1] > 0: g['latest_quarter_yoy'] = q[-1][1] / q[-5][1] - 1
+        if len(q) >= 8 and sum(v for _, v in q[-8:-4]) > 0: g['ttm_yoy'] = sum(v for _, v in q[-4:]) / sum(v for _, v in q[-8:-4]) - 1
     o['growth_inputs'] = {k: round(v, 4) for k, v in g.items()}
     o['pe_ttm'] = price / o['eps_ttm'] if price and o.get('eps_ttm') and o['eps_ttm'] > 0 else None
     return o
@@ -139,8 +227,8 @@ def params(o, peers):
     why = []
     p = dict()
     p['px'] = o['price']; p['eps'] = o['eps_ttm']
-    why.append(f"股價＝最新收盤 {o['price']}；EPS＝近 12 個月稀釋每股盈餘 {round(o['eps_ttm'],2)}（財報截至 {o.get('eps_asof')}）")
-    if o.get('fin_currency') and o.get('currency') and o['fin_currency'] != o['currency']:
+    why.append(f"股價＝最新收盤 {o['price']}；EPS＝近四季每股盈餘 {round(o['eps_ttm'],2)}（{o.get('eps_asof')}；美股來源 SEC 財報、台股來源證交所／櫃買中心本益比）")
+    if False:
         why.append(f"注意：財報幣別 {o['fin_currency']} 與股價幣別 {o['currency']} 不同（常見於 ADR），EPS 可能需換算")
     gs = [v for v in o['growth_inputs'].values() if v is not None]
     lab = dict(hist_eps_cagr='近幾年 EPS 年化成長', latest_quarter_yoy='最近一季 EPS 年增', ttm_yoy='近 12 個月 EPS 年增')
@@ -177,32 +265,29 @@ def main():
     latest = {}
     try:
         L = json.load(open(os.path.join(ROOT, 'data', 'tw', 'latest.json'), encoding='utf-8'))
-        for k, v in (L.get('items') or {}).items():
-            latest[k] = v
+        latest = L.get('items') or {}
     except Exception as e: DIAG.append(f'latest: {e!r}'[:120])
-    ind = industries(); t0 = time.time(); ok = fail = 0
+    ind = industries(); ok = fail = 0
+    tw_eps = twse_eps_history()      # {code: [(date, implied_ttm_eps)]}
+    sec = sec_tickers()              # {TICKER: cik}
     for c in codes:
-        if time.time() - t0 > a.budget_sec: log('budget reached'); break
-        m = mk.get(c, 'US' if c.isalpha() else 'TW'); sym = ysym(c, m)
+        m = mk.get(c, 'US' if c.isalpha() else 'TW')
         try:
-            lq = latest.get(c) or {}
-            price = lq.get('close') if isinstance(lq, dict) else (lq[0] if isinstance(lq, list) and lq else None)
-            cur = 'USD' if m == 'US' else 'TWD'
-            if price is None:
-                try:
-                    cj_ = json.loads(get(f'https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range=5d&interval=1d'))
-                    price = cj_['chart']['result'][0]['meta']['regularMarketPrice']
-                except Exception: pass
-            try: ts = timeseries(sym)
-            except Exception:
-                if m == 'TW': sym = c + '.TWO'; ts = timeseries(sym)
-                else: raise
-            o = extract(c, m, ts, price, cur, ind); o['news'] = news(sym, ''); o['updated'] = dt.date.today().isoformat()
+            lq = latest.get(c)
+            price = lq[0] if isinstance(lq, list) and lq else None
+            if m == 'US':
+                ts = sec_eps(sec.get(c.replace('-', '.')) or sec.get(c))
+            else:
+                h = tw_eps.get(c)
+                if not h: raise RuntimeError('no TWSE/TPEx PE')
+                ts = dict(implied=h)
+            o = extract(c, m, ts, price, 'USD' if m == 'US' else 'TWD', ind)
+            o['news'] = news(ysym(c, m), ''); o['updated'] = dt.date.today().isoformat()
             nm = [x for x in idx if x[0] == c]; o['name'] = (nm[0][1] if nm and nm[0][1] else c)
             json.dump(o, open(os.path.join(OUT, c + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':')); ok += 1
         except Exception as e:  # noqa
-            fail += 1; log('FAIL', c, repr(e)[:120]); DIAG.append(f'{c}: {e!r}'[:200])
-        time.sleep(0.4)
+            fail += 1; DIAG.append(f'{c}: {e!r}'[:160])
+        if m == 'US': time.sleep(0.12)   # SEC 限制每秒 10 次
     # 第二輪：產業本益比 → 參數
     peers = {}
     files = [f for f in os.listdir(OUT) if f.endswith('.json') and not f.startswith('_')]
@@ -214,7 +299,7 @@ def main():
             for k in (('i', o.get('industry')), ('s', o.get('sector'))):
                 if k[1]: peers.setdefault(k, []).append(pe)
     for f, o in allo:
-        if o.get('price') and o.get('eps_ttm') and o['eps_ttm'] > 0 and not (o.get('fin_currency') and o['fin_currency'] != o.get('currency') and o['market'] == 'US'):
+        if o.get('price') and o.get('eps_ttm') and o['eps_ttm'] > 0 :
             o['params'] = params(o, peers)
         else:
             o['params'] = None; o['why_none'] = ('財報幣別 ' + str(o.get('fin_currency')) + ' 與股價幣別不同（ADR），EPS 需自行換算') if o.get('eps_ttm') and o['eps_ttm'] > 0 else '虧損、ETF 或查無 EPS（≤ 0），本工具不適用'
