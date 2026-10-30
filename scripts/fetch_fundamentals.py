@@ -25,6 +25,7 @@ def get(url, timeout=30):
 
 
 DIAG = []
+LATEST = {}
 
 
 def crumb():
@@ -107,11 +108,16 @@ def industries():
     return ind
 
 
-SEC_UA = {'User-Agent': 'BNASDAQ research site bnasdaq-bot@users.noreply.github.com'}
+SEC_UA = {'User-Agent': 'BNASDAQ Research bnasdaq-bot@users.noreply.github.com', 'Accept-Encoding': 'gzip, deflate', 'Accept': 'application/json,text/plain,*/*'}
 
 
-def sec_get(u):
-    return json.loads(urllib.request.urlopen(urllib.request.Request(u, headers=SEC_UA), timeout=60).read())
+def sec_get(u, as_text=False):
+    import gzip, zlib
+    r = urllib.request.urlopen(urllib.request.Request(u, headers=SEC_UA), timeout=60)
+    b = r.read(); enc = r.headers.get('Content-Encoding', '')
+    if enc == 'gzip': b = gzip.decompress(b)
+    elif enc == 'deflate': b = zlib.decompress(b)
+    return b.decode() if as_text else json.loads(b)
 
 
 def sec_tickers():
@@ -119,7 +125,12 @@ def sec_tickers():
         j = sec_get('https://www.sec.gov/files/company_tickers.json')
         return {v['ticker'].upper(): v['cik_str'] for v in j.values()}
     except Exception as e:
-        DIAG.append(f'sec tickers: {e!r}'[:120]); return {}
+        DIAG.append(f'sec tickers json: {e!r}'[:120])
+    try:
+        t = sec_get('https://www.sec.gov/include/ticker.txt', as_text=True)
+        return {a.upper(): int(b) for a, b in (l.split('\t') for l in t.splitlines() if '\t' in l)}
+    except Exception as e:
+        DIAG.append(f'sec tickers txt: {e!r}'[:120]); return {}
 
 
 def sec_eps(cik):
@@ -180,7 +191,7 @@ def twse_eps_history():
         for r in _twse_json('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_peratio_analysis'):
             code = (r.get('SecuritiesCompanyCode') or '').strip()
             try:
-                pe = float(r.get('PriceEarningRatio') or 0); px = float(r.get('ClosingPrice') or r.get('Close') or 0)
+                pe = float(r.get('PriceEarningRatio') or 0); lq = LATEST.get(code); px = float(lq[0]) if isinstance(lq, list) and lq and lq[0] else 0
                 if pe > 0 and px > 0: out.setdefault(code, []).append((today.isoformat(), px / pe))
             except Exception: pass
     except Exception as e: DIAG.append(f'tpex pe: {e!r}'[:100])
@@ -233,8 +244,9 @@ def params(o, peers):
     gs = [v for v in o['growth_inputs'].values() if v is not None]
     lab = dict(hist_eps_cagr='近幾年 EPS 年化成長', latest_quarter_yoy='最近一季 EPS 年增', ttm_yoy='近 12 個月 EPS 年增')
     if gs:
-        lo, hi = min(0.6, max(0.0, min(gs))), min(0.6, max(0.0, max(gs)))
-        if hi - lo < 0.02: lo, hi = max(0, lo - 0.02), hi + 0.02
+        lo, hi = min(gs), max(gs)
+        if hi - lo < 0.02: lo, hi = lo - 0.02, hi + 0.02
+        lo, hi = min(0.6, max(0.0, lo)), min(0.6, max(0.0, hi))
         why.append('成長率＝下列數字的最小～最大（夾在 0～60%）：' + '、'.join(f"{lab[k]} {v*100:.1f}%" for k, v in o['growth_inputs'].items()))
     else:
         lo, hi = 0.05, 0.10; why.append('查無成長預估與歷年獲利，成長率先用 5～10%，請自行調整')
@@ -264,7 +276,7 @@ def main():
     latest = {}
     try:
         L = json.load(open(os.path.join(ROOT, 'data', 'tw', 'latest.json'), encoding='utf-8'))
-        latest = L.get('items') or {}
+        latest = L.get('items') or {}; LATEST.update(latest)
     except Exception as e: DIAG.append(f'latest: {e!r}'[:120])
     ind = industries(); ok = fail = 0
     tw_eps = twse_eps_history()      # {code: [(date, implied_ttm_eps)]}
@@ -304,7 +316,8 @@ def main():
             o['params'] = None; o['why_none'] = ('財報幣別 ' + str(o.get('fin_currency')) + ' 與股價幣別不同（ADR），EPS 需自行換算') if o.get('eps_ttm') and o['eps_ttm'] > 0 else '虧損、ETF 或查無 EPS（≤ 0），本工具不適用'
         json.dump(o, open(os.path.join(OUT, f), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     ind = {f'{k[0]}:{k[1]}': dict(n=len(v), p25=round(pct(v, .25), 1), p50=round(pct(v, .5), 1), p75=round(pct(v, .75), 1)) for k, v in peers.items()}
-    json.dump(dict(diag=DIAG[:40], updated=dt.date.today().isoformat(), ok=ok, fail=fail, files=len(files), industry=ind), open(os.path.join(OUT, '_industry.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+    src=[x for x in DIAG if not re.match(r'^[0-9A-Z-]+: ', x)]
+    json.dump(dict(diag=src[:30] + DIAG[:20], updated=dt.date.today().isoformat(), ok=ok, fail=fail, files=len(files), industry=ind), open(os.path.join(OUT, '_industry.json'), 'w', encoding='utf-8'), ensure_ascii=False)
     log('done ok', ok, 'fail', fail, 'files', len(files))
 
 
