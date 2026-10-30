@@ -315,7 +315,7 @@ def params(o, peers):
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument('--codes', default=''); ap.add_argument('--budget-sec', type=int, default=17000)
+    ap = argparse.ArgumentParser(); ap.add_argument('--codes', default=''); ap.add_argument('--budget-sec', type=int, default=9000)
     a = ap.parse_args(); os.makedirs(OUT, exist_ok=True)
     idx = json.load(open(IDX, encoding='utf-8'))['list']
     mk = {x[0]: x[2] for x in idx}
@@ -328,7 +328,11 @@ def main():
     ind = industries(); ok = fail = 0
     tw_eps = twse_eps_history()      # {code: [(date, implied_ttm_eps)]}
     sec = sec_tickers()              # {TICKER: cik}
-    for c in codes:
+    names = {x[0]: x[1] for x in idx}
+    t0 = time.time(); stopped = False
+
+    def one(c):
+        """抓一檔，回傳 (code, ok, errmsg)。台股不抓新聞（Yahoo 對台股搜尋拿不到）。"""
         m = mk.get(c, 'US' if c.isalpha() else 'TW')
         try:
             lq = latest.get(c)
@@ -336,18 +340,35 @@ def main():
             PX[c] = price
             if m == 'US':
                 try: ts = sec_eps(sec.get(c.replace('-', '.')) or sec.get(c))
-                except Exception: ts = nasdaq_eps(c.replace('-', '.')); time.sleep(0.3)
+                except Exception: ts = nasdaq_eps(c.replace('-', '.'))
             else:
                 h = tw_eps.get(c)
                 if not h: raise RuntimeError('no TWSE/TPEx PE')
                 ts = dict(implied=h)
             o = extract(c, m, ts, price, 'USD' if m == 'US' else 'TWD', ind)
-            o['news'] = news(ysym(c, m), ''); o['updated'] = dt.date.today().isoformat()
-            nm = [x for x in idx if x[0] == c]; o['name'] = (nm[0][1] if nm and nm[0][1] else c)
-            json.dump(o, open(os.path.join(OUT, c + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':')); ok += 1
+            o['news'] = news(ysym(c, m), '') if m == 'US' else []
+            o['updated'] = dt.date.today().isoformat(); o['name'] = names.get(c) or c
+            json.dump(o, open(os.path.join(OUT, c + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+            return c, True, None
         except Exception as e:  # noqa
-            fail += 1; DIAG.append(f'{c}: {e!r}'[:160])
-        if m == 'US': time.sleep(0.12)   # SEC 限制每秒 10 次
+            return c, False, f'{c}: {e!r}'[:160]
+
+    # 台股只讀本地資料，很快；美股每檔 3～4 個 Nasdaq 請求，用 6 條執行緒平行；超過時間預算就停（已完成的照樣寫檔）
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    tw_codes = [c for c in codes if mk.get(c, 'US' if c.isalpha() else 'TW') != 'US']
+    us_codes = [c for c in codes if c not in set(tw_codes)]
+    for c in tw_codes:
+        _, good, err = one(c); ok += good; fail += (not good)
+        if err: DIAG.append(err)
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        futs = {ex.submit(one, c): c for c in us_codes}
+        for fu in as_completed(futs):
+            _, good, err = fu.result(); ok += good; fail += (not good)
+            if err: DIAG.append(err)
+            if time.time() - t0 > a.budget_sec and not stopped:
+                stopped = True; DIAG.insert(0, f'budget {a.budget_sec}s reached; remaining skipped')
+                for f2 in futs: f2.cancel()
+    log('fetched ok', ok, 'fail', fail, 'in', round(time.time() - t0), 's')
     # 第二輪：產業本益比 → 參數
     peers = {}
     files = [f for f in os.listdir(OUT) if f.endswith('.json') and not f.startswith('_')]
