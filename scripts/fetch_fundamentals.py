@@ -26,6 +26,7 @@ def get(url, timeout=30):
 
 DIAG = []
 LATEST = {}
+PX = {}
 
 
 def crumb():
@@ -146,8 +147,11 @@ def nasdaq_eps(sym):
     j = json.loads(urllib.request.urlopen(urllib.request.Request(f'https://api.nasdaq.com/api/quote/{sym}/summary?assetclass=stocks', headers=NQ_H), timeout=30).read())
     sd = ((j.get('data') or {}).get('summaryData')) or {}
     v = {k: _num((x or {}).get('value')) for k, x in sd.items()}
-    eps = v.get('EarningsPerShare'); pe = v.get('PERatio'); fpe = v.get('ForwardPE1Yr')
-    if not eps: raise RuntimeError('nasdaq: no eps ' + ','.join(sd.keys())[:80])
+    lk = {k.lower(): k for k in v}
+    pick = lambda *names: next((v[lk[n]] for n in names if n in lk and v[lk[n]]), None)
+    eps = pick('earningspershare', 'eps', 'epsttm'); pe = pick('peratio', 'pe', 'trailingpe'); fpe = pick('forwardpe1yr', 'forwardpe')
+    if not eps and pe and PX.get(sym.replace('.', '-')): eps = PX[sym.replace('.', '-')] / pe
+    if not eps: raise RuntimeError('nasdaq: no eps ' + ','.join(sd.keys())[:300])
     return dict(nasdaq=dict(eps=eps, pe=pe, fpe=fpe, sector=(sd.get('Sector') or {}).get('value'), industry=(sd.get('Industry') or {}).get('value')))
 
 
@@ -310,6 +314,7 @@ def main():
         try:
             lq = latest.get(c)
             price = lq[0] if isinstance(lq, list) and lq else None
+            PX[c] = price
             if m == 'US':
                 try: ts = sec_eps(sec.get(c.replace('-', '.')) or sec.get(c))
                 except Exception: ts = nasdaq_eps(c.replace('-', '.')); time.sleep(0.3)
