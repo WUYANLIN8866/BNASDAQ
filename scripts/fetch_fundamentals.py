@@ -24,13 +24,22 @@ def get(url, timeout=30):
     return r.read()
 
 
+DIAG = []
+
+
 def crumb():
     global CRUMB
-    for u in ('https://fc.yahoo.com', 'https://finance.yahoo.com/'):
+    for u in ('https://fc.yahoo.com', 'https://finance.yahoo.com/quote/AAPL/'):
         try: get(u)
-        except Exception: pass
-    CRUMB = get('https://query1.finance.yahoo.com/v1/test/getcrumb').decode().strip()
-    log('crumb ok' if CRUMB else 'crumb empty')
+        except Exception as e: DIAG.append(f'cookie {u}: {e!r}'[:200])
+    for u in ('https://query1.finance.yahoo.com/v1/test/getcrumb', 'https://query2.finance.yahoo.com/v1/test/getcrumb'):
+        try:
+            CRUMB = get(u).decode().strip()
+            if CRUMB and '<' not in CRUMB: break
+        except Exception as e:
+            DIAG.append(f'crumb {u}: {e!r}'[:200])
+    DIAG.append(f'crumb={bool(CRUMB)} cookies={[c.name for c in cj]}')
+    log(DIAG)
 
 
 def raw(x):
@@ -131,7 +140,9 @@ def main():
     idx = json.load(open(IDX, encoding='utf-8'))['list']
     mk = {x[0]: x[2] for x in idx}
     codes = [c.strip().upper() for c in a.codes.split(',') if c.strip()] or [x[0] for x in idx if x[4]]
-    crumb(); t0 = time.time(); ok = fail = 0
+    try: crumb()
+    except Exception as e: DIAG.append(repr(e)[:200])
+    t0 = time.time(); ok = fail = 0
     for c in codes:
         if time.time() - t0 > a.budget_sec: log('budget reached'); break
         m = mk.get(c, 'US' if c.isalpha() else 'TW'); sym = ysym(c, m)
@@ -144,7 +155,7 @@ def main():
             o = extract(c, m, s); o['news'] = news(sym, o['name']); o['updated'] = dt.date.today().isoformat()
             json.dump(o, open(os.path.join(OUT, c + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':')); ok += 1
         except Exception as e:  # noqa
-            fail += 1; log('FAIL', c, repr(e)[:120])
+            fail += 1; log('FAIL', c, repr(e)[:120]); DIAG.append(f'{c}: {e!r}'[:200])
         time.sleep(0.35)
     # 第二輪：產業本益比 → 參數
     peers = {}
@@ -163,7 +174,7 @@ def main():
             o['params'] = None; o['why_none'] = '虧損或查無 EPS（≤ 0），本工具不適用'
         json.dump(o, open(os.path.join(OUT, f), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     ind = {f'{k[0]}:{k[1]}': dict(n=len(v), p25=round(pct(v, .25), 1), p50=round(pct(v, .5), 1), p75=round(pct(v, .75), 1)) for k, v in peers.items()}
-    json.dump(dict(updated=dt.date.today().isoformat(), ok=ok, fail=fail, files=len(files), industry=ind), open(os.path.join(OUT, '_industry.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+    json.dump(dict(diag=DIAG[:40], updated=dt.date.today().isoformat(), ok=ok, fail=fail, files=len(files), industry=ind), open(os.path.join(OUT, '_industry.json'), 'w', encoding='utf-8'), ensure_ascii=False)
     log('done ok', ok, 'fail', fail, 'files', len(files))
 
 

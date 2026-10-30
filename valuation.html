@@ -26,6 +26,10 @@
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <div class="panel">
+    <form class="form" id="cf" novalidate><div class="row2"><div class="field"><label for="code">輸入股票代號，自動帶入參數（台股例 2330、美股例 NVDA）</label><input id="code" list="codelist" autocomplete="off" placeholder="2330 或 NVDA"><datalist id="codelist"></datalist></div><div class="field" style="align-self:end"><button type="submit" class="btn">讀取並帶入</button></div></div></form>
+    <div id="cMsg"></div><div id="cInfo"></div>
+  </div>
+  <div class="panel">
     <form class="form" id="vf" onsubmit="return false">
       <div class="row2">
         <div class="field"><label for="px">目前股價</label><input id="px" type="number" inputmode="decimal" min="0.01" step="0.01" value="100"><div class="help">要判斷「合不合理」就得有個比較對象；幣別不限，和每股盈餘同幣別即可</div></div>
@@ -163,6 +167,28 @@ function showTsy(){
 }
 fetch('data/treasury.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{TSY=j;showTsy();run();}).catch(()=>{TSY=null;showTsy();run();});
 ['px','eps','gLo','gHi','nLo','nHi','peLo','peHi','erp','yOv'].forEach(id=>$(id).addEventListener('input',run));
+// ---- 代號 → 自動參數（data/fund/<代號>.json，每週由 GitHub Actions 讀 Yahoo 基本面、分析師預估、同產業本益比、最新新聞後算好）----
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pctS=v=>v==null?'—':(v*100).toFixed(1)+'%';
+fetch('data/tw/index.json').then(r=>r.json()).then(j=>{const dl=$('codelist');(j.list||[]).forEach(x=>{if(!x[4])return;const o=document.createElement('option');o.value=x[0];o.label=x[1]||'';dl.appendChild(o);});}).catch(()=>{});
+async function loadCode(raw){let c=String(raw||'').trim().toUpperCase().replace(/\.TWO?$/,'');if(/^[A-Z]+\.[A-Z]$/.test(c))c=c.replace('.','-');if(!c)return;
+ $('cMsg').innerHTML='<p class="msg info">讀取 '+esc(c)+'…</p>';$('cInfo').innerHTML='';
+ try{const r=await fetch('data/fund/'+encodeURIComponent(c)+'.json',{cache:'no-store'});if(!r.ok){$('cMsg').innerHTML='<p class="msg err">找不到 '+esc(c)+' 的基本面資料（可能打錯、ETF 沒有 EPS，或尚未收錄；資料每週日更新）。</p>';return;}
+  const d=await r.json();history.replaceState(null,'','#code='+c);
+  if(!d.params){$('cMsg').innerHTML='<p class="msg err">'+esc(d.name||c)+'：'+esc(d.why_none||'無法自動帶入')+'。</p>';return;}
+  const P=d.params;['px','eps','gLo','gHi','nLo','nHi','peLo','peHi'].forEach(k=>{if(P[k]!=null)$(k).value=+(+P[k]).toFixed(k==='px'||k==='eps'?2:1);});run();
+  $('cMsg').innerHTML='<p class="msg ok">已帶入 '+esc(d.name)+'（'+esc(c)+'）的參數，資料日 '+esc(d.updated)+'；下面每個數字都可以再改。</p>';
+  const gi=d.growth_inputs||{},L={analyst_this_year:'分析師今年 EPS 成長',analyst_next_year:'分析師明年 EPS 成長',analyst_5y:'分析師 5 年長期成長',hist_net_income_cagr:'近幾年淨利年化'+(d.hist_years?'（'+d.hist_years+'）':''),latest_quarter_yoy:'最近一季獲利年增'};
+  let h='<div class="tblwrap"><table class="tbl"><caption>'+esc(d.name)+'｜'+esc(d.sector||'—')+' / '+esc(d.industry||'—')+'</caption><tbody>';
+  h+='<tr><td class=l>股價／EPS（近 12 個月）</td><td>'+esc(d.price)+' '+esc(d.currency||'')+'／'+esc(d.eps_ttm)+'</td></tr><tr><td class=l>本益比（近 12 個月／預估）</td><td>'+(d.pe_ttm?d.pe_ttm.toFixed(1):'—')+'／'+(d.pe_fwd?d.pe_fwd.toFixed(1):'—')+'</td></tr>';
+  Object.keys(gi).forEach(k=>{h+='<tr><td class=l>'+(L[k]||k)+'</td><td>'+pctS(gi[k])+'</td></tr>';});
+  if(d.target_mean)h+='<tr><td class=l>分析師目標價（'+(d.analysts||'?')+' 位；低／平均／高）</td><td>'+esc(d.target_lo)+'／'+esc(d.target_mean)+'／'+esc(d.target_hi)+'</td></tr>';
+  h+='</tbody></table></div><div class="note"><p><b>參數怎麼來的</b></p><ul>'+P.why.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>';
+  if((d.news||[]).length)h+='<h3>最新市場消息</h3><ul class="small">'+d.news.map(n=>'<li><a href="'+esc(n.u)+'" target="_blank" rel="noopener">'+esc(n.t)+'</a>｜'+esc(n.p||'')+' '+esc(n.d||'')+'</li>').join('')+'</ul><p class="small">消息只列標題供參考，參數不依新聞情緒調整。</p>';
+  $('cInfo').innerHTML=h;
+ }catch(e){$('cMsg').innerHTML='<p class="msg err">讀取失敗：'+esc(e.message||e)+'</p>';}}
+$('cf').addEventListener('submit',e=>{e.preventDefault();loadCode($('code').value);});
+{const m=location.hash.match(/code=([0-9A-Za-z.-]+)/);if(m){$('code').value=m[1];loadCode(m[1]);}}
 })();
 </script>
 </main>
