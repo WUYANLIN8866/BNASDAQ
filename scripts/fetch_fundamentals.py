@@ -9,10 +9,10 @@ import json, os, sys, time, re, argparse, statistics, datetime as dt, urllib.req
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'fund')
 IDX = os.path.join(ROOT, 'data', 'tw', 'index.json')
-UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
+UA = 'Mozilla/5.0 (BNASDAQ stocks fetch)'
 MODS = 'price,summaryDetail,defaultKeyStatistics,financialData,earningsTrend,assetProfile,earnings'
 cj = http.cookiejar.CookieJar()
-op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+op = urllib.request.build_opener()
 CRUMB = None
 
 
@@ -56,8 +56,17 @@ TS_TYPES = 'trailingDilutedEPS,annualDilutedEPS,quarterlyDilutedEPS'
 def timeseries(sym):
     """Yahoo fundamentals-timeseries（不需 crumb）：近 12 個月／年度／季度稀釋 EPS。"""
     now = int(time.time())
-    u = f'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{urllib.parse.quote(sym)}?type={TS_TYPES}&period1=1356998400&period2={now}'
-    j = json.loads(get(u))
+    u = f'https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{urllib.parse.quote(sym)}?type={TS_TYPES}&period1=1356998400&period2={now}'
+    j = None
+    for host in ('query2', 'query1'):
+        for k in range(3):
+            try:
+                j = json.loads(get(u.replace('query1', host))); break
+            except urllib.error.HTTPError as e:
+                if e.code != 429: raise
+                time.sleep(3 * (k + 1))
+        if j: break
+    if j is None: raise RuntimeError('429 on both hosts')
     out = {}
     for r in (j.get('timeseries') or {}).get('result') or []:
         t = (r.get('meta') or {}).get('type', [None])[0]
