@@ -151,8 +151,25 @@ def nasdaq_eps(sym):
     pick = lambda *names: next((v[lk[n]] for n in names if n in lk and v[lk[n]]), None)
     eps = pick('earningspershare', 'eps', 'epsttm'); pe = pick('peratio', 'pe', 'trailingpe'); fpe = pick('forwardpe1yr', 'forwardpe')
     if not eps and pe and PX.get(sym.replace('.', '-')): eps = PX[sym.replace('.', '-')] / pe
-    if not eps: raise RuntimeError('nasdaq: no eps ' + ','.join(sd.keys())[:300])
-    return dict(nasdaq=dict(eps=eps, pe=pe, fpe=fpe, sector=(sd.get('Sector') or {}).get('value'), industry=(sd.get('Industry') or {}).get('value')))
+    nq = dict(sector=(sd.get('Sector') or {}).get('value'), industry=(sd.get('Industry') or {}).get('value'), pe=pe, fpe=fpe)
+    # 近四季實際 EPS（earnings-surprise）
+    try:
+        j2 = json.loads(urllib.request.urlopen(urllib.request.Request(f'https://api.nasdaq.com/api/company/{sym}/earnings-surprise', headers=NQ_H), timeout=30).read())
+        rows = (((j2.get('data') or {}).get('earningsSurpriseTable') or {}).get('rows')) or []
+        q = [_num(r.get('eps')) for r in rows if _num(r.get('eps')) is not None]
+        if len(q) >= 4 and not eps: eps = sum(q[:4]); nq['q_eps'] = q[:4]
+    except Exception as e: DIAG.append(f'surprise {sym}: {e!r}'[:100])
+    # 分析師年度 EPS 預估（earnings-forecast）→ 明年成長
+    try:
+        j3 = json.loads(urllib.request.urlopen(urllib.request.Request(f'https://api.nasdaq.com/api/analyst/{sym}/earnings-forecast', headers=NQ_H), timeout=30).read())
+        yr = (((j3.get('data') or {}).get('yearlyForecast') or {}).get('rows')) or []
+        f = [_num(r.get('consensusEPSForecast')) for r in yr if _num(r.get('consensusEPSForecast'))]
+        if eps and len(f) >= 1 and eps > 0: nq['fy1_growth'] = f[0] / eps - 1
+        if len(f) >= 2 and f[0] > 0: nq['fy2_growth'] = f[1] / f[0] - 1
+    except Exception as e: DIAG.append(f'forecast {sym}: {e!r}'[:100])
+    if not eps: raise RuntimeError('nasdaq: no eps')
+    nq['eps'] = eps
+    return dict(nasdaq=nq)
 
 
 def sec_eps(cik):
@@ -230,7 +247,9 @@ def extract(code, market, ts, price, cur, ind):
         n = ts['nasdaq']; o['eps_ttm'] = n['eps']; o['eps_asof'] = 'Nasdaq 報價摘要，近四季'
         if not o['industry']: o['industry'] = n.get('industry') or ''
         if not o['sector']: o['sector'] = n.get('sector') or ''
-        if n.get('pe') and n.get('fpe') and n['fpe'] > 0: g['analyst_next_year'] = n['pe'] / n['fpe'] - 1
+        if n.get('fy1_growth') is not None: g['analyst_this_year'] = n['fy1_growth']
+        if n.get('fy2_growth') is not None: g['analyst_next_year'] = n['fy2_growth']
+        elif n.get('pe') and n.get('fpe') and n['fpe'] > 0: g['analyst_next_year'] = n['pe'] / n['fpe'] - 1
     elif 'implied' in ts:
         h = sorted(ts['implied']); o['eps_ttm'] = round(h[-1][1], 4); o['eps_asof'] = h[-1][0] + '（收盤÷本益比，近四季）'
         o['eps_hist'] = [[d, round(v, 3)] for d, v in h]
@@ -269,7 +288,7 @@ def params(o, peers):
     if False:
         why.append(f"注意：財報幣別 {o['fin_currency']} 與股價幣別 {o['currency']} 不同（常見於 ADR），EPS 可能需換算")
     gs = [v for v in o['growth_inputs'].values() if v is not None]
-    lab = dict(analyst_next_year='分析師明年 EPS 成長（本益比÷預估本益比）', hist_eps_cagr='近幾年 EPS 年化成長', latest_quarter_yoy='最近一季 EPS 年增', ttm_yoy='近 12 個月 EPS 年增')
+    lab = dict(analyst_this_year='分析師本年度 EPS 預估 ÷ 近四季 EPS', analyst_next_year='分析師明年度 EPS 預估成長', hist_eps_cagr='近幾年 EPS 年化成長', latest_quarter_yoy='最近一季 EPS 年增', ttm_yoy='近 12 個月 EPS 年增')
     if gs:
         lo, hi = min(gs), max(gs)
         if hi - lo < 0.02: lo, hi = lo - 0.02, hi + 0.02
