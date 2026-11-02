@@ -1,30 +1,30 @@
 {
 "00972": {
 "error": "RuntimeError('yahoo 404 (no such symbol)')",
-"when": "2026-10-29"
+"when": "2026-11-02"
 },
 "00838B": {
 "error": "RuntimeError('yahoo 404 (no such symbol)')",
-"when": "2026-10-29"
+"when": "2026-11-02"
 },
 "3718": {
 "error": "RuntimeError('yahoo 404 (no such symbol)')",
-"when": "2026-10-29"
+"when": "2026-11-02"
 },
 "7856": {
 "error": "RuntimeError('yahoo 404 (no such symbol)')",
-"when": "2026-10-29"
+"when": "2026-11-02"
 },
 "PSTG": {
 "error": "RuntimeError('yahoo 404 (no such symbol)')",
-"when": "2026-10-29"
+"when": "2026-11-02"
 },
 "SPLG": {
 "error": "RuntimeError('yahoo 404 (no such symbol)')",
-"when": "2026-10-29"
+"when": "2026-11-02"
 },
 "VYLR": {
 "error": "<HTTPError 400: 'Bad Request'>",
-"when": "2026-10-29"
+"when": "2026-11-02"
 }
 }
