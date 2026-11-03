@@ -27,7 +27,7 @@
 <div class="main"><div class="wrap"><div class="cols"><div>
 <h2 id="faq-strategy">策略概要</h2>
 <details><summary>BNASDAQ 是什麼？</summary><div class="ans"><p>BNASDAQ 核心策略以 QQQ 月線為訊號，僅在 QLD（追求 Nasdaq-100 指數單日報酬 2 倍的槓桿型 ETF）與 SHV（短期美國公債 ETF）之間配置。交易規則由 AI 模型探勘、驗證與回測，經實際資金執行後再回饋優化，無限循環。</p><p>2000 年 5 月底至 2026 年 9 月底的回測年化報酬率為 38.3%；考量參數的不確定性，較務實的預期區間為 25.4%～33.8%（參數 ±10% 鄰域第 5～95 百分位）。</p></div></details>
-<details><summary>為什麼不公開買進與賣出的規則？</summary><div class="ans"><p>本站不公開策略的買賣邏輯，BNASDAQ 統一依 AI 模型找出的交易規則自行交易。我們公開交易商品、檢查頻率、三種配置狀態、全部回測結果與驗證方法（參數鄰域、決策日偏移、逐步前推），讓讀者據以判斷策略是否穩健，而不是複製一組特定數字。詳見<a href="about.html#rules">資訊揭露原則</a>。</p></div></details>
+<details id="why-rules"><summary>為什麼不公開買進與賣出的規則？</summary><div class="ans"><p>本站不公開策略的買賣邏輯，BNASDAQ 統一依 AI 模型找出的交易規則自行交易。我們公開交易商品、檢查頻率、三種配置狀態、全部回測結果與驗證方法（參數鄰域、決策日偏移、逐步前推），讓讀者據以判斷策略是否穩健，而不是複製一組特定數字。</p></div></details>
 <details><summary>「統一依 AI 模型找出的交易規則自行交易」是什麼意思？</summary><div class="ans"><p>意指交易規則由 AI 模型在歷史資料上探勘並持續優化，BNASDAQ 依照這套規則執行交易。本站不提供個別化的買賣建議，所有績效數字皆為歷史回測。</p></div></details>
 <details><summary>多久調整一次配置？需要每天看盤嗎？</summary><div class="ans"><p>不需要。每月最後一個交易日收盤後判斷一次，次一交易日開盤執行，其餘交易日不操作。26 年多來共調整 59 次，平均每年 2.24 次。</p></div></details>
 <details><summary>最大回撤有多深？</summary><div class="ans"><p>回測期間最大回撤為 -42.3%，發生於 2025 年關稅衝擊，谷底後 3 個月即回到前高；26 年間跌幅超過 20% 的回撤共出現 20 次。本策略對歷時數月的緩跌較能及時減碼，對數週內的急跌則難以迴避。詳見<a href="risk.html#three">投入前須了解的風險</a>。</p></div></details>

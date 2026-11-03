@@ -40,26 +40,11 @@
   </ul>
   <p>槓桿型 ETF 每日重設槓桿倍數，持有超過一日的報酬並不等於指數報酬的 2 倍，行情劇烈震盪時落差尤其明顯：正式回測期間 QLD 長期持有的年化報酬率為 8.2%，反而低於 QQQ 的 9.4%。這也說明了本策略為何依市場狀態調整配置，而非長期持有 QLD。</p>
 
-  <h2 id="rules">資訊揭露原則：為何不公開買賣規則</h2>
-  <div class="note navy"><p><b>本站不公開策略的買進與賣出邏輯；BNASDAQ 統一依 AI 模型找出的交易規則自行交易。</b></p><p>規則由 AI 模型探勘後持續優化。公開精準門檻只會使規則更容易被複製而失效，也容易讓人誤以為某一組數字是「唯一正解」。</p></div>
-  <div class="tblwrap"><table class="tbl"><thead><tr><th class=l>本站公開</th><th class=l>本站不公開</th></tr></thead><tbody><tr><td class=l>交易商品、檢查頻率與三種配置狀態</td><td class=l>指標名稱、參數值與門檻</td></tr><tr><td class=l>全部回測結果，含每一次大跌、最大回撤與換倉次數</td><td class=l>逐月持倉與換倉清單</td></tr><tr><td class=l>防止事後挑選參數的驗證方法及其結果</td><td class=l>當月與下月持倉（僅提供登入會員）</td></tr></tbody></table></div>
-  <p>取而代之，我們公開規則的穩健程度：將全部 13 個參數各上調或下調 10%，共 78,732 種組合，最差的一組年化報酬率仍有 20.9%、中位數 29.5%，100% 高於 QQQ 與 QLD 長期持有；將月底決策日提早或延後 1～10 個交易日（連同準時判斷共 21 種情境），也全部高於 QQQ。詳見<a href="risk.html#robust">參數穩健性檢驗</a>。</p>
-
-  <h2 id="invite">參與方式：邀請制</h2>
-  <p><b>BNASDAQ 核心策略採邀請制：不對外公開募集、不接受主動申購，會員帳號一律由管理員開立。</b>本站公開內容以研究與資訊揭露為目的，不構成任何金融商品的募集、要約或招攬。</p>
-  <div class="kv">
-    <div class="tile"><div class="k">訊號來源</div><div class="v">QQQ 月線</div><div class="s">還原股息與分割後的月收盤</div></div>
-    <div class="tile"><div class="k">配置資產</div><div class="v">QLD／SHV</div><div class="s">只用這兩檔，不使用其他商品</div></div>
-    <div class="tile"><div class="k">決策頻率</div><div class="v">每月一次</div><div class="s">每月最後一個交易日收盤後判斷</div></div>
-    <div class="tile"><div class="k">執行方式</div><div class="v">次日開盤</div><div class="s">換倉單邊成本 0.1%，不做盤中停損</div></div>
-  </div>
-  <p>受邀會員登入<a href="login.html">會員專區</a>後，可查閱各策略的「本月持有」與「以最新收盤推算的下月持有」。帳號開立與密碼重設方式，請見<a href="faq.html#account">常見問題</a>。</p>
-
   <h2 id="who">關於我們</h2>
   <p>BNASDAQ 是 YouTube 頻道「BEST NASDAQ」的研究專案。頻道從台灣投資人的角度出發，以公開資料進行可回溯的回測研究；影片中引用的每一個數字，都能在本站找到出處。</p>
   <p>本站所有績效數字已於 2026-10-28 以同一套資料與程式重新計算，與影片 v6 的結果完全一致。自訂回測起點所用的延伸序列由同一套引擎產生，在預設起點下與上述數字逐項一致（詳見<a href="data.html#extend">資料口徑與驗證方法</a>）。</p>
 </div>
-<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#loop">研究流程：AI 無限循環</a></li><li><a href="#what">投資標的與配置</a></li><li><a href="#rules">資訊揭露原則</a></li><li><a href="#invite">參與方式：邀請制</a></li><li><a href="#who">關於我們</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">回測成績總覽</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#loop">研究流程：AI 無限循環</a></li><li><a href="#what">投資標的與配置</a></li><li><a href="#who">關於我們</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">回測成績總覽</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
 </div></div></div>
 <script>
 BN.charts.ring(document.getElementById('ring'),{center:'AI 無限循環',center2:'每一輪以實際結果改進下一輪',steps:[{t:'探勘交易策略',s:'AI 在 QQQ 月線搜尋規則'},{t:'驗證交易策略',s:'鄰域、偏移、逐步前推'},{t:'回測交易策略',s:'26 年、含交易成本'},{t:'進入市場驗證',s:'以實際資金依規則執行'},{t:'優化交易策略',s:'實際結果回饋模型'},{t:'回到第一步',s:'無限循環'}]});
