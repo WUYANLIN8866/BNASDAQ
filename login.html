@@ -3,14 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0b0c">
 <title>登入｜BNASDAQ</title>
 <meta name="description" content="BNASDAQ 會員登入。">
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261029p">
-<script src="assets/site.js?v=20261029p"></script><script src="assets/auth.js"></script>
+<link rel="stylesheet" href="assets/site.css?v=20261103a">
+<script src="assets/site.js?v=20261103a"></script><script src="assets/auth.js"></script>
 
 </head>
 <body>
@@ -22,7 +23,7 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 登入</div><h1>登入</h1><p class="lede">會員與管理員由此登入。帳號由管理員核發。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 登入</div><h1>登入</h1><p class="lede">會員與管理員由此登入。BNASDAQ 核心策略採邀請制，不對外公開募集；帳號一律由管理員開立。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <div class="panel" style="max-width:520px">
@@ -30,12 +31,12 @@
       <div class="field"><label for="u">帳號</label><input id="u" type="text" autocomplete="username" required autofocus></div>
       <div class="field"><label for="p">密碼</label><input id="p" type="password" autocomplete="current-password" required></div>
       <div id="m"></div>
-      <div class="actions"><button class="btn navy" type="submit" id="go">登入</button><a class="btn line" href="faq.html#account">如何申請帳號</a></div>
+      <div class="actions"><button class="btn navy" type="submit" id="go">登入</button><a class="btn line" href="faq.html#account">如何取得帳號</a></div>
     </form>
   </div>
-  <p class="small">登入資料只在你的瀏覽器驗證與解密，不會傳到任何伺服器；關閉分頁即登出。</p>
+  <p class="small">登入資料僅在您的瀏覽器內驗證與解密，不會傳送至任何伺服器；關閉分頁即自動登出。</p>
 </div>
-<aside><div class="side"><h3>登入後可以看到</h3><ul><li>目前所有策略的本月持有資產</li><li>用最新收盤價當作下月判斷基準時，該持有什麼</li><li>翻轉價位：收盤到哪裡結論會改變</li><li>管理員：所有指標明細與帳號管理</li></ul></div></aside>
+<aside><div class="side"><h3>登入後可查閱</h3><ul><li>各策略本月持有的資產</li><li>以最新收盤價作為月底判斷基準時，推算的下月持有</li><li>翻轉價位：月底收盤達到哪個價位時，結論會改變</li><li>管理員：所有指標明細與帳號管理</li></ul></div></aside>
 </div></div></div>
 <script>
 (function(){const f=document.getElementById('lf'),m=document.getElementById('m'),go=document.getElementById('go');
@@ -45,10 +46,15 @@ try{const sess=await BN.auth.login(document.getElementById('u').value,document.g
 catch(err){m.innerHTML='<p class="msg err">'+(err.message||'登入失敗').replace(/[<>]/g,'')+'</p>';go.disabled=false;}});})();
 </script>
 </main>
-<footer>
-  <div class="wrap">
-    <div class="disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
+<footer class="site-foot">
+  <div class="wrap foot-grid">
+    <div class="foot-brand"><a class="mark" href="index.html" aria-label="BNASDAQ 首頁"><span class="word">B<b>NASDAQ</b></span></a><p>BNASDAQ 核心策略以 QQQ 月線為訊號，僅在 QLD 與 SHV 之間配置；採邀請制，不對外公開募集。</p></div>
+    <nav class="foot-col" aria-label="策略與研究"><h4>策略與研究</h4><ul><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></nav>
+    <nav class="foot-col" aria-label="分析工具"><h4>分析工具</h4><ul><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html">個股目標價試算</a></li></ul></nav>
+    <nav class="foot-col" aria-label="資訊與帳戶"><h4>資訊與帳戶</h4><ul><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li><li><a href="search.html">站內搜尋</a></li><li><a href="login.html" data-acct>登入／會員專區</a></li></ul></nav>
   </div>
+  <div class="wrap disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
+  <div class="legal"><div class="wrap"><span>© 2026 BNASDAQ</span><span>回測資料終點 2026-09-30；過去績效不代表未來報酬。</span></div></div>
 </footer>
 </body>
 </html>

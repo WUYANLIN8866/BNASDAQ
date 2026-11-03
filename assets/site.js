@@ -22,7 +22,7 @@
   const nf0 = new Intl.NumberFormat('zh-Hant-TW', { maximumFractionDigits: 0 });
   BN.fmt = {
     wan: v => (Math.abs(v) < 1e5 ? (v / 1e4).toFixed(1) : nf0.format(Math.round(v / 1e4))) + ' 萬',
-    yi: (v, d) => (v / 1e8).toFixed(d == null ? 2 : d) + ' 億',
+    yi: (v, d) => { d = d == null ? 2 : d; return (v / 1e8).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }) + ' 億'; },
     big: v => Math.abs(v) >= 1e8 ? BN.fmt.yi(v) : BN.fmt.wan(v),
     money: v => 'NT$ ' + nf0.format(Math.round(v)),
     pct: (x, d) => (x * 100).toFixed(d == null ? 1 : d) + '%',
@@ -59,6 +59,9 @@
       const io = new IntersectionObserver(es => { es.forEach(e => { if (e.isIntersecting) { toc.forEach(a => a.removeAttribute('aria-current')); const a = map.get(e.target.id); if (a) a.setAttribute('aria-current', 'true'); } }); }, { rootMargin: '-20% 0px -70% 0px' });
       map.forEach((a, id) => { const el = document.getElementById(id); if (el) io.observe(el); });
     }
+    // 網址帶 #id 且目標是 <details>（或在 <details> 裡）時自動展開，例如 faq.html#account
+    const openHash = () => { try { const id = decodeURIComponent(location.hash.slice(1)); if (!id) return; const t = document.getElementById(id); const d = t && (t.tagName === 'DETAILS' ? t : t.closest('details')); if (d) { d.open = true; t.scrollIntoView(); } } catch (e) { } };
+    openHash(); window.addEventListener('hashchange', openHash);
     // fill data-site="path" spans from window.SITE
     if (window.SITE) $$('[data-site]').forEach(el => { try { const v = el.getAttribute('data-site').split('.').reduce((o, k) => o[k], window.SITE); const f = el.getAttribute('data-fmt'); el.textContent = f ? BN.fmt[f](v) : v; } catch (e) { } });
   });
