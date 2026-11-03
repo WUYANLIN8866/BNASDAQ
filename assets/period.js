@@ -103,9 +103,9 @@
       id, param,
       def(ym) { DEF = clamp(ym || DEF); CUR = null; return ch.get(); },
       getDef() { return DEF; },
-      get() { if (!CUR) { let q = null; try { q = new URLSearchParams(location.search).get(param); } catch (e) { } CUR = clamp(q && /^\d{4}-\d{2}$/.test(q) ? q : DEF); } return CUR; },
+      get() { if (!CUR) { let q = null; try { q = new URLSearchParams(location.search).get(param); } catch (e) { } CUR = clamp(q && /^\d{4}-\d{2}$/.test(q) ? q : DEF); } if (ch.min && CUR < ch.min) CUR = ch.min; return CUR; },
       set(ym) {
-        CUR = clamp(ym);
+        CUR = clamp(ym); if (ch.min && CUR < ch.min) CUR = ch.min;
         try { const u = new URL(location.href); if (CUR === DEF) u.searchParams.delete(param); else u.searchParams.set(param, CUR); history.replaceState(null, '', u.pathname.split('/').pop() + u.search + u.hash); } catch (e) { }
         LS.forEach(f => { try { f(CUR); } catch (err) { console.error(err); } });
         document.dispatchEvent(new CustomEvent('bt-start', { detail: { ym: CUR, channel: id || '' } }));
@@ -122,7 +122,7 @@
   let NP = 0;
   function picker(ch, host, o) {
     o = o || {}; if (typeof host === 'string') host = document.getElementById(host); if (!host) return;
-    const min = o.min && o.min > T.min_start ? o.min : T.min_start, max = T.max_start;
+    const min = o.min && o.min > T.min_start ? o.min : T.min_start, max = T.max_start; if (o.min) ch.min = min;
     const presets = (o.presets || [['1986-09', '最早 1986'], ['1996-09', '近 30 年'], ['2000-05', '正式回測'], ['2009-01', '2009 起'], ['2013-12', '2013 年底'], ['2020-12', '2020 年底']]).filter(p => p[0] >= min && p[0] <= max);
     const Y0 = +min.slice(0, 4), Y1 = +max.slice(0, 4), n = ++NP;
     const wrap = document.createElement('div'); wrap.className = 'btbar'; wrap.setAttribute('role', 'group'); wrap.setAttribute('aria-label', o.label || '回測起點');

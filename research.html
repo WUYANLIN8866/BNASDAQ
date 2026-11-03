@@ -32,7 +32,7 @@
   <div class="panel" id="rsadd">
     <form class="form" id="rsform" onsubmit="return false" style="max-width:none">
       <div class="row2" style="grid-template-columns:1fr auto;align-items:end">
-        <div class="field"><label for="rscode">加入比較標的（台股或美股代號）</label><input id="rscode" list="rslist" autocomplete="off" inputmode="text" placeholder="例：2330、0050、NVDA、SPY"><datalist id="rslist"></datalist><div class="help">以美元計價、股息再投入（台股依每日匯率換算為美元），採買進持有、未計交易成本；加入後同步列入成績總覽、成長曲線、各區間、逐年報酬、大幅修正與最大回撤。比較資料自 2000-05-31 起提供：所選起點較早或標的上市較晚時，有效起點自動調整為共同期間，並於圖下註明原因。</div></div>
+        <div class="field"><label for="rscode">加入比較標的（台股或美股代號）</label><input id="rscode" list="rslist" autocomplete="off" inputmode="text" placeholder="例：2330、0050、NVDA、SPY"><datalist id="rslist"></datalist><div class="help">美元計價、股息再投入（台股依每日匯率換算），以買進持有計算、未計交易成本；加入後同步列入成績總覽、成長曲線、各區間、逐年報酬、大幅修正與最大回撤。比較資料自 2000-05-31 起，所選起點較早或標的上市較晚時，自動改用共同期間並於圖下註明。</div></div>
         <div class="field"><button type="submit" class="btn primary" id="rsbtn">加入比較</button></div>
       </div>
     </form>
@@ -67,13 +67,13 @@
   <div id="c-avg"></div>
 
   <h2 id="crises">大幅修正期間的表現</h2>
-  <p id="p-crises"></p>
-  <p class="small">定義：以所選起點之後 QQQ 的日收盤計，自前高回落 20% 以上視為一次大幅修正，區間為該次高點至低點；起點改變時，納入的事件與高點日期可能隨之改變。「SHV 平均資金比例」為事件期間配置於 SHV 的平均比例。</p>
+  <div id="p-crises"></div>
+  <p class="small">定義：以所選起點之後 QQQ 的日收盤計，自前高回落 20% 以上視為一次大幅修正，區間為該次高點至低點；起點改變時，納入的事件與高點日期可能隨之改變。「交易日數」為高點至低點經過的交易日數；「SHV 平均比重」為事件期間配置於 SHV 的平均資金比例。</p>
   <div id="t-cr"></div>
   <div id="c-cr"></div>
 
   <h2 id="dd">最大回撤與回撤水位</h2>
-  <p id="p-dd"></p>
+  <div id="p-dd"></div>
   <p class="small">名詞定義：最大回撤為期間內淨值自前高回落至其後低點的最大跌幅（日收盤）；回本所需倍數＝1 ÷（1 − 最大回撤），即低點須回升的倍數；年化波動度＝日對數報酬的樣本標準差 × √252。</p>
   <div id="c-dd"></div>
   <div id="t-dd"></div>
@@ -286,15 +286,16 @@
       const cv = CR.find(c => c.peak >= d.fund.peak && c.trough <= d.fund.trough), ov = cv || CR.find(c => !(c.trough < d.fund.peak || c.peak > d.fund.trough));
       const recY = m => m.recover ? '自高點起歷時 ' + m.recover_years.toFixed(1) + ' 年才回到前高' : '截至 ' + END + ' 尚未回到前高';
       const c1 = cmp(d.fund.mdd, d.qqq.mdd), c2 = cmp(d.fund.mdd, d.qld.mdd);
-      $('p-dd').textContent = '所選期間內，本策略的最大回撤為 ' + a1(d.fund.mdd) + '，' + c1 + ' QQQ 的 ' + a1(d.qqq.mdd) + (c1 === c2 ? ' 與 ' : '，' + c2 + ' ') + 'QLD 買進持有的 ' + a1(d.qld.mdd) + '。'
-        + '本策略的最大回撤發生於 ' + d.fund.peak + ' 高點至 ' + d.fund.trough + ' 低點' + (cv ? '（期間涵蓋「' + cv.name + '」）' : (ov ? '（與「' + ov.name + '」期間重疊）' : '')) + '，' + (d.fund.recover ? '低點後 ' + Math.round(d.fund.trough_to_recover_months) + ' 個月（' + d.fund.recover + '）回到前高' : '截至 ' + END + ' 尚未回到前高')
-        + '；QLD 的最大回撤發生於 ' + d.qld.peak.slice(0, 7) + ' 高點至 ' + d.qld.trough.slice(0, 7) + ' 低點，' + recY(d.qld) + '；QQQ ' + recY(d.qqq) + '。'
-        + '在約 ' + Math.round(L.fund.years) + ' 年的回測期間內，跌幅超過 20% 的回撤本策略共出現 ' + d.fund.episodes_gt20 + ' 次（QQQ ' + d.qqq.episodes_gt20 + ' 次、QLD ' + d.qld.episodes_gt20 + ' 次）；同期年化波動度為本策略 ' + p1(BT.vol('fund', E)) + '、QQQ ' + p1(BT.vol('qqq', E)) + '、QLD ' + p1(BT.vol('qld', E)) + '。';
+      $('p-dd').innerHTML = '<p>所選期間內，本策略的最大回撤為 ' + a1(d.fund.mdd) + '，' + c1 + ' QQQ 的 ' + a1(d.qqq.mdd) + (c1 === c2 ? ' 與 ' : '，' + c2 + ' ') + 'QLD 買進持有的 ' + a1(d.qld.mdd) + '。</p><ul>'
+        + '<li><b>本策略</b>：' + d.fund.peak + ' 高點至 ' + d.fund.trough + ' 低點' + (cv ? '（期間涵蓋「' + cv.name + '」）' : (ov ? '（與「' + ov.name + '」期間重疊）' : '')) + '，' + (d.fund.recover ? '低點後 ' + Math.round(d.fund.trough_to_recover_months) + ' 個月（' + d.fund.recover + '）回到前高' : '截至 ' + END + ' 尚未回到前高') + '。</li>'
+        + '<li><b>QLD 買進持有</b>：' + d.qld.peak.slice(0, 7) + ' 高點至 ' + d.qld.trough.slice(0, 7) + ' 低點，' + recY(d.qld) + '。</li>'
+        + '<li><b>QQQ 買進持有</b>：' + d.qqq.peak.slice(0, 7) + ' 高點至 ' + d.qqq.trough.slice(0, 7) + ' 低點，' + recY(d.qqq) + '。</li>'
+        + '<li><b>發生頻率與波動</b>：在約 ' + Math.round(L.fund.years) + ' 年的回測期間內，跌幅超過 20% 的回撤本策略共出現 ' + d.fund.episodes_gt20 + ' 次（QQQ ' + d.qqq.episodes_gt20 + ' 次、QLD ' + d.qld.episodes_gt20 + ' 次）；同期年化波動度為本策略 ' + p1(BT.vol('fund', E)) + '、QQQ ' + p1(BT.vol('qqq', E)) + '、QLD ' + p1(BT.vol('qld', E)) + '。</li></ul>';
       $('t-dd').innerHTML = US.length ? '<div class="tblwrap"><table class="tbl"><caption>加入標的：' + sDate + ' 起的最大回撤（含息、美元）</caption><thead><tr><th class=l>標的</th><th>最大回撤</th><th class=l>高點 → 低點</th><th class=l>回到前高</th><th>回本所需倍數</th></tr></thead><tbody>'
         + US.map(x => { const m = AM.get(x.a.code).mdd || {}, w = x.w, nt2 = x.mode === 'pre' ? (w.partial ? '自 ' + w.start_used + ' 起算' : (w.partial_end ? '資料到 ' + w.end_used : '')) : ''; return '<tr><td class=l>' + sw(x.a.color) + x.a.label + (nt2 ? ' <small class="muted">（' + nt2 + '）</small>' : '') + (m.daily === false ? ' <small class="muted">（月底資料）</small>' : '') + '</td><td>' + (m.mdd != null ? p1(m.mdd) : '—') + '</td><td class=l>' + (m.peak || '—') + ' → ' + (m.trough || '—') + '</td><td class=l>' + (m.recover || '尚未回到前高') + '</td><td>' + (m.need != null ? m.need.toFixed(2) + ' 倍' : '—') + '</td></tr>'; }).join('')
         + '</tbody><tfoot><tr><td colspan="5">對照（日收盤）：BNASDAQ ' + p1(d.fund.mdd) + '（回到前高 ' + (d.fund.recover || '尚未') + '）、QQQ ' + p1(d.qqq.mdd) + '（' + (d.qqq.recover || '尚未') + '）、QLD ' + p1(d.qld.mdd) + '（' + (d.qld.recover || '尚未') + '）。' + (US.some(x => (AM.get(x.a.code).mdd || {}).daily === false) ? '標註「月底資料」者：正式回測區間的最大回撤高點早於所選起點，改以月底收盤計算，跌幅通常比日資料淺。' : '') + '</td></tr></tfoot></table></div>' : '';
     } else {
-      $('p-dd').textContent = '共同期間不足一年，不提供逐日回撤水位圖；下表以月底收盤計算共同期間內的最大回撤，跌幅通常比日資料淺。';
+      $('p-dd').innerHTML = '<p>共同期間不足一年，不提供逐日回撤水位圖；下表以月底收盤計算共同期間內的最大回撤，跌幅通常比日資料淺。</p>';
       const rr = ALL.map(k => ({ label: NM[k], color: COL[k], m: R[k].mdd })).concat(US.map(x => ({ label: x.a.label, color: x.a.color, m: AM.get(x.a.code).mdd }))).sort((p, q) => p.m.mdd - q.m.mdd);
       $('t-dd').innerHTML = '<div class="tblwrap"><table class="tbl"><caption>共同期間 ' + sDate + ' 起的最大回撤（月底收盤、含息、美元）</caption><thead><tr><th class=l>標的</th><th>最大回撤</th><th class=l>高點 → 低點</th><th>回本所需倍數</th></tr></thead><tbody>'
         + rr.map(r => '<tr><td class=l>' + sw(r.color) + r.label + '</td><td>' + p1(r.m.mdd) + '</td><td class=l>' + (r.m.peak || '—') + ' → ' + (r.m.trough || '—') + '</td><td>' + (r.m.need != null ? r.m.need.toFixed(2) + ' 倍' : '—') + '</td></tr>').join('')

@@ -45,14 +45,14 @@
   <p id="p-lump">自 2013-12-31 收盤各投入新台幣 100 萬元，持有至 2026-09-30 收盤；股息再投入、全數換算為新台幣，美元部位以匯率 29.95 換匯買進、31.852 換回新台幣。</p>
   <div id="t-lump"></div>
   <div id="c-lump"></div>
-  <p>預設起點訂於 2013 年底，原因是台幣匯率資料自該年起才完整；此期間適逢台股與美股的大多頭行情，各做法的結果皆偏向樂觀。單筆投入的結果對起訖時點高度敏感，可透過上方「回測起點」檢視不同市場環境下的差異；報酬較高的做法通常伴隨較深的回撤，宜與下方最大回撤一併評估。</p>
+  <p>預設起點訂於 2013 年底，原因是台幣匯率資料自該年起才完整；2013 年底以來適逢台股與美股的大多頭行情，各做法的結果皆偏向樂觀。自訂起點改以 FRED 月底匯率與 Yahoo Finance 還原收盤即時計算，最早可回溯至 <span data-min>2009-01</span>，可用以檢視不同市場環境下的差異。單筆投入的結果對起訖時點高度敏感；報酬較高的做法通常伴隨較深的回撤，宜與下方最大回撤一併評估。</p>
 
   <h2 id="annual">逐年報酬：完整揭露台股報酬較高的年度</h2>
   <p id="ann-key"></p>
   <p>年度報酬以前一年 12 月底至當年 12 月底計算（新台幣、含息），表中粗體為當年度最高者。2026 年僅計至 9 月底；起點若非 12 月底，首年自起點起算並加註。首尾不完整的年度不列入完整年度統計。</p>
   <div id="t-ann"></div>
   <div id="c-ann"></div>
-  <p>年度表現的差異來自曝險來源：BNASDAQ 只在 QLD 與 SHV 之間配置，美股走弱時可轉入短期美國公債，但不參與台股相對於美股的超額漲幅。美元資產換算新台幣後亦受匯率影響——新台幣升值的年度，美元資產的新台幣報酬會低於其美元報酬，反之亦然。</p>
+  <p>年度表現的差異主要來自曝險來源：BNASDAQ 只在 QLD 與 SHV 之間配置，美股走弱時可轉入短期美國公債，但不參與台股相對於美股的超額漲幅。美元資產換算新台幣後亦受匯率影響——新台幣升值的年度，美元資產的新台幣報酬會低於其美元報酬，反之亦然。</p>
 
   <h2 id="mdd">最大回撤：自 <span data-s1>2013 年底</span>起算</h2>
   <p id="mdd-key"></p>
@@ -218,7 +218,7 @@ function draw(Md,U,late){
   const adj=Md.E!==U&&late,mlink='（口徑見<a href="#method">計算方法與資料口徑</a>）';
   $('rbnote').innerHTML=(adj?'<div class="note navy"><p><b>回測起點已自動調整為 '+s0+'</b>（'+sp(late.label)+'的月底資料自 '+Md.E+' 起，晚於所選起點 '+ymLabel(U)+'）。所有做法與加入標的皆自同一起點'+(off?'計算，數字即預設起點的官方預算值':'，以月底資料重算（新台幣、含息；美元部位以 FRED 月底匯率換算）')+'；移除該標的即恢復所選起點。</p></div>':'')+
     (!off&&Md.miss&&Md.miss.length?'<div class="note warn"><p>'+zh(Md.miss)+' 在此期間沒有完整資料，暫不列入本頁計算。</p></div>':'')+
-    '<p class="small">'+(off?'以下為預設起點的本站官方預算值；改選其他起點時，改以月底資料即時計算'+mlink+'。':'以下數字由瀏覽器以月底資料即時計算，與預設起點（'+W[0]+'）的官方預算值口徑不同；按選擇列的「重設」可回到預設起點'+mlink+'。')+'</p>';
+    '<p class="small">'+(off?'以下為預設起點的本站官方預算值；改選其他起點時，改以月底資料即時計算'+mlink+'。':'以下數字由瀏覽器以月底資料即時計算，與預設起點（'+W[0]+'）的官方預算值口徑不同'+(adj?'':'；按選擇列的「重設」可回到預設起點')+mlink+'。')+'</p>';
   // 單筆
   const L=rows.slice().sort((x,y)=>y.lump-x.lump);
   $('lump-key').innerHTML=lumpKey(Md);
@@ -238,7 +238,7 @@ function draw(Md,U,late){
     YL.forEach((yy,i)=>{const vals=cols.map(c=>Md.ann[c[0]][i]),nn=vals.filter(v=>v!=null),mx=nn.length?Math.max(...nn):null;h+='<tr><td class=l>'+yy.label+'</td>'+vals.map(v=>v==null?'<td>—</td>':(v===mx?'<td><b>'+f.pctS(v)+'</b></td>':cell(v))).join('')+'</tr>';});
     $('t-ann').innerHTML=h+'</tbody></table></div>';
     const fy=YL[0],ly=YL[YL.length-1];
-    $('c-ann').innerHTML='';BN.charts.bars($('c-ann'),{title:'逐年報酬（新台幣、含息）',sub:(fy.partial&&YL.length>1?'首年自 '+s0+' 起算；':'')+(ly.partial?ly.y+' 年僅計至 '+ENDM+' 月底':'')+(off?'':'；月底資料'),groups:YL.map(y=>String(y.y)),series:cols.map(c=>({name:c[1],values:Md.ann[c[0]],color:c[2]})),labels:false,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',height:320});
+    $('c-ann').innerHTML='';BN.charts.bars($('c-ann'),{title:'逐年報酬（新台幣、含息）',sub:(fy.label.indexOf('（自')>=0?'首年自 '+s0+' 起算；':'')+(ly.partial?ly.y+' 年僅計至 '+ENDM+' 月底':'')+(off?'':'；月底資料'),groups:YL.map(y=>String(y.y)),series:cols.map(c=>({name:c[1],values:Md.ann[c[0]],color:c[2]})),labels:false,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',height:320});
   }else{$('t-ann').innerHTML='<p class="muted">所選期間不足以計算年度報酬。</p>';$('c-ann').innerHTML='';}
   // 最大回撤
   const M=rows.slice().sort((x,y)=>x.mdd.mdd-y.mdd.mdd);
@@ -251,7 +251,7 @@ function draw(Md,U,late){
   setAll('[data-crh]',off?'後 '+C.length+' 次大跌中的 0050 與台積電':(C.length?'起點後 '+C.length+' 次大跌中的 0050 與台積電':'起點後未出現 QQQ 下跌 20% 以上的大跌'));
   $('cr-key').innerHTML=crKey(Md);
   let c='<div class="tblwrap"><table class="tbl"><caption>'+(off?'後 '+C.length+' 次大跌':s0+' 起的大跌')+'期間報酬（QQQ 高點→低點，同一日曆區間）</caption><thead><tr><th class=l>大跌</th><th class=l>區間（QQQ 高點→低點）</th><th>BNASDAQ</th><th>QQQ</th><th>QLD</th><th>0050</th><th>台積電</th>'+AD.map(a=>'<th>'+a.label+'</th>').join('')+'<th>SHV 平均比重</th></tr></thead><tbody>';
-  C.forEach(cr=>{c+='<tr><td class=l>'+cr.name+'</td><td class=l>'+cr.peak+'→'+cr.trough+'<br><small class="muted">'+cr.days+' 個交易日</small></td>'+cell(cr.fund)+cell(cr.qqq)+cell(cr.qld)+cell(cr.tw)+cell(cr.tsmc)+cr.add.map(cell).join('')+'<td>'+Math.round(cr.shv*100)+'%</td></tr>';});
+  C.forEach(cr=>{c+='<tr><td class=l>'+cr.name+'</td><td class=l>'+cr.peak+'→'+cr.trough+' <br><small class="muted">'+cr.days+' 個交易日</small></td>'+cell(cr.fund)+cell(cr.qqq)+cell(cr.qld)+cell(cr.tw)+cell(cr.tsmc)+cr.add.map(cell).join('')+'<td>'+Math.round(cr.shv*100)+'%</td></tr>';});
   if(!C.length)c+='<tr><td class=l colspan="'+nc+'">所選起點之後，QQQ 未出現自前高下跌 20% 以上的期間。</td></tr>';
   c+='</tbody><tfoot><tr><td colspan="'+nc+'">BNASDAQ、QQQ、QLD 以美元日收盤計；0050、台積電以新台幣、含息計，採證交所資料'+(AD.length?'；加入標的以新台幣、含息計，採 Yahoo Finance 還原收盤':'')+'。同一事件的報酬不隨回測起點改變。SHV 平均比重為 BNASDAQ 在該期間持有 SHV 的平均資金比例。</td></tr></tfoot></table></div>';
   $('t-cr').innerHTML=c;
