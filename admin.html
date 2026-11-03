@@ -10,8 +10,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261103b">
-<script src="assets/site.js?v=20261103b"></script><script src="assets/auth.js"></script>
+<link rel="stylesheet" href="assets/site.css?v=20261103c">
+<script src="assets/site.js?v=20261103c"></script><script src="assets/auth.js?v=20261103c"></script>
 
 </head>
 <body>
@@ -50,6 +50,15 @@
     <form class="form" id="add"><div class="row2"><div class="field"><label for="nu">帳號</label><input id="nu" type="text" required pattern="[A-Za-z0-9_.-]{3,32}"></div><div class="field"><label for="np">密碼（留空＝自動產生）</label><input id="np" type="text" autocomplete="off"></div></div><div class="field"><label for="nn">備註（例：姓名、來源）</label><input id="nn" type="text"></div><div class="actions"><button class="btn navy" type="submit">建立帳號</button></div></form>
     <h3>更改管理員密碼</h3>
     <form class="form" id="chpw"><div class="row2"><div class="field"><label for="pw1">新密碼（至少 10 碼）</label><input id="pw1" type="password" autocomplete="new-password"></div><div class="field"><label for="pw2">再輸入一次</label><input id="pw2" type="password" autocomplete="new-password"></div></div><div class="actions"><button class="btn line" type="submit">更改密碼</button></div></form>
+  </div>
+
+  <h2 id="clients">客戶專區圖片</h2>
+  <div class="panel">
+    <p class="small">上傳的圖片會依下表順序顯示在首頁「客戶專區」。支援 PNG、JPG、WebP、SVG，單張 2 MB 以內；寬度超過 1,200 像素的點陣圖會先在瀏覽器縮小再上傳。發布後網站約 1～2 分鐘更新。需要已設定 PAT（Contents: Read and write）。</p>
+    <div class="tblwrap"><table class="tbl" id="cl-table"><thead><tr><th class="l">圖片</th><th class="l">名稱</th><th class="l">連結</th><th class="l">操作</th></tr></thead><tbody id="cl-body"><tr><td colspan="4">載入中…</td></tr></tbody></table></div>
+    <div id="cl-msg"></div>
+    <form class="form" id="clf" style="max-width:none"><div class="row2"><div class="field"><label for="cl-file">圖片檔</label><input id="cl-file" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" required></div><div class="field"><label for="cl-name">名稱（顯示為替代文字與滑過提示）</label><input id="cl-name" type="text" maxlength="60" required></div></div><div class="field"><label for="cl-url">連結網址（可留空）</label><input id="cl-url" type="url" placeholder="https://"></div><div class="actions"><button class="btn navy" type="submit" id="cl-go">上傳並發布</button></div></form>
+    <p class="small">圖片與名稱會公開顯示在網站上；請只上傳已取得授權使用的客戶標誌。</p>
   </div>
 
   <h2 id="ann">公告</h2>
@@ -116,6 +125,50 @@
   try{await loadDB();}catch(e){msg('#acct-msg',e.message,'err');}
   await loadSite();
   try{await loadSignals();}catch(e){$('#sig-cur').innerHTML='<p class="msg err">'+esc(e.message||e)+'</p>';}
+})();
+</script>
+<script>
+(async function(){
+  const sess=BN.auth.session(); if(!sess||sess.role!=='admin') return;
+  const $=q=>document.querySelector(q); const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const PATH='data/clients.json', DIR='data/clients/';
+  const msg=(t,cls)=>{$('#cl-msg').innerHTML=t?'<p class="msg '+(cls||'info')+'">'+esc(t)+'</p>':'';};
+  const PREVIEW={};   // 本次上傳的預覽（網站部署前圖片還讀不到）
+  let DB=null;
+  async function load(){try{DB=await BN.auth.fetchJSON(PATH);}catch(e){DB=null;}if(!DB||typeof DB!=='object')DB={schema:'bnasdaq-clients/1',items:[]};if(!Array.isArray(DB.items))DB.items=[];render();}
+  function render(){const it=DB.items;$('#cl-body').innerHTML=it.length?it.map((x,i)=>'<tr><td class="l"><img src="'+esc(PREVIEW[x.file]||x.file)+'" alt="'+esc(x.name)+'" style="max-height:44px;max-width:140px;background:#fff;padding:4px;border:1px solid var(--line)"></td><td class="l"><b>'+esc(x.name)+'</b><br><span class="small">'+esc(x.added||'')+'</span></td><td class="l small">'+(x.url?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.url)+'</a>':'—')+'</td><td class="l"><button class="sm" data-a="up" data-i="'+i+'"'+(i===0?' disabled':'')+'>上移</button> <button class="sm" data-a="down" data-i="'+i+'"'+(i===it.length-1?' disabled':'')+'>下移</button> <button class="sm" data-a="edit" data-i="'+i+'">改名稱／連結</button> <button class="sm danger" data-a="del" data-i="'+i+'">刪除</button></td></tr>').join(''):'<tr><td colspan="4">目前沒有圖片。上傳後會顯示在首頁「客戶專區」。</td></tr>';}
+  async function pat(){const p=await BN.auth.loadPAT(sess);if(!p)throw new Error('尚未設定 PAT：請先在上方「GitHub 寫入權限（PAT）」貼上並儲存。');return p;}
+  async function saveDB(p,message){DB.schema=DB.schema||'bnasdaq-clients/1';DB.updated=new Date().toISOString();await BN.auth.ghPut(p,PATH,JSON.stringify(DB,null,1),message);}
+  const okUrl=u=>!u||/^https?:\/\//i.test(u);
+  function readB64(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=()=>rej(new Error('讀取檔案失敗'));r.readAsDataURL(blob);});}
+  async function shrink(file){ // 點陣圖寬度超過 1,200 像素時縮小，輸出 PNG（保留透明背景）
+    if(file.type==='image/svg+xml')return {blob:file,ext:'svg'};
+    const ext0={'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type];
+    try{const bmp=await createImageBitmap(file);if(bmp.width<=1200)return {blob:file,ext:ext0};const w=1200,h=Math.round(bmp.height*1200/bmp.width);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);const blob=await new Promise(r=>c.toBlob(r,'image/png'));return {blob:blob||file,ext:blob?'png':ext0};}catch(e){return {blob:file,ext:ext0};}
+  }
+  $('#clf').addEventListener('submit',async e=>{e.preventDefault();const f=$('#cl-file').files[0],name=$('#cl-name').value.trim(),url=$('#cl-url').value.trim();
+    if(!f){msg('請選擇圖片檔。','err');return;}
+    if(!/^image\/(png|jpeg|webp|svg\+xml)$/.test(f.type)){msg('只接受 PNG、JPG、WebP、SVG。','err');return;}
+    if(f.size>2*1024*1024){msg('檔案超過 2 MB，請先壓縮。','err');return;}
+    if(!name){msg('請輸入名稱。','err');return;}
+    if(!okUrl(url)){msg('連結網址需以 http:// 或 https:// 開頭。','err');return;}
+    $('#cl-go').disabled=true;
+    try{const p=await pat();msg('處理圖片中…');const {blob,ext}=await shrink(f);const b64=await readB64(blob);
+      const file=DIR+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Array.from(crypto.getRandomValues(new Uint8Array(4)),x=>x.toString(16).padStart(2,'0')).join('')+'.'+ext;
+      msg('上傳圖片到 GitHub…');await BN.auth.ghPutB64(p,file,b64,'admin: upload client image '+file);
+      PREVIEW[file]=URL.createObjectURL(blob);DB.items.push({file,name,url,added:new Date().toISOString().slice(0,10)});
+      msg('更新清單…');await saveDB(p,'admin: add client image '+name);render();
+      $('#cl-file').value='';$('#cl-name').value='';$('#cl-url').value='';msg('已發布「'+name+'」。網站約 1～2 分鐘後更新。','ok');
+    }catch(err){msg(err.message||String(err),'err');await load();}
+    $('#cl-go').disabled=false;});
+  $('#cl-table').addEventListener('click',async e=>{const b=e.target.closest('button[data-a]');if(!b||b.disabled)return;const i=+b.dataset.i,it=DB.items,x=it[i];if(!x)return;
+    try{const p=await pat();
+      if(b.dataset.a==='up'||b.dataset.a==='down'){const j=b.dataset.a==='up'?i-1:i+1;if(j<0||j>=it.length)return;[it[i],it[j]]=[it[j],it[i]];msg('更新順序…');await saveDB(p,'admin: reorder client images');}
+      if(b.dataset.a==='edit'){const n=prompt('名稱',x.name);if(n===null)return;const u=prompt('連結網址（可留空）',x.url||'');if(u===null)return;if(!n.trim()){msg('名稱不能空白。','err');return;}if(!okUrl(u.trim())){msg('連結網址需以 http:// 或 https:// 開頭。','err');return;}x.name=n.trim();x.url=u.trim();msg('更新中…');await saveDB(p,'admin: edit client image '+x.name);}
+      if(b.dataset.a==='del'){if(!confirm('刪除「'+x.name+'」？'))return;msg('刪除中…');try{await BN.auth.ghDelete(p,x.file,'admin: delete client image '+x.file);}catch(err){if(!/404/.test(err.message))throw err;}it.splice(i,1);await saveDB(p,'admin: remove client image '+x.name);}
+      render();msg('已儲存。網站約 1～2 分鐘後更新。','ok');
+    }catch(err){msg(err.message||String(err),'err');await load();}});
+  await load();
 })();
 </script>
 </main>

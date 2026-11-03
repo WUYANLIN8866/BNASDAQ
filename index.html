@@ -10,8 +10,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261103b">
-<script src="assets/site.js?v=20261103b"></script><script src="assets/data.js?v=20261103b"></script><script src="assets/bt.js?v=20261103b"></script><script src="assets/period.js?v=20261103b"></script><script src="assets/charts.js?v=20261103b"></script>
+<link rel="stylesheet" href="assets/site.css?v=20261103c">
+<script src="assets/site.js?v=20261103c"></script><script src="assets/data.js?v=20261103c"></script><script src="assets/bt.js?v=20261103c"></script><script src="assets/period.js?v=20261103c"></script><script src="assets/charts.js?v=20261103c"></script>
 
 </head>
 <body>
@@ -37,6 +37,7 @@
   <span class="eyebrow">僅限受邀客戶</span>
   <h2>客戶專區</h2>
   <p class="lead">受邀客戶登入後，可查看 BNASDAQ 各策略的本月配置、以最新收盤價推算的下月配置，以及會讓結論改變的翻轉價位。</p>
+  <ul class="clogos" id="client-logos" hidden></ul>
   <div class="kv">
     <div class="tile"><div class="k">01</div><div class="v">本月配置</div><div class="s">各策略依上個月底收盤正式判斷的持有比例</div></div>
     <div class="tile"><div class="k">02</div><div class="v">下月配置推算</div><div class="s">把最新收盤價當作月底收盤推算的結果；市場資料每個交易日收盤後自動更新</div></div>
@@ -209,6 +210,13 @@ function renderInd(start){
   B.on(st=>{renderWorld(st);renderMini(st);renderInd(st);});
 }catch(e){$('world-note').textContent='走勢圖載入失敗：'+(e&&e.message||e);}})();
 })();
+</script>
+<script>
+// 客戶專區圖片：由管理後台上傳，清單在 data/clients.json
+fetch('data/clients.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{const it=(j&&Array.isArray(j.items))?j.items:[];const ul=document.getElementById('client-logos');if(!it.length||!ul)return;
+  const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));const safe=u=>/^https?:\/\//i.test(u||'');const file=f=>/^data\/clients\/[A-Za-z0-9._-]+$/.test(f||'');
+  ul.innerHTML=it.filter(x=>file(x.file)).map(x=>{const img='<img src="'+esc(x.file)+'" alt="'+esc(x.name)+'" title="'+esc(x.name)+'" loading="lazy">';return '<li>'+(safe(x.url)?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+img+'</a>':img)+'</li>';}).join('');
+  ul.hidden=!ul.children.length;}).catch(()=>{});
 </script>
 </main>
 <footer class="site-foot">

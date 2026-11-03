@@ -88,9 +88,23 @@
     if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch (e) { } throw new Error('GitHub 寫入失敗（' + r.status + '）' + (m ? '：' + m : '')); }
     return await r.json();
   }
+  // 二進位檔（圖片）：content 為 base64（不經 UTF-8 轉換）
+  async function ghPutB64(pat, path, b64content, message) {
+    const cur = await ghGet(pat, path);
+    const body = { message, content: b64content, branch: 'main' }; if (cur && cur.sha) body.sha = cur.sha;
+    const r = await fetch(API + path, { method: 'PUT', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + pat, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch (e) { } throw new Error('GitHub 上傳失敗（' + r.status + '）' + (m ? '：' + m : '')); }
+    return await r.json();
+  }
+  async function ghDelete(pat, path, message) {
+    const cur = await ghGet(pat, path); if (!cur || !cur.sha) return null;
+    const r = await fetch(API + path, { method: 'DELETE', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + pat, 'Content-Type': 'application/json' }, body: JSON.stringify({ message, sha: cur.sha, branch: 'main' }) });
+    if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch (e) { } throw new Error('GitHub 刪除失敗（' + r.status + '）' + (m ? '：' + m : '')); }
+    return await r.json();
+  }
   async function ghTest(pat) { const r = await fetch('https://api.github.com/repos/' + REPO, { headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + pat } }); if (!r.ok) throw new Error('PAT 無法讀取 repo（' + r.status + '）'); const j = await r.json(); if (!j.permissions || !j.permissions.push) throw new Error('PAT 沒有寫入權限（Contents: Read and write）'); return j; }
   async function ghDispatch(pat) { const r = await fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/site.yml/dispatches', { method: 'POST', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + pat, 'Content-Type': 'application/json' }, body: JSON.stringify({ ref: 'main' }) }); if (r.status !== 204) throw new Error('無法觸發更新（' + r.status + '）；PAT 需要 Actions: Read and write'); }
 
   window.BN = window.BN || {};
-  BN.auth = { REPO, ITER, login, session, logout, require, loadRules, fetchJSON, fetchAccounts, makeRecord, genPassword, savePAT, loadPAT, clearPAT, ghGet, ghPut, ghTest, ghDispatch, aesEnc, aesDec, pbkdf2, b64, rnd };
+  BN.auth = { REPO, ITER, login, session, logout, require, loadRules, fetchJSON, fetchAccounts, makeRecord, genPassword, savePAT, loadPAT, clearPAT, ghGet, ghPut, ghPutB64, ghDelete, ghTest, ghDispatch, aesEnc, aesDec, pbkdf2, b64, rnd };
 })();
