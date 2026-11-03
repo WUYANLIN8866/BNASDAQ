@@ -39,12 +39,8 @@
     <li><b>防守部位：SHV</b>（iShares Short Treasury Bond ETF），投資剩餘期限一年以內的美國公債。</li>
   </ul>
   <p>槓桿型 ETF 每日重設槓桿倍數，持有超過一日的報酬並不等於指數報酬的 2 倍，行情劇烈震盪時落差尤其明顯：正式回測期間 QLD 長期持有的年化報酬率為 8.2%，反而低於 QQQ 的 9.4%。這也說明了本策略為何依市場狀態調整配置，而非長期持有 QLD。</p>
-
-  <h2 id="who">關於我們</h2>
-  <p>BNASDAQ 是 YouTube 頻道「BEST NASDAQ」的研究專案。頻道從台灣投資人的角度出發，以公開資料進行可回溯的回測研究；影片中引用的每一個數字，都能在本站找到出處。</p>
-  <p>本站所有績效數字已於 2026-10-28 以同一套資料與程式重新計算，與影片 v6 的結果完全一致。自訂回測起點所用的延伸序列由同一套引擎產生，在預設起點下與上述數字逐項一致（詳見<a href="data.html#extend">資料口徑與驗證方法</a>）。</p>
 </div>
-<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#loop">研究流程：AI 無限循環</a></li><li><a href="#what">投資標的與配置</a></li><li><a href="#who">關於我們</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">回測成績總覽</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#loop">研究流程：AI 無限循環</a></li><li><a href="#what">投資標的與配置</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">回測成績總覽</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
 </div></div></div>
 <script>
 BN.charts.ring(document.getElementById('ring'),{center:'AI 無限循環',center2:'每一輪以實際結果改進下一輪',steps:[{t:'探勘交易策略',s:'AI 在 QQQ 月線搜尋規則'},{t:'驗證交易策略',s:'鄰域、偏移、逐步前推'},{t:'回測交易策略',s:'26 年、含交易成本'},{t:'進入市場驗證',s:'以實際資金依規則執行'},{t:'優化交易策略',s:'實際結果回饋模型'},{t:'回到第一步',s:'無限循環'}]});
