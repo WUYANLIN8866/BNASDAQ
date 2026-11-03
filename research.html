@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0c">
 <title>研究與回測｜BNASDAQ</title>
-<meta name="description" content="BNASDAQ 26 年回測：年化報酬、各區間、年度成績、6 次大跌、回撤水位圖。">
+<meta name="description" content="BNASDAQ 核心策略完整回測（可自訂起點，1986-09～2025-09）：年化報酬率、各區間、逐年報酬、大幅修正期間表現、最大回撤與回撤水位。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -236,7 +236,7 @@
     $('c-cal').innerHTML = '';
     if (rows.length) {
       const y0 = rows[0].y, y1 = rows[rows.length - 1].y;
-      BN.charts.bars($('c-cal'), { title: '逐年報酬：BNASDAQ 與 QQQ' + (US.length ? '（含加入標的）' : ''), sub: y0 + '～' + y1 + ' 曆年｜' + y1 + ' 年僅計至 ' + endM + ' 月底' + (late ? '｜月底資料' : ''), groups: rows.map(r => String(r.y).slice(2)),
+      BN.charts.bars($('c-cal'), { title: '逐年報酬：BNASDAQ 與 QQQ' + (US.length ? '（含加入標的）' : ''), sub: sDate + ' 至 ' + END + '｜' + y0 + '～' + y1 + ' 曆年報酬；' + y1 + ' 年僅計至 ' + endM + ' 月底' + (late ? '；月底資料' : ''), groups: rows.map(r => String(r.y).slice(2)),
         series: [{ name: 'BNASDAQ', values: rows.map(r => cc[0][1](r.y)), color: COL.fund }, { name: 'QQQ', values: rows.map(r => cc[1][1](r.y)), color: COL.qqq }].concat(cc.slice(3).map(c => ({ name: c[0], values: rows.map(r => c[1](r.y)), color: c[2] }))),
         labels: false, yfmt: v => (v * 100).toFixed(0) + '%', tipfmt: v => p1(v), height: 300, note: notes([late ? '' : BT.proxyNote((y0 - 1) + '-12'), adjNote]) || undefined });
     }

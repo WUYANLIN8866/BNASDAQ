@@ -22,7 +22,7 @@
   const nf0 = new Intl.NumberFormat('zh-Hant-TW', { maximumFractionDigits: 0 });
   BN.fmt = {
     wan: v => (Math.abs(v) < 1e5 ? (v / 1e4).toFixed(1) : nf0.format(Math.round(v / 1e4))) + ' 萬',
-    yi: (v, d) => (v / 1e8).toFixed(d == null ? 2 : d) + ' 億',
+    yi: (v, d) => { d = d == null ? 2 : d; return (v / 1e8).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }) + ' 億'; },
     big: v => Math.abs(v) >= 1e8 ? BN.fmt.yi(v) : BN.fmt.wan(v),
     money: v => 'NT$ ' + nf0.format(Math.round(v)),
     pct: (x, d) => (x * 100).toFixed(d == null ? 1 : d) + '%',
