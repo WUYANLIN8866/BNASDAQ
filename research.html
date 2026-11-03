@@ -148,7 +148,7 @@
     P.items.forEach(x => { if (x.mode !== 'out') { const m = addedMetrics(x, E, sDate, late); if (m) AM.set(x.a.code, m); } });
     const US = P.items.filter(x => AM.has(x.a.code));
     const adj = E !== U;
-    const why = adj ? (P.lead.fv > 0 ? '以資料最晚開始的 ' + P.lead.a.label + ' 為準（資料自 ' + (P.lead.w.start_used || RB.ymd(P.lead.ym)) + ' 起）' : '加入標的的比較資料自 ' + S.window.start + ' 起提供') : '';
+    const why = adj ? (P.lead.fv > 0 ? '以資料最晚開始的 ' + P.lead.a.label + ' 為準（資料自 ' + (P.lead.w.start_used || RB.ymd(P.lead.ym)) + ' 起）' : '加入比較的標的僅提供 ' + S.window.start + ' 起的資料') : '';
     const adjNote = adj ? '有效起點已因加入比較標的自動調整為 ' + sDate + '：' + why + '。' : '';
     const pxE = late ? '' : BT.proxyNote(E);
 
@@ -157,6 +157,7 @@
     if (adj) nt += '<p><b>有效回測起點已自動調整為 ' + sDate + '</b>（所選起點：' + uDate + '）。原因：' + why + '。本頁 BNASDAQ、QQQ、QLD、SHV 與加入標的皆改以共同期間 ' + sDate + '～' + END + ' 計算；移除該標的或改選較晚的起點即可恢復。</p>';
     if (late) nt += '<p>共同期間不足一年（本站回測起點最晚為 ' + dateOf(BT.max) + '），以下改以月底資料比較期末價值、成長曲線、逐年報酬與最大回撤，且未計交易成本；各區間年化報酬、大幅修正與逐日回撤水位圖不適用。</p>';
     P.items.filter(x => x.mode === 'out').forEach(x => { nt += '<p>' + x.a.label + ' 的資料只到 ' + (x.w.end_used || '—') + '，未涵蓋至 ' + END + '，不列入本期間的計算。</p>'; });
+    P.items.filter(x => x.mode !== 'out' && !AM.has(x.a.code)).forEach(x => { nt += '<p>' + x.a.label + ' 在 ' + sDate + ' 缺少月底資料，不列入本期間的計算；請改選相鄰月份為起點。</p>'; });
     $('rbnote').innerHTML = nt ? '<div class="note navy">' + nt + '</div>' : '';
 
     // ---- 基礎序列（BNASDAQ／QQQ／QLD／SHV）----
@@ -246,7 +247,7 @@
       + (Math.abs(WD.d.fund.mdd) > Math.abs(WD.d.qqq.mdd) ? '惟此期間本策略的最大回撤深於 QQQ，詳見下方「最大回撤與回撤水位」。' : '') + WD.lab;
     const wb = WD.cr.filter(c => c.fund > c.qqq);
     $('why-2').innerHTML = '<b>下跌趨勢延續時，降低股票曝險。</b>' + (!WD.cr.length ? WD.where + '沒有 QQQ 回落 20% 以上的事件。' : (wb.length ? WD.where + '，在本策略表現優於 QQQ 的大幅修正中，事件期間平均配置於短期美國公債（SHV）的資金比例為：' + join(wb.map(c => c.name + ' ' + p1(c.shv_share))) + '。' : WD.where + '沒有本策略表現優於 QQQ 的大幅修正。'))
-      + '下跌延續數月以上時，月底判斷有時間逐步把資金轉入短期美國公債，這是長期回撤得以控制的主要原因。' + WD.lab;
+      + '下跌延續數月以上時，月底判斷有時間逐步把資金轉入短期美國公債，這是本策略在長期空頭中虧損明顯低於買進持有的主要原因。' + WD.lab;
 
     // ---- 大幅修正 ----
     const CR = late ? [] : BT.crises(E), nC = CR.length;
