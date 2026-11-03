@@ -23,59 +23,59 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html" aria-current=page>個股目標價試算</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 個股目標價試算</div><h1>個股目標價試算</h1><p class="lede">把「未來會賺多少」換算回「今天值多少」。只要填四件事（現在賺多少、會成長多快、至少成長多久、賣出時別人願出幾倍），每一項都給最低與最高；試算器用最接近成長年數的美債殖利率加上股市風險溢價來折現，算出從便宜到昂貴的合理價區間，再告訴你現在的股價落在哪一段。免登入。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 個股目標價試算</div><h1>個股目標價試算</h1><p class="lede">將公司未來的獲利折算為今日的合理價值。只需輸入四項假設——目前每股盈餘、盈餘成長率、成長期間、出場本益比——後三項皆以最低與最高值設定區間；試算器以最接近成長年數的美國公債殖利率加上股市風險溢價作為折現率，計算由便宜到昂貴的合理價區間，並標示目前股價所在區段。免登入即可使用。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <div class="panel">
-    <form class="form" id="cf" novalidate><div class="row2"><div class="field"><label for="code">輸入股票代號，自動帶入參數（台股例 2330、美股例 NVDA）</label><input id="code" list="codelist" autocomplete="off" placeholder="2330 或 NVDA"><datalist id="codelist"></datalist></div><div class="field" style="align-self:end"><button type="submit" class="btn">讀取並帶入</button></div></div></form>
+    <form class="form" id="cf" novalidate><div class="row2"><div class="field"><label for="code">輸入股票代號，自動帶入參數（台股如 2330、美股如 NVDA）</label><input id="code" list="codelist" autocomplete="off" placeholder="2330 或 NVDA"><datalist id="codelist"></datalist></div><div class="field" style="align-self:end"><button type="submit" class="btn">讀取並帶入</button></div></div></form>
     <div id="cMsg"></div><div id="cInfo"></div>
   </div>
   <div class="panel">
     <form class="form" id="vf" onsubmit="return false">
       <div class="row2">
-        <div class="field"><label for="px">目前股價</label><input id="px" type="number" inputmode="decimal" min="0.01" step="0.01" value="100"><div class="help">要判斷「合不合理」就得有個比較對象；幣別不限，和每股盈餘同幣別即可</div></div>
-        <div class="field"><label for="eps">① 現在一年賺多少（每股盈餘 EPS）</label><input id="eps" type="number" inputmode="decimal" step="0.01" value="4"><div class="help">最近 12 個月的每股盈餘；虧損公司（≤ 0）本工具不適用</div></div>
+        <div class="field"><label for="px">目前股價</label><input id="px" type="number" inputmode="decimal" min="0.01" step="0.01" value="100"><div class="help">作為與合理價比較的基準；幣別不限，須與每股盈餘相同</div></div>
+        <div class="field"><label for="eps">① 目前每股盈餘（EPS）</label><input id="eps" type="number" inputmode="decimal" step="0.01" value="4"><div class="help">最近 12 個月的每股盈餘；虧損公司（≤ 0）不適用本工具</div></div>
       </div>
-      <fieldset class="rng"><legend>② 生意會成長多快（每年盈餘成長率 %）</legend><div class="row2">
+      <fieldset class="rng"><legend>② 盈餘成長率（每年，%）</legend><div class="row2">
         <div class="field"><label for="gLo">最低</label><input id="gLo" type="number" inputmode="decimal" step="0.5" value="10"></div>
         <div class="field"><label for="gHi">最高</label><input id="gHi" type="number" inputmode="decimal" step="0.5" value="20"></div>
-      </div><div class="help">填一個你覺得「至少／頂多」的範圍，而不是單一數字；可以用分析師預估或歷史平均打折</div></fieldset>
-      <fieldset class="rng"><legend>③ 至少會成長多久（年）</legend><div class="row2">
+      </div><div class="help">請以「保守～樂觀」的區間設定，而非單一數字；可參考分析師預估或歷史平均並適度折減</div></fieldset>
+      <fieldset class="rng"><legend>③ 成長期間（年）</legend><div class="row2">
         <div class="field"><label for="nLo">最短</label><input id="nLo" type="number" inputmode="numeric" min="1" max="30" step="1" value="5"></div>
         <div class="field"><label for="nHi">最長</label><input id="nHi" type="number" inputmode="numeric" min="1" max="30" step="1" value="10"></div>
-      </div><div class="help">成長期結束就假設賣掉；折現率用「最接近這個年數的美債殖利率」</div></fieldset>
-      <fieldset class="rng"><legend>④ 成長期結束賣掉時，別人願意出「年獲利的幾倍」（出場本益比）</legend><div class="row2">
+      </div><div class="help">假設成長期結束時出售持股；折現率採最接近該年數的美國公債殖利率</div></fieldset>
+      <fieldset class="rng"><legend>④ 出場本益比（成長期結束出售時，市場願意支付的年度盈餘倍數）</legend><div class="row2">
         <div class="field"><label for="peLo">最低</label><input id="peLo" type="number" inputmode="decimal" min="1" step="1" value="15"></div>
         <div class="field"><label for="peHi">最高</label><input id="peHi" type="number" inputmode="decimal" min="1" step="1" value="25"></div>
-      </div><div class="help">成長期過後公司會變「成熟」，成熟公司本益比通常比現在低；填太高等於假設它永遠是成長股</div></fieldset>
+      </div><div class="help">成長期結束後公司趨於成熟，本益比通常低於目前水準；設定過高，等於假設公司永遠維持成長股的評價</div></fieldset>
       <details class="adv"><summary>進階：折現率設定（預設自動）</summary>
         <div class="row2" style="margin-top:10px">
-          <div class="field"><label for="erp">股市風險溢價（%）</label><input id="erp" type="number" inputmode="decimal" step="0.5" value="4"><div class="help">買股票比買美債多承擔的風險，要求多給的報酬；常見假設 3～5%，可自行調整</div></div>
-          <div class="field"><label for="yOv">美債殖利率手動覆寫（%，留空＝自動）</label><input id="yOv" type="number" inputmode="decimal" step="0.01" placeholder="自動用右表"><div class="help">留空時每個成長年數各自對應最接近年期的殖利率</div></div>
+          <div class="field"><label for="erp">股市風險溢價（%）</label><input id="erp" type="number" inputmode="decimal" step="0.5" value="4"><div class="help">投資股票相對於美國公債所要求的額外報酬；常見假設為 3～5%，可自行調整</div></div>
+          <div class="field"><label for="yOv">美債殖利率手動覆寫（%，留空＝自動）</label><input id="yOv" type="number" inputmode="decimal" step="0.01" placeholder="自動用右表"><div class="help">留空時，各成長年數分別採用最接近年期的殖利率</div></div>
         </div>
       </details>
     </form>
   </div>
 
-  <h2 id="verdict">結論</h2>
+  <h2 id="verdict">試算結論</h2>
   <div id="vOut"></div>
   <div id="vBand"></div>
 
   <h2 id="range">合理價區間（便宜 → 昂貴）</h2>
   <div id="vTable"></div>
 
-  <h2 id="sens">哪個假設最關鍵？</h2>
-  <p class="small">固定成長年數為中位數，看成長率 × 出場本益比的合理價。顏色＝相對於目前股價的高低。</p>
+  <h2 id="sens">敏感度分析：哪一項假設影響最大？</h2>
+  <p class="small">成長年數固定為中位數，比較不同成長率與出場本益比組合下的合理價；顏色代表合理價相對於目前股價的高低。</p>
   <div id="vSens"></div>
 
-  <h2 id="how">這是怎麼算的</h2>
-  <div class="note navy"><p><b>合理價 ＝ 現在 EPS × (1 + 成長率)<sup>年數</sup> × 出場本益比 ÷ (1 + 折現率)<sup>年數</sup></b></p><p>折現率 ＝ 最接近「年數」的美債殖利率 ＋ 股市風險溢價。前面三個乘出來是「賣掉那天能拿到多少」，除以 (1＋折現率)<sup>年數</sup> 是「那筆錢換成今天值多少」。</p><p>②④ 各自在最低～最高之間平均取 11 個點、③ 每一年取一點（超過 11 年則平均取 11 個），最多組合成 11 × 11 × 11 ＝ 1,331 種情境，每種算一個合理價，再排序成第 5／25／50／75／95 百分位。目前股價落在哪一段，就是結論。所有數字都在你的瀏覽器即時現算，沒有任何數字寫死在頁面裡。</p></div>
-  <div class="note warn"><p><b>不是投資建議，也不是保證。</b>這個模型的答案完全取決於你填的假設——成長率從 30% 改成 20%，合理價可能差三成以上。它適合用來看「現在的價格隱含了多樂觀的假設」，不適合當買賣訊號。對虧損公司、盈餘大起大落的公司、金融股，本益比法會失真。</p></div>
+  <h2 id="how">計算方法</h2>
+  <div class="note navy"><p><b>合理價 ＝ 現在 EPS × (1 + 成長率)<sup>年數</sup> × 出場本益比 ÷ (1 + 折現率)<sup>年數</sup></b></p><p>折現率 ＝ 最接近「年數」的美債殖利率 ＋ 股市風險溢價。分子三項相乘，是成長期結束、出售當日可取得的價值；除以 (1＋折現率)<sup>年數</sup>，即折算為今日的現值。</p><p>②④ 分別在最低～最高之間等距取 11 個點，③ 每一年取一點（超過 11 年則等距取 11 點），最多組成 11 × 11 × 11 ＝ 1,331 種情境；每種情境各算出一個合理價，排序後取第 5／25／50／75／95 百分位，目前股價所在的區段即為結論。所有數字皆在瀏覽器即時計算，頁面中沒有任何預先寫入的結果。</p></div>
+  <div class="note warn"><p><b>本試算不構成投資建議，亦非保證。</b>模型結果完全取決於輸入的假設：成長率由 30% 調整為 20%，合理價可能相差三成以上。本工具適合用於檢視「目前股價隱含了多樂觀的假設」，不宜作為買賣訊號。對虧損公司、盈餘波動劇烈的公司及金融股，本益比法容易失真。</p></div>
 </div>
 <aside>
-  <div class="side toc"><h3>本頁</h3><ul><li><a href="#verdict">結論</a></li><li><a href="#range">合理價區間</a></li><li><a href="#sens">哪個假設最關鍵</a></li><li><a href="#how">這是怎麼算的</a></li></ul></div>
-  <div class="side"><h3>美債殖利率（自動更新）</h3><div id="vTsy"><p class="small">載入中…</p></div></div>
-  <div class="side"><h3>相關頁面</h3><ul><li><a href="calculator.html">目標資產試算</a></li><li><a href="risk.html">先看風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li></ul></div>
+  <div class="side toc"><h3>本頁內容</h3><ul><li><a href="#verdict">試算結論</a></li><li><a href="#range">合理價區間</a></li><li><a href="#sens">敏感度分析</a></li><li><a href="#how">計算方法</a></li></ul></div>
+  <div class="side"><h3>美國公債殖利率（自動更新）</h3><div id="vTsy"><p class="small">載入中…</p></div></div>
+  <div class="side"><h3>相關頁面</h3><ul><li><a href="calculator.html">目標資產試算</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li></ul></div>
 </aside>
 </div></div></div>
 <style>
@@ -133,9 +133,9 @@ function run(){
   const uniqT=usedTenors.filter((v,i,a)=>a.indexOf(v)===i);
   out.innerHTML=
    '<div class="panel" style="border-top-color:var(--gold)"><p class="small" style="margin:0">目前股價 '+fp(P)+'，落在 '+vals.length.toLocaleString()+' 種情境合理價的第 '+(rank*100).toFixed(0)+' 百分位</p><p class="big">'+ZONES[zi][0]+'</p>'+
-   '<p>合理價中位數 <b class="num">'+fp(q.p50)+'</b>（目前股價'+(q.p50>=P?'再漲 '+((q.p50/P-1)*100).toFixed(0)+'% 才到':'比它高 '+((P/q.p50-1)*100).toFixed(0)+'%')+'）；第 5～95 百分位 <b class="num">'+fp(q.p5)+'～'+fp(q.p95)+'</b>。</p>'+
+   '<p>合理價中位數 <b class="num">'+fp(q.p50)+'</b>（目前股價'+(q.p50>=P?'須再上漲 '+((q.p50/P-1)*100).toFixed(0)+'% 才達到':'高出中位數 '+((P/q.p50-1)*100).toFixed(0)+'%')+'）；第 5～95 百分位 <b class="num">'+fp(q.p5)+'～'+fp(q.p95)+'</b>。</p>'+
    '<div class="vz">'+ZONES.map((z,i)=>'<div'+(i===zi?' class="on"':'')+'>'+z[0]+'<b>'+z[1]+'</b></div>').join('')+'</div>'+
-   '<p class="small">目前本益比 '+pe0.toFixed(1)+' 倍（盈餘殖利率 '+(ey*100).toFixed(2)+'%）。若成長 '+nM+' 年、出場 '+peM.toFixed(1)+' 倍、折現率 '+(rM.r*100).toFixed(2)+'%（'+rM.code+' 殖利率 '+fp(rM.y)+'% ＋ 風險溢價 '+(erp*100).toFixed(1)+'%），目前股價隱含的每年成長率是 <b>'+(gBE*100).toFixed(1)+'%</b>'+(gBE>gHi?'——高於你填的最高值，市場比你樂觀。':gBE<gLo?'——低於你填的最低值，市場比你悲觀。':'——在你填的範圍內。')+'</p>'+
+   '<p class="small">目前本益比 '+pe0.toFixed(1)+' 倍（盈餘殖利率 '+(ey*100).toFixed(2)+'%）。若成長 '+nM+' 年、出場 '+peM.toFixed(1)+' 倍、折現率 '+(rM.r*100).toFixed(2)+'%（'+rM.code+' 殖利率 '+fp(rM.y)+'% ＋ 風險溢價 '+(erp*100).toFixed(1)+'%），目前股價隱含的每年成長率是 <b>'+(gBE*100).toFixed(1)+'%</b>'+(gBE>gHi?'——高於輸入的最高值，市場預期比您的假設更樂觀。':gBE<gLo?'——低於輸入的最低值，市場預期比您的假設更保守。':'——落在您輸入的區間內。')+'</p>'+
    '<p class="small">折現率用到的殖利率：'+uniqT.join('；')+'（'+(ov==null?'資料日期 '+TSY.asof:'手動覆寫')+'）</p></div>';
   // 區間帶
   band(q,P,zi);
@@ -146,7 +146,7 @@ function run(){
   const g5=steps(gLo,gHi,5),pe5=steps(peLo,peHi,5);
   let h='<div class="tblwrap"><table class="tbl sens"><caption>合理價｜固定成長 '+nM+' 年、折現率 '+(rM.r*100).toFixed(2)+'%；列＝成長率、欄＝出場本益比</caption><thead><tr><th class="l">成長率 ＼ 出場 PE</th>'+pe5.map(p=>'<th>'+p.toFixed(1)+' 倍</th>').join('')+'</tr></thead><tbody>';
   g5.forEach(g=>{h+='<tr><td class="l">'+(g*100).toFixed(1)+'%</td>'+pe5.map(pe=>{const v=fair(E,g,nM,pe,rM.r);const d=v/P-1;const c=d>.3?'c0':d>.1?'c1':d>-.1?'c2':d>-.3?'c3':'c4';return '<td class="'+c+'">'+fp(v)+'<br><span class="small">'+(d>=0?'+':'')+(d*100).toFixed(0)+'%</span></td>';}).join('')+'</tr>';});
-  h+='</tbody><tfoot><tr><td colspan="6">括號內＝合理價相對目前股價的差距；綠＝股價比合理價便宜 10% 以上，紅＝貴 10% 以上。</td></tr></tfoot></table></div>';
+  h+='</tbody><tfoot><tr><td colspan="6">每格下方百分比＝合理價相對目前股價的差距；綠＝合理價高於股價 10% 以上（股價相對便宜），紅＝合理價低於股價 10% 以上（股價相對昂貴）。</td></tr></tfoot></table></div>';
   $('vSens').innerHTML=h;
 }
 function band(q,P,zi){
@@ -174,18 +174,18 @@ const pctS=v=>v==null?'—':(v*100).toFixed(1)+'%';
 fetch('data/tw/index.json').then(r=>r.json()).then(j=>{const dl=$('codelist');(j.list||[]).forEach(x=>{if(!x[4])return;const o=document.createElement('option');o.value=x[0];o.label=x[1]||'';dl.appendChild(o);});}).catch(()=>{});
 async function loadCode(raw){let c=String(raw||'').trim().toUpperCase().replace(/\.TWO?$/,'');if(/^[A-Z]+\.[A-Z]$/.test(c))c=c.replace('.','-');if(!c)return;
  $('cMsg').innerHTML='<p class="msg info">讀取 '+esc(c)+'…</p>';$('cInfo').innerHTML='';
- try{const r=await fetch('data/fund/'+encodeURIComponent(c)+'.json',{cache:'no-store'});if(!r.ok){$('cMsg').innerHTML='<p class="msg err">找不到 '+esc(c)+' 的基本面資料（可能打錯、ETF 沒有 EPS，或尚未收錄；資料每週日更新）。</p>';return;}
+ try{const r=await fetch('data/fund/'+encodeURIComponent(c)+'.json',{cache:'no-store'});if(!r.ok){$('cMsg').innerHTML='<p class="msg err">找不到 '+esc(c)+' 的基本面資料（可能代號有誤、ETF 無 EPS，或尚未收錄；資料每週日更新）。</p>';return;}
   const d=await r.json();history.replaceState(null,'','#code='+c);
   if(!d.params){$('cMsg').innerHTML='<p class="msg err">'+esc(d.name||c)+'：'+esc(d.why_none||'無法自動帶入')+'。</p>';return;}
   const P=d.params;['px','eps','gLo','gHi','nLo','nHi','peLo','peHi'].forEach(k=>{if(P[k]!=null)$(k).value=+(+P[k]).toFixed(k==='px'||k==='eps'?2:1);});run();
-  $('cMsg').innerHTML='<p class="msg ok">已帶入 '+esc(d.name)+'（'+esc(c)+'）的參數，資料日 '+esc(d.updated)+'；下面每個數字都可以再改。</p>';
+  $('cMsg').innerHTML='<p class="msg ok">已帶入 '+esc(d.name)+'（'+esc(c)+'）的參數，資料日 '+esc(d.updated)+'；以下各項皆可再調整。</p>';
   const gi=d.growth_inputs||{},L={analyst_this_year:'分析師本年度 EPS 預估 ÷ 近四季 EPS',analyst_next_year:'分析師明年度 EPS 預估成長',hist_eps_cagr:'近幾年 EPS 年化成長'+(d.hist_years?'（'+d.hist_years+'）':''),latest_quarter_yoy:'最近一季 EPS 年增',ttm_yoy:'近四季 EPS 年增'};
   let h='<div class="tblwrap"><table class="tbl"><caption>'+esc(d.name)+'｜'+esc(d.sector||'—')+' / '+esc(d.industry||'—')+'</caption><tbody>';
   h+='<tr><td class=l>股價／EPS（近四季）</td><td>'+esc(d.price)+' '+esc(d.currency||'')+'／'+esc(d.eps_ttm)+'</td></tr><tr><td class=l>本益比（近四季）</td><td>'+(d.pe_ttm?d.pe_ttm.toFixed(1):'—')+'</td></tr>';
   Object.keys(gi).forEach(k=>{h+='<tr><td class=l>'+(L[k]||k)+'</td><td>'+pctS(gi[k])+'</td></tr>';});
   if(d.target_mean)h+='<tr><td class=l>分析師目標價（'+(d.analysts||'?')+' 位；低／平均／高）</td><td>'+esc(d.target_lo)+'／'+esc(d.target_mean)+'／'+esc(d.target_hi)+'</td></tr>';
-  h+='</tbody></table></div><div class="note"><p><b>參數怎麼來的</b></p><ul>'+P.why.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>';
-  if((d.news||[]).length)h+='<h3>最新市場消息</h3><ul class="small">'+d.news.map(n=>'<li><a href="'+esc(n.u)+'" target="_blank" rel="noopener">'+esc(n.t)+'</a>｜'+esc(n.p||'')+' '+esc(n.d||'')+'</li>').join('')+'</ul><p class="small">消息只列標題供參考，參數不依新聞情緒調整。</p>';
+  h+='</tbody></table></div><div class="note"><p><b>參數來源</b></p><ul>'+P.why.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul></div>';
+  if((d.news||[]).length)h+='<h3>最新市場消息</h3><ul class="small">'+d.news.map(n=>'<li><a href="'+esc(n.u)+'" target="_blank" rel="noopener">'+esc(n.t)+'</a>｜'+esc(n.p||'')+' '+esc(n.d||'')+'</li>').join('')+'</ul><p class="small">新聞僅列標題供參考，參數不依新聞情緒調整。</p>';
   $('cInfo').innerHTML=h;
  }catch(e){$('cMsg').innerHTML='<p class="msg err">讀取失敗：'+esc(e.message||e)+'</p>';}}
 $('cf').addEventListener('submit',e=>{e.preventDefault();loadCode($('code').value);});

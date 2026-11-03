@@ -23,48 +23,49 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="risk.html" aria-current=page>風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 風險與代價</div><h1>風險與代價</h1><p class="lede">心動之前，先看完整的 6 點代價，以及我們怎麼證明它不是湊巧挑到好設定。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 風險與代價</div><h1>風險與代價</h1><p class="lede">投入前須了解的三項主要風險、六項代價與限制，以及用於檢驗回測結果是否源自事後挑選參數的穩健性測試。除逐步前推外，本頁數字皆依正式回測區間（2000-05-31～2026-09-30）計算。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
-  <h2 id="three">心動之前：3 個風險一定要知道</h2>
+  <h2 id="three">投入前須了解的三項風險</h2>
   <ol class="steps">
-    <li><b>突然的暴跌躲不掉。</b>2025 年關稅衝擊，BNASDAQ 最深跌了 42.3%（2024-12-16～2025-04-08），同一段 QQQ 跌 22.8%。月底才檢查，幾週內的暴跌來不及反應，又抱著 2 倍槓桿。</li>
-    <li><b>上下震盪很大。</b>每年震盪 33.2%，比 QQQ 的 25.7% 還大（QLD 51.5%）。</li>
-    <li><b>一定要守紀律。</b>月底檢查只要晚一天，26 年年化從 38.0% 掉到 20.8%，報酬直接砍半。</li>
+    <li><b>短期急跌無法即時迴避。</b>2025 年關稅衝擊期間，BNASDAQ 出現回測期間最大回撤 -42.3%（2024-12-16～2025-04-08），同期 QQQ 下跌 22.8%。策略每月僅於月底判斷一次，對數週內發生的急跌來不及反應；當時又持有 2 倍槓桿部位，跌幅因而放大。</li>
+    <li><b>波動度高。</b>年化波動度 33.2%，高於 QQQ 的 25.7%（QLD 為 51.5%）。年化波動度＝日對數報酬的樣本標準差 × √252。</li>
+    <li><b>須嚴守執行紀律。</b>月底判斷只要延後一個交易日，26 年年化報酬率便由 38.0% 降至 20.8%。</li>
   </ol>
-  <div class="note warn"><p>所以，只放長期不會用到的錢。</p></div>
+  <div class="note warn"><p>因此，僅宜投入長期不需動用的資金。</p></div>
 
-  <h2 id="six">完整代價 6 點</h2>
+  <h2 id="six">六項代價與限制</h2>
   <ol class="steps">
-    <li><b>暴跌躲不掉</b>（最深 -42.3%）。</li>
-    <li><b>震盪大</b>（年化 33.2%）。</li>
-    <li><b>要守紀律</b>（晚一天檢查，年化 38.0% → 20.8%）。</li>
-    <li><b>煞車會誤判。</b>減碼煞車亮燈 21 次：14 次躲過下跌，另外 7 次都錯過上漲。</li>
-    <li><b>別期待 38.3%。</b>這組設定在 78,732 組鄰域裡排第 3，比較實際的期待是每年 25% 到 34%。</li>
-    <li><b>只用當時看得到的資料重新挑設定，報酬更低。</b>每 6 年只用當時看得到的資料重新挑設定（逐步前推），1995 到 2026 平均每年只剩 24.6%，最深還跌了 53.1%。</li>
+    <li><b>無法迴避短期急跌</b>（最大回撤 -42.3%）。</li>
+    <li><b>波動度高</b>（年化波動度 33.2%）。</li>
+    <li><b>須嚴守執行紀律</b>（決策日延後一個交易日，年化報酬率由 38.0% 降至 20.8%）。</li>
+    <li><b>減碼訊號可能誤判。</b>回測期間減碼機制（煞車）共啟動 21 次：14 次避開了後續下跌，其餘 7 次則錯失了後續上漲。</li>
+    <li><b>不宜以 38.3% 作為預期。</b>正式參數在 78,732 組參數鄰域中排名第 3；較務實的預期為年化 25%～34%。</li>
+    <li><b>僅用當時可得的資料重新選定參數，報酬明顯降低。</b>以逐步前推檢驗（每 6 年僅用當時可得的資料重新選定參數），1995～2026 年的年化報酬率為 24.6%，最大回撤 -53.1%。</li>
   </ol>
 
-  <h2 id="robust">是不是湊巧挑到好設定？</h2>
-  <p>你可能會想：這不就是事後挑出最好的設定嗎？好問題，我們直接測給你看。我們把 13 個設定，每個都故意調高或調低 10%，一共 78,732 種組合：最差每年 20.9%、第 5 百分位 25.4%、中位數 29.5%、第 95 百分位 33.8%、最好 38.4%，100% 都贏過 QQQ（9.4%）和 QLD（8.2%）。</p>
+  <h2 id="robust">參數穩健性檢驗</h2>
+  <p>回測最常見的疑慮是過度配適：最佳績效可能只是從大量組合中事後挑出的特例。為此，我們將 13 個參數各上調或下調 10%，完整重算全部 78,732 種組合。結果：年化報酬率最差 20.9%、第 5 百分位 25.4%、中位數 29.5%、第 95 百分位 33.8%、最佳 38.4%，100% 的組合都高於 QQQ（9.4%）與 QLD（8.2%）長期持有。</p>
+  <p>解讀：績效並非只在單一參數點成立，鄰域中最差的組合仍明顯高於 QQQ 長期持有；但本站主回測位於分布高端，不宜直接作為預期報酬。此檢驗衡量的是參數在鄰近範圍內的敏感度；以全期資料選定參數所產生的偏誤，則由下方的逐步前推檢驗評估。</p>
   <div id="c-nb"></div>
-  <h3 id="shift">月底檢查的日子挪一挪</h3>
-  <p>再把月底檢查的日子提早或延後 1 到 10 個交易日，21 種情況也全部贏 QQQ（最差 11.2%、中位數 21.2%）；但只有準時在月底那一天檢查才拿得到 38.0%，這就是第 3 點「要守紀律」的來源。</p>
+  <h3 id="shift">決策日偏移檢驗</h3>
+  <p>將月底決策日提早或延後 1～10 個交易日，連同準時判斷共 21 種情境，全部高於 QQQ（最差 11.2%、中位數 21.2%）；但只有準時於月底最後一個交易日收盤後判斷，才能取得 38.0%，這正是前述「須嚴守執行紀律」的依據。</p>
   <div id="c-shift"></div>
-  <h3 id="ladder">換算 100 萬，比較實際的期待</h3>
-  <p>換算單筆 100 萬放 26.3 年，比較實際的期待是 3.90 億 到 21.2 億，中位數 9.10 億，而不是 50.6 億。</p>
-  <div class="tblwrap"><table class="tbl"><thead><tr><th class=l>情境</th><th>100 萬變成</th></tr></thead><tbody><tr><td class=l>官方參數（本站主回測）</td><td>50.56 億</td></tr><tr><td class=l>參數 ±10% 鄰域：第 95 百分位</td><td>21.20 億</td></tr><tr><td class=l>參數 ±10% 鄰域：中位數</td><td>9.10 億</td></tr><tr><td class=l>參數 ±10% 鄰域：第 5 百分位</td><td>3.90 億</td></tr><tr><td class=l>決策日挪動：中位數</td><td>1.58 億</td></tr><tr><td class=l>決策日挪動：最差</td><td>1,649 萬</td></tr><tr><td class=l>QQQ 買了放著</td><td>1,056 萬</td></tr><tr><td class=l>QLD 買了放著</td><td>798 萬</td></tr></tbody></table></div>
-  <h3 id="walk">逐步前推：只用當時看得到的資料</h3>
-  <p>最嚴格的一關：每 6 年只用「當時看得到」的資料重新搜尋設定，再用接下來 6 年驗證，串起 1995-12-29 到 2026-09-25 的結果：年化 24.6%、最深回撤 -53.1%。還是贏 QQQ 長抱，但遠低於 38.3%——這才是「不知道未來」時合理的期待。</p>
+  <h3 id="ladder">以單筆 100 萬換算的合理預期</h3>
+  <p>以單筆 100 萬於正式回測期間（26.3 年）投入換算：參數鄰域第 5～95 百分位對應的期末價值為 3.90 億～21.2 億，中位數 9.10 億；本站主回測的 50.6 億位於分布高端，不宜作為預期。</p>
+  <div class="tblwrap"><table class="tbl"><thead><tr><th class=l>情境</th><th>期末價值（單筆 100 萬）</th></tr></thead><tbody><tr><td class=l>官方參數（本站主回測）</td><td>50.56 億</td></tr><tr><td class=l>參數 ±10% 鄰域：第 95 百分位</td><td>21.20 億</td></tr><tr><td class=l>參數 ±10% 鄰域：中位數</td><td>9.10 億</td></tr><tr><td class=l>參數 ±10% 鄰域：第 5 百分位</td><td>3.90 億</td></tr><tr><td class=l>決策日偏移：中位數</td><td>1.58 億</td></tr><tr><td class=l>決策日偏移：最差</td><td>1,649 萬</td></tr><tr><td class=l>QQQ 長期持有</td><td>1,056 萬</td></tr><tr><td class=l>QLD 長期持有</td><td>798 萬</td></tr></tbody></table></div>
+  <h3 id="walk">逐步前推（walk-forward）：僅使用當時可得的資料</h3>
+  <p>這是最嚴格的一項檢驗：每 6 年僅以當時可得的資料重新搜尋參數，再以其後 6 年的資料驗證，並將各段結果串接為 1995-12-29～2026-09-25 的完整績效：年化報酬率 24.6%、最大回撤 -53.1%。結果仍高於 QQQ 長期持有，但明顯低於 38.3%；在無法預知未來的前提下，這是較貼近實際的參考值。</p>
 
   <h2 id="disc">免責聲明</h2>
-  <p>本站所有數字為歷史回測，不是保證報酬，也不是投資建議；回測含換倉成本但不含稅與滑價，QLD 2006-06 上市前以合成序列代理。詳見<a href="data.html">資料口徑與免責聲明</a>。</p>
+  <p>本站所有數字均為歷史回測，並非保證報酬，亦不構成投資建議；回測已計入換倉成本，但未計入稅負與滑價；QLD 於 2006-06 上市前以合成序列代理。詳見<a href="data.html">資料口徑與免責聲明</a>。</p>
 </div>
-<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#three">3 個風險</a></li><li><a href="#six">完整代價 6 點</a></li><li><a href="#robust">是不是湊巧</a></li><li><a href="#shift">挪動檢查日</a></li><li><a href="#ladder">實際的期待</a></li><li><a href="#walk">逐步前推</a></li><li><a href="#disc">免責聲明</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html#dd">回撤水位圖</a></li><li><a href="research.html#crises">6 次大跌</a></li><li><a href="data.html">資料口徑</a></li></ul></div></aside>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#three">三項主要風險</a></li><li><a href="#six">六項代價與限制</a></li><li><a href="#robust">參數穩健性</a></li><li><a href="#shift">決策日偏移</a></li><li><a href="#ladder">合理預期</a></li><li><a href="#walk">逐步前推</a></li><li><a href="#disc">免責聲明</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html#dd">回撤水位圖</a></li><li><a href="research.html#crises">6 次大跌</a></li><li><a href="data.html">資料口徑</a></li></ul></div></aside>
 </div></div></div>
 <script>
 (function(){const S=window.SITE,f=BN.fmt,nb=S.nb;
-BN.charts.hist(document.getElementById('c-nb'),{title:'參數 ±10% 鄰域：'+nb.n.toLocaleString()+' 種組合的年化報酬分布',sub:'13 個設定各調高／調低 10% 的全部組合；虛線為 QQQ、QLD 長抱與本站主回測',edges:nb.edges,counts:nb.counts,marks:[{x:S.lump.qqq.cagr,label:'QQQ '+(S.lump.qqq.cagr*100).toFixed(1)+'%',color:'var(--s-qqq)'},{x:S.lump.qld.cagr,label:'QLD '+(S.lump.qld.cagr*100).toFixed(1)+'%',color:'var(--s-qld)',dy:16},{x:nb.p5,label:'第 5 百分位 '+(nb.p5*100).toFixed(1)+'%',color:'var(--ink)',dy:32},{x:nb.p95,label:'第 95 百分位 '+(nb.p95*100).toFixed(1)+'%',color:'var(--ink)',anchor:'end',dx:-4,dy:32},{x:nb.official,label:'本站主回測 '+(nb.official*100).toFixed(1)+'%',color:'var(--gold)',anchor:'end',dx:-4}]});
-BN.charts.bars(document.getElementById('c-shift'),{title:'月底檢查日提早／延後 1～10 個交易日的年化報酬',sub:'0 ＝ 準時在月底最後一個交易日收盤後檢查；負數＝提早、正數＝延後',groups:S.shift.list.map(x=>String(x.o)),series:[{name:'年化報酬',values:S.shift.list.map(x=>x.cagr),color:'var(--s-fund)'}],labels:false,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',height:260});
+BN.charts.hist(document.getElementById('c-nb'),{title:'參數 ±10% 鄰域：'+nb.n.toLocaleString()+' 種組合的年化報酬率分布',sub:'13 個參數各上調／下調 10% 的全部組合；虛線為 QQQ、QLD 長期持有與本站主回測',note:'依正式回測區間（2000-05-31～2026-09-30）；每換一次起點需重跑 78,732 組參數，無法在瀏覽器即時重算。',edges:nb.edges,counts:nb.counts,marks:[{x:S.lump.qqq.cagr,label:'QQQ '+(S.lump.qqq.cagr*100).toFixed(1)+'%',color:'var(--s-qqq)'},{x:S.lump.qld.cagr,label:'QLD '+(S.lump.qld.cagr*100).toFixed(1)+'%',color:'var(--s-qld)',dy:16},{x:nb.p5,label:'第 5 百分位 '+(nb.p5*100).toFixed(1)+'%',color:'var(--ink)',dy:32},{x:nb.p95,label:'第 95 百分位 '+(nb.p95*100).toFixed(1)+'%',color:'var(--ink)',anchor:'end',dx:-4,dy:32},{x:nb.official,label:'本站主回測 '+(nb.official*100).toFixed(1)+'%',color:'var(--gold)',anchor:'end',dx:-4}]});
+BN.charts.bars(document.getElementById('c-shift'),{title:'決策日提早／延後 1～10 個交易日的年化報酬率',sub:'0 ＝ 準時於月底最後一個交易日收盤後判斷；負值＝提早、正值＝延後',note:'依正式回測區間（2000-05-31～2026-09-30）；每換一次起點需重新回測 21 種決策日，無法在瀏覽器即時重算。',groups:S.shift.list.map(x=>String(x.o)),series:[{name:'年化報酬率',values:S.shift.list.map(x=>x.cagr),color:'var(--s-fund)'}],labels:false,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',height:260});
 })();
 </script>
 </main>

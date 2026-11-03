@@ -23,7 +23,7 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 搜尋</div><h1>站內搜尋</h1><p class="lede">輸入關鍵字，搜尋本站所有頁面的段落。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 搜尋</div><h1>站內搜尋</h1><p class="lede">輸入關鍵字，搜尋本站各頁面的內容段落；多個關鍵字請以空格分隔。</p></div></div>
 <div class="main"><div class="wrap">
   <form class="search" id="sf" role="search" style="max-width:560px"><label class="sr-only" for="q2">關鍵字</label><input id="q2" type="search" placeholder="例：最大回撤、0050、2,000 萬"><button type="submit">搜尋</button></form>
   <div id="res" style="margin-top:20px"></div>
@@ -31,7 +31,7 @@
 <script>
 (function(){const idx=window.SEARCH_INDEX||[];const q0=new URLSearchParams(location.search).get('q')||'';const inp=document.getElementById('q2');inp.value=q0;
 function run(q){const res=document.getElementById('res');q=q.trim();if(!q){res.innerHTML='<p class="muted">請輸入關鍵字。</p>';return;}const terms=q.toLowerCase().split(/\s+/).filter(Boolean);const hits=idx.map(it=>{const t=(it.title+' '+it.text).toLowerCase();let s=0;terms.forEach(k=>{if(it.title.toLowerCase().includes(k))s+=3;const c=t.split(k).length-1;s+=c;});return [s,it];}).filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,30);
-if(!hits.length){res.innerHTML='<p>找不到「'+q.replace(/[<>]/g,'')+'」，換個關鍵字試試。</p>';return;}
+if(!hits.length){res.innerHTML='<p>找不到與「'+q.replace(/[<>]/g,'')+'」相關的內容，請改用其他關鍵字。</p>';return;}
 res.innerHTML='<p class="muted">'+hits.length+' 筆結果</p>'+hits.map(([s,it])=>{let x=it.text;const k=terms[0];const i=x.toLowerCase().indexOf(k);if(i>40)x='…'+x.slice(i-40);x=x.slice(0,160)+(x.length>160?'…':'');return '<div class="panel" style="padding:12px 16px"><a href="'+it.url+'"><b>'+it.title+'</b></a><div class="small">'+it.page+'</div><p style="margin:6px 0 0;font-size:14.5px">'+x.replace(/[<>]/g,'')+'</p></div>';}).join('');}
 document.getElementById('sf').addEventListener('submit',e=>{e.preventDefault();history.replaceState(null,'','search.html?q='+encodeURIComponent(inp.value));run(inp.value);});run(q0);})();
 </script>

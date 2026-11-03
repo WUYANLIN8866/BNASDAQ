@@ -227,8 +227,8 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 
 /* loop tiles */
 .loop { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; counter-reset: step; margin: 18px 0; }
-.loop .step { background: var(--paper); border: 1px solid var(--line); padding: 18px 14px 14px; position: relative; }
-.loop .step::before { counter-increment: step; content: "0" counter(step); position: absolute; top: 10px; right: 12px; color: var(--gold); font-size: 12px; font-weight: 600; letter-spacing: .1em; }
+.loop .step { background: var(--paper); border: 1px solid var(--line); border-top: 2px solid var(--gold-hi); padding: 14px 14px 14px; position: relative; }
+.loop .step::before { counter-increment: step; content: "0" counter(step); display: block; margin-bottom: 6px; color: var(--gold); font-size: 12px; font-weight: 600; letter-spacing: .14em; }
 .loop .step b { display: block; font-size: 15.5px; margin-bottom: 4px; color: var(--ink); }
 .loop .step span { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; display: block; }
 @media (max-width: 980px) { .loop { grid-template-columns: repeat(3, 1fr); } }

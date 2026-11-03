@@ -23,22 +23,36 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 資料口徑與免責</div><h1>資料口徑與免責聲明</h1><p class="lede">所有回測共用的資料來源、代理序列、成本與執行方式；以及本站的免責聲明。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 資料口徑與免責</div><h1>資料口徑與免責聲明</h1><p class="lede">本站所有回測共用的資料來源、代理序列、成本假設與執行口徑，自訂回測起點所用的延伸序列，以及驗證方法與免責聲明。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <h2 id="data">資料來源</h2>
-  <div class="tblwrap"><table class="tbl"><thead><tr><th class=l>項目</th><th class=l>口徑</th></tr></thead><tbody><tr><td class=l>QQQ 價格</td><td class=l>還原股息與分割的收盤價；1999-03-11 上市前以 NDX 指數代理（1980-01 起）。</td></tr><tr><td class=l>月高／月低</td><td class=l>各交易日以「還原收盤 ÷ 原收盤」調整後再彙整成月線。</td></tr><tr><td class=l>QLD</td><td class=l>2006-06 上市前以合成序列代理：2 × QQQ 含息日報酬 − 前月 T-bill − 以真實 QLD 重疊期校準的費用（1.5482%／年）。</td></tr><tr><td class=l>SHV</td><td class=l>合成短期美債：前月 T-bill 年率 − 0.15%，日複利。</td></tr><tr><td class=l>成本</td><td class=l>換倉單邊 0.1%；定期定額每次扣款 0.1%。不含稅與滑價。</td></tr><tr><td class=l>執行</td><td class=l>每月最後一個交易日收盤後判斷，下一個交易日開盤調整到目標比例；隔夜漲跌歸原持有部位；目標與目前相同就不交易；半倉期間月中不再平衡。</td></tr><tr><td class=l>主回測區間</td><td class=l>2000-05-31 收盤 → 2026-09-30 收盤（26.33 年）；定期定額 316 期，每期 1 萬。</td></tr><tr><td class=l>台股</td><td class=l>0050、台積電：台灣證交所日／月資料，台幣含息（除息日以除息前收盤／參考價調整單位數），0050 2025-06-17 1 拆 4；匯率 FRED EXTAUS（定期定額用當月平均匯率，期末以 31.852 換回）。</td></tr><tr><td class=l>自選台股／美股（個股對比頁與研究與回測頁輸入代號）</td><td class=l>Yahoo Finance 還原收盤（股息再投入、分割還原）；台股以台幣、美股以 FRED 每日匯率換算台幣（個股對比頁）或美元（研究與回測頁）；與六種做法同一段期間（上市較晚者自第一個交易日起算並標註）；每月自動重算；逐年報酬、最深跌幅、大跌區間皆以日收盤含息計算；最新收盤每個交易日更新（證交所／櫃買中心、Yahoo）。</td></tr><tr><td class=l>個股對比區間</td><td class=l>2013-12-31 → 2026-09-30（12.75 年）。</td></tr><tr><td class=l>會員專區市場資料</td><td class=l>每個交易日美股收盤後由自動程序更新 QQQ 還原收盤與月高低（Yahoo Finance；失敗時改用備援來源並標註）。</td></tr></tbody></table></div>
-  <h2 id="method">驗證方法</h2>
+  <p>本站所有回測使用同一套資料與計算程式。價格一律採還原股息與分割的收盤價；商品上市前的期間以代理序列補足，並在相關頁面標註代理區間。</p>
+  <div class="tblwrap"><table class="tbl"><thead><tr><th class=l>項目</th><th class=l>口徑</th></tr></thead><tbody><tr><td class=l>QQQ 價格</td><td class=l>還原股息與分割的收盤價；1999-03-11 上市前以 NDX 指數代理（1980-01 起；價格指數，不含息）。</td></tr><tr><td class=l>月高／月低</td><td class=l>各交易日先以「還原收盤 ÷ 原收盤」調整，再彙整為月線。</td></tr><tr><td class=l>QLD</td><td class=l>2006-06 上市前以合成序列代理：2 × QQQ 含息日報酬 − 前月 T-bill − 以真實 QLD 重疊期校準的費用（1.5482%／年）。</td></tr><tr><td class=l>SHV</td><td class=l>合成短期美債：前月 T-bill 年率 − 0.15%，日複利。</td></tr><tr><td class=l>成本</td><td class=l>換倉單邊 0.1%；定期定額每次扣款 0.1%；單筆投入期初買進 0.1%。不含稅與滑價。</td></tr><tr><td class=l>執行</td><td class=l>每月最後一個交易日收盤後判斷，次一交易日開盤調整至目標比例；隔夜漲跌歸屬原持有部位；目標與目前持倉相同時不交易；半倉期間月中不再平衡。</td></tr><tr><td class=l>正式回測區間（主回測）</td><td class=l>2000-05-31 收盤 → 2026-09-30 收盤（26.33 年）；定期定額 316 期，每期 1 萬。</td></tr><tr><td class=l>延伸回測序列（自訂起點用）</td><td class=l>與主回測同一套引擎、同一份日線產生；起點可設於 1986-09 月底～2025-09 月底，終點固定為 2026-09-30。起點早於 1999-03 時 QQQ 前段為 NDX 代理，早於 2006-06 時 QLD 前段為合成序列，頁面自動標註。方法見<a href="#extend">延伸回測序列與自訂起點</a>。</td></tr><tr><td class=l>台股</td><td class=l>0050、台積電：台灣證交所日／月資料，台幣含息（除息日以除息前收盤／參考價調整單位數）；0050 於 2025-06-17 1 拆 4；匯率採 FRED EXTAUS（定期定額用當月平均匯率，期末以 31.852 換回）。</td></tr><tr><td class=l>自選台股／美股（個股對比頁與研究與回測頁輸入代號）</td><td class=l>Yahoo Finance 還原收盤（股息再投入、分割還原）。個股對比頁以台幣計價，美股以 FRED 每日匯率換算為台幣；研究與回測頁以美元計價，台股以每日匯率換算為美元。與同頁比較對象採同一段期間（上市較晚者自第一個交易日起算並標註）；每月自動重算；逐年報酬、最大回撤、大跌區間皆以日收盤含息計算；最新收盤每個交易日更新（證交所／櫃買中心、Yahoo）。</td></tr><tr><td class=l>個股對比區間</td><td class=l>預設 2013-12-31 → 2026-09-30（12.75 年）；起點可於頁面調整，涉及 0050、台積電的比較最早自 2013-12-31 起算。</td></tr><tr><td class=l>會員專區市場資料</td><td class=l>每個交易日美股收盤後，由自動程序更新 QQQ 還原收盤與月高低（Yahoo Finance；失敗時改用備援來源並標註）。</td></tr></tbody></table></div>
+
+  <h2 id="extend">延伸回測序列與自訂起點</h2>
+  <p>研究與回測、定期定額、個股對比與首頁的回測圖表均可自訂起點（1986-09 月底～2025-09 月底；終點固定為 2026-09-30）。變更起點後，該段的圖表、表格與關鍵數字以延伸序列在瀏覽器端即時重算。</p>
   <ul>
-    <li><b>參數鄰域：</b>13 個設定各調高／調低 10%，78,732 種組合全部重算。</li>
-    <li><b>決策日挪動：</b>月底檢查日提早／延後 1～10 個交易日，21 種情況。</li>
-    <li><b>逐步前推：</b>每 6 年只用當時看得到的資料重新搜尋設定，再驗證接下來 6 年，1995～2026 串接結果。</li>
+    <li><b>資料與引擎：</b>延伸序列與主回測使用同一套引擎、同一份日線產生，計算口徑完全相同。</li>
+    <li><b>計算口徑：</b>以月底收盤為起點、2026-09-30 收盤為終點；年數＝日曆日 ÷ 365.25；單筆投入計入期初買進成本 0.1%；定期定額於每月底扣款、每筆成本 0.1%，IRR 以實際日期折算；最大回撤以日收盤計算；年化波動度＝日對數報酬的樣本標準差 × √252。</li>
+    <li><b>代理標註：</b>起點早於 1999-03 時，QQQ 前段為 NDX 指數代理（價格指數，不含息）；早於 2006-06 時（包括預設起點），QLD 前段為合成序列。頁面會自動標註代理區間。</li>
+    <li><b>一致性驗算：</b>在預設起點（2000-05-31）下，瀏覽器端重算的 291 項數字與原網站逐項一致，涵蓋年化報酬率、最大回撤與發生日期、回本時間、年化波動度、定期定額期末價值／IRR／倍數／逐月序列、逐年報酬、近 N 年報酬、6 次大跌與回撤水位。</li>
+  </ul>
+  <div class="note navy"><p><b>維持正式回測區間的統計。</b>涉及逐月持倉的統計——三種配置的月數、三種配置下 QLD 的平均月報酬、調整次數與減碼（煞車）次數——一律維持正式回測區間（2000-05-31～2026-09-30），因為隨起點逐月重算，等同公開逐月持倉。大跌期間的「SHV 資金比例」為整段事件的平均值，不涉及逐月持倉，因此可隨起點呈現。</p><p>參數鄰域與決策日偏移同樣維持正式回測區間：每換一次起點，需重新回測 78,732 組參數與 21 種決策日，無法在瀏覽器即時重算；逐步前推則維持其原檢驗區間（1995-12-29～2026-09-25）。</p></div>
+
+  <h2 id="method">驗證方法</h2>
+  <p>以下檢驗用於評估回測結果是否依賴特定參數、特定執行日期或事後資訊，並確認數字本身可被重現。</p>
+  <ul>
+    <li><b>參數鄰域：</b>13 個參數各調高／調低 10%，78,732 種組合全部重算。</li>
+    <li><b>決策日偏移：</b>月底決策日提早／延後 1～10 個交易日，連同準時判斷共 21 種情境。</li>
+    <li><b>逐步前推（walk-forward）：</b>每 6 年只用當時可得的資料重新搜尋參數，再以接下來 6 年驗證，1995～2026 串接結果。</li>
     <li><b>逆向驗算：</b>本站數字於 2026-10-28 以同一套資料與程式重新計算，並與影片 v6 的計算檔逐項比對（0 差異）；市場資料以兩個獨立來源核對。</li>
+    <li><b>延伸序列一致性：</b>預設起點下，瀏覽器端以延伸序列重算的 291 項數字與原網站逐項一致；起點落在代理區間時自動標註。</li>
   </ul>
   <h2 id="disc">免責聲明</h2>
   <p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p>
 </div>
-<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#data">資料來源</a></li><li><a href="#method">驗證方法</a></li><li><a href="#disc">免責聲明</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="risk.html">風險與代價</a></li><li><a href="about.html#rules">為什麼不公開規則</a></li></ul></div></aside>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#data">資料來源</a></li><li><a href="#extend">延伸回測序列</a></li><li><a href="#method">驗證方法</a></li><li><a href="#disc">免責聲明</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="risk.html">風險與代價</a></li><li><a href="about.html#rules">為什麼不公開規則</a></li><li><a href="faq.html#start">可以自訂回測起點嗎？</a></li></ul></div></aside>
 </div></div></div>
 </main>
 <footer class="site-foot">
