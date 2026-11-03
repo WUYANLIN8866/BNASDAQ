@@ -51,7 +51,7 @@
 <div class="btzone">
 <section class="band alt" id="performance"><div class="wrap">
   <div class="sechead"><div><span class="eyebrow">回測績效</span><h2>累積報酬比較：BNASDAQ 與主要市場</h2></div><a class="more" href="research.html">完整回測 ›</a></div>
-  <p class="lead">BNASDAQ、QQQ、QLD、SPY、0050、台積電與 10 個國際股市指數，自同一起點起算的累積走勢。可自由調整回測起點，本區所有圖表、表格與主要指標會同步重算。</p>
+  <p class="lead">BNASDAQ、QQQ、QLD、SPY、波克夏 BRK-B、0050、台積電與 10 個國際股市指數，自同一起點起算的累積走勢。可自由調整回測起點，本區所有圖表、表格與主要指標會同步重算。</p>
   <div class="btpick sticky" id="bt-pick"></div>
   <div id="world-tabs" hidden></div>
   <div id="c-world"></div>
@@ -135,7 +135,7 @@ function renderWorld(start){
   const rows=series.slice().sort((a,b)=>b.end-a.end);
   $('t-world').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+W0+' 至 '+END+'（'+yrs.toFixed(1)+' 年）的累積報酬與年化</caption><thead><tr><th class=l>標的</th><th>累積報酬</th><th>年化</th><th class=l>幣別／口徑</th></tr></thead><tbody>'+rows.map(s=>{const cagr=Math.pow(1+s.end,1/yrs)-1;return '<tr><td class=l><span class="sw" style="background:'+s.color+'"></span>'+s.name+'</td><td>'+(s.end>=0?'+':'')+(s.end*100).toLocaleString('zh-Hant-TW',{maximumFractionDigits:0})+'%</td><td>'+(cagr*100).toFixed(1)+'%</td><td class=l>'+s.cur+'</td></tr>';}).join('')+'</tbody></table></div>';
   const px=B.proxyNote(start);
-  $('world-note').textContent=(skipped.length?'未列入：'+skipped.join('、')+'，選較晚的起點即可納入。':'')+'BNASDAQ、QQQ、QLD 為本站回測序列（美元、含息）；SPY、0050、台積電為 Yahoo 還原收盤（含息）；10 個指數為價格指數（不含息、當地幣別），所以指數會比同市場的含息 ETF 略低。各自以本身幣別計，未換匯。'+(idxUpdated?' 指數資料更新：'+idxUpdated+'。':'')+(px?' '+px:'');
+  $('world-note').textContent=(skipped.length?'未列入：'+skipped.join('、')+'，選較晚的起點即可納入。':'')+'BNASDAQ、QQQ、QLD 為本站回測序列（美元、含息）；SPY、波克夏 BRK-B、0050、台積電為 Yahoo 還原收盤（含息；BRK-B 不配息）；10 個指數為價格指數（不含息、當地幣別），所以指數會比同市場的含息 ETF 略低。各自以本身幣別計，未換匯。'+(idxUpdated?' 指數資料更新：'+idxUpdated+'。':'')+(px?' '+px:'');
 }
 
 function renderMini(start){
@@ -174,10 +174,11 @@ function renderInd(start){
 }
 
 (async()=>{try{
-  const [idx,spy,tw,tsmc,fx]=await Promise.all([getJ('data/indices.json'),getJ('data/tw/SPY.json'),getJ('data/tw/0050.json'),getJ('data/tw/2330.json'),getJ('data/tw/_fx.json')]);
+  const [idx,spy,brk,tw,tsmc,fx]=await Promise.all([getJ('data/indices.json'),getJ('data/tw/SPY.json'),getJ('data/tw/BRK-B.json'),getJ('data/tw/0050.json'),getJ('data/tw/2330.json'),getJ('data/tw/_fx.json')]);
   FX=fx&&fx.months?fx.months:null;
   ALL=[{name:'BNASDAQ',vals:B.T.eq.fund,color:pal[0],cur:'美元，含息'},{name:'QQQ',vals:B.T.eq.qqq,color:pal[1],cur:'美元，含息'},{name:'QLD',vals:B.T.eq.qld,color:pal[2],cur:'美元，含息'}];
   if(spy&&spy.w26&&spy.w26.monthly)ALL.push({name:'SPY',vals:pad26(spy.w26.monthly),color:pal[3],cur:'美元，含息'});
+  if(brk&&brk.w26&&brk.w26.monthly)ALL.push({name:'波克夏 BRK-B',vals:pad26(brk.w26.monthly),color:'#6250d6',cur:'美元（不配息）'});
   const v0050=fromTw(tw),v2330=fromTw(tsmc);TW=v0050;TSMC=v2330;J50=tw;J33=tsmc;
   if(v0050)ALL.push({name:'0050',vals:v0050,color:pal[4],cur:'台幣，含息'});if(v2330)ALL.push({name:'台積電 2330',vals:v2330,color:pal[5],cur:'台幣，含息'});
   let k=6;if(idx&&idx.series){idxUpdated=idx.updated||'';for(const sym of Object.keys(idx.series)){const it=idx.series[sym];ALL.push({name:it.name,vals:pad26(it.values),color:pal[k++%pal.length],cur:'當地幣別，價格指數不含息'});}}
