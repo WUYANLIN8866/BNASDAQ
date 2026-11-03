@@ -180,16 +180,16 @@
     const dTxt = d => (d && isFinite(d) && d > 0) ? '約每 ' + d.toFixed(1) + ' 年資產倍增' : '期末價值低於期初';
     const tile = (label, color, end, l1, l2) => '<div class="tile"><div class="k">' + sw(color) + label + '</div><div class="v">' + f.big(end) + '</div><div class="s">' + l1 + (l2 ? '<br>' + l2 : '') + '</div></div>';
     // 共同期間不足一年時不予年化，改列期間報酬
-    const ret = (k, m) => late ? '期間報酬 ' + f.pctS(m.ratio - 1) : '年化報酬率 ' + p1(m.cagr);
+    const ret = m => late ? '期間報酬 ' + f.pctS(m.ratio - 1) : '年化報酬率 ' + p1(m.cagr);
     const qldMdd = late ? R.qld.mdd.mdd : DDm.qld.mdd, qldLow = L.qld.cagr < L.qqq.cagr;
-    let kv = tile('BNASDAQ 核心策略', COL.fund, L.fund.end, ret('fund', late ? R.fund : L.fund), late ? '未滿一年，不予年化' : dTxt(L.fund.doubling))
-      + tile('QQQ 買進持有', COL.qqq, L.qqq.end, ret('qqq', late ? R.qqq : L.qqq), late ? '' : dTxt(L.qqq.doubling))
-      + tile('QLD 買進持有', COL.qld, L.qld.end, ret('qld', late ? R.qld : L.qld), qldLow ? (late ? '2 倍槓桿，期間報酬反低於 QQQ' : '2 倍槓桿長期持有，年化報酬率反低於 QQQ') : '高於 QQQ，但最大回撤達 ' + a1(qldMdd))
-      + tile('SHV 短期美國公債', COL.shv, L.shv.end, ret('shv', late ? R.shv : L.shv), '對照：現金不投資，期末仍為 100 萬');
+    let kv = tile('BNASDAQ 核心策略', COL.fund, L.fund.end, ret(late ? R.fund : L.fund), late ? '未滿一年，不予年化' : dTxt(L.fund.doubling))
+      + tile('QQQ 買進持有', COL.qqq, L.qqq.end, ret(late ? R.qqq : L.qqq), late ? '' : dTxt(L.qqq.doubling))
+      + tile('QLD 買進持有', COL.qld, L.qld.end, ret(late ? R.qld : L.qld), qldLow ? (late ? '2 倍槓桿，期間報酬反低於 QQQ' : '2 倍槓桿長期持有，年化報酬率反低於 QQQ') : '高於 QQQ，但最大回撤達 ' + a1(qldMdd))
+      + tile('SHV 短期美國公債', COL.shv, L.shv.end, ret(late ? R.shv : L.shv), '對照：現金不投資，期末仍為 100 萬');
     US.forEach(x => {
       const m = AM.get(x.a.code), w = x.w, d = dbl(m.cagr);
       const extra = [x.mode === 'pre' ? (w.partial ? '自 ' + w.start_used + ' 起算' : (w.partial_end ? '資料到 ' + w.end_used : '')) : '', twTag(x.a)].filter(Boolean).join('；');
-      kv += tile(x.a.label, x.a.color, m.lump, ret(null, m), [late ? '' : (d ? dTxt(d) : ''), extra].filter(Boolean).join('；'));
+      kv += tile(x.a.label, x.a.color, m.lump, ret(m), [late ? '' : (d ? dTxt(d) : ''), extra].filter(Boolean).join('；'));
     });
     $('kv-report').innerHTML = kv;
     $('c-eq').innerHTML = '';
