@@ -48,10 +48,17 @@
   }
 
   // ---- 定期定額 ----
+  // IRR（二分法）：每筆扣款到終點的年數先算好（與逐次計算的算式相同，所以結果逐位元相同）；
+  // 區間已無法再縮小時提早結束（之後的迭代不會改變 lo、hi）；同樣輸入的結果記下來重用。
+  const IRR_MEMO = new Map();
   function irrDays(cdates, amt, endDate, value) {
-    let lo = -0.99, hi = 3; const f = r => cdates.reduce((s, d) => s + amt * Math.pow(1 + r, (Date.parse(endDate) - Date.parse(d)) / DAY / 365.25), 0) - value;
-    for (let k = 0; k < 200; k++) { const mid = (lo + hi) / 2; if (f(mid) < 0) lo = mid; else hi = mid; }
-    return (lo + hi) / 2;
+    const key = cdates.join(',') + '|' + amt + '|' + endDate + '|' + value;
+    if (IRR_MEMO.has(key)) return IRR_MEMO.get(key);
+    const tE = Date.parse(endDate), ts = cdates.map(d => (tE - Date.parse(d)) / DAY / 365.25), n = ts.length;
+    const f = r => { const b = 1 + r; let s = 0; for (let i = 0; i < n; i++) s = s + amt * Math.pow(b, ts[i]); return s - value; };
+    let lo = -0.99, hi = 3;
+    for (let k = 0; k < 200; k++) { const mid = (lo + hi) / 2; if (mid === lo || mid === hi) break; if (f(mid) < 0) lo = mid; else hi = mid; }
+    const out = (lo + hi) / 2; IRR_MEMO.set(key, out); return out;
   }
   function dca(key, ym, amt) {
     amt = amt || 1e4; const i0 = i0Of(ym), a = key === 'inv' ? null : T.eq[key]; let u = 0, n = 0; const series = [], cd = [];
@@ -98,7 +105,7 @@
 
   // ---- 狀態：起點；可有多個獨立頻道（例：同頁美元段 2000-05、台幣段 2013-12）。網址 ?start=YYYY-MM（主頻道）、?start_<id>=（其他頻道）可分享 ----
   function makeChannel(id, def0) {
-    const param = id ? 'start_' + id : 'start'; let CUR = null, DEF = def0 || T.official; const LS = [];
+    const param = id ? 'start_' + id : 'start'; let CUR = null, DEF = def0 || T.official, PEND = null; const LS = [], UI = [];
     const ch = {
       id, param,
       def(ym) { DEF = clamp(ym || DEF); CUR = null; return ch.get(); },
@@ -107,10 +114,14 @@
       set(ym) {
         CUR = clamp(ym); if (ch.min && CUR < ch.min) CUR = ch.min;
         try { const u = new URL(location.href); if (CUR === DEF) u.searchParams.delete(param); else u.searchParams.set(param, CUR); history.replaceState(null, '', u.pathname.split('/').pop() + u.search + u.hash); } catch (e) { }
-        LS.forEach(f => { try { f(CUR); } catch (err) { console.error(err); } });
-        document.dispatchEvent(new CustomEvent('bt-start', { detail: { ym: CUR, channel: id || '' } }));
+        // 起點選擇列（按鈕、下拉選單）立刻更新，下一個畫面就看得到；圖表與表格排到這個畫面之後再重算，連續點選時只算最後一次
+        UI.forEach(f => { try { f(CUR); } catch (err) { console.error(err); } });
+        if (PEND) return; PEND = LS.slice();
+        const run = () => { const fs = PEND, v = ch.get(); PEND = null; fs.forEach(f => { try { f(v); } catch (err) { console.error(err); } }); document.dispatchEvent(new CustomEvent('bt-start', { detail: { ym: v, channel: id || '' } })); };
+        if (document.hidden || typeof requestAnimationFrame !== 'function') setTimeout(run, 0); else requestAnimationFrame(() => setTimeout(run, 0));
       },
       on(f, now) { LS.push(f); if (now !== false) { try { f(ch.get()); } catch (err) { console.error(err); } } },
+      onUI(f, now) { UI.push(f); if (now !== false) { try { f(ch.get()); } catch (err) { console.error(err); } } },
       picker(host, o) { return picker(ch, host, o); }
     };
     return ch;
@@ -137,7 +148,7 @@
     sy.addEventListener('change', apply); sm.addEventListener('change', apply);
     wrap.querySelector('.bt-reset').addEventListener('click', () => ch.set(ch.getDef()));
     wrap.querySelectorAll('.bt-pre [data-ym]').forEach(b => b.addEventListener('click', () => ch.set(b.dataset.ym)));
-    ch.on(ym => {
+    ch.onUI(ym => {
       if (ym < min) ym = min;
       sy.value = ym.slice(0, 4); sm.value = ym.slice(5, 7);
       [...sm.options].forEach(op => { const v = sy.value + '-' + op.value; op.disabled = v < min || v > max; });

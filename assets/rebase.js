@@ -53,11 +53,11 @@
     for (let m = i0; m <= i1; m++) { const p = series[m]; if (p == null) { continue; } if (m < i1) { u += amt * 0.999 / p; n++; } out[m] = u * p; }
     const end = out[i1]; return { series: out, n, end, principal: amt * n, irr: n ? irr(n, i0, i1, end, amt) : null };
   }
-  function irr(n, i0, i1, value, amt) { let lo = -0.5, hi = 1; const g = r => { let s = 0; for (let m = i0; m < i0 + n; m++) s += amt * Math.pow(1 + r, i1 - m); return s - value; }; for (let k = 0; k < 120; k++) { const mid = (lo + hi) / 2; if (g(mid) > 0) hi = mid; else lo = mid; } return Math.pow(1 + (lo + hi) / 2, 12) - 1; }
+  function irr(n, i0, i1, value, amt) { let lo = -0.5, hi = 1; const g = r => { let s = 0; for (let m = i0; m < i0 + n; m++) s += amt * Math.pow(1 + r, i1 - m); return s - value; }; for (let k = 0; k < 120; k++) { const mid = (lo + hi) / 2; if (mid === lo || mid === hi) break; if (g(mid) > 0) hi = mid; else lo = mid; } return Math.pow(1 + (lo + hi) / 2, 12) - 1; }
   function periodCagr(series, months, startYMD, i1) { const ym = startYMD.slice(0, 7); const i = months.indexOf(ym); if (i < 0 || series[i] == null || series[i1] == null || i >= i1) return null; return Math.pow(series[i1] / series[i], 1 / yearsBetween(months[i], months[i1])) - 1; }
 
   let FX = null;
-  async function loadFX() { if (FX) return FX; try { const r = await fetch('data/tw/_fx.json', { cache: 'no-store' }); if (r.ok) { const j = await r.json(); FX = j.months || null; } } catch (e) { } return FX; }
+  async function loadFX() { if (FX) return FX; try { const r = await fetch('data/tw/_fx.json'); if (r.ok) { const j = await r.json(); FX = j.months || null; } } catch (e) { } return FX; }
 
   BN.rebase = { monthList, monthEnd, yearsBetween, ymd, reconstruct, baseUSD, baseTWD, firstValid, metrics, dca, irr, periodCagr, loadFX, fx: () => FX };
 })();

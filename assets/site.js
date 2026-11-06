@@ -51,7 +51,7 @@
     } catch (e) { }
     // data as-of from market.json
     const asofEls = $$('[data-asof]');
-    if (asofEls.length) fetch('data/market.json', { cache: 'no-store' }).then(r => r.json()).then(m => { asofEls.forEach(el => el.textContent = m.asof); }).catch(() => { asofEls.forEach(el => el.textContent = '—'); });
+    if (asofEls.length) fetch('data/market.json').then(r => r.json()).then(m => { asofEls.forEach(el => el.textContent = m.asof); }).catch(() => { asofEls.forEach(el => el.textContent = '—'); });
     // TOC highlighting
     const toc = $$('.toc a[href^="#"]');
     if (toc.length && 'IntersectionObserver' in window) {
@@ -65,6 +65,59 @@
     // fill data-site="path" spans from window.SITE
     if (window.SITE) $$('[data-site]').forEach(el => { try { const v = el.getAttribute('data-site').split('.').reduce((o, k) => o[k], window.SITE); const f = el.getAttribute('data-fmt'); el.textContent = f ? BN.fmt[f](v) : v; } catch (e) { } });
   });
+
+  // ---- 切頁加速：滑鼠停在站內連結上（手機：手指按下）就先在背景準備下一頁；登入、會員、後台頁不預先載入 ----
+  (function () {
+    const NOPE = 'a[data-acct], a[target], a[download], a[href^="admin"], a[href^="member"], a[href^="login"], a[href^="http"], a[href^="mailto"]';
+    try {
+      if (window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules')) {
+        const s = document.createElement('script'); s.type = 'speculationrules';
+        s.textContent = JSON.stringify({ prerender: [{ where: { and: [{ href_matches: '*.html', relative_to: 'document' }, { not: { selector_matches: NOPE } }] }, eagerness: 'moderate' }] });
+        document.head.appendChild(s); return;
+      }
+    } catch (e) { }
+    const done = new Set();
+    const go = e => { const a = e.target && e.target.closest && e.target.closest('a[href]'); if (!a || a.matches(NOPE) || a.origin !== location.origin || !/\.html$/.test(a.pathname) || a.pathname === location.pathname || done.has(a.pathname)) return; done.add(a.pathname); const l = document.createElement('link'); l.rel = 'prefetch'; l.href = a.pathname; document.head.appendChild(l); };
+    document.addEventListener('mouseover', go, { passive: true }); document.addEventListener('touchstart', go, { passive: true });
+  })();
+
+  // ---- 字型補字：本站字型只含網站用到的字；畫面出現沒收錄的字（例如新加入的個股名稱）時，
+  //      只向 Google Fonts 下載那幾個字（同一套 Noto 字形），外觀不變。閒置時才檢查，不影響操作 ----
+  (function () {
+    if (!window.fetch || !window.MutationObserver) return;
+    const GF = 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap&text=';
+    const SKIP = /^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE|TITLE)$/, WIDE = /[^\x00-\x7e\s]/;
+    const idle = window.requestIdleCallback ? (f => requestIdleCallback(f, { timeout: 3000 })) : (f => setTimeout(() => f({ timeRemaining: () => 8 }), 300));
+    let COV = null, asked = '', link = null, busy = false; const roots = new Set();
+    const faceOf = el => { const cs = getComputedStyle(el), fam = cs.fontFamily, w = parseInt(cs.fontWeight, 10) || 400;
+      if (/^"?BN Serif/.test(fam)) return w > 600 ? 's7' : 's6'; if (/^"?BN Sans/.test(fam)) return w > 500 ? 'n7' : w > 400 ? 'n5' : 'n4'; return null; };
+    function ask(miss) {
+      let add = ''; miss.forEach(c => { if (asked.indexOf(c) < 0) add += c; }); if (!add) return; asked += add;
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = GF + encodeURIComponent(asked);
+      l.onload = () => { if (link && link !== l) link.remove(); link = l; }; document.head.appendChild(l);
+    }
+    function work(dl) {
+      const miss = new Set(), memo = new Map();
+      while (roots.size && dl.timeRemaining() > 2) {
+        const r = roots.values().next().value; roots.delete(r); if (!r.isConnected) continue;
+        const tw = document.createTreeWalker(r, NodeFilter.SHOW_TEXT); let n = r.nodeType === 3 ? r : tw.nextNode();
+        for (; n; n = tw.nextNode()) {
+          const s = n.nodeValue, el = n.parentElement; if (!el || !WIDE.test(s) || SKIP.test(el.tagName)) continue;
+          let f = memo.get(el); if (f === undefined) { f = faceOf(el); memo.set(el, f); } if (!f || !COV[f]) continue;
+          for (const c of s) if (c > '\x7e' && !COV[f].has(c) && !/\s/.test(c)) miss.add(c);
+        }
+      }
+      if (miss.size) ask(miss);
+      if (roots.size) idle(work); else busy = false;
+    }
+    const queue = r => { if (!r) return; roots.add(r); if (!busy && COV) { busy = true; idle(work); } };
+    const start = () => fetch('assets/fonts/cover.json').then(r => r.json()).then(j => {
+      COV = {}; for (const k in j) COV[k] = new Set(Array.from(j[k]));
+      queue(document.body);
+      new MutationObserver(ms => ms.forEach(m => queue(m.type === 'characterData' ? m.target.parentNode : m.target))).observe(document.body, { childList: true, subtree: true, characterData: true });
+    }).catch(() => { });
+    if (document.readyState === 'complete') idle(start); else window.addEventListener('load', () => idle(start));
+  })();
 
   // ---- tooltip ----
   let tip;

@@ -8,11 +8,9 @@
 <meta name="description" content="BNASDAQ 核心策略：以 QQQ 月線為訊號、在 QLD 與 SHV 之間配置的規則化策略，採邀請制。完整回測（可自訂起點）、定期定額、個股對比、目標資產試算與風險揭露。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261106b">
-<script src="assets/site.js?v=20261106b"></script><script src="assets/data.js?v=20261106b"></script><script src="assets/bt.js?v=20261106b"></script><script src="assets/period.js?v=20261106b"></script><script src="assets/charts.js?v=20261106b"></script>
-
+<link rel="stylesheet" href="assets/site.css?v=668bc65811">
+<link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -98,11 +96,12 @@
   </ul>
 </div></section>
 
+<script src="assets/site.js?v=00b6fc3765"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=b7e9b26dc7"></script><script src="assets/period.js?v=93a6dc99f0"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 (function(){
   // 最新發布分頁與公告
   document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabs [data-tab]').forEach(x=>x.setAttribute('aria-selected','false'));b.setAttribute('aria-selected','true');['ann','res','vid'].forEach(k=>document.getElementById('dev-'+k).hidden=(k!==b.dataset.tab));}));
-  fetch('data/site.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{const ul=document.getElementById('dev-ann');ul.innerHTML='';(j.announcements||[]).slice(0,5).forEach(a=>{const li=document.createElement('li');li.innerHTML='<time>'+a.date+'</time><span>'+a.title.replace(/[<>]/g,'')+(a.body?'<br><small>'+a.body.replace(/[<>]/g,'')+'</small>':'')+'</span>';ul.appendChild(li);});if(!ul.children.length)ul.innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';}).catch(()=>{document.getElementById('dev-ann').innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';});
+  fetch('data/site.json').then(r=>r.json()).then(j=>{const ul=document.getElementById('dev-ann');ul.innerHTML='';(j.announcements||[]).slice(0,5).forEach(a=>{const li=document.createElement('li');li.innerHTML='<time>'+a.date+'</time><span>'+a.title.replace(/[<>]/g,'')+(a.body?'<br><small>'+a.body.replace(/[<>]/g,'')+'</small>':'')+'</span>';ul.appendChild(li);});if(!ul.children.length)ul.innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';}).catch(()=>{document.getElementById('dev-ann').innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';});
 })();
 </script>
 <script>
@@ -113,7 +112,7 @@ const pal=['#2a78d6','#e8622a','#1baf7a','#c9a227','#7b3fa0','#d14d8b','#0e8f80'
 const mEnd=ym=>{const [y,m]=ym.split('-').map(Number);return new Date(Date.UTC(y,m,0));};
 const ymd=ym=>mEnd(ym).toISOString().slice(0,10);
 const yrsBetween=(a,b)=>(mEnd(b)-mEnd(a))/86400000/365.25;
-async function getJ(u){try{const r=await fetch(u,{cache:'no-store'});return r.ok?await r.json():null;}catch(e){return null;}}
+async function getJ(u){try{const r=await fetch(u);return r.ok?await r.json():null;}catch(e){return null;}}
 // 26 年序列（2000-05 起）對齊到延伸月份（1986-09 起），之前補 null
 const pad26=arr=>arr?BM.map((_,i)=>i<OFF?null:(arr[i-OFF]==null?null:arr[i-OFF])):null;
 const fromTw=j=>{if(!j)return null;if(j.w26&&j.w26.monthly_native)return pad26(j.w26.monthly_native);if(!j.monthly)return null;const m={};j.monthly.forEach(x=>{m[x[0]]=x[1];});return BM.map(ym=>m[ym]==null?null:m[ym]);};
@@ -143,7 +142,7 @@ function renderMini(start){
   (()=>{const h=$('f-dca');h.innerHTML='';const D={fund:B.dca('fund',start),qld:B.dca('qld',start),qqq:B.dca('qqq',start),inv:B.dca('inv',start)};const M=D.fund.months;
     BN.charts.line(h,Object.assign({},MINI,{padR:70,x:M,xTicks:yearTicks(M,span(M[0],M[M.length-1]),2005),log:true,yfmt:cpt,tipfmt:f.big,series:[{name:'BNASDAQ',values:D.fund.series,color:'var(--s-fund)'},{name:'QLD',values:D.qld.series,color:'var(--s-qld)'},{name:'QQQ',values:D.qqq.series,color:'var(--s-qqq)'},{name:'投入本金',short:'本金',values:D.inv.series,color:'var(--s-save)',dash:'5 4'}],noLegend:true,note:'每月 1 萬定期定額的帳戶價值，'+start+' 起、美元含息、對數刻度'}));strip(h);})();
   // 回撤水位
-  (()=>{const h=$('f-risk');h.innerHTML='';const d={fund:B.drawdown('fund',start),qqq:B.drawdown('qqq',start),qld:B.drawdown('qld',start)};const sm={};['fund','qqq','qld'].forEach(k=>{sm[k]=B.sample(d[k].dates,d[k].dd,3);});
+  (()=>{const h=$('f-risk');h.innerHTML='';const d={fund:B.drawdown('fund',start),qqq:B.drawdown('qqq',start),qld:B.drawdown('qld',start)};const sm={};const ev=Math.max(3,Math.round(d.fund.dates.length/600));['fund','qqq','qld'].forEach(k=>{sm[k]=B.sample(d[k].dates,d[k].dd,ev);});
     const xs=sm.fund.x,al=k=>{const m=new Map(sm[k].x.map((x,i)=>[x,sm[k].y[i]]));const dd=d[k],idx=new Map(dd.dates.map((x,i)=>[x,i]));return xs.map(x=>m.has(x)?m.get(x):dd.dd[idx.get(x)]);};
     BN.charts.line(h,Object.assign({},MINI,{x:xs,xTicks:yearTicks(xs.map(x=>x.slice(0,7)),span(xs[0],xs[xs.length-1]),2005),yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',zero:true,yMax:0.02,series:[{name:'BNASDAQ',values:sm.fund.y,color:'var(--s-fund)',fill:true},{name:'QQQ',values:al('qqq'),color:'var(--s-qqq)'},{name:'QLD',values:al('qld'),color:'var(--s-qld)'}],noEndLabels:true,note:'回撤水位（距離前高還差多少）：BNASDAQ 最深 '+(d.fund.mdd*100).toFixed(1)+'%、QQQ '+(d.qqq.mdd*100).toFixed(1)+'%、QLD '+(d.qld.mdd*100).toFixed(1)+'%'}));strip(h);})();
   // 台幣 100 萬：預設 2013-12；使用者改起點後跟隨（不早於 0050 與台積電都有資料的月份）
@@ -191,7 +190,7 @@ function renderInd(start){
 </script>
 <script>
 // 客戶專區圖片：由管理後台上傳，清單在 data/clients.json
-fetch('data/clients.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{const it=(j&&Array.isArray(j.items))?j.items:[];const ul=document.getElementById('client-logos');if(!it.length||!ul)return;
+fetch('data/clients.json').then(r=>r.ok?r.json():null).then(j=>{const it=(j&&Array.isArray(j.items))?j.items:[];const ul=document.getElementById('client-logos');if(!it.length||!ul)return;
   const esc=x=>String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));const safe=u=>/^https?:\/\//i.test(u||'');const file=f=>/^data\/clients\/[A-Za-z0-9._-]+$/.test(f||'');
   ul.innerHTML=it.filter(x=>file(x.file)).map(x=>{const img='<img src="'+esc(x.file)+'" alt="'+esc(x.name)+'" title="'+esc(x.name)+'" loading="lazy">';return '<li>'+(safe(x.url)?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+img+'</a>':img)+'</li>';}).join('');
   const sec=document.getElementById('client');if(sec)sec.hidden=!ul.children.length;}).catch(()=>{});

@@ -8,11 +8,9 @@
 <meta name="description" content="BNASDAQ 是什麼、在買什麼、為什麼不公開買賣規則、AI 無限循環。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261106b">
-<script src="assets/site.js?v=20261106b"></script><script src="assets/charts.js?v=20261106b"></script>
-
+<link rel="stylesheet" href="assets/site.css?v=668bc65811">
+<link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -42,6 +40,7 @@
 </div>
 
 </div></div></div>
+<script src="assets/site.js?v=00b6fc3765"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 BN.charts.ring(document.getElementById('ring'),{center:'AI 無限循環',center2:'每一輪以實際結果改進下一輪',steps:[{t:'探勘交易策略',s:'AI 在 QQQ 月線搜尋規則'},{t:'驗證交易策略',s:'鄰域、偏移、逐步前推'},{t:'回測交易策略',s:'26 年、含交易成本'},{t:'進入市場驗證',s:'以實際資金依規則執行'},{t:'優化交易策略',s:'實際結果回饋模型'},{t:'回到第一步',s:'無限循環'}]});
 </script>

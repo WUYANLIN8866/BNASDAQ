@@ -8,11 +8,9 @@
 <meta name="description" content="BNASDAQ 公告、研究更新與完整影片。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261106b">
-<script src="assets/site.js?v=20261106b"></script>
-
+<link rel="stylesheet" href="assets/site.css?v=668bc65811">
+<link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -29,7 +27,7 @@
   <h2 id="ann">公告</h2>
   <ul class="dev" id="ann-list"><li><time>載入中</time><span>…</span></li></ul>
   <h2 id="video">完整影片：BNASDAQ 半倉煞車版 v6（六個一起比）</h2>
-  <div class="fig"><video controls preload="metadata" poster="assets/media/poster.jpg" style="width:100%;background:#000"><source src="assets/media/bnasdaq_v6.mp4" type="video/mp4">您的瀏覽器不支援影片播放，請改為<a href="assets/media/bnasdaq_v6.mp4">下載影片</a>。</video><p class="fnote">BEST NASDAQ 頻道，2026-10-26 發布。影片中「現在能買嗎」段落的當月持有與最新訊號，本站僅提供給登入會員；其餘數字均已在本站各頁重新計算，可逐項查證。</p></div>
+  <div class="fig"><video controls preload="none" poster="assets/media/poster.jpg" style="width:100%;background:#000"><source src="assets/media/bnasdaq_v6.mp4" type="video/mp4">您的瀏覽器不支援影片播放，請改為<a href="assets/media/bnasdaq_v6.mp4">下載影片</a>。</video><p class="fnote">BEST NASDAQ 頻道，2026-10-26 發布。影片中「現在能買嗎」段落的當月持有與最新訊號，本站僅提供給登入會員；其餘數字均已在本站各頁重新計算，可逐項查證。</p></div>
   <h3>影片章節與對應頁面</h3>
   <ol>
     <li>開場：每月存 1 萬，26 年後？ → <a href="dca.html#dca26">定期定額</a></li><li>六個一起比（2013 年底起） → <a href="dca.html#six">六種做法比較</a></li><li>花掉的錢，值多少？ → <a href="dca.html#opp">消費的機會成本</a></li>
@@ -51,8 +49,9 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#ann">公告</a></li><li><a href="#video">完整影片</a></li><li><a href="#updates">研究更新</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="index.html">首頁</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
 </div></div></div>
+<script src="assets/site.js?v=00b6fc3765"></script>
 <script>
-fetch('data/site.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{const ul=document.getElementById('ann-list');ul.innerHTML='';(j.announcements||[]).forEach(a=>{const li=document.createElement('li');li.innerHTML='<time>'+a.date+'</time><span><b>'+a.title.replace(/[<>]/g,'')+'</b>'+(a.body?'<br>'+a.body.replace(/[<>]/g,''):'')+'</span>';ul.appendChild(li);});if(!ul.children.length)ul.innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';}).catch(()=>{document.getElementById('ann-list').innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';});
+fetch('data/site.json').then(r=>r.json()).then(j=>{const ul=document.getElementById('ann-list');ul.innerHTML='';(j.announcements||[]).forEach(a=>{const li=document.createElement('li');li.innerHTML='<time>'+a.date+'</time><span><b>'+a.title.replace(/[<>]/g,'')+'</b>'+(a.body?'<br>'+a.body.replace(/[<>]/g,''):'')+'</span>';ul.appendChild(li);});if(!ul.children.length)ul.innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';}).catch(()=>{document.getElementById('ann-list').innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';});
 </script>
 </main>
 <footer class="site-foot">

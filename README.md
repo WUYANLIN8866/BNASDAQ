@@ -17,3 +17,12 @@
 
 ## 管理
 管理員登入後台後，貼一次 fine-grained PAT（Contents: Read and write；Actions: Read and write 可手動觸發更新）即可新增／停用／刪除帳號、重設密碼、發布公告。
+
+## 載入速度（2026-11-06）
+- **字型**：不再向 Google Fonts 載入完整 Noto Sans TC／Noto Serif TC（每頁 1.2–1.8MB），改用 `assets/fonts/` 的本站精簡版（整站約 0.4MB，字形相同）。
+  改了網頁文字後：開本機伺服器 → `node scripts/fonts/collect_chars.js http://127.0.0.1:8765/` → `python3 scripts/build_fonts.py`（需要 `pip install fonttools brotli`）。
+  沒收錄的字會由 `site.js` 自動向 Google Fonts 只補那幾個字，外觀不變，所以忘了重跑也不會壞。
+- **版本號**：改完 `assets/*.css`、`*.js` 後執行 `python3 scripts/stamp_assets.py`，`?v=` 會變成檔案內容雜湊，沒改的檔案訪客可繼續用快取。
+- **腳本位置**：外部腳本放在 `<main>` 第一個內嵌 `<script>` 之前（不放 `<head>`），畫面先出來；`<head>` 只留極小的深色模式設定。
+- **資料讀取**：公開頁的 `fetch` 不加 `cache:'no-store'`（GitHub Pages 本身快取 10 分鐘）；會員、後台頁維持不快取。
+- **起點切換**：`period.js` 先更新按鈕，圖表排到下一個畫面後重算，連點只算最後一次；IRR 算法逐位元與舊版相同。

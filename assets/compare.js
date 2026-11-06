@@ -20,7 +20,7 @@
   async function loadIndex() {
     if (INDEX) return INDEX;
     try {
-      const r = await fetch('data/tw/index.json', { cache: 'no-store' });
+      const r = await fetch('data/tw/index.json');
       if (!r.ok) return null;
       INDEX = await r.json();
       const dl = $(O.list);
@@ -65,7 +65,7 @@
     try {
       const idx = await loadIndex();
       const known = idx && (idx.list || []).find(x => x[0] === code);
-      const r = await fetch('data/tw/' + encodeURIComponent(code) + '.json' + (idx && idx.updated ? '?v=' + idx.updated : ''), { cache: 'no-store' });
+      const r = await fetch('data/tw/' + encodeURIComponent(code) + '.json' + (idx && idx.updated ? '?v=' + idx.updated : ''));
       if (r.status === 404) {
         msg(known ? ((known[1] || code) + '（' + code + '）資料尚未建好，通常是上市日晚於對比期末或資料來源沒有這檔；下次自動更新會再試。')
           : '找不到代號 ' + code + '：可能打錯、已下市，或尚未收錄（美股目前收錄 S&P 500、Nasdaq-100、常見 ETF 與熱門個股）。', 'err');

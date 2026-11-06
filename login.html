@@ -8,11 +8,9 @@
 <meta name="description" content="BNASDAQ 會員登入。">
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261106b">
-<script src="assets/site.js?v=20261106b"></script><script src="assets/auth.js?v=20261106b"></script>
-
+<link rel="stylesheet" href="assets/site.css?v=668bc65811">
+<link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -38,6 +36,7 @@
 </div>
 <aside><div class="side"><h3>登入後可查閱</h3><ul><li>各策略本月持有的資產</li><li>以最新收盤價作為月底判斷基準時，推算的下月持有</li><li>翻轉價位：月底收盤達到哪個價位時，結論會改變</li><li>管理員：所有指標明細與帳號管理</li></ul></div></aside>
 </div></div></div>
+<script src="assets/site.js?v=00b6fc3765"></script><script src="assets/auth.js?v=e3bb2a6771"></script>
 <script>
 (function(){const f=document.getElementById('lf'),m=document.getElementById('m'),go=document.getElementById('go');
 const s=BN.auth.session();if(s){location.replace(s.role==='admin'?'admin.html':'member.html');return;}
