@@ -100,16 +100,15 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 .nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex: 1; max-width: none; }
 .nav ul#mainmenu { flex: 1 1 100%; justify-content: flex-start; align-items: center; }
 .nav li { display: flex; margin: 0; }
-.nav a { color: #d4d1ca; text-decoration: none; padding: 13px 13px 12px; font-size: 14.5px; font-weight: 500; letter-spacing: .05em; border-bottom: 2px solid transparent; display: flex; align-items: center; white-space: nowrap; }
+.nav a { color: #d4d1ca; text-decoration: none; padding: 13px 7px 12px; font-size: 14px; font-weight: 500; letter-spacing: .02em; border-bottom: 2px solid transparent; display: flex; align-items: center; white-space: nowrap; }
 .nav a:hover, .nav a:focus-visible { color: #fff; background: transparent; }
 .nav a[aria-current="page"] { color: #fff; border-bottom-color: var(--gold-hi); background: transparent; }
 .nav li:last-child { margin-left: auto; }
-.nav a.acct { color: var(--gold-hi); border: 1px solid rgba(205, 174, 112, .55); border-radius: 2px; padding: 6px 14px; margin: 7px 0; font-weight: 500; }
+.nav a.acct { color: var(--gold-hi); border: 1px solid rgba(205, 174, 112, .55); border-radius: 2px; padding: 6px 10px; margin: 7px 0; font-weight: 500; }
 .nav a.acct:hover { background: var(--gold-hi); color: #111; border-color: var(--gold-hi); }
 .nav .burger { display: none; background: none; border: 0; color: #fff; font: inherit; padding: 10px 6px; cursor: pointer; }
 .nav .burger svg { width: 26px; height: 26px; }
-@media (min-width: 1101px) and (max-width: 1320px) { .nav a { padding: 13px 7px 12px; font-size: 13.5px; letter-spacing: .02em; } .nav a.acct { padding: 6px 10px; } }
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .brand .wrap { grid-template-columns: minmax(0, 1fr); gap: 12px; padding-top: 14px; padding-bottom: 12px; }
   .brand .tools .search { flex: 1; } .brand .tools .search input { width: 100%; min-width: 0; }
   .nav .burger { display: block; }
@@ -282,7 +281,7 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 .bt-info { font-size: 13px; color: var(--muted); flex: 1 1 260px; font-variant-numeric: tabular-nums; }
 .bt-info b { color: var(--ink); font-weight: 600; }
 .bt-note { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
-@media (max-width: 1100px) { .btpick.sticky { top: 55px; } }
+@media (max-width: 1200px) { .btpick.sticky { top: 55px; } }
 @media (max-width: 560px) { .btpick.sticky .bt-info { display: none; } .btbar { padding: 8px 10px; gap: 8px; } .bt-pre { overflow-x: auto; flex-wrap: nowrap; max-width: 100%; padding-bottom: 2px; } .bt-info { flex-basis: 100%; } }
 
 /* ---------- callouts ---------- */

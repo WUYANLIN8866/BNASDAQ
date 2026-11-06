@@ -10,8 +10,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/site.css?v=20261106a">
-<script src="assets/site.js?v=20261106a"></script><script src="assets/data.js?v=20261106a"></script><script src="assets/charts.js?v=20261106a"></script>
+<link rel="stylesheet" href="assets/site.css?v=20261106b">
+<script src="assets/site.js?v=20261106b"></script><script src="assets/data.js?v=20261106b"></script><script src="assets/charts.js?v=20261106b"></script>
 
 </head>
 <body>
@@ -21,7 +21,7 @@
   <div></div>
   <div class="tools"><form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form><button type="button" class="themebtn" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></div>
 </div></header>
-<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html" aria-current=page>個股目標價試算</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
+<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html" aria-current=page>個股目標價試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 個股目標價試算</div><h1>個股目標價試算</h1><p class="lede">將公司未來的獲利折算為今日的合理價值。只需輸入四項假設——目前每股盈餘、盈餘成長率、成長期間、出場本益比——後三項皆以最低與最高值設定區間；試算器以最接近成長年數的美國公債殖利率加上股市風險溢價作為折現率，計算由便宜到昂貴的合理價區間，並標示目前股價所在區段。免登入即可使用。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
@@ -196,7 +196,7 @@ $('cf').addEventListener('submit',e=>{e.preventDefault();loadCode($('code').valu
 <footer class="site-foot">
   <div class="wrap foot-grid">
     <div class="foot-brand"><a class="mark" href="index.html" aria-label="BNASDAQ 首頁"><span class="word">B<b>NASDAQ</b></span></a></div>
-    <nav class="foot-col" aria-label="策略與研究"><h4>策略與研究</h4><ul><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="research.html">研究與回測</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></nav>
+    <nav class="foot-col" aria-label="策略與研究"><h4>策略與研究</h4><ul><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="research.html">研究與回測</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></nav>
     <nav class="foot-col" aria-label="分析工具"><h4>分析工具</h4><ul><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html">個股目標價試算</a></li></ul></nav>
     <nav class="foot-col" aria-label="資訊與帳戶"><h4>資訊與帳戶</h4><ul><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li><li><a href="search.html">站內搜尋</a></li><li><a href="login.html" data-acct>登入／會員專區</a></li></ul></nav>
   </div>
