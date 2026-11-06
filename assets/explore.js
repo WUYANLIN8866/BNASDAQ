@@ -9,9 +9,17 @@
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const nf = new Intl.NumberFormat('zh-Hant-TW');
   const pct = (v, d) => v == null ? '—' : (v * 100).toFixed(d == null ? 2 : d) + '%';
-  const yi = (v, d) => v == null ? '—' : (v / 1e8).toLocaleString('en-US', { minimumFractionDigits: d == null ? 1 : d, maximumFractionDigits: d == null ? 1 : d }) + ' 億';
-  const wan = v => v == null ? '—' : nf.format(Math.round(v / 1e4)) + ' 萬';
-  const count = v => v == null ? '—' : (v >= 1e8 ? yi(v, 2) : v >= 1e4 ? wan(v) : nf.format(v));
+  const SUP = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+  const UNITS = [[1e16, '京'], [1e12, '兆'], [1e8, '億'], [1e4, '萬']];
+  // 萬／億／兆／京；10^20 以上改用科學記號（之後每輪組合數約 ×10）
+  const big = (v, d) => {
+    if (v == null) return '—';
+    const a = Math.abs(v), dd = d == null ? 1 : d;
+    if (a >= 1e20) { const e = Math.floor(Math.log10(a)); return (v / Math.pow(10, e)).toFixed(2) + '×10' + String(e).split('').map(c => SUP[+c]).join(''); }
+    for (const [u, s] of UNITS) if (a >= u) return (v / u).toLocaleString('en-US', { minimumFractionDigits: u === 1e4 ? 0 : dd, maximumFractionDigits: u === 1e4 ? 0 : dd }) + ' ' + s;
+    return nf.format(v);
+  };
+  const count = v => big(v, 2);
   const tpe = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso || ''); return m ? `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}` : '—'; };
   const ageMin = iso => (Date.now() - Date.parse(iso)) / 60000;
   let DATA = null, lastKey = '';
@@ -71,7 +79,7 @@
     const gap = d.gap_pp == null ? null : d.gap_pp;
     $('xp-kv').innerHTML = [
       tile('本階段進度', pct(d.stage_pct, 1), d.stage ? esc(d.stage) : '—'),
-      tile('累計已回測', yi(d.tested) + '組', `涵蓋 ${count(d.types_tested)}種方法組合`),
+      tile('累計已回測', big(d.tested) + '組', `涵蓋 ${count(d.types_tested)}種方法組合`),
       tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap != null ? `，還差 ${gap.toFixed(2)} 個百分點` : ''}`),
       tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
     ].join('');
@@ -101,10 +109,12 @@
           { name: '現行最佳模型', short: '現行', values: H.map(() => d.base * 100), color: 'var(--s-shv)', dash: '2 4' },
         ],
       });
+      const maxT = Math.max(...H.map(h => h[1] || 0));
+      const [U, UN] = UNITS.slice(0, 3).find(([u]) => maxT >= u * 10) || [1e8, '億'];   // 億 → 兆 → 京 as the total grows
       BN.charts.line($('c-tested'), {
-        title: '累計已回測的參數組數', sub: '單位：億組', x, xTicks, xLabel, height: 240, zero: true,
-        yfmt: v => nf.format(Math.round(v)), tipfmt: v => v.toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' 億組',
-        series: [{ name: '累計已回測', values: H.map(h => h[1] / 1e8), color: 'var(--s-qld)', fill: true }],
+        title: '累計已回測的參數組數', sub: '單位：' + UN + '組', x, xTicks, xLabel, height: 240, zero: true,
+        yfmt: v => nf.format(Math.round(v)), tipfmt: v => big(v * U) + '組',
+        series: [{ name: '累計已回測', values: H.map(h => h[1] / U), color: 'var(--s-qld)', fill: true }],
       });
     }
     // stage table
