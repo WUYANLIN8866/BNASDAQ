@@ -5,13 +5,61 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0c">
 <title>每日市場分析｜BNASDAQ</title>
-<meta name="description" content="BNASDAQ 每日市場分析。">
+<meta name="description" content="BNASDAQ 每日市場分析：美股五大指數、大漲大跌主因、股匯債一週趨勢、24 小時國際大事、兆元企業新聞與影響。">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/site.css?v=20261106b">
 <script src="assets/site.js?v=20261106b"></script>
-
+<style>
+.dl-head{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 6px}
+.dl-head .date{font-family:var(--serif);font-size:20px;font-weight:600}
+.dl-head .tag{font-size:11.5px;letter-spacing:.08em;color:var(--gold);border:1px solid var(--line);padding:0 8px;border-radius:2px}
+.dl-head select{font:inherit;font-size:13.5px;padding:4px 26px 4px 8px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink)}
+.dl-sum{font-size:16.5px;color:var(--ink-2);max-width:78ch}
+.kv .tile .v.pos{color:var(--good)}
+.kv .tile .k b{color:var(--ink);font-weight:600;letter-spacing:0}
+.cause{background:var(--paper);border:1px solid var(--line);border-top:2px solid var(--gold-hi);padding:16px 18px;margin:0 0 14px}
+.cause .ph{display:grid;grid-template-columns:72px 1fr;gap:14px;align-items:start}
+.cause .p{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1.1;color:var(--ink)}
+.cause .p small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--muted);letter-spacing:.08em;font-weight:400}
+.cause h3{margin:0 0 6px;font-size:18px}
+.cause .bar{height:6px;background:var(--band);border:1px solid var(--line-2);margin:8px 0 10px}
+.cause .bar i{display:block;height:100%;background:var(--gold-hi)}
+.cause ul{margin:0 0 8px 18px;padding:0;font-size:14.5px}
+.cause ul li{margin:2px 0}
+.cause .ct{font-size:13.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin:0}
+.evt h3{margin:22px 0 6px;font-size:17px}
+.evt ul{margin:0;padding:0;list-style:none}
+.evt li{position:relative;padding:8px 0 8px 18px;border-bottom:1px solid var(--line-2);font-size:15px}
+.evt li::before{content:"";position:absolute;left:2px;top:17px;width:6px;height:6px;background:var(--gold-hi);border-radius:50%}
+.mega{display:grid;grid-template-columns:1fr;gap:12px;margin:14px 0 10px}
+.mcard{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold-hi);padding:14px 16px;scroll-margin-top:72px}
+.mcard .mh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;align-items:baseline;border-bottom:1px solid var(--line-2);padding-bottom:8px;margin-bottom:8px}
+.mcard .mh b{font-family:var(--serif);font-size:19px}
+.mcard .mm{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.mcard .mm .pos{color:var(--good)}.mcard .mm .neg{color:var(--bad)}
+.mcard p{margin:0 0 6px;font-size:14.5px}
+.mcard p b{display:inline-block;font-size:11.5px;letter-spacing:.1em;color:var(--gold);margin-right:8px;font-weight:600}
+.mcard .mi{color:var(--ink-2)}
+.mcard .mw{font-size:13px;margin-top:6px}
+.mcard .lab{font-size:11.5px;letter-spacing:.1em;color:var(--muted);margin-right:6px}
+.tk{display:inline-block;font-size:12px;border:1px solid var(--line);padding:0 6px;border-radius:2px;margin:1px 3px 1px 0;white-space:nowrap}
+.tk.w{color:var(--good);border-color:rgba(31,122,58,.4)}
+.tk.l{color:var(--bad);border-color:rgba(179,38,30,.4)}
+.viz{width:100%;height:auto;display:block}
+.viz .bar-neg{fill:var(--bad)}.viz .bar-pos{fill:var(--good)}
+.viz .lbl{fill:var(--ink);font-size:12.5px;font-weight:500}
+.viz .val{font-size:12px;font-weight:600;fill:var(--ink)}
+.viz .ax{stroke:var(--axis);stroke-width:1}
+.viz .gl{stroke:var(--grid);stroke-width:1}
+.viz .ln{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink-2);margin:6px 0 0}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.src li{font-size:13.5px;padding:4px 0}
+.loading{color:var(--muted);padding:40px 0;text-align:center}
+@media (max-width:640px){.cause .ph{grid-template-columns:60px 1fr}.cause .p{font-size:26px}}
+</style>
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -22,8 +70,26 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html" aria-current=page>每日市場分析</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 每日市場分析</div><h1>每日市場分析</h1></div></div>
-<div class="main"><div class="wrap"></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 每日市場分析</div><h1>每日市場分析</h1><p class="lede">每個美股交易日收盤後更新：五大指數、單日漲跌逾 2% 的主因分析、股匯債一週趨勢、24 小時內與投資相關的國際大事，以及市值逾一兆美元企業的新聞與影響。所有數字附來源，可逐項查證。</p></div></div>
+<div class="main"><div class="wrap"><div class="cols">
+<div id="report"><div class="loading">載入中…</div></div>
+<aside>
+  <div class="side toc"><h3>本頁內容</h3><ul>
+    <li><a href="#idx">1. 美股主要指數</a></li>
+    <li><a href="#why">2. 大漲大跌主因</a></li>
+    <li><a href="#week">3. 股匯債一週趨勢</a></li>
+    <li><a href="#events">4. 24 小時國際大事</a></li>
+    <li><a href="#mega">5. 兆元企業新聞與影響</a></li>
+    <li><a href="#src">資料來源</a></li>
+  </ul></div>
+  <div class="side"><h3>說明</h3><ul>
+    <li>指數為美東時間收盤值；一週變化＝與上週五收盤比較。</li>
+    <li>「主因機率」是依新聞證據權重的主觀估計，不是統計推論。</li>
+    <li>本頁不含任何策略訊號或持倉；會員請至<a href="login.html">會員專區</a>。</li>
+  </ul></div>
+  <div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">研究與回測</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div>
+</aside>
+</div></div></div>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">
@@ -35,5 +101,101 @@
   <div class="wrap disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
   <div class="legal"><div class="wrap"><span>© 2026 BNASDAQ</span><span>回測資料終點 2026-09-30；過去績效不代表未來報酬。</span></div></div>
 </footer>
+<script>
+(function(){
+'use strict';
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=(n,d)=>Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct=(n,d=2)=>(n>0?'+':n<0?'−':'')+fmt(Math.abs(n),d)+'%';
+const cls=n=>n>0?'pos':n<0?'neg':'';
+const SERIES=['var(--s-fund)','var(--s-qqq)','var(--s-qld)','var(--s-tw)','var(--s-tsmc)','var(--s-shv)'];
+
+function barChart(items){ // items: [{name, chg}]
+  const W=720,rowH=34,padL=118,padR=70,top=10;
+  const H=top+items.length*rowH+10;
+  const max=Math.max(1,...items.map(i=>Math.abs(i.chg)));
+  const x0=padL+(W-padL-padR)/2, half=(W-padL-padR)/2;
+  const sc=v=>v/max*half;
+  let s=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="單日漲跌幅長條圖">`;
+  [-1,-.5,0,.5,1].forEach(k=>{const x=x0+sc(k*max);s+=`<line class="${k?'gl':'ax'}" x1="${x}" y1="${top}" x2="${x}" y2="${H-10}"/>`;});
+  items.forEach((it,i)=>{const y=top+i*rowH+6,h=rowH-12,w=Math.abs(sc(it.chg));const x=it.chg<0?x0-w:x0;
+    s+=`<text class="lbl" x="${padL-10}" y="${y+h/2+4}" text-anchor="end">${esc(it.name)}</text>`;
+    s+=`<rect class="${it.chg<0?'bar-neg':'bar-pos'}" x="${x}" y="${y}" width="${Math.max(w,1)}" height="${h}" rx="1"/>`;
+    const inside=w>half*0.7;
+    if(inside) s+=`<text class="val" style="fill:#fff" x="${it.chg<0?x+6:x+w-6}" y="${y+h/2+4}" text-anchor="${it.chg<0?'start':'end'}">${pct(it.chg)}</text>`;
+    else s+=`<text class="val" x="${it.chg<0?x-6:x+w+6}" y="${y+h/2+4}" text-anchor="${it.chg<0?'end':'start'}">${pct(it.chg)}</text>`;});
+  return s+'</svg>';
+}
+function lineChart(wp){ // cumulative path from 10/30 base
+  const W=720,H=260,pl=48,pr=16,pt=14,pb=30;
+  const n=wp.dates.length;
+  const cum=wp.series.map(se=>{let v=100,arr=[100];for(let i=1;i<se.chg.length;i++){v*=1+se.chg[i]/100;arr.push(v);}return arr;});
+  const all=cum.flat(),mn=Math.min(...all),mx=Math.max(...all);
+  const lo=Math.floor((mn-0.5)/1)*1,hi=Math.ceil((mx+0.5)/1)*1;
+  const X=i=>pl+(W-pl-pr)*i/(n-1), Y=v=>pt+(H-pt-pb)*(hi-v)/(hi-lo);
+  let s=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="本週累積走勢">`;
+  for(let g=lo;g<=hi;g+=1){const y=Y(g);s+=`<line class="${g===100?'ax':'gl'}" x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}"/><text class="viz-lbl" x="${pl-6}" y="${y+4}" text-anchor="end">${g}</text>`;}
+  wp.dates.forEach((d,i)=>{s+=`<text class="viz-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${esc(d)}</text>`;});
+  cum.forEach((arr,k)=>{const pts=arr.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');s+=`<polyline class="ln" style="stroke:${SERIES[k%SERIES.length]}" points="${pts}"/>`;
+    arr.forEach((v,i)=>{s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="3" fill="${SERIES[k%SERIES.length]}"/>`;});});
+  s+='</svg>';
+  s+='<div class="legend">'+wp.series.map((se,k)=>`<span><i style="background:${SERIES[k%SERIES.length]}"></i>${esc(se.name)}</span>`).join('')+'</div>';
+  return s;
+}
+function wkTable(sec,heads){
+  return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="tblwrap"><table class="tbl"><thead><tr>${heads.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
+    sec.rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===3&&/^[−-]/.test(c)?'neg':i===3&&/^\+/.test(c)?'pos':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+
+    `</tbody></table></div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
+}
+function render(d){
+  const el=document.getElementById('report');
+  let h='';
+  h+=`<div class="dl-head"><span class="date">${esc(d.date)}</span><span class="tag">美股 ${esc(d.session)} 收盤</span><span class="tag">台北 ${esc(d.generated.replace('T',' ').slice(0,16))} UTC 產出</span><span id="pick"></span></div>`;
+  h+=`<h2 style="margin-top:.4em">${esc(d.headline)}</h2><p class="dl-sum">${esc(d.summary)}</p>`;
+  // 1. indices
+  h+=`<h2 id="idx">1. 美股主要指數</h2><div class="kv">`;
+  d.indices.slice(0,5).forEach(ix=>{h+=`<div class="tile"><div class="k"><b>${esc(ix.name)}</b> ${esc(ix.key)}</div><div class="v ${cls(ix.chg)}">${pct(ix.chg)}</div><div class="s">收 ${fmt(ix.close,2)}｜一週 ${pct(ix.wk)}</div></div>`;});
+  h+=`</div>`;
+  h+=`<div class="fig"><div class="fsub">單日漲跌幅（${esc(d.session)} 收盤）</div>${barChart(d.indices.map(i=>({name:i.name,chg:i.chg})))}<p class="fnote">虛線為 ±50%／±100% 刻度（以當日最大跌幅為 100%）。</p></div>`;
+  h+=`<div class="tblwrap"><table class="tbl"><caption>五大指數＋那斯達克綜合：收盤、單日、一週（vs 上週五 10/30）</caption><thead><tr><th>指數</th><th>收盤</th><th>單日</th><th>上週五收盤</th><th>一週</th><th class="l">備註</th></tr></thead><tbody>`;
+  d.indices.forEach(ix=>{const wk=(ix.close/ix.prev_week-1)*100;h+=`<tr><td>${esc(ix.name)}<span class="tagfix" style="font-size:11px;color:var(--muted);margin-left:6px">${esc(ix.key)}</span></td><td>${fmt(ix.close,2)}</td><td class="${cls(ix.chg)}">${pct(ix.chg)}</td><td>${fmt(ix.prev_week,2)}</td><td class="${cls(wk)}">${pct(wk)}</td><td class="l" style="white-space:normal;min-width:240px">${esc(ix.note)}</td></tr>`;});
+  h+=`</tbody><tfoot><tr><td colspan="6">一週欄位由收盤÷上週五收盤現算；資料來源見頁尾。</td></tr></tfoot></table></div>`;
+  // 2. big move
+  h+=`<h2 id="why">2. 大漲大跌主因（單日 ±${d.big_move.threshold}% 以上才啟用）</h2>`;
+  if(d.big_move.triggered){
+    h+=`<p class="lead">${esc(d.big_move.intro)}</p>`;
+    d.big_move.causes.forEach((c,i)=>{h+=`<div class="cause"><div class="ph"><div class="p">${c.p}%<small>可能性</small></div><div><h3>${i+1}. ${esc(c.title)}</h3><div class="bar"><i style="width:${c.p}%"></i></div><ul>${c.evidence.map(e=>`<li>${esc(e)}</li>`).join('')}</ul><p class="ct">為何不給更高：${esc(c.counter)}</p></div></div></div>`;});
+  } else { h+=`<p class="lead">${esc(d.big_move.intro||'當日五大指數漲跌皆未超過 2%，本節不啟用。')}</p>`; }
+  // 3. weekly
+  h+=`<h2 id="week">3. 美國股市、匯市、債市近一週趨勢（${esc(d.weekly.range)}）</h2>`;
+  h+=`<div class="fig"><div class="fsub">本週累積走勢（10/30 收盤＝100，逐日單日漲跌累乘）</div>${lineChart(d.week_path)}<p class="fnote">那指 100 與費半缺每日收盤公開來源，僅以週線呈現於下表。</p></div>`;
+  h+=wkTable(d.weekly.stock,['指數','10/30','11/05','一週']);
+  h+=wkTable(d.weekly.fx,['匯率','10/30','11/05','一週']);
+  h+=wkTable(d.weekly.bond,['期限','10/30','11/05','變化']);
+  h+=wkTable(d.weekly.other,['商品','10/30','11/05','一週']);
+  // 4. events
+  h+=`<h2 id="events">4. 最近 24 小時國際大事</h2><div class="evt">`;
+  d.events.forEach(g=>{h+=`<h3>${esc(g.cat)}</h3><ul>${g.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;});
+  h+=`</div>`;
+  // 5. mega
+  h+=`<h2 id="mega">5. 市值逾一兆美元企業：新聞、影響、受惠／受害</h2><p class="lead">${esc(d.mega.intro)}</p>`;
+  h+=`<div class="tblwrap"><table class="tbl"><caption>一覽：市值、股價、一週變化</caption><thead><tr><th>代號</th><th class="l">公司</th><th>市值（美元）</th><th>股價</th><th>一週</th><th class="l">一句話</th></tr></thead><tbody>`;
+  d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<tr><td><a href="#m-${esc(r.t).replace(/\W/g,'')}">${esc(r.t)}</a></td><td class="l">${esc(r.n)}</td><td>${esc(r.cap)}</td><td>${esc(r.px)}</td><td class="${isNaN(w)?'':cls(w)}">${esc(r.wk)}</td><td class="l" style="white-space:normal;min-width:220px">${esc(r.impact)}</td></tr>`;});
+  h+=`</tbody></table></div><div class="mega">`;
+  d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm"><span>市值 ${esc(r.cap)}</span><span>股價 ${esc(r.px)}</span><span class="${isNaN(w)?'':cls(w)}">一週 ${esc(r.wk)}</span></div></div><p class="mn"><b>新聞</b>${esc(r.news)}</p><p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div></div>`;});
+  h+=`</div><p class="small" style="color:var(--muted);font-size:13px">受惠／受害為依新聞內容推論的方向性判斷，不是投資建議；「—」代表無明確對象。</p>`;
+  // sources
+  h+=`<h2 id="src">資料來源</h2><ol class="src">${d.sources.map(s=>`<li><a href="${esc(s.u)}" rel="noopener" target="_blank">${esc(s.t)}</a></li>`).join('')}</ol>`;
+  el.innerHTML=h;
+}
+function pickDate(){const q=new URLSearchParams(location.search).get('d');return q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?q:null;}
+fetch('data/daily/index.json',{cache:'no-store'}).then(r=>r.json()).then(idx=>{
+  const want=pickDate()||idx.latest;
+  return fetch('data/daily/'+want+'.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('no report');return r.json();}).then(d=>{render(d);
+    if(idx.items&&idx.items.length>1){const sel=document.createElement('select');sel.setAttribute('aria-label','選擇日期');idx.items.forEach(it=>{const o=document.createElement('option');o.value=it.date;o.textContent=it.date+'（美股 '+it.session+'）';if(it.date===want)o.selected=true;sel.appendChild(o);});sel.onchange=()=>{location.search='?d='+sel.value;};document.getElementById('pick').appendChild(sel);}
+  });
+}).catch(()=>{document.getElementById('report').innerHTML='<p class="note warn">目前沒有可顯示的市場分析，請稍後再試。</p>';});
+})();
+</script>
 </body>
 </html>

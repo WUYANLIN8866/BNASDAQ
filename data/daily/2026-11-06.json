@@ -1,0 +1,187 @@
+{
+  "schema": "bnasdaq-daily/1",
+  "date": "2026-11-06",
+  "session": "2026-11-05",
+  "generated": "2026-11-06T03:30:00Z",
+  "headline": "AI 交易崩跌：那指 100 單日 −6.36%、費半 −12.25%（史上第二大），期中選舉「藍色浪潮」引爆資料中心監管疑慮",
+  "summary": "11 月 5 日（週四）美股五大指數全數重挫逾 3%，科技與半導體領跌，那斯達克綜合正式進入修正（距高點 −11.9%）、羅素 2000 同步進入修正；VIX 單日 +70% 至 28.18。資金轉進公債與黃金：10 年期美債殖利率降至 4.84%（近兩個月低）、黃金站上 4,080 美元；美元指數持平於 101.6。亞洲 6 日早盤連鎖重挫：Kospi −8.55% 觸發熔斷、日經 −6% 進入熊市、台積電 −8.5%。",
+  "indices": [
+    {"key": "NDX", "name": "那斯達克 100", "close": 26629.81, "chg": -6.36, "prev_week": 28384.85, "wk": -6.18, "note": "距 10/6 歷史高點 31,224.47 回落 14.7%；QQQ 收 647.05（−6.49%）"},
+    {"key": "SOX", "name": "費城半導體", "close": 9011.14, "chg": -12.25, "prev_week": 10688.80, "wk": -15.70, "note": "史上第二大單日跌幅、2020 年 3 月以來最差；10 月已跌 15.4%"},
+    {"key": "SPX", "name": "標普 500", "close": 7353.73, "chg": -4.36, "prev_week": 7580.07, "wk": -2.99, "note": "2025 年 4 月以來最差單日；11 個板塊全數收黑，科技 −8.0%"},
+    {"key": "DJI", "name": "道瓊工業", "close": 51523.06, "chg": -3.44, "prev_week": 51770.31, "wk": -0.48, "note": "−1,833 點，吐回週三選後 +3.03% 的全部漲幅"},
+    {"key": "RUT", "name": "羅素 2000", "close": 2729.89, "chg": -4.45, "prev_week": 2811.84, "wk": -2.91, "note": "進入修正；上週曾逆勢 +1.29%"},
+    {"key": "IXIC", "name": "那斯達克綜合", "close": 24315.00, "chg": -5.52, "prev_week": 25437.00, "wk": -4.41, "note": "19 個月最大單日跌幅、以美元計史上最大（約 2.5 兆美元蒸發）"}
+  ],
+  "week_path": {
+    "dates": ["10/30", "11/02", "11/03", "11/04", "11/05"],
+    "series": [
+      {"name": "標普 500", "chg": [-1.82, -0.51, 0.36, 1.58, -4.36]},
+      {"name": "道瓊", "chg": [-1.09, 0.41, -0.38, 3.03, -3.44]},
+      {"name": "那斯達克綜合", "chg": [-2.86, -1.07, 0.83, 1.44, -5.52]},
+      {"name": "羅素 2000", "chg": [-1.66, -0.21, 0.23, 1.58, -4.45]}
+    ]
+  },
+  "big_move": {
+    "triggered": true,
+    "threshold": 2,
+    "intro": "五大指數單日跌幅全部超過 2%，依規則分析前三大可能主因。機率為本站依新聞證據權重所作的主觀估計（合計 100%），不是統計推論。",
+    "causes": [
+      {
+        "p": 45,
+        "title": "期中選舉「藍色浪潮」→ AI 資料中心監管與暫停風險被重新定價",
+        "evidence": [
+          "民主黨確定拿下參眾兩院（參院至少 54 席、眾院約 250 席）；德州州長、參議員、檢察長全數翻藍，德州佔全美規劃資料中心電力約 27%",
+          "民主黨高層選後喊出「全國資料中心暫停」；德州州長當選人 Hinojosa 競選主張暫停新建資料中心",
+          "高盛估州與地方層級的短期暫停可能影響約 45% 的美國規劃擴容；UBS 估 2028 年約 30% 新增容量恐停工；J.P. Morgan 估 2028 年 96 GW 中 37.5 GW 可能暫停",
+          "Truist Lerner：「科技股出現買方罷工」；MRB Partners：選舉結果將加重大型科技與資料中心建設的逆風"
+        ],
+        "counter": "川普仍在任、任何法案需總統簽署；週三（11/4）市場先以道瓊 +3% 迎接選舉結果，顯示週四是「重新解讀」而非新資訊。因此權重不給到過半。"
+      },
+      {
+        "p": 35,
+        "title": "AI 擁擠交易去槓桿：對沖基金鎖利＋散戶投降＋亞洲連鎖賣壓",
+        "evidence": [
+          "野村 McElligott：「They're shooting the generals」，主因是對沖基金鎖利，不是基本面突然惡化",
+          "Vanda Research：散戶單日淨賣出 3.58 億美元個股，為 2020 年以來最大賣壓，「全面投降」",
+          "VIX +69.7% 至 28.18，為 2025 年 4 月以來最大單日跳升；Saxo：「賣壓中明顯有恐慌成分」，強制平倉可能自我強化",
+          "費半單日 −12.25% 為史上第二大，與當日基本面新聞幅度不成比例；過去一個月 Nvidia −15%、Lam Research −36%、Applied Materials −30%，顯示拆倉已進行一個月"
+        ],
+        "counter": "技術性賣壓需要觸發點，本身不是起因；但它解釋了為何跌幅遠超過政策風險可量化的衝擊。"
+      },
+      {
+        "p": 20,
+        "title": "半導體財報疲弱＋AI 資本支出回報疑慮（基本面）",
+        "evidence": [
+          "Qualcomm 手機晶片營收 −26% 不如預期、Q1 EPS 指引偏低，股價 −9.49%；Arm 財報好壞參半 −13.08%",
+          "上週 Intel 財測不佳單日 −28.6%、Alphabet 自由現金流 −90.7 億美元、Amazon 過去 12 個月自由現金流 −424 億美元且 2027 年資本支出「明顯更高」",
+          "前紐約聯準銀行總裁 Dudley 估 AI 產業需約 3 兆美元年營收才有合理回報；Meta 總裁稱在美國啟動新資料中心「將非常有挑戰」",
+          "Micron 台灣廠勞資爭議傳聞（公司否認），記憶體股 Sandisk −22%、Micron −17%、Western Digital −17%"
+        ],
+        "counter": "Nvidia 8 月指引 FY2028 營收仍 +70%、Broadcom AI 晶片營收 +221%，需求面數據並未轉弱；基本面是背景，不是當日主因。"
+      }
+    ]
+  },
+  "weekly": {
+    "range": "2026-10-30 → 2026-11-05",
+    "stock": {
+      "title": "股市：由「選後慶祝」急轉為「AI 買方罷工」",
+      "rows": [
+        ["那斯達克 100", "28,384.85", "26,629.81", "−6.18%"],
+        ["費城半導體", "10,688.80", "9,011.14", "−15.70%"],
+        ["標普 500", "7,580.07", "7,353.73", "−2.99%"],
+        ["道瓊工業", "51,770.31", "51,523.06", "−0.48%"],
+        ["羅素 2000", "2,811.84", "2,729.89", "−2.91%"],
+        ["VIX", "19.42", "28.18", "+45.1%"]
+      ],
+      "text": "本週前三日橫盤（標普 −0.5%／+0.4%／+1.6%），週三選後道瓊大漲 3.03% 創 8 月以來最大單日漲幅，蘋果 +5.3%、微軟 +6.7%、Amazon +6.1% 領軍；週四全數反轉。板塊輪動極端：科技 −8.0%、工業 −4.1%，防禦的必需消費 −0.75%、公用事業 −0.71%、通訊服務 −0.59%。等權重標普已連續四週勝過市值加權（RSP 年初至今 +15.3% vs SPY +11.7%），市場寬度持續轉向「AI 以外」。那斯達克綜合距 10 月高點 −11.9%、那指 100 距高點 −14.7%，兩者皆在修正區。"
+    },
+    "fx": {
+      "title": "匯市：美元小跌，選後一度觸及一個月低點",
+      "rows": [
+        ["美元指數 DXY", "101.92", "101.60", "−0.31%"],
+        ["EUR/USD", "1.1166", "1.1222", "+0.50%"],
+        ["USD/JPY", "157.52", "157.67", "+0.10%"],
+        ["USD/TWD（10/30 月底 vs 11/4）", "32.59", "32.96", "台幣 −1.1%"]
+      ],
+      "text": "美元指數週三選後跌至 101.26（一個月低點），週四股災日反而持平（101.60），顯示避險買盤與升息預期降溫相互抵銷：CME FedWatch 12 月升息機率由週三 82.7% 降至 70.1%。日圓、瑞郎週四走強（USD/JPY 單日 −0.5%）。台幣月初至 11/4 貶約 1.1% 至 32.96，與亞股資金外流一致。"
+    },
+    "bond": {
+      "title": "債市：避險買盤壓低殖利率，曲線牛陡",
+      "rows": [
+        ["3 個月", "—", "4.17%", "財政部 par 曲線 11/5"],
+        ["2 年", "4.56%", "4.46%", "−10 bp"],
+        ["10 年", "4.94%", "4.84%", "−10 bp（近 9/9 以來最低）"],
+        ["30 年", "5.31%", "5.25%", "−6 bp"]
+      ],
+      "text": "聯準會 10/28 以 10–2 維持 3.75%–4.00%（Cook、Hammack 主張升息），9 月曾升息 25 bp；9 月 PCE 3.6%／核心 3.1%、Q3 GDP +3.4% 支持鷹派。但本週股災讓市場把下一次升息預期從 12 月推後到 3 月，整體剩餘緊縮約 40 bp。10 年期本週 −10 bp 至 4.84%，10/28 曾觸 5.05%。Vantage Point：「公債還有很大上漲空間」。觀察點：11/6（週五）10 月非農（市場預期 +5.5～6.5 萬、失業率 4.2%）、12/9 FOMC、12/11 政府撥款到期。"
+    },
+    "other": {
+      "title": "商品與加密：油價崩、黃金漲、比特幣跟股市跌",
+      "rows": [
+        ["黃金（期貨）", "3,898.90", "約 4,080", "+4.7%，週三重返 4,000"],
+        ["布蘭特原油", "113.43", "約 98（1 月期貨）", "−13.6%；週三 −8%，跌破 100 為 10 月初以來首次"],
+        ["WTI 原油", "104.12", "約 90.5", "−13.1%"],
+        ["比特幣", "76,758", "75,855", "−1.2%（週四單日 −5.7%）"]
+      ],
+      "text": "油價是本週最大反轉：市場解讀共和黨敗選提高伊朗戰爭退場機率，布蘭特自 118 美元高點回落約兩成。黃金受殖利率與美元走弱推升，週四避險需求再加碼。"
+    }
+  },
+  "events": [
+    {"cat": "美國政治", "items": [
+      "期中選舉定局：民主黨拿下參眾兩院——參院至少 54 席（可能 56）、眾院約 250 席、翻掉 30 席共和黨現任；州長 28–30 席。新國會 2027/1/3 就任，預期兩年分立政府",
+      "民主黨高層選後呼籲「全國資料中心暫停」；預期對 AI 企業與白宮關係、總統家族加密事業展開調查，並推更嚴版 Clarity Act",
+      "川普承認伊朗戰爭「大致是」敗選原因，正權衡再度打擊或協議；副總統 Vance 力主達成協議；CNN：國防部長 Hegseth 最快下週面臨彈劾表決",
+      "財政時程：政府撥款 12/11 到期（可能延至 2027 初）；債務上限約 41.4 兆、聯邦債務 8 月已破 40 兆，預估 2027 上半年觸頂"
+    ]},
+    {"cat": "貨幣政策與央行", "items": [
+      "英國央行升息 25 bp 至 4.00%（8–1，一票主張更大幅度），2023 年以來首次升息",
+      "墨西哥央行降息 25 bp 至 6.25%，低於市場預期的 6.50%；巴西央行 Selic 維持 13.75%，終止連五降",
+      "聯準會：12/9 會議升息機率降至 70.1%（前日 82.7%）；下一次升息預期推後至 2027/3",
+      "美國數據：初領失業金 18.9 萬（前 19.5 萬）、Q3 非農生產力 +3.6%（預期 2.8%）、單位勞動成本 −0.7%（預期 +0.6%）",
+      "美國財政部 11/5 殖利率曲線：3M 4.17％／2Y 4.46％／10Y 4.84％／30Y 5.25％"
+    ]},
+    {"cat": "國際情勢", "items": [
+      "伊朗戰爭第 251 天：卡達調停草案（三天信心建立步驟）尋求美伊背書，可能「數日內」重啟直接談判；伊朗要求先解除海上封鎖、制裁與凍結資金才重開荷姆茲海峽",
+      "荷姆茲海峽南側三艘船起火（一艘觸雷）、UKMTO 通報卡達外海油輪遭兩枚不明射彈；美軍 11/3 打擊 Qeshm 島；南韓宣布派巡邏機與排雷隊協助保持航道暢通",
+      "布蘭特原油跌破 100 美元為 10 月初以來首次，距 118 美元高點回落約 20%",
+      "中國 10 月 PMI 52（預期 52.2），服務業 50.8 轉弱"
+    ]},
+    {"cat": "科技與那斯達克", "items": [
+      "那斯達克綜合進入修正（距高點 −11.9%）、那指 100 距 10/6 高點 −14.7%、費半 −12.25% 為史上第二大單日跌幅；七巨頭合計蒸發約 1 兆美元",
+      "財報：Qualcomm −9.5%（手機晶片 −26%；非手機業務 FY27 預估 +60%）、Arm −13.1%（營收 +27% 至 14.4 億）、AppLovin +31.0%、EPAM +20.6%（加碼 15 億回購）",
+      "盤後：Cloudflare +15%（營收 +39%）、Airbnb +11%（120 億回購）、Lam Research +6%（250 億回購）；DraftKings −22%（下修 EBITDA）、Atlassian −16%、Datadog 盤中 −14%",
+      "Tesla −10.8%、SpaceX −9%：馬斯克兩家公司本週市值蒸發逾 3,800 億美元；Yorkville Ives：合併「2027 年的監管路徑將困難許多」",
+      "Nvidia −9.26% 至 181.60，回吐 2026 年全部漲幅（2025 年底 186.50）；11/17 公布財報"
+    ]},
+    {"cat": "金融環境與亞洲開盤（11/6 早盤）", "items": [
+      "南韓 Kospi −8.55% 觸發一級熔斷（暫停 20 分鐘）、跌破 5,000 至 4,923；SK hynix −12.3%、三星 −10.1%",
+      "日經 225 −6.2% 至 57,289，跌破 60,000 進入熊市；軟銀 −11%、Kioxia −14%",
+      "台股加權 −8%、台積電 −8.5%～−10%；歐股期貨 −1%",
+      "美股散戶淨賣出 3.58 億美元為 2020 年以來最大；10 年美債 4.84% 近兩月低；黃金 4,080 美元；比特幣 −5.7% 至 75,855"
+    ]}
+  ],
+  "mega": {
+    "intro": "依市值排名（資料截至 11/5 收盤，SpaceX 2026 年上市後代號 SPCX；沙烏地阿美以 10 月初市值列入）。SK hynix（8,737 億）於 11/5 跌出一兆美元俱樂部，11/6 再跌 12%。",
+    "rows": [
+      {"t": "AAPL", "n": "Apple", "cap": "5.00 兆", "px": "344.41", "wk": "−1.4%", "news": "11/2 公布 FY26 Q4：營收 1,144.8 億（+12%）、EPS 2.10、iPhone 575.8 億、服務 315.7 億創新高、全年營收 4,790 億；新任 CEO John Ternus 首次主持法說，市場關注記憶體成本對毛利率的壓力。11/4 選後 +5.3%，11/5 僅小跌，7 日跌幅 −1.4% 為七巨頭中最抗跌。", "impact": "AI 資本支出曝險最低的巨頭，在「資料中心暫停」敘事下成為資金避風港；但手機記憶體漲價將壓縮 12 月季度毛利。", "win": ["AAPL", "TSM", "AVGO"], "lose": ["QCOM", "MU（Apple 壓價）"]},
+      {"t": "NVDA", "n": "Nvidia", "cap": "4.39 兆", "px": "181.60", "wk": "−15.0%", "news": "單日 −9.26%，回吐 2026 年全部漲幅，一個月 −15%；市場質疑「循環融資」（投資客戶再買自家晶片）。公司稱若資料中心延後可將出貨轉往其他地區；8 月指引 FY2028 營收 +70%、Q3 指引約 1,080 億；FactSet 前瞻本益比約 14 倍；11/17 公布財報。", "impact": "資料中心暫停最直接的受害者；但需求面指引未變，11/17 財報將是檢驗「訂單是否真的延後」的第一個硬數據。", "win": ["—"], "lose": ["NVDA", "TSM", "SKHY", "MU", "AVGO", "MRVL", "ALAB", "CRWV", "VST", "CEG"]},
+      {"t": "MSFT", "n": "Microsoft", "cap": "3.98 兆", "px": "535.93", "wk": "+1.1%", "news": "11/4 選後 +6.68% 為標普最大貢獻；上週財報資本支出 452 億低於預期 507 億，11/5 相對抗跌（WSJ：Alphabet、Amazon、Microsoft 相對倖免）。亞洲媒體點名 Alphabet、Amazon、Microsoft、Meta 可能面臨民主黨反壟斷審查。", "impact": "資本支出紀律在「AI 回報疑慮」階段反而成為加分；風險在反壟斷聽證與雲端客戶（OpenAI、CoreWeave）的融資能力。", "win": ["MSFT"], "lose": ["CRWV", "DELL", "HPE", "NVDA"]},
+      {"t": "GOOGL", "n": "Alphabet", "cap": "3.47 兆", "px": "282.57", "wk": "−0.4%", "news": "上週四因自由現金流 −90.7 億美元（預期約 −27 億）、搜尋營收 633.5 億不如預期單日 −12.64%（上市以來最差）；資本支出指引維持 1,950–2,050 億。11/4 選後 +3%，11/5 相對抗跌，一週收平。", "impact": "FCF 轉負是「AI 燒錢」敘事的樣板；民主黨國會重啟反壟斷議程對 Alphabet 風險最高。", "win": ["—"], "lose": ["GOOGL", "AVGO（TPU）", "資料中心開發商"]},
+      {"t": "AMZN", "n": "Amazon", "cap": "2.81 兆", "px": "260.21", "wk": "+6.7%", "news": "11/5 宣布 Prime 與 Uber Eats 合作早盤上漲，尾盤翻黑 −2.19%，成交量高於三個月均量 117%。AWS +39.3%；過去 12 個月自由現金流 −424 億，2026 資本支出約 2,200 億、2027「明顯更高」。11/4 選後 +6.12%，一週仍 +6.7%。", "impact": "AWS 加速抵銷資本支出疑慮；資料中心暫停若落地，Amazon 自建比例高、受影響較租用型對手小。", "win": ["AMZN", "UBER"], "lose": ["DASH", "CRWV"]},
+      {"t": "TSM", "n": "台積電", "cap": "1.83 兆", "px": "353.10", "wk": "−18.2%", "news": "ADR 一週 −18.2% 為兆元企業最慘；11/6 台北早盤 −8.5%～−10%，台股加權 −8%。Nvidia、AMD、Broadcom、Apple 皆為主要客戶；10 月營收預計 11/10 公布。", "impact": "費半 −12% 的直接延伸；短期由情緒主導，長期取決於 2027 年 CoWoS 訂單是否被客戶下修。", "win": ["—"], "lose": ["TSM", "0050", "ASX（日月光）", "UMC"]},
+      {"t": "SPCX", "n": "SpaceX", "cap": "1.68 兆", "px": "123.62", "wk": "−14.1%", "news": "單日 −9%、一週 −14.1%。Q3 過半營收來自出租算力；與 Tesla 合建 1,190 億美元 Terafab 晶圓廠；特別委員會研議與 Tesla 合併。馬斯克本週期砸近 5 億美元助選共和黨，民主黨承諾調查。", "impact": "算力出租＋德州據點＋政治曝險三重打擊；合併案在德州與華府變天後 2027 年過關難度大增。", "win": ["GM（11/4 +2%）"], "lose": ["SPCX", "TSLA"]},
+      {"t": "META", "n": "Meta", "cap": "1.55 兆", "px": "605.08", "wk": "−3.1%", "news": "2026 資本支出 1,350–1,450 億；總裁 Dina Powell McCormick 稱在美國啟動新資料中心「將非常有挑戰」，轉向路易斯安那、俄亥俄、德州及海外；AI 募資計畫擴至 975 億美元。", "impact": "Meta 是最早公開承認美國資料中心審批困難的巨頭，若轉向海外，受害者是美國電力與承包商。", "win": ["海外資料中心承包商"], "lose": ["NVDA", "AVGO", "VST", "CEG"]},
+      {"t": "AVGO", "n": "Broadcom", "cap": "1.39 兆", "px": "291.53", "wk": "−15.5%", "news": "單日 −10.43%。Q3 營收 296 億（+86%）、AI 晶片營收 +221%、下季指引 348 億；客製 ASIC 客戶為 Google TPU、Meta、OpenAI。", "impact": "營收幾乎全部繫於超大規模資料中心擴容，任何暫停對 Broadcom 的邊際影響大於 Nvidia。", "win": ["—"], "lose": ["AVGO", "MRVL", "ALAB"]},
+      {"t": "TSLA", "n": "Tesla", "cap": "1.36 兆", "px": "343.69", "wk": "−14.8%", "news": "單日 −10.77%、一週 −14.8%，與 SpaceX 合計本週蒸發逾 3,800 億美元。儲能事業正向資料中心業者推銷；Yorkville Ives：合併「仍會發生，但 2027 年監管路徑困難許多」。", "impact": "德州政治變天同時衝擊 Terafab、儲能需求與合併案；傳統車廠相對受惠。", "win": ["GM"], "lose": ["TSLA", "SPCX"]},
+      {"t": "BRK.B", "n": "波克夏", "cap": "1.22 兆", "px": "571.74", "wk": "+5.6%", "news": "11/7（週六）公布 Q3，市場焦點為 3,816 億美元現金是否首次下降（Abel 是否開始買股）；巴菲特年底交棒。一週 +5.6%，為防禦輪動最大受惠者之一。", "impact": "高現金、零 AI 曝險，在「AI 去槓桿」階段成為資金停泊處。", "win": ["BRK.B"], "lose": ["—"]},
+      {"t": "LLY", "n": "禮來", "cap": "1.22 兆", "px": "1,364.73", "wk": "−0.7%", "news": "醫療保健上週領漲 +3.12%，11/5 板塊 −2.5% 相對抗跌；LLY 一週僅 −0.7%。同業 CVS 單日 −12.53%。", "impact": "GLP-1 現金流不受 AI 敘事影響；民主黨國會的藥價議程是下一個風險。", "win": ["LLY"], "lose": ["CVS"]},
+      {"t": "WMT", "n": "沃爾瑪", "cap": "1.01 兆", "px": "127.72", "wk": "+5.3%", "news": "11/5 −1.12%，必需消費為當日最抗跌板塊（−0.75%）；Costco 逆勢 +1.83%。一週 +5.3%。", "impact": "油價下跌＋防禦輪動雙重利多；市值在一兆關卡上下，再跌 1% 即跌出俱樂部。", "win": ["WMT", "COST"], "lose": ["—"]},
+      {"t": "2222.SR", "n": "沙烏地阿美", "cap": "約 1.6 兆（10/2）", "px": "—", "wk": "—", "news": "布蘭特原油一週 −13.6%、跌破 100 美元；市場押注伊朗戰爭退場。荷姆茲海峽仍有觸雷與射彈事件，供應風險未解除。", "impact": "油價每跌 10 美元直接壓縮上游現金流；若和談破局則反向。", "win": ["DAL", "UAL", "消費者"], "lose": ["2222.SR", "XOM", "CVX"]}
+    ]
+  },
+  "sources": [
+    {"t": "Yahoo Finance：Dow plunges 1,800 points, Nasdaq enters correction", "u": "https://finance.yahoo.com/markets/live/stock-market-today-thursday-november-5-dow-sp-500-nasdaq-plunge-chip-stocks-melt-down-193726491.html"},
+    {"t": "Reuters／Investing.com：Trading Day — A November 5 market bonfire", "u": "https://www.investing.com/news/economy-news/trading-day-a-november-5-market-bonfire-5005919"},
+    {"t": "Capp Notes：Closing Look — Thursday, November 5, 2026", "u": "https://cappnotes.substack.com/p/closing-look-thursday-november-5"},
+    {"t": "Capp Notes：Closing Look — Friday, October 30, 2026", "u": "https://cappnotes.substack.com/p/closing-look-friday-october-30-2026"},
+    {"t": "StockTitan：Stock Market Today, November 5, 2026", "u": "https://www.stocktitan.net/articles/stock-market-today-live-november-5-2026"},
+    {"t": "StockTitan：Why AI stocks are down today — Nvidia back to start of 2026", "u": "https://www.stocktitan.net/articles/why-ai-stocks-are-down-today-nvidia-back-to-start-of-2026"},
+    {"t": "StockTitan：Largest companies by market cap（11/5）", "u": "https://www.stocktitan.net/rankings/companies-market-cap"},
+    {"t": "Portfolio Terminal：Stock market close Oct 30 & Nov 2–4, 2026", "u": "https://portfolio-terminal.com/markets/stock-market-close"},
+    {"t": "The Glass Desk：Weekly Market Review Oct 30, 2026", "u": "https://theglassdesk.substack.com/p/weekly-market-review-oct-30-2026"},
+    {"t": "Yahoo Finance：The Nasdaq 100 briefly fell into a correction", "u": "https://finance.yahoo.com/markets/stocks/articles/nasdaq-100-briefly-fell-correction-145406645.html"},
+    {"t": "Schwab：Democrats' Win — Policy and Market Implications", "u": "https://www.schwab.com/learn/story/democrats-win-policy-and-market-implications"},
+    {"t": "Gizmodo：Tech rout wipes out $2.5 trillion", "u": "https://gizmodo.com/tech-rout-wipes-out-2-5-trillion-with-ai-investors-anticipating-heavier-scrutiny-2000835986"},
+    {"t": "Reuters／Investing.com：SpaceX, Tesla extend losses as midterm results cloud data center, merger outlook", "u": "https://za.investing.com/news/stock-market-news/spacex-tesla-extend-losses-as-midterm-results-cloud-data-center-merger-outlook-4555731"},
+    {"t": "Business Recorder／Reuters：Asia stocks crumble after AI rout", "u": "https://www.brecorder.com/news/40447714/asia-stocks-crumble-after-ai-rout-rocks-us-markets"},
+    {"t": "TradingKey：Kospi plunges 8%, circuit breaker; Nikkei sinks 6%", "u": "https://www.tradingkey.com/analysis/stocks/more/262287971-japan-korea-stocks-skhy-kospi-nikkei-samsung-skhynix-softbank-kioxia-mu-sox-tradingkey"},
+    {"t": "Gulf News：Trump weighs Iran strikes or deal after midterm loss", "u": "https://gulfnews.com/world/mena/trump-weighs-iran-strikes-or-deal-after-midterm-loss-as-vance-urges-agreement-qatar-mediates-brent-oil-falls-to-93-1.500736556"},
+    {"t": "Rio Times：Global economy briefing November 5, 2026", "u": "https://www.riotimesonline.com/global-economy-briefing-november-5-2026"},
+    {"t": "9to5Mac：Apple reports Q4 2026 earnings", "u": "https://9to5mac.com/2026/11/02/apple-reports-q4-2026-earnings/"},
+    {"t": "The Motley Fool：Why Nvidia stock is getting punished today", "u": "https://fool.com/investing/2026/11/05/why-nvidia-stock-is-getting-punished-today"},
+    {"t": "Yahoo Finance：Amazon shares slide as technology selloff erases early gains", "u": "https://finance.yahoo.com/markets/stocks/articles/stock-market-today-nov-5-225937741.html"},
+    {"t": "JournalArta：Wall Street close — Nasdaq sinks 5.52%", "u": "https://journalarta.com/en/2026/11/06/wall-street-close-nasdaq-sinks-5-52-and-sp-500-falls-4-36-as-ai-stocks-slide/"},
+    {"t": "本站資料：data/market.json（QQQ 日收盤）、data/treasury.json（美國財政部殖利率曲線 11/5）、data/tw/latest.json（USD/TWD）", "u": "data.html"}
+  ]
+}
