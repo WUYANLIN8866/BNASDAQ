@@ -1,0 +1,16 @@
+name: Look-through data source probe (temporary)
+on:
+  push:
+    branches: [lookthrough-probe]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install --quiet pypdf openpyxl
+      - run: python3 scripts/lookthrough/probe.py
