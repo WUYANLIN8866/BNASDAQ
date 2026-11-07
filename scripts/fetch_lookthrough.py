@@ -504,10 +504,10 @@ def yuanta_nuxt(code):
     m = re.search(r'<script>(window\.__NUXT__=.*?)</script>', t, re.S)
     if not m:
         raise RuntimeError('no __NUXT__')
-    js = ('const window={};' + m.group(1) + '\nconst N=window.__NUXT__;let W=null,info=null;'
-          'for(const d of (N.data||[])){if(d&&d.weightData&&d.weightData.FundWeights){W=d.weightData.FundWeights;}}'
+    js = ('const window={};' + m.group(1) + '\nconst N=window.__NUXT__;let W=null,P=null,info=null;'
+          'for(const d of (N.data||[])){if(d&&d.weightData&&d.weightData.FundWeights){W=d.weightData.FundWeights;P=d.weightData.PCF||null;}}'
           'info=(N.state&&N.state.etfInfo)||[];'
-          'process.stdout.write(JSON.stringify({W:W,info:info.map(x=>[x.STK_CD,x.STK_NAME])}));')
+          'process.stdout.write(JSON.stringify({W:W,P:P?{trandate:P.trandate,markcd:P.markcd}:null,info:info.map(x=>[x.STK_CD,x.STK_NAME])}));')
     f = tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8'); f.write(js); f.close()
     try:
         r = subprocess.run(['node', f.name], capture_output=True, text=True, timeout=60)
@@ -531,10 +531,16 @@ def src_yuanta(code):
         c = str(s.get('code') or '').strip()
         tw = re.match(r'^\d{4}$', c)
         out.append(dict(t=c if tw else c, name=s.get('name') or s.get('ename'), isin='', country='Taiwan' if tw else '', w=w, sec=''))
+    P = j.get('P') or {}
+    if P.get('markcd') and str(P['markcd']).strip() != code:
+        raise RuntimeError('元大頁面代號不符：%s' % P.get('markcd'))
     asof = ''
-    for k in ('TranDate', 'Date', 'date', 'tranDate'):
-        if W.get(k):
-            asof = str(W[k])[:10].replace('/', '-'); break
+    m = re.match(r'^(\d{4})(\d{2})(\d{2})$', str(P.get('trandate') or ''))   # 頁面「交易日期」
+    if m:
+        asof = '-'.join(m.groups())
+    fut = ['%s %.2f%%' % (str(f.get('name') or f.get('code') or '').strip(), num(f.get('weights'))) for f in (W.get('FutureWeights') or []) if num(f.get('weights'))]
+    if fut:
+        EXTRA[code] = dict(note='元大投信 持股權重；另有期貨部位（占淨資產）：' + '、'.join(fut) + '，屬指數曝險，未拆成個股')
     return out, asof, '元大投信 持股權重'
 
 
