@@ -62,6 +62,29 @@ def sector_zh(s):
     return SECTOR.get(str(s or '').strip().lower(), '')
 
 
+# 台股產業別（證交所分類）→ 同一套大類
+TW_IND = {'半導體業': '資訊科技', '電子零組件業': '資訊科技', '電腦及週邊設備業': '資訊科技', '光電業': '資訊科技', '其他電子業': '資訊科技', '電子通路業': '資訊科技', '資訊服務業': '資訊科技',
+          '通信網路業': '資訊科技', '數位雲端': '資訊科技', '金融保險業': '金融', '生技醫療業': '醫療保健', '電機機械': '工業', '電器電纜': '工業', '航運業': '工業', '綠能環保': '工業',
+          '建材營造業': '房地產', '鋼鐵工業': '原物料', '化學工業': '原物料', '塑膠工業': '原物料', '水泥工業': '原物料', '造紙工業': '原物料', '玻璃陶瓷': '原物料',
+          '紡織纖維': '非必需消費', '汽車工業': '非必需消費', '觀光餐旅': '非必需消費', '居家生活': '非必需消費', '運動休閒': '非必需消費', '貿易百貨業': '非必需消費', '橡膠工業': '非必需消費',
+          '食品工業': '必需消費', '農業科技業': '必需消費', '油電燃氣業': '公用事業', '文化創意業': '通訊服務', '其他業': '其他'}
+TELCO_TW = {'2412': '通訊服務', '3045': '通訊服務', '4904': '通訊服務'}
+
+
+def fund_sector(code, market):
+    """站上「個股目標價試算」已有的產業資料：台股用證交所產業別、美股用 Yahoo 產業"""
+    p = os.path.join(ROOT, 'data', 'fund', code + '.json')
+    if not os.path.exists(p):
+        return ''
+    try:
+        d = json.load(open(p, encoding='utf-8'))
+    except Exception:  # noqa
+        return ''
+    if market in ('TW', 'TWO'):
+        return TELCO_TW.get(code) or TW_IND.get(d.get('industry') or '', '')
+    return sector_zh(d.get('sector'))
+
+
 # 美國存託憑證 → 台股代號（同一家公司合併）
 ADR_TW = {'TSM': '2330', 'UMC': '2303', 'ASX': '3711', 'CHT': '2412'}
 # 同公司不同股票類別 → 合併到一個代號（前端也用這張表）
@@ -144,7 +167,8 @@ def build_universe():
         if mkt not in ('TW', 'TWO'):
             continue
         px = (items.get(code) or [None])[0]
-        U[code] = [code, name, mkt, 'E' if code.startswith('00') else 'S', px, '']
+        kind = 'E' if code.startswith('00') else 'S'
+        U[code] = [code, name, mkt, kind, px, fund_sector(code, mkt) if kind == 'S' else '']
     for code, v in items.items():
         if code not in U and len(v) >= 4 and v[3] in ('TW', 'TWO'):
             U[code] = [code, v[2] or code, v[3], 'E' if code.startswith('00') else 'S', v[0], '']
@@ -155,7 +179,7 @@ def build_universe():
         c = norm_us(r.get('symbol'))
         if not re.match(r'^[A-Z][A-Z0-9-]{0,7}$', c):
             continue
-        U[c] = [c, clean_name(r.get('name')), 'US', 'S', num(r.get('lastsale')), sector_zh(r.get('sector'))]
+        U[c] = [c, clean_name(r.get('name')), 'US', 'S', num(r.get('lastsale')), fund_sector(c, 'US') or sector_zh(r.get('sector'))]
     et = json.loads(get('https://api.nasdaq.com/api/screener/etf?tableonly=true&limit=25&download=true', hdr))
     d = et.get('data') or {}
     erows = d.get('rows') or (d.get('data') or {}).get('rows') or []
@@ -194,7 +218,7 @@ def src_ssga(code):
         w = num(r[ix['Weight']]); t = r[ix['Ticker']]; cus = str(r[ix.get('Identifier', 2)] or '')
         if w is None or not t or str(t).strip() in ('-', 'CASH_USD', 'USD'):
             continue
-        out.append(dict(t=t, name=r[0], isin='US' + cus if re.match(r'^[0-9A-Z]{9}$', cus) else '', country='', w=w, sec=sector_zh(r[ix['Sector']]) if 'Sector' in ix else ''))
+        out.append(dict(t=t, name=r[0], isin='US' + cus if re.match(r'^[0-9][0-9A-Z]{8}$', cus) else '', country='' if re.match(r'^[0-9]', cus) else 'Intl', w=w, sec=sector_zh(r[ix['Sector']]) if 'Sector' in ix else ''))
     return out, asof, 'State Street SPDR 每日持股'
 
 
@@ -307,6 +331,8 @@ def finalize(code, rows, asof, src, U, extra=None):
     h = sorted(agg.values(), key=lambda x: -x[1])
     h = [[x[0], round(x[1], 4), x[2], x[3]] for x in h if abs(x[1]) >= 0.00005]
     eq = round(sum(x[1] for x in h), 4)
+    if eq > 102 or any(x[1] < -0.5 for x in h):
+        raise ValueError('權重加總 %.2f%% 不合理，不發布（保留前一版）' % eq)
     d = dict(code=code, name=(U.get(code) or [code, code])[1], asof=asof or TODAY, src=src, eq=eq, n=len(h), h=h)
     if extra:
         d.update(extra)
@@ -505,14 +531,17 @@ def main():
     lst = []
     for c in sorted(U):
         v = U[c]
-        lst.append([c, v[1], v[2], v[3], v[4], v[5], 1 if c in files else 0])
-    write_json(os.path.join(OUT, 'universe.json'), dict(schema='bnasdaq-lt-universe/1', updated=dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%MZ'), fx=fx, asof=asof, alias=ALIAS,
-                                                       cols=['code', 'name', 'market', 'kind', 'price', 'sector', 'lt'], list=lst))
+        lst.append([c, v[1], v[2], v[3], v[5], 1 if c in files else 0])
+    # 名稱、類別、產業、可否拆解（每週變動）與價格（每日變動）分開存，避免每天重寫大檔
+    write_json(os.path.join(OUT, 'universe.json'), dict(schema='bnasdaq-lt-universe/2', alias=ALIAS, cols=['code', 'name', 'market', 'kind', 'sector', 'lt'], list=lst))
+    write_json(os.path.join(OUT, 'px.json'), dict(schema='bnasdaq-lt-px/1', updated=dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%MZ'), fx=fx, asof=asof,
+                                                 px={c: (round(v[4], 4) if isinstance(v[4], (int, float)) else None) for c, v in U.items() if v[4]}))
     cov = lambda mk: (sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US') and x[6]), sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US')))
     meta = dict(updated=TODAY, coverage={'US': cov('US'), 'TW': cov('TW')}, ok=len(report['ok']), fail=report['fail'], empty=report['empty'], derived=report['derived'],
                 derived_missing=report['derived_missing'], bond_guess=len(report['bond_guess']),
                 sources={k: sum(1 for v in report['ok'].values() if v[0] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', '元大', '永豐')})
-    write_json(os.path.join(OUT, 'meta.json'), meta)
+    if only & {'us', 'tw'}:
+        write_json(os.path.join(OUT, 'meta.json'), meta)   # 只更新價格時保留上一次成分股的抓取紀錄
     log('done: ETF files', len(files), 'coverage', meta['coverage'], 'sources', meta['sources'], 'fail', len(report['fail']))
     return 0
 
