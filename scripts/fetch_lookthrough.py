@@ -164,6 +164,20 @@ def num(s):
 
 
 # ---------------------------------------------------------------- 證券總表
+def nasdaq_day(text):
+    """'Last price as of Nov 5, 2026' → '2026-11-05'；看不懂就回傳空字串"""
+    m = re.search(r'([A-Z][a-z]{2}) (\d{1,2}), (\d{4})', str(text or ''))
+    return dt.datetime.strptime(' '.join(m.groups()), '%b %d %Y').date().isoformat() if m else ''
+
+
+def nasdaq_time(text):
+    """'11/5/2026 3:57:00 PM'（美東）→ '2026-11-05 15:57'；看不懂就回傳空字串"""
+    m = re.match(r'^(\d{1,2})/(\d{1,2})/(\d{4}) (\d{1,2}):(\d{2}):\d{2} ([AP]M)$', str(text or '').strip())
+    if not m:
+        return ''
+    return '%s-%02d-%02d %02d:%s' % (m.group(3), int(m.group(1)), int(m.group(2)), int(m.group(4)) % 12 + (12 if m.group(6) == 'PM' else 0), m.group(5))
+
+
 def build_universe():
     tw_idx = json.load(open(os.path.join(ROOT, 'data', 'tw', 'index.json'), encoding='utf-8'))
     tw_lt = json.load(open(os.path.join(ROOT, 'data', 'tw', 'latest.json'), encoding='utf-8'))
@@ -186,8 +200,14 @@ def build_universe():
         if not re.match(r'^[A-Z][A-Z0-9-]{0,7}$', c):
             continue
         U[c] = [c, clean_name(r.get('name')), 'US', 'S', num(r.get('lastsale')), fund_sector(c, 'US') or sector_zh(r.get('sector'))]
+    us_asof = ''   # 篩選器價格是 Nasdaq 的快照（不一定是正式收盤價），日期以 Nasdaq 自己標示的為準
+    try:
+        us_asof = nasdaq_day(((json.loads(get('https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=1', hdr)).get('data')) or {}).get('asof'))
+    except Exception as e:  # noqa
+        log('nasdaq asof failed', repr(e)[:100])
     et = json.loads(get('https://api.nasdaq.com/api/screener/etf?tableonly=true&limit=25&download=true', hdr))
     d = et.get('data') or {}
+    etf_asof = nasdaq_time(d.get('dataAsOf'))
     erows = d.get('rows') or (d.get('data') or {}).get('rows') or []
     for r in erows:
         c = norm_us(r.get('symbol'))
@@ -196,7 +216,7 @@ def build_universe():
         U[c] = [c, re.sub(r'\s+', ' ', str(r.get('companyName') or c)).strip(), 'US', 'E', num(r.get('lastSalePrice')), '']
     fx = tw_lt.get('fx') or {}
     log('universe: TW', sum(1 for v in U.values() if v[2] != 'US'), 'US stocks', len(rows), 'US ETFs', len(erows))
-    return U, {'USDTWD': fx.get('rate'), 'date': fx.get('date'), 'source': fx.get('source')}, {'TW': (tw_lt.get('asof') or {}).get('TW'), 'TWO': (tw_lt.get('asof') or {}).get('TWO'), 'US': TODAY}
+    return U, {'USDTWD': fx.get('rate'), 'date': fx.get('date'), 'source': fx.get('source')}, {'TW': (tw_lt.get('asof') or {}).get('TW'), 'TWO': (tw_lt.get('asof') or {}).get('TWO'), 'US': us_asof, 'USETF': etf_asof}
 
 
 # ---------------------------------------------------------------- 美股 ETF 持股

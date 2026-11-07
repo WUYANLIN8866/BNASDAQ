@@ -9,6 +9,8 @@ cases = [(('AAPL', 'US0378331005', '', 'Apple'), ('AAPL', 'US')), (('2330', 'TW0
 for args, want in cases:
     assert m.key_of(*args) == want, (args, m.key_of(*args), want)
 assert m.clean_name('Alphabet Inc. Class A Common Stock') == 'Alphabet Inc.'
+assert m.nasdaq_day('Last price as of Nov 5, 2026') == '2026-11-05' and m.nasdaq_day(None) == ''
+assert m.nasdaq_time('11/5/2026 3:57:00 PM') == '2026-11-05 15:57' and m.nasdaq_time('11/5/2026 12:05:00 AM') == '2026-11-05 00:05' and m.nasdaq_time('11/5/2026 12:30:00 PM') == '2026-11-05 12:30' and m.nasdaq_time('') == ''
 tmp = tempfile.mkdtemp(); m.ETF_DIR = tmp
 U = {'GOOGL': ['GOOGL', 'Alphabet Inc.', 'US', 'S', 300, '通訊服務'], 'XYZ': ['XYZ', 'Test ETF', 'US', 'E', 10, ''], '2330': ['2330', '台積電', 'TW', 'S', 1450, '資訊科技']}
 rows = [dict(t='GOOGL', name='A', isin='', country='', w=3.0, sec=''), dict(t='GOOG', name='C', isin='', country='', w=2.5, sec=''), dict(t='TSM', name='ADR', isin='', country='', w=1.0, sec=''), dict(t='2330', name='T', isin='TW0002330008', country='', w=0.5, sec='')]
