@@ -443,7 +443,7 @@ ul.ind { max-width: none; }
 .band.dark .btn.primary:hover { background: #e0c48d; border-color: #e0c48d; color: #111; }
 
 @media (max-width: 560px) { .row2[style*="grid-template-columns"] { grid-template-columns: 1fr !important; } }
-.nowrap, .tbl time { white-space: nowrap; }
+.nowrap, .tbl time, .bn-code { white-space: nowrap; }
 .tbl td:not(:first-child):not(.l) { white-space: nowrap; }
 .search button { white-space: nowrap; }
 
@@ -474,7 +474,7 @@ ul.ind { max-width: none; }
   .tbl.cmp tbody tr:hover td { background: none; }
   .tbl.cmp td { display: block; min-width: 0; padding: 0; border: 0; text-align: left !important; }
   .tbl.cmp td:first-child { grid-column: 1 / -1; white-space: normal; font-weight: 600; color: var(--ink); }
-  .tbl.cmp .mth { display: block; font-size: 11px; line-height: 1.6; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tbl.cmp .mth { display: block; min-height: 3.2em; font-size: 11px; line-height: 1.6; color: var(--muted); white-space: normal; }
   .tbl.cmp .mth .sw { width: 8px; height: 8px; margin-right: 4px; }
   .tbl.cmp td small { white-space: normal; font-size: 10.5px; overflow-wrap: anywhere; }
 }

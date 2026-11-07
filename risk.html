@@ -8,7 +8,7 @@
 <meta name="description" content="BNASDAQ 的 3 個風險、完整代價 6 點、參數鄰域與決策日挪動驗證、逐步前推結果。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=420e44ca51">
+<link rel="stylesheet" href="assets/site.css?v=b09a1ffcfb">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -60,7 +60,7 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#three">三項主要風險</a></li><li><a href="#six">六項代價與限制</a></li><li><a href="#robust">參數穩健性</a></li><li><a href="#shift">決策日偏移</a></li><li><a href="#ladder">合理預期</a></li><li><a href="#walk">逐步前推</a></li><li><a href="#disc">免責聲明</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html#dd">回撤水位圖</a></li><li><a href="research.html#crises">大幅修正期間的表現</a></li><li><a href="data.html">資料口徑</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=00b6fc3765"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=52553baf3c"></script>
+<script src="assets/site.js?v=4771a894fc"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 (function(){const S=window.SITE,f=BN.fmt,nb=S.nb;
 BN.charts.hist(document.getElementById('c-nb'),{title:'參數 ±10% 鄰域：'+nb.n.toLocaleString()+' 種組合的年化報酬率分布',sub:'13 個參數各上調／下調 10% 的全部組合；虛線為 QQQ、QLD 長期持有與本站主回測',note:'依正式回測區間（2000-05-31～2026-09-30）；每換一次起點需重跑 78,732 組參數，無法在瀏覽器即時重算。',edges:nb.edges,counts:nb.counts,marks:[{x:S.lump.qqq.cagr,label:'QQQ '+(S.lump.qqq.cagr*100).toFixed(1)+'%',color:'var(--s-qqq)'},{x:S.lump.qld.cagr,label:'QLD '+(S.lump.qld.cagr*100).toFixed(1)+'%',color:'var(--s-qld)',dy:16},{x:nb.p5,label:'第 5 百分位 '+(nb.p5*100).toFixed(1)+'%',color:'var(--ink)',dy:32},{x:nb.p95,label:'第 95 百分位 '+(nb.p95*100).toFixed(1)+'%',color:'var(--ink)',anchor:'end',dx:-4,dy:32},{x:nb.official,label:'本站主回測 '+(nb.official*100).toFixed(1)+'%',color:'var(--gold)',anchor:'end',dx:-4}]});

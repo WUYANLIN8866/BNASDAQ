@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0c">
 <title>研究與回測｜BNASDAQ</title>
-<meta name="description" content="BNASDAQ 核心策略完整回測（可自訂起點，1986-09～2025-09）：年化報酬率、各區間、逐年報酬、大幅修正期間表現、最大回撤與回撤水位。">
+<meta name="description" content="BNASDAQ-26110 完整回測（可自訂起點，1986-09～2025-09）：年化報酬率、各區間、逐年報酬、大幅修正期間表現、最大回撤與回撤水位。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=420e44ca51">
+<link rel="stylesheet" href="assets/site.css?v=b09a1ffcfb">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -21,7 +21,7 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="research.html" aria-current=page>研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 研究與回測</div><h1>研究與回測</h1><p class="lede">以單一資料來源與一致的交易成本，檢視 BNASDAQ 核心策略的長期資產成長、各區間與逐年報酬、大幅修正期間的表現，以及最大回撤與回復時間。回測起點可自訂，本頁圖表、表格與關鍵數字隨之同步重算。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 研究與回測</div><h1>研究與回測</h1><p class="lede">以單一資料來源與一致的交易成本，檢視 BNASDAQ-26110 的長期資產成長、各區間與逐年報酬、大幅修正期間的表現，以及最大回撤與回復時間。回測起點可自訂，本頁圖表、表格與關鍵數字隨之同步重算。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <div class="btpick" id="bt-pick"></div>
@@ -79,7 +79,7 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#report">回測成績總覽</a></li><li><a href="#periods">各區間年化報酬</a></li><li><a href="#years">逐年報酬</a></li><li><a href="#why">績效來源</a></li><li><a href="#crises">大幅修正</a></li><li><a href="#dd">最大回撤</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="risk.html#robust">參數穩健性檢驗</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="dca.html">定期定額</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=00b6fc3765"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=e43dffbc01"></script><script src="assets/period.js?v=7470055c02"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=52553baf3c"></script>
+<script src="assets/site.js?v=4771a894fc"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=e43dffbc01"></script><script src="assets/period.js?v=5f5903d64c"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 (function () {
   'use strict';
@@ -181,7 +181,7 @@
     // 共同期間不足一年時不予年化，改列期間報酬
     const ret = m => late ? '期間報酬 ' + f.pctS(m.ratio - 1) : '年化報酬率 ' + p1(m.cagr);
     const qldMdd = late ? R.qld.mdd.mdd : DDm.qld.mdd, qldLow = L.qld.cagr < L.qqq.cagr;
-    let kv = tile('BNASDAQ 核心策略', COL.fund, L.fund.end, ret(late ? R.fund : L.fund), late ? '未滿一年，不予年化' : dTxt(L.fund.doubling))
+    let kv = tile('BNASDAQ-26110', COL.fund, L.fund.end, ret(late ? R.fund : L.fund), late ? '未滿一年，不予年化' : dTxt(L.fund.doubling))
       + tile('QQQ 買進持有', COL.qqq, L.qqq.end, ret(late ? R.qqq : L.qqq), late ? '' : dTxt(L.qqq.doubling))
       + tile('QLD 買進持有', COL.qld, L.qld.end, ret(late ? R.qld : L.qld), qldLow ? (late ? '2 倍槓桿，期間報酬反低於 QQQ' : '2 倍槓桿長期持有，年化報酬率反低於 QQQ') : '高於 QQQ，但最大回撤達 ' + a1(qldMdd))
       + tile('SHV 短期美國公債', COL.shv, L.shv.end, ret(late ? R.shv : L.shv), '對照：現金不投資，期末仍為 100 萬');

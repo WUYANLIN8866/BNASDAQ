@@ -66,6 +66,28 @@
     if (window.SITE) $$('[data-site]').forEach(el => { try { const v = el.getAttribute('data-site').split('.').reduce((o, k) => o[k], window.SITE); const f = el.getAttribute('data-fmt'); el.textContent = f ? BN.fmt[f](v) : v; } catch (e) { } });
   });
 
+  // ---- 策略代號不拆行：瀏覽器可能把「BNASDAQ-26110」在連字號後拆成兩行；畫面上（含程式後來畫出的標題、註解）
+  //      出現的代號一律包成不換行。SVG 圖內文字與手機對比表欄名（.mth，刻意允許換行）不處理 ----
+  (function () {
+    const RE = /BNASDAQ-\d{5}/, REG = /BNASDAQ-\d{5}/g;
+    const ok = n => { const p = n.parentElement; return !!p && !p.closest('svg,script,style,textarea,.bn-code,.mth'); };
+    function wrap(t) {
+      const s = t.nodeValue, f = document.createDocumentFragment(); let i = 0, m; REG.lastIndex = 0;
+      while ((m = REG.exec(s))) { if (m.index > i) f.appendChild(document.createTextNode(s.slice(i, m.index))); const sp = document.createElement('span'); sp.className = 'bn-code'; sp.textContent = m[0]; f.appendChild(sp); i = m.index + m[0].length; }
+      if (i < s.length) f.appendChild(document.createTextNode(s.slice(i)));
+      t.parentNode.replaceChild(f, t);
+    }
+    function fix(r) {
+      if (!r) return;
+      if (r.nodeType === 3) { if (RE.test(r.nodeValue) && ok(r)) wrap(r); return; }
+      if (r.nodeType !== 1 || r.closest('svg') || !RE.test(r.textContent)) return;
+      const tw = document.createTreeWalker(r, NodeFilter.SHOW_TEXT), list = []; let n;
+      while ((n = tw.nextNode())) if (RE.test(n.nodeValue) && ok(n)) list.push(n);
+      list.forEach(wrap);
+    }
+    document.addEventListener('DOMContentLoaded', () => { fix(document.body); new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(fix))).observe(document.body, { childList: true, subtree: true }); });
+  })();
+
   // ---- 切頁加速：滑鼠停在站內連結上（手機：手指按下）就先在背景準備下一頁；登入、會員、後台頁不預先載入 ----
   (function () {
     const NOPE = 'a[data-acct], a[target], a[download], a[href^="admin"], a[href^="member"], a[href^="login"], a[href^="http"], a[href^="mailto"]';
