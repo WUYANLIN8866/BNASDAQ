@@ -1,16 +1,20 @@
-name: Look-through data source probe (temporary)
+name: Look-through pipeline trial (temporary)
 on:
   push:
     branches: [lookthrough-probe]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  probe:
+  trial:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: pip install --quiet pypdf openpyxl
-      - run: python3 scripts/lookthrough/probe.py
+      - run: pip install --quiet openpyxl
+      - run: python3 scripts/fetch_lookthrough.py
+      - run: |
+          git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
+          git add data/lt
+          git diff --cached --quiet || { git commit -qm "trial: data/lt"; git push origin HEAD:lookthrough-probe; }
