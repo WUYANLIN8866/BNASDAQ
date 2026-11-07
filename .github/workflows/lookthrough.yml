@@ -1,0 +1,57 @@
+name: Update portfolio look-through data (TW + US ETF holdings)
+
+on:
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'universe＝只更新價格與清單；留空＝全部（含成分股）'
+        required: false
+        default: ''
+  schedule:
+    # 價格與清單：週一～週五 22:20 UTC（台北 06:20），在每日部署（22:45 UTC）之前
+    - cron: '20 22 * * 1-5'
+    # 成分股：每月 3 日 21:17 UTC（台北 4 日 05:17）；成分股權重變化慢，每月一次即可，也避免網站資料庫每週膨脹
+    - cron: '17 21 3 * *'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: lookthrough
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet openpyxl
+      # 先跑不連網的測試（幾秒），程式有錯就不浪費 30 分鐘抓資料，也不會寫壞網站資料
+      - name: Check calculation engine and pipeline (offline)
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: node scripts/lookthrough/test_engine.js && python3 scripts/lookthrough/test_pipeline.py && python3 scripts/lookthrough/test_main.py
+      - name: Fetch prices, lists and ETF holdings (official sources)
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          ONLY="${{ github.event.inputs.only }}"
+          if [ "${{ github.event.schedule }}" = "20 22 * * 1-5" ]; then ONLY=universe; fi
+          if [ -n "$ONLY" ]; then python3 scripts/fetch_lookthrough.py --only "$ONLY"; else python3 scripts/fetch_lookthrough.py; fi
+      - name: Commit if changed, then redeploy the site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "bnasdaq-bot"
+          git config user.email "bnasdaq-bot@users.noreply.github.com"
+          git add data/lt
+          if git diff --cached --quiet; then echo "data/lt unchanged"; exit 0; fi
+          git commit -m "data: 投資組合透視 $(date -u +%F)"
+          git pull --rebase -X theirs origin main
+          git push origin HEAD:main
+          if [ "${{ github.event.schedule }}" != "20 22 * * 1-5" ]; then gh workflow run site.yml --ref main || true; fi

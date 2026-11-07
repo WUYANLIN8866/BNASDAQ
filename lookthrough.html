@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0b0c">
+<title>投資組合透視｜BNASDAQ</title>
+<meta name="description" content="輸入持有的 ETF 與股票（比例或股數），逐層拆解至成分股，看見每一家公司占總資產的實際比重。台股、美股都能輸入；免登入，資料不上傳。">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/site.css?v=68dcf7362a">
+<link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<style>
+.lt-eyebrow{letter-spacing:.2em;font-size:12px;color:var(--gold);margin:0 0 6px;font-weight:600}
+.lt-rows{margin:6px 0 4px}
+.lt-rows input{width:100%;min-width:0;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink)}
+.lt-rows td{vertical-align:middle}
+.lt-rows .code{min-width:130px}
+.lt-rows .v,.lt-rows .px{min-width:92px;text-align:right}
+.lt-rows:not(.shares) .pxc{display:none}
+.lt-rows .info{white-space:normal;min-width:180px}
+.lt-rows .info small{color:var(--muted)}
+.lt-tag{display:inline-block;font-size:11.5px;border:1px solid var(--line);padding:0 6px;border-radius:2px;color:var(--muted);margin-left:4px;white-space:nowrap}
+.lt-tag.ok{color:var(--good);border-color:var(--good)}
+.lt-actions,.lt-acts{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.lt-total{max-width:440px;margin:10px 0 4px}
+.chip-btn{font:inherit;font-size:13.5px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--band-2);color:var(--ink);cursor:pointer;margin:3px 6px 3px 0}
+.chip-btn:hover{border-color:var(--ink)}
+.lt-tbl td.small{white-space:normal;min-width:160px}
+td.neg,.neg{color:var(--bad)}
+#ltKv .kv{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+#ltKv .tile .v{font-size:24px}
+@media (max-width:720px){
+ .lt-rows thead{display:none}
+ .lt-rows tbody tr{display:grid;grid-template-columns:minmax(0,1fr) 96px 58px;gap:6px 8px;padding:10px 0;border-bottom:1px solid var(--line-2)}
+ .lt-rows.shares tbody tr{grid-template-columns:minmax(0,1fr) 86px 86px 58px}
+ .lt-rows td{border:0;padding:0;display:block}
+ .lt-rows td.info{grid-column:1/-1;order:9;font-size:13.5px}
+ .lt-rows .code{min-width:0}.lt-rows .v,.lt-rows .px{min-width:0}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<header class="brand"><div class="wrap">
+  <a class="mark" href="index.html"><span><span class="word">B<b>NASDAQ</b></span></span></a>
+  <div></div>
+  <div class="tools"><form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form><button type="button" class="themebtn" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></div>
+</div></header>
+<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html" aria-current=page>投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
+<main id="main">
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 投資組合透視</div><p class="lt-eyebrow">PORTFOLIO LOOK-THROUGH</p><h1>投資組合透視</h1><p class="lede">輸入持有的 ETF 與股票，逐層拆解至成分股，呈現每一家公司占總資產的實際比重。台股（上市、上櫃）與美股都能輸入；計算全部在你的瀏覽器完成，持有資料不會上傳。免登入即可使用。</p></div></div>
+<div class="main"><div class="wrap"><div class="cols">
+<div>
+  <div class="panel">
+    <div class="tabs" role="tablist" aria-label="輸入方式"><button type="button" role="tab" data-mode="pct" aria-selected="true">依比例（%）</button><button type="button" role="tab" data-mode="shares" aria-selected="false">依股數</button></div>
+    <div class="tblwrap"><table class="tbl lt-rows" id="ltRows"><thead><tr><th class="l">代號或名稱</th><th id="vHead">比例（%）</th><th class="pxc">價格（可手動）</th><th class="l">資產</th><th class="c">刪除</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <datalist id="ltlist"></datalist>
+    <div class="lt-actions"><button type="button" class="btn navy" id="ltAdd">＋ 新增一列</button><button type="button" class="btn line" id="ltClear">清除全部</button></div>
+    <div class="field lt-total" id="ltTotalWrap"><label for="ltTotal">總投資金額（台幣，可不填；填了會顯示每家公司的金額）</label><input id="ltTotal" type="number" inputmode="numeric" min="0" step="any" placeholder="例：1000000"></div>
+    <p class="small">範例組合：<span id="ltEx"></span></p>
+    <p class="small muted" id="ltCov">載入資料中…</p>
+  </div>
+  <div id="ltMsg" aria-live="polite"></div>
+  <div id="ltOut" hidden>
+    <h2 id="sum">拆解結果</h2>
+    <div id="ltKv"></div>
+    <div class="lt-acts"><button type="button" class="btn line" id="ltCsv">下載明細（CSV）</button><button type="button" class="btn line" id="ltShare">複製分享連結</button></div>
+    <h2 id="top">前 15 大公司與產業分布</h2>
+    <div id="fTop"></div>
+    <div id="fSec"></div>
+    <h2 id="detail">完整明細</h2>
+    <div id="ltTbl"></div>
+    <h2 id="ov">ETF 重疊度</h2>
+    <div id="ltOv"></div>
+    <h2 id="src">資料日期與來源</h2>
+    <div id="ltSrc"></div>
+  </div>
+  <h2 id="how">計算方式與限制</h2>
+  <div class="note"><p><b>計算方式（每一步都可手算）</b></p><ul>
+    <li>股數模式：市值＝股數 × 價格（見下方「價格」說明）；美股再乘以美元兌台幣匯率。每項資產占比＝市值 ÷ 全部市值。</li>
+    <li>比例模式：直接用你填的比例；加總不是 100% 時，自動等比例換算成 100% 並提示。</li>
+    <li>每家公司占總資產＝把每項資產的「資產占比 × 這家公司在該 ETF 的權重 × 槓桿倍數」加總；個股本身算 100%。</li>
+    <li>同一家公司的不同代號會合併，例如 GOOGL＋GOOG＝Alphabet、TSM（美國存託憑證）＋2330＝台積電。</li>
+    <li>槓桿與反向 ETF：以追蹤指數的成分股 × 倍數計算曝險（例如 QLD＝2 倍那斯達克 100），總和可能超過 100%，反向 ETF 為負值。</li>
+    <li>ETF 重疊度：兩檔 ETF 對同一家公司的權重取較小者，全部加總。</li>
+  </ul></div>
+  <ul class="small">
+    <li>成分股每月更新一次（發行商公布的最新持股；Vanguard 為月底資料），價格與匯率每個交易日更新；每檔的資料日期列在「資料日期與來源」。</li>
+    <li>只用發行商與交易所的官方公開資料；抓不到成分股的 ETF 會標「暫不支援拆解」並以整檔列出，不會用猜的。</li>
+    <li>只把股票（含不動產投資信託、存託憑證）算成公司持股；現金、債券、期貨、選擇權、股票連結票據（例如 JEPI 的 ELN）都計入「非股票資產」。ETF 內的指數期貨多單屬指數曝險，未拆成個股，會在「資料日期與來源」註明比例。</li><li>發行商沒有提供持股檔的債券型、商品型 ETF，依名稱或代號（台股代號結尾 B、U）判定為不持有股票。</li>
+    <li>股數模式的價格：台股用證交所／櫃買中心最近一次收盤價；美股用 Nasdaq 篩選器的快照價（接近收盤，不一定是正式收盤價）。都不是即時價，可在「價格」欄手動修改。</li>
+    <li>本工具僅供了解持股組成，不構成投資建議。</li>
+  </ul>
+</div>
+<aside>
+  <div class="side toc"><h3>本頁內容</h3><ul><li><a href="#sum">拆解結果</a></li><li><a href="#top">前 15 大公司</a></li><li><a href="#detail">完整明細</a></li><li><a href="#ov">ETF 重疊度</a></li><li><a href="#src">資料日期與來源</a></li><li><a href="#how">計算方式與限制</a></li></ul></div>
+  <div class="side"><h3>資料來源（官方）</h3><ul><li>美股 ETF 成分股：State Street SPDR、iShares、Vanguard、Invesco、VanEck、ARK、J.P. Morgan（JEPI、JEPQ）官網持股檔</li><li>台股 ETF 成分股：元大、永豐、復華、群益、統一投信官網；國泰投信以其公布的標的指數權重近似</li><li>價格：證交所、櫃買中心收盤價；美股為 Nasdaq 篩選器快照價；匯率：Yahoo TWD=X</li></ul></div>
+  <div class="side"><h3>相關頁面</h3><ul><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div>
+</aside>
+</div></div></div>
+<script src="assets/site.js?v=4771a894fc"></script><script src="assets/charts.js?v=52553baf3c"></script><script src="assets/lt-engine.js?v=195721ecd2"></script><script src="assets/lt-ui.js?v=c593a8d684"></script>
+</main>
+<footer class="site-foot">
+  <div class="wrap foot-grid">
+    <div class="foot-brand"><a class="mark" href="index.html" aria-label="BNASDAQ 首頁"><span class="word">B<b>NASDAQ</b></span></a></div>
+    <nav class="foot-col" aria-label="策略與研究"><h4>策略與研究</h4><ul><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="research.html">研究與回測</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></nav>
+    <nav class="foot-col" aria-label="分析工具"><h4>分析工具</h4><ul><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html" aria-current=page>投資組合透視</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li></ul></nav>
+    <nav class="foot-col" aria-label="資訊與帳戶"><h4>資訊與帳戶</h4><ul><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li><li><a href="search.html">站內搜尋</a></li><li><a href="login.html" data-acct>登入／會員專區</a></li></ul></nav>
+  </div>
+  <div class="wrap disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
+  <div class="legal"><div class="wrap"><span>© 2026 BNASDAQ</span><span>回測資料終點 2026-09-30；過去績效不代表未來報酬。</span></div></div>
+</footer>
+</body>
+</html>
