@@ -8,14 +8,16 @@
   data/lt/meta.json：各來源抓取結果、涵蓋率、資料日期
 來源（全部官方）
   美股清單與價格：Nasdaq 股票／ETF 篩選器（api.nasdaq.com）
-  美股 ETF 持股：State Street SPDR（每日 xlsx）、iShares（每日 csv）、Vanguard（月底 json）、Invesco（每日 json）、VanEck（每日 xlsx）
-  台股 ETF 持股：元大投信（持股權重）、富邦投信（申購買回清單）
+  美股 ETF 持股：State Street SPDR（每日 xlsx）、iShares（每日 csv）、Vanguard（月底 json）、Invesco（每日 json；代號→CUSIP 用官網產品頁）、
+                VanEck（每日 xlsx）、ARK（每日 csv）、J.P. Morgan（JEPI、JEPQ 每日 xlsx）
+  台股 ETF 持股：元大（持股權重）、永豐（申購買回清單）、復華（基金資產明細）、群益（申購買回清單）、統一（基金資產明細）、
+                國泰（公布的標的指數權重，以此近似）
 口徑
-  權重＝占基金淨資產 %（發行商公布值）；只保留股票類持股，其餘（現金、債券、期貨、交換合約）計入「非股票」
+  權重＝占基金淨資產 %（發行商公布值）；只保留股票類持股，其餘（現金、債券、期貨、交換合約、股票連結票據）計入「非股票」
   公司代號：美股用股票代號；台股用 4 碼代號（ISIN 為 TW000xxxx… 或美國存託憑證 TSM、UMC 等對照表）；其他國家用 ISIN
 用法：python3 scripts/fetch_lookthrough.py [--only universe,us,tw] [--codes SPY,0050] [--max N]
 """
-import os, re, io, sys, csv, json, time, argparse, datetime as dt, urllib.request, urllib.error, urllib.parse, http.cookiejar, subprocess, tempfile
+import os, re, io, sys, csv, json, time, html, argparse, datetime as dt, urllib.request, urllib.error, urllib.parse, http.cookiejar, subprocess, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'lt')
@@ -24,6 +26,8 @@ UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 CJ = http.cookiejar.CookieJar()
 OP = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(CJ))
 TODAY = dt.date.today().isoformat()
+EXTRA = {}     # 來源額外說明（例如期貨部位）→ 寫進該檔 ETF 的 json
+NO_STOCK = set()   # 來源確認「沒有股票持股」（債券、期貨型）→ 寫成非股票，而不是「暫不支援」
 
 
 def log(*a):
@@ -296,8 +300,26 @@ def src_vanguard(code):
     return out, asof, 'Vanguard 月底持股'
 
 
+IVZ_CUSIP = {}
+
+
+def invesco_cusip(code):
+    """Invesco 官網產品頁（?ticker= 會轉到該基金頁）的 <meta name="ticker"> 與 <meta name="cusip">：代號 → CUSIP（持股 API 要用 CUSIP 查）"""
+    if code not in IVZ_CUSIP:
+        t = get('https://www.invesco.com/us/financial-products/etfs/product-detail?audienceType=Investor&ticker=' + urllib.parse.quote(code), tries=2).decode('utf-8', 'replace')
+        tk = re.search(r'<meta name="ticker" content="([^"]+)"', t); cu = re.search(r'<meta name="cusip" content="([0-9A-Z]{9})"', t)
+        if not (tk and cu and norm_us(tk.group(1)) == code):
+            raise RuntimeError('Invesco 產品頁找不到 %s 的 CUSIP' % code)
+        IVZ_CUSIP[code] = cu.group(1)
+    return IVZ_CUSIP[code]
+
+
 def src_invesco(code):
-    j = json.loads(get('https://dng-api.invesco.com/cache/v1/accounts/en_US/shareclasses/%s/holdings/fund?idType=ticker&interval=monthly&productType=ETF' % code))
+    if code == 'QQQ':
+        url = 'https://dng-api.invesco.com/cache/v1/accounts/en_US/shareclasses/QQQ/holdings/fund?idType=ticker&interval=monthly&productType=ETF'
+    else:
+        url = 'https://dng-api.invesco.com/cache/v1/accounts/en_US/shareclasses/%s/holdings/fund?idType=cusip&productType=ETF' % invesco_cusip(code)
+    j = json.loads(get(url, tries=2))
     out = []
     for h in j.get('holdings') or []:
         w = num(h.get('percentageOfTotalNetAssets'))
@@ -350,6 +372,40 @@ def src_ark(code):
         cus = (r.get('cusip') or '').strip()
         out.append(dict(t=tk, name=r.get('company'), isin='US' + cus if re.match(r'^[0-9][0-9A-Z]{8}$', cus) else '', country='', w=w, sec=''))
     return out, asof, 'ARK Invest 每日持股'
+
+
+# J.P. Morgan：每日持股 Excel 以 CUSIP 下載；只收錄已核對過的兩檔（檔案標題同時寫出基金名稱與 CUSIP，抓取時再比對一次）
+JPM = {'JEPI': ('46641Q332', 'JPMorgan Equity Premium Income ETF'), 'JEPQ': ('46654Q203', 'JPMorgan Nasdaq Equity Premium Income ETF')}
+
+
+def src_jpm(code):
+    cus, title = JPM[code]
+    b = get('https://am.jpmorgan.com/FundsMarketingHandler/excel?type=dailyETFHoldings&cusip=%s&country=us&role=adv&locale=en-US' % cus, tries=2)
+    if b[:2] != b'PK':
+        raise RuntimeError('J.P. Morgan 沒有回傳 Excel')
+    rows = xlsx_rows(b)
+    head = next((r for r in rows[:12] if r and r[0] == 'Holdings'), None)
+    if not head or cus not in str(head[1] or '') or title.replace(' ETF', '') not in str(head[1] or ''):
+        raise RuntimeError('J.P. Morgan 檔案標題不符：%s' % (head and head[1]))
+    asof = ''
+    m = re.search(r'(\d{2})/(\d{2})/(\d{4})', str(head[2] or ''))
+    if m:
+        asof = '%s-%s-%s' % (m.group(3), m.group(1), m.group(2))
+    hi = next(i for i, r in enumerate(rows) if r and r[0] == 'Ticker' and '% of Net Assets' in r)
+    H = rows[hi]; ix = {k: H.index(k) for k in H if k}
+    body = [r for r in rows[hi + 1:] if r and len(r) > ix['% of Net Assets'] and num(r[ix['% of Net Assets']]) is not None]
+    tot = sum(num(r[ix['% of Net Assets']]) for r in body)
+    scale = 100.0 if 0.5 < tot < 1.5 else 1.0 if 50 < tot < 150 else None   # 欄位可能是小數（0.0204）或百分比（2.04）
+    if scale is None:
+        raise RuntimeError('J.P. Morgan 權重合計 %.4f 不合理' % tot)
+    out = []
+    for r in body:
+        typ = str(r[ix['Security Type']] or '').upper().strip(); t = r[ix['Ticker']]
+        if not t or not ('COMMON STOCK' in typ or typ in ('REIT', 'ADR', 'PREFERRED STOCK')):
+            continue   # 股票連結票據（ELN）、貨幣市場基金、現金、期貨 → 非股票
+        out.append(dict(t=t, name=r[ix['Security Description']], isin='', country=str(r[ix['Country']] or '').strip(), w=num(r[ix['% of Net Assets']]) * scale,
+                        sec=sector_zh(r[ix['Sector']]) if 'Sector' in ix else ''))
+    return out, asof, 'J.P. Morgan 每日持股'
 
 
 # ---------------------------------------------------------------- 寫檔
@@ -406,20 +462,22 @@ def run_us(U, only_codes, maxn, report):
             plan.append((c, 'SSGA', src_ssga))
         elif re.search(r'\bVanguard\b', n):
             plan.append((c, 'Vanguard', src_vanguard))
-        elif c == 'QQQ':
-            plan.append((c, 'Invesco', src_invesco))   # Invesco 的 API 只有 QQQ 可用（其餘回傳 500）；QQQM 沿用 QQQ
+        elif c == 'QQQ' or re.search(r'\bInvesco\b', n):
+            plan.append((c, 'Invesco', src_invesco))   # QQQ 用代號查；其餘先從官網產品頁取得 CUSIP 再查（QQQM 沿用 QQQ）
         elif c in ARK:
             plan.append((c, 'ARK', src_ark))
         elif re.search(r'\bVanEck\b', n):
             plan.append((c, 'VanEck', src_vaneck))
+        elif c in JPM:
+            plan.append((c, 'JPMorgan', src_jpm))
     if maxn:
         plan = plan[:maxn]
-    log('US plan', len(plan), {k: sum(1 for p in plan if p[1] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', 'ARK')})
+    log('US plan', len(plan), {k: sum(1 for p in plan if p[1] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', 'ARK', 'JPMorgan')})
     for i, (c, who, fn) in enumerate(plan):
         try:
             rows, asof, src = fn(c)
             if rows:
-                extra = None
+                extra = EXTRA.pop(c, None)
                 if who == 'Vanguard' and c in VG_META and VG_META[c][1] > VG_META[c][0]:
                     extra = dict(partial=1, listed=VG_META[c][0], total=VG_META[c][1])
                 eq = finalize(c, rows, asof, src, U, extra)
@@ -617,6 +675,58 @@ def src_cathay(code):
     return out, str(r.get('date') or '').replace('/', '-'), '國泰投信 公布的標的指數成分股權重（以指數權重近似實際持股）'
 
 
+UNI = {}
+
+
+def uni_list():
+    """統一投信 ETF 首頁：內部代號（例如 49YTW）↔ 證券代號（例如 00981A）"""
+    if not UNI:
+        t = get('https://www.ezmoney.com.tw/ETF/').decode('utf-8', 'replace')
+        for fc, code in re.findall(r'fundCode=(\w+)"[^>]*>\s*([0-9]{4,6}[A-Z]?)\s', t, re.I):
+            UNI.setdefault(code.strip().upper(), fc)
+        log('統一', len(UNI), sorted(UNI))
+    return UNI
+
+
+def src_uni(code):
+    """統一：基金頁內嵌的資產明細（股票逐檔的金額與占淨資產比率；期貨另列名目本金）"""
+    fc = uni_list()[code]
+    t = get('https://www.ezmoney.com.tw/ETF/Fund/Info?FundCode=' + fc).decode('utf-8', 'replace')
+    m = re.search(r'"sFundCode"\s*:\s*"%s"\s*,\s*"sFundName"\s*:\s*"[^"]*"\s*,\s*"sFundShortName"\s*:\s*"([^"]*)"' % fc, html.unescape(t))
+    if not m or m.group(1).strip().split(' ')[0] != code:
+        raise RuntimeError('統一基金頁代號不符：%s' % (m and m.group(1)))
+    m = re.search(r'="(\[\{&quot;FundCode&quot;:&quot;%s&quot;,&quot;AssetCode&quot;:&quot;NAV&quot;.*?\])"' % fc, t, re.S)
+    if not m:
+        raise RuntimeError('統一基金頁沒有資產明細')
+    A = json.loads(html.unescape(m.group(1)))
+    nav = next((num(a.get('Value')) or 0 for a in A if a.get('AssetCode') == 'NAV'), 0)
+    out, asof, fut = [], '', []
+    for a in A:
+        for d in a.get('Details') or []:
+            asof = asof or str(d.get('TranDate') or '')[:10]
+            w = num(d.get('NavRate'))
+            if a.get('AssetCode') == 'GD':
+                if w:
+                    fut.append('%s%s %.2f%%' % (str(d.get('DetailName') or d.get('DetailCode') or '').strip(), '多單' if d.get('Position') == 'B' else '空單', w))
+                continue
+            if a.get('AssetCode') != 'ST':
+                continue
+            c = re.sub(r'\s+', ' ', str(d.get('DetailCode') or '')).strip(); amt = num(d.get('Amount'))
+            if d.get('MoneyType') == 'NTD' and nav > 0 and amt is not None:
+                w2 = amt / nav * 100   # 台幣部位用「金額 ÷ 淨資產」取得更多位數；與公布的比率（兩位小數）差超過 0.006 就用公布值
+                if w is None or abs(w2 - w) <= 0.006:
+                    w = w2
+            if w is None or not c:
+                continue
+            us = re.match(r'^([A-Z][A-Z0-9./-]{0,6}) (US|UW|UN|UQ|UA|UR|UP)$', c); tw = re.match(r'^(\d{4})(?: TT)?$', c)
+            out.append(dict(t=us.group(1) if us else tw.group(1) if tw else c, name=d.get('DetailName'), isin='', country='United States' if us else ('Taiwan' if tw else ''), w=w, sec=''))
+    if fut:
+        EXTRA[code] = dict(note='統一投信 基金資產明細；另有期貨部位（名目本金占淨資產）：' + '、'.join(fut) + '，屬指數曝險，未拆成個股')
+    if not out and A:
+        NO_STOCK.add(code)
+    return out, asof, '統一投信 基金資產明細'
+
+
 SINOPAC = ['00930', '00907', '00901', '00888', '00887', '00886', '00858', '006204', '00410A']
 
 
@@ -652,15 +762,24 @@ def run_tw(U, only_codes, report):
                 plan.append((c, '復華', src_fuhhwa))
     except Exception as e:  # noqa
         log('復華 scan failed', repr(e)[:150])
+    try:
+        for c in sorted(uni_list()):
+            if not skip(c):
+                plan.append((c, '統一', src_uni))
+    except Exception as e:  # noqa
+        log('統一 list failed', repr(e)[:150])
     if only_codes:
         plan = [p for p in plan if p[0] in only_codes]
-    log('TW plan', len(plan))
+    log('TW plan', len(plan), {k: sum(1 for p in plan if p[1] == k) for k in ('元大', '永豐', '群益', '國泰', '復華', '統一')})
     for c, who, fn in plan:
         try:
             rows, asof, src = fn(c)
             if rows:
-                eq = finalize(c, rows, asof, src, U)
+                eq = finalize(c, rows, asof, src, U, EXTRA.pop(c, None))
                 report['ok'][c] = [who, asof, len(rows), eq]
+            elif c in NO_STOCK:
+                write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=U[c][1], asof=asof or TODAY, src=src + '（無股票持股：債券、期貨或現金型）', eq=0, n=0, h=[]))
+                report['ok'][c] = [who, asof, 0, 0]
             else:
                 report['empty'][c] = who
         except Exception as e:  # noqa
@@ -723,7 +842,7 @@ def main():
     cov = lambda mk: (sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US') and x[5]), sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US')))
     meta = dict(updated=TODAY, coverage={'US': cov('US'), 'TW': cov('TW')}, ok=len(report['ok']), fail=report['fail'], empty=report['empty'], derived=report['derived'],
                 derived_missing=report['derived_missing'], bond_guess=len(report['bond_guess']),
-                sources={k: sum(1 for v in report['ok'].values() if v[0] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', 'ARK', '元大', '永豐', '復華', '國泰', '群益')})
+                sources={k: sum(1 for v in report['ok'].values() if v[0] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', 'ARK', 'JPMorgan', '元大', '永豐', '復華', '國泰', '群益', '統一')})
     if only & {'us', 'tw'}:
         write_json(os.path.join(OUT, 'meta.json'), meta)   # 只更新價格時保留上一次成分股的抓取紀錄
     log('done: ETF files', len(files), 'coverage', meta['coverage'], 'sources', meta['sources'], 'fail', len(report['fail']))
