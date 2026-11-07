@@ -463,7 +463,7 @@ def finalize(code, rows, asof, src, U, extra=None):
             note = '持股檔同時列出子基金（%s）與其成分股，已只計成分股' % '、'.join(x[0] for x in sub[:5])
     if eq > 105 or any(x[1] < -0.5 for x in h):   # 股票可略高於 100%（負現金、待交割）；更高或有大額負值多半是格式改變，寧可不發布
         raise ValueError('權重加總 %.2f%% 不合理，不發布（保留前一版）' % eq)
-    d = dict(code=code, name=(U.get(code) or [code, code])[1], asof=asof or TODAY, src=src, eq=eq, n=len(h), h=h)
+    d = dict(code=code, name=(U.get(code) or [code, code])[1], asof=asof or '', src=src, eq=eq, n=len(h), h=h)
     if note:
         d['note'] = src + '；' + note
     if extra:
@@ -521,7 +521,7 @@ def run_us(U, only_codes, maxn, report):
                 eq = finalize(c, rows, asof, src, U, extra)
                 report['ok'][c] = [who, asof, len(rows), eq]
             elif c in NO_STOCK or BOND_RE.search(U[c][1]) or (COMMODITY_RE.search(U[c][1]) and not EQUITY_WORDS.search(U[c][1])):
-                write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=U[c][1], asof=asof or TODAY, src=src + '（無股票持股：債券、商品或現金型）', eq=0, n=0, h=[]))
+                write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=U[c][1], asof=asof or '', src=src + '（無股票持股：債券、商品或現金型）', eq=0, n=0, h=[]))   # 發行商檔案沒有日期就留空，不用抓取日冒充
                 report['ok'][c] = [who, asof, 0, 0]
             else:
                 report['empty'][c] = who
@@ -822,7 +822,7 @@ def run_tw(U, only_codes, report):
                 eq = finalize(c, rows, asof, src, U, EXTRA.pop(c, None))
                 report['ok'][c] = [who, asof, len(rows), eq]
             elif c in NO_STOCK:
-                write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=U[c][1], asof=asof or TODAY, src=src + '（無股票持股：債券、期貨或現金型）', eq=0, n=0, h=[]))
+                write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=U[c][1], asof=asof or '', src=src + '（無股票持股：債券、期貨或現金型）', eq=0, n=0, h=[]))
                 report['ok'][c] = [who, asof, 0, 0]
             else:
                 report['empty'][c] = who
@@ -852,10 +852,10 @@ def run_derived(U, report):
             continue
         nm = v[1] or ''
         if (v[2] in ('TW', 'TWO') and c.endswith('B')) or (v[2] == 'US' and BOND_RE.search(nm)):
-            write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=nm, asof=TODAY, src='債券型 ETF（依名稱或代號判定）：不持有股票', eq=0, n=0, h=[], guess=1))
+            write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=nm, asof='', src='債券型 ETF（依名稱或代號判定）：不持有股票', eq=0, n=0, h=[], guess=1))
             report['bond_guess'].append(c)
         elif (v[2] in ('TW', 'TWO') and c.endswith('U')) or (v[2] == 'US' and COMMODITY_RE.search(nm) and not EQUITY_WORDS.search(nm)):
-            write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=nm, asof=TODAY, src='商品、期貨或加密資產型 ETF（依名稱或代號判定）：不持有股票', eq=0, n=0, h=[], guess=1))
+            write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=nm, asof='', src='商品、期貨或加密資產型 ETF（依名稱或代號判定）：不持有股票', eq=0, n=0, h=[], guess=1))
             report['bond_guess'].append(c)
 
 
