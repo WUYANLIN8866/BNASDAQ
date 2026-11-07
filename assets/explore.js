@@ -66,7 +66,7 @@
     const st = statusInfo(d), age = Math.max(0, Math.round(ageMin(d.updated_at)));
     $('xp-status').className = 'xp-status ' + st.cls;
     $('xp-status').innerHTML = `<span class="xp-dot" aria-hidden="true"></span><b>${esc(st.text)}</b>` +
-      `<span class="xp-meta">${d.machines > 1 ? d.machines + ' 台機器同時運算・' : ''}最後更新 ${tpe(d.updated_at)}（台北時間）・${age < 1 ? '不到 1 分鐘前' : age + ' 分鐘前'}・本頁每 60 秒自動更新</span>`;
+      `<span class="xp-meta">${d.machines > 1 ? d.machines + ' 台 AI Server 同時運算・' : ''}最後更新 ${tpe(d.updated_at)}（台北時間）・${age < 1 ? '不到 1 分鐘前' : age + ' 分鐘前'}・本頁每 60 秒自動更新</span>`;
   }
 
   // a long plain number stays on one line and shrinks only when its tile is too narrow (cqi = 1% of the tile's inner
@@ -88,7 +88,7 @@
       tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap != null ? `，還差 ${gap.toFixed(2)} 個百分點` : ''}`),
       tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
       // tokens used by the AI session that runs the search on machine 1 (user request 2026-11-07), plain numbers
-      d.tokens && d.tokens.total != null ? `<div class="tile xp-tok"><div class="k">AI 已使用 token 數量（所有機器合計）</div>` +
+      d.tokens && d.tokens.total != null ? `<div class="tile xp-tok"><div class="k">AI 已使用 token 數量（所有 AI Server 合計）</div>` +
         `<div class="v">${full(d.tokens.total)}</div></div>` : '',          // total only (user 12:30: no per-machine figures)
     ].join('');
     // progress bar of the active stage
