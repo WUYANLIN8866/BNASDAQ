@@ -157,7 +157,7 @@ function render(d){
   d.indices.slice(0,5).forEach(ix=>{h+=`<div class="tile"><div class="k"><b>${esc(ix.name)}</b> ${esc(ix.key)}</div><div class="v ${cls(ix.chg)}">${pct(ix.chg)}</div><div class="s">收 ${fmt(ix.close,2)}｜一週 ${pct(ix.wk)}</div></div>`;});
   h+=`</div>`;
   h+=`<div class="fig"><div class="fsub">單日漲跌幅（${esc(d.session)} 收盤）</div>${barChart(d.indices.map(i=>({name:i.name,chg:i.chg})))}<p class="fnote">虛線為 ±50%／±100% 刻度（以當日最大跌幅為 100%）。</p></div>`;
-  h+=`<div class="tblwrap"><table class="tbl"><caption>五大指數＋那斯達克綜合：收盤、單日、一週（vs 上週五 10/30）</caption><thead><tr><th>指數</th><th>收盤</th><th>單日</th><th>上週五收盤</th><th>一週</th><th class="l">備註</th></tr></thead><tbody>`;
+  h+=`<div class="tblwrap"><table class="tbl"><caption>五大指數＋那斯達克綜合：收盤、單日、一週（vs 上週五 ${esc((d.weekly.cols||['10/30'])[0])}）</caption><thead><tr><th>指數</th><th>收盤</th><th>單日</th><th>上週五收盤</th><th>一週</th><th class="l">備註</th></tr></thead><tbody>`;
   d.indices.forEach(ix=>{const wk=(ix.close/ix.prev_week-1)*100;h+=`<tr><td>${esc(ix.name)}<span class="tagfix" style="font-size:11px;color:var(--muted);margin-left:6px">${esc(ix.key)}</span></td><td>${fmt(ix.close,2)}</td><td class="${cls(ix.chg)}">${pct(ix.chg)}</td><td>${fmt(ix.prev_week,2)}</td><td class="${cls(wk)}">${pct(wk)}</td><td class="l" style="white-space:normal;min-width:240px">${esc(ix.note)}</td></tr>`;});
   h+=`</tbody><tfoot><tr><td colspan="6">一週欄位由收盤÷上週五收盤現算；資料來源見頁尾。</td></tr></tfoot></table></div>`;
   // 2. big move
@@ -168,21 +168,22 @@ function render(d){
   } else { h+=`<p class="lead">${esc(d.big_move.intro||'當日五大指數漲跌皆未超過 2%，本節不啟用。')}</p>`; }
   // 3. weekly
   h+=`<h2 id="week">3. 美國股市、匯市、債市近一週趨勢（${esc(d.weekly.range)}）</h2>`;
-  h+=`<div class="fig"><div class="fsub">本週累積走勢（10/30 收盤＝100，逐日單日漲跌累乘）</div>${lineChart(d.week_path)}<p class="fnote">那指 100 與費半缺每日收盤公開來源，僅以週線呈現於下表。</p></div>`;
-  h+=wkTable(d.weekly.stock,['指數','10/30','11/05','一週']);
-  h+=wkTable(d.weekly.fx,['匯率','10/30','11/05','一週']);
-  h+=wkTable(d.weekly.bond,['期限','10/30','11/05','變化']);
-  h+=wkTable(d.weekly.other,['商品','10/30','11/05','一週']);
+  h+=`<div class="fig"><div class="fsub">本週累積走勢（${esc(d.week_path.dates[0])} 收盤＝100，逐日單日漲跌累乘）</div>${lineChart(d.week_path)}<p class="fnote">${esc(d.week_path.note||'那指 100 與費半缺每日收盤公開來源，僅以週線呈現於下表。')}</p></div>`;
+  const WC=d.weekly.cols||['10/30','11/05'];
+  h+=wkTable(d.weekly.stock,['指數',WC[0],WC[1],'一週']);
+  h+=wkTable(d.weekly.fx,['匯率',WC[0],WC[1],'一週']);
+  h+=wkTable(d.weekly.bond,['期限',WC[0],WC[1],'變化']);
+  h+=wkTable(d.weekly.other,['商品',WC[0],WC[1],'一週']);
   // 4. events
   h+=`<h2 id="events">4. 最近 24 小時國際大事</h2><div class="evt">`;
   d.events.forEach(g=>{h+=`<h3>${esc(g.cat)}</h3><ul>${g.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;});
   h+=`</div>`;
   // 5. mega
   h+=`<h2 id="mega">5. 市值逾一兆美元企業：新聞、影響、受惠／受害</h2><p class="lead">${esc(d.mega.intro)}</p>`;
-  h+=`<div class="tblwrap"><table class="tbl"><caption>一覽：市值、股價、一週變化</caption><thead><tr><th>代號</th><th class="l">公司</th><th>市值（美元）</th><th>股價</th><th>一週</th><th class="l">一句話</th></tr></thead><tbody>`;
+  h+=`<div class="tblwrap"><table class="tbl"><caption>一覽：市值、股價、${esc(d.mega.wk_label||'一週')}變化</caption><thead><tr><th>代號</th><th class="l">公司</th><th>市值（美元）</th><th>股價</th><th>${esc(d.mega.wk_label||'一週')}</th><th class="l">一句話</th></tr></thead><tbody>`;
   d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<tr><td><a href="#m-${esc(r.t).replace(/\W/g,'')}">${esc(r.t)}</a></td><td class="l">${esc(r.n)}</td><td>${esc(r.cap)}</td><td>${esc(r.px)}</td><td class="${isNaN(w)?'':cls(w)}">${esc(r.wk)}</td><td class="l" style="white-space:normal;min-width:220px">${esc(r.impact)}</td></tr>`;});
   h+=`</tbody></table></div><div class="mega">`;
-  d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm"><span>市值 ${esc(r.cap)}</span><span>股價 ${esc(r.px)}</span><span class="${isNaN(w)?'':cls(w)}">一週 ${esc(r.wk)}</span></div></div><p class="mn"><b>新聞</b>${esc(r.news)}</p><p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div></div>`;});
+  d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm"><span>市值 ${esc(r.cap)}</span><span>股價 ${esc(r.px)}</span><span class="${isNaN(w)?'':cls(w)}">${esc(d.mega.wk_label||'一週')} ${esc(r.wk)}</span></div></div><p class="mn"><b>新聞</b>${esc(r.news)}</p><p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div></div>`;});
   h+=`</div><p class="small" style="color:var(--muted);font-size:13px">受惠／受害為依新聞內容推論的方向性判斷，不是投資建議；「—」代表無明確對象。</p>`;
   // sources
   h+=`<h2 id="src">資料來源</h2><ol class="src">${d.sources.map(s=>`<li><a href="${esc(s.u)}" rel="noopener" target="_blank">${esc(s.t)}</a></li>`).join('')}</ol>`;
