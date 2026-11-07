@@ -82,6 +82,22 @@ try:
     m.src_invesco('SPLV'); sys.exit('Invesco 代號比對失效')
 except RuntimeError:
     pass
+# VanEck：舊網址轉到產品頁 → 產品頁的 /downloads/holdings/；債券型（沒有代號欄）＝確認無股票；產品頁 404 ＝不支援
+import urllib.error
+def ve_xlsx(header, row):
+    wb = openpyxl.Workbook(); ws = wb.active; ws.append(['Daily Holdings (%)  11/05/2026']); ws.append([]); ws.append(header); ws.append(row); b = io.BytesIO(); wb.save(b); return b.getvalue()
+PAGES['https://www.vaneck.com/us/en/etf/equity/remx/holdings/download/xlsx/'] = b'<html>retail-etf-rth</html>'
+PAGES['https://www.vaneck.com/us/en/investments/remx/holdings/'] = b'<a href="/us/en/investments/rare-earth-strategic-metals-etf-remx/downloads/holdings/">x</a>'
+PAGES['https://www.vaneck.com/us/en/investments/rare-earth-strategic-metals-etf-remx/downloads/holdings/'] = ve_xlsx(['Number', 'Ticker', 'Holding Name', 'Identifier (FIGI)', 'Shares', 'Asset Class', 'Market Value (US$)', 'Notional Value', '% of Net Assets'], [1, 'MP', 'MP Materials Corp', 'BBG', '1', 'Stock', '$1', ' -- ', '8.12%'])
+rows, asof, src = m.src_vaneck('REMX'); assert asof == '2026-11-05' and [(r['t'], r['w']) for r in rows] == [('MP', 8.12)], rows
+PAGES['https://www.vaneck.com/us/en/etf/equity/hyd/holdings/download/xlsx/'] = ve_xlsx(['Number', 'Holding Name', 'Coupon', 'Maturity', '% of Net Assets'], [1, 'NY MUNI', '5%', '2040', '0.5%'])
+rows, asof, src = m.src_vaneck('HYD'); assert rows == [] and 'HYD' in m.NO_STOCK
+_get = m.get
+def g404(url, **kw):
+    if 'investments/trux/holdings' in url: raise urllib.error.HTTPError(url, 404, 'Not Found', None, None)
+    if 'etf/equity/trux' in url: return b'<html></html>'
+    return _get(url, **kw)
+m.get = g404; rows, asof, src = m.src_vaneck('TRUX'); assert rows == [] and 'TRUX' not in m.NO_STOCK; m.get = _get
 # 母基金同時列出子基金與其成分股（約 200%）→ 只留成分股；股票略高於 100%（負現金）可發布；150% 仍擋下
 m.ETF_DIR = tempfile.mkdtemp()
 UF = {'EFA': ['EFA', 'iShares MSCI EAFE ETF', 'US', 'E', 90, ''], 'HEFA': ['HEFA', 'x', 'US', 'E', 40, ''], 'X': ['X', 'x', 'US', 'E', 1, '']}

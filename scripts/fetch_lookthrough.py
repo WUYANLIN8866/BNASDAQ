@@ -255,7 +255,7 @@ def src_ishares(code):
     m = re.search(r'Fund Holdings as of,"?([A-Za-z]{3} \d{1,2}, \d{4})', t)
     if m:
         asof = dt.datetime.strptime(m.group(1), '%b %d, %Y').date().isoformat()
-    hi = next((i for i, l in enumerate(lines) if l.startswith('Ticker,') or l.startswith('"Ticker"')), None)
+    hi = next((i for i, l in enumerate(lines) if l.startswith('Ticker,') or l.startswith('"Ticker"') or (',Asset Class,' in l or ',"Asset Class",' in l)), None)
     if hi is None:
         return [], asof, 'iShares 每日持股'
     out, n = [], 0
@@ -343,11 +343,17 @@ def src_vaneck(code):
     b = get('https://www.vaneck.com/us/en/etf/equity/%s/holdings/download/xlsx/' % code.lower())
     if b[:2] != b'PK':   # 舊網址不適用（會轉到產品頁、甚至別檔基金）：改到該檔產品頁，找「/downloads/holdings/」正式下載網址
         c = re.escape(code.lower())
-        t = get('https://www.vaneck.com/us/en/investments/%s/holdings/' % code.lower(), tries=2).decode('utf-8', 'replace')
+        try:
+            t = get('https://www.vaneck.com/us/en/investments/%s/holdings/' % code.lower(), tries=2).decode('utf-8', 'replace')
+        except urllib.error.HTTPError:
+            return [], '', 'VanEck 每日持股'   # 官網沒有這檔的產品頁
         cand = re.findall(r'href="(/us/en/(?:investments/[a-z0-9-]+-%s/downloads/holdings/|etf/(?!equity/)[a-z-]+/%s/holdings/download/xlsx/))"' % (c, c), t)
         cand += ['/us/en/investments/%s/downloads/holdings/' % sl for sl in re.findall(r'/us/en/investments/([a-z0-9-]+-%s)/' % c, t)]
         for l in list(dict.fromkeys(cand))[:3]:
-            b = get('https://www.vaneck.com' + l, tries=2)
+            try:
+                b = get('https://www.vaneck.com' + l, tries=2)
+            except urllib.error.HTTPError:
+                continue
             if b[:2] == b'PK':
                 break
     if b[:2] != b'PK':
@@ -357,11 +363,15 @@ def src_vaneck(code):
     m = re.search(r'(\d{2})/(\d{2})/(\d{4})', str(rows[0][0] if rows and rows[0] else ''))
     if m:
         asof = '%s-%s-%s' % (m.group(3), m.group(1), m.group(2))
-    hi = next(i for i, r in enumerate(rows) if r and 'Ticker' in r and '% of Net Assets' in r)
+    hi = next((i for i, r in enumerate(rows) if r and 'Ticker' in r and '% of Net Assets' in r), None)
+    if hi is None:
+        if any(r and '% of Net Assets' in r for r in rows[:10]):
+            NO_STOCK.add(code)   # 有持股表、沒有股票代號欄＝債券型：確認沒有股票持股
+        return [], asof, 'VanEck 每日持股'
     H = rows[hi]; ix = {k: H.index(k) for k in H if k}
     out = []
     for r in rows[hi + 1:]:
-        if not r or r[ix['Ticker']] in (None, ''):
+        if not r or len(r) <= max(ix.values()) or r[ix['Ticker']] in (None, ''):
             continue
         if str(r[ix.get('Asset Class', 5)] or '').strip() not in ('Stock', 'Equity'):
             continue
