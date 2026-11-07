@@ -89,10 +89,7 @@
       tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
       // tokens used by the AI session that runs the search on machine 1 (user request 2026-11-07), plain numbers
       d.tokens && d.tokens.total != null ? `<div class="tile xp-tok"><div class="k">AI 已使用 token 數量（所有機器合計）</div>` +
-        `<div class="v">${full(d.tokens.total)}</div>` +
-        (d.tokens.m1 != null ? `<div class="s">第 1 台 ${full(d.tokens.m1)}・第 2 台 ${d.tokens.m2 != null ? full(d.tokens.m2) : '尚未回報'}</div>` : '') +
-        `<div class="s">輸入 ${full(d.tokens.input)}・寫入快取 ${full(d.tokens.cache_write)}・` +
-        `讀取快取 ${full(d.tokens.cache_read)}・輸出 ${full(d.tokens.output)}</div></div>` : '',
+        `<div class="v">${full(d.tokens.total)}</div></div>` : '',          // total only (user 12:30: no per-machine figures)
     ].join('');
     // progress bar of the active stage
     const p = d.stage_pct || 0;
