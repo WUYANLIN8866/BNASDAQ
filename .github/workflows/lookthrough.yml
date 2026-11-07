@@ -37,7 +37,7 @@ jobs:
           if [ "${{ github.event.schedule }}" = "20 22 * * 1-5" ]; then ONLY=universe; fi
           if [ -n "$ONLY" ]; then python3 scripts/fetch_lookthrough.py --only "$ONLY"; else python3 scripts/fetch_lookthrough.py; fi
       - name: Check calculation engine
-        run: node scripts/lookthrough/test_engine.js
+        run: node scripts/lookthrough/test_engine.js && python3 scripts/lookthrough/test_pipeline.py
       - name: Commit if changed, then redeploy the site
         env:
           GH_TOKEN: ${{ github.token }}
