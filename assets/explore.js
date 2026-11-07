@@ -20,6 +20,7 @@
     return nf.format(v);
   };
   const count = v => big(v, 2);
+  const full = v => v == null ? '—' : nf.format(v);   // plain number, no 萬／億／兆 unit (user request 2026-11-07)
   const tpe = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso || ''); return m ? `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}` : '—'; };
   const ageMin = iso => (Date.now() - Date.parse(iso)) / 60000;
   let DATA = null, lastKey = '';
@@ -79,7 +80,7 @@
     const gap = d.gap_pp == null ? null : d.gap_pp;
     $('xp-kv').innerHTML = [
       tile('本階段進度', pct(d.stage_pct, 1), d.stage ? esc(d.stage) : '—'),
-      tile('累計已回測', big(d.tested) + '組', `涵蓋 ${count(d.types_tested)}種方法組合`),
+      tile('累計已回測組數', full(d.tested), `涵蓋 ${full(d.types_tested)} 種方法組合`),
       tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap != null ? `，還差 ${gap.toFixed(2)} 個百分點` : ''}`),
       tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
     ].join('');
@@ -90,7 +91,7 @@
     $('xp-fill').style.width = Math.min(100, Math.max(0, p * 100)).toFixed(2) + '%';
     $('xp-track').setAttribute('aria-valuenow', (p * 100).toFixed(1));
     const eta = d.eta_min != null && d.status === 'running' ? `；以目前速度，本階段約還需 ${(d.eta_min / 60).toFixed(1)} 小時運算` : '';
-    $('xp-sub').textContent = d.stage_types_done != null ? `已完成 ${count(d.stage_types_done)}／${count(d.stage_types_total)}種方法組合${eta}` : '';
+    $('xp-sub').textContent = d.stage_types_done != null ? `已完成 ${full(d.stage_types_done)}／${full(d.stage_types_total)} 種方法組合${eta}` : '';
     // charts
     const H = d.history || [];
     const x = H.map(h => h[0]);
@@ -109,18 +110,16 @@
           { name: '現行最佳模型', short: '現行', values: H.map(() => d.base * 100), color: 'var(--s-shv)', dash: '2 4' },
         ],
       });
-      const maxT = Math.max(...H.map(h => h[1] || 0));
-      const [U, UN] = UNITS.slice(0, 3).find(([u]) => maxT >= u * 10) || [1e8, '億'];   // 億 → 兆 → 京 as the total grows
-      BN.charts.line($('c-tested'), {
-        title: '累計已回測的參數組數', sub: '單位：' + UN + '組', x, xTicks, xLabel, height: 240, zero: true,
-        yfmt: v => nf.format(Math.round(v)), tipfmt: v => big(v * U) + '組',
-        series: [{ name: '累計已回測', values: H.map(h => h[1] / U), color: 'var(--s-qld)', fill: true }],
+      BN.charts.line($('c-tested'), {   // plain numbers on the axis and in the tooltip (user request 2026-11-07)
+        title: '累計已回測的參數組數', x, xTicks, xLabel, height: 240, zero: true, padL: 124,
+        yfmt: v => nf.format(Math.round(v)), tipfmt: v => nf.format(Math.round(v)),
+        series: [{ name: '累計已回測', values: H.map(h => h[1]), color: 'var(--s-qld)', fill: true }],
       });
     }
     // stage table
     const badge = s => `<span class="badge xp-${s === '完成' ? 'done' : s === '進行中' ? 'run' : s === '暫停' ? 'pause' : 'wait'}">${esc(s)}</span>`;
     $('xp-stages').innerHTML = '<thead><tr><th class="l">階段</th><th class="l">狀態</th><th>進度</th><th>已回測組數</th><th>階段最佳年化</th></tr></thead><tbody>' +
-      (d.stages || []).map(s => `<tr><td class="l">${esc(s.name)}</td><td class="l">${badge(s.status)}</td><td>${pct(s.pct, 1)}<div class="xp-mini"><i style="width:${Math.min(100, (s.pct || 0) * 100).toFixed(1)}%"></i></div></td><td>${count(s.tested)}</td><td>${s.best == null ? '—' : pct(s.best)}</td></tr>`).join('') + '</tbody>';
+      (d.stages || []).map(s => `<tr><td class="l">${esc(s.name)}</td><td class="l">${badge(s.status)}</td><td>${pct(s.pct, 1)}<div class="xp-mini"><i style="width:${Math.min(100, (s.pct || 0) * 100).toFixed(1)}%"></i></div></td><td>${full(s.tested)}</td><td>${s.best == null ? '—' : pct(s.best)}</td></tr>`).join('') + '</tbody>';
     // top candidates (combination contents are trading rules and stay private)
     $('xp-top').innerHTML = '<thead><tr><th>名次</th><th>年化報酬率</th><th>與門檻差距</th><th class="l">來源階段</th></tr></thead><tbody>' +
       (d.top || []).map(t => `<tr><td>${t.rank}</td><td>${pct(t.best)}</td><td>${((t.best - d.target) * 100).toFixed(2)} 個百分點</td><td class="l">${esc(t.stage)}</td></tr>`).join('') + '</tbody>';
