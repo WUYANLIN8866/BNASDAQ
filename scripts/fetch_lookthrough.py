@@ -40,7 +40,7 @@ def get(url, headers=None, timeout=60, tries=3, data=None):
                 return r.read()
         except urllib.error.HTTPError as e:
             err = e
-            if e.code in (400, 401, 403, 404, 410):
+            if e.code in (400, 401, 403, 404, 410) or (e.code >= 500 and k >= 1):
                 break
         except Exception as e:  # noqa
             err = e
@@ -108,6 +108,8 @@ LEVER = {
     '00685L': ('006204', 2, '群益臺灣加權正 2（以 006204 × 2 近似）'), '00664R': ('006204', -1, '國泰臺灣加權反 1'), '00676R': ('006204', -1, '富邦臺灣加權反 1'), '00686R': ('006204', -1, '群益臺灣加權反 1'),
     '00669R': ('DIA', -1, '國泰美國道瓊反 1（以 DIA × −1）'), '00852L': ('DIA', 2, '國泰美國道瓊正 2（以 DIA × 2）'),
 }
+COMMODITY_RE = re.compile(r'\b(Gold|Silver|Platinum|Palladium|Bitcoin|Ether|Ethereum|Crypto|Solana|XRP|Oil|Natural Gas|Commodity|Commodities|VIX|Volatility|Futures|Copper)\b', re.I)
+EQUITY_WORDS = re.compile(r'\b(Miners?|Mining|Producers|Exploration|Equity|Equities|Stock|Stocks|Companies|Industry|Sector|Infrastructure|Royalty|Electrification)\b', re.I)
 BOND_RE = re.compile(r'\b(Treasury|T-?Bill|Bond|Municipal|Muni|Aggregate|Fixed Income|MBS|TIPS|Mortgage-Backed|Floating Rate Note|Money Market|Corporate Bond|High Yield)\b', re.I)
 
 
@@ -209,7 +211,9 @@ def src_ssga(code):
             m = re.search(r'(\d{2})-([A-Za-z]{3})-(\d{4})', str(r[1]))
             if m:
                 asof = dt.datetime.strptime(m.group(0), '%d-%b-%Y').date().isoformat()
-    hi = next(i for i, r in enumerate(rows) if r and r[0] == 'Name' and 'Weight' in r)
+    hi = next((i for i, r in enumerate(rows) if r and r[0] == 'Name' and 'Weight' in r), None)
+    if hi is None or 'Ticker' not in rows[hi]:
+        return [], asof, 'State Street SPDR 每日持股'   # 債券型等沒有股票代號欄的檔案：視為沒有股票持股
     H = rows[hi]; ix = {k: H.index(k) for k in H if k}
     out = []
     for r in rows[hi + 1:]:
@@ -259,22 +263,36 @@ def src_ishares(code):
     return out, asof, 'iShares 每日持股'
 
 
+VG_META = {}
+
+
 def src_vanguard(code):
-    out, start, asof = [], 1, ''
-    while True:
-        j = json.loads(get('https://investor.vanguard.com/vmf/api/%s/portfolio-holding/stock.json?start=%d&count=500' % (code, start)))
+    """Vanguard 只列股票類持股；分頁抓到不齊時，標記 partial（未列出的部分是小額股票，不算非股票）"""
+    out, seen, asof, size, start = [], set(), '', 0, 1
+    while start <= max(size, 1) and start <= 20000:
+        url = 'https://investor.vanguard.com/vmf/api/%s/portfolio-holding/stock.json' % code + ('' if start == 1 else '?start=%d&count=500' % start)
+        try:
+            j = json.loads(get(url, tries=2))
+        except Exception:  # noqa
+            if start == 1:
+                raise
+            break
         ents = ((j.get('fund') or {}).get('entity')) or []
         asof = (j.get('asOfDate') or '')[:10] or asof
+        size = max(size, int(j.get('size') or 0))
+        new = 0
         for e in ents:
+            idk = (e.get('isin') or '') + '|' + (e.get('ticker') or '') + '|' + (e.get('longName') or '')
             w = num(e.get('percentWeight'))
-            if w is None:
+            if w is None or idk in seen:
                 continue
+            seen.add(idk); new += 1
             out.append(dict(t=e.get('ticker'), name=e.get('longName') or e.get('shortName'), isin=e.get('isin') or '', country='', w=w, sec=''))
-        size = int(j.get('size') or 0)
-        start += 500
-        if not ents or start > size or start > 20000:
+        if not ents or not new:
             break
+        start += 500
         time.sleep(0.3)
+    VG_META[code] = (len(out), size)
     return out, asof, 'Vanguard 月底持股'
 
 
@@ -312,6 +330,26 @@ def src_vaneck(code):
             continue
         out.append(dict(t=r[ix['Ticker']], name=r[ix['Holding Name']], isin='', country='', w=w, sec=''))
     return out, asof, 'VanEck 每日持股'
+
+
+ARK = {'ARKK': 'ARK_INNOVATION_ETF_ARKK', 'ARKW': 'ARK_NEXT_GENERATION_INTERNET_ETF_ARKW', 'ARKQ': 'ARK_AUTONOMOUS_TECH._&_ROBOTICS_ETF_ARKQ',
+       'ARKG': 'ARK_GENOMIC_REVOLUTION_ETF_ARKG', 'ARKF': 'ARK_BLOCKCHAIN_&_FINTECH_INNOVATION_ETF_ARKF', 'ARKX': 'ARK_SPACE_EXPLORATION_&_INNOVATION_ETF_ARKX'}
+
+
+def src_ark(code):
+    t = get('https://assets.ark-funds.com/fund-documents/funds-etf-csv/%s_HOLDINGS.csv' % urllib.parse.quote(ARK[code], safe='_.')).decode('utf-8-sig', 'replace')
+    out, asof = [], ''
+    for r in csv.DictReader(t.splitlines()):
+        w = num(r.get('weight (%)')); tk = (r.get('ticker') or '').strip()
+        if w is None or not (r.get('company') or '').strip():
+            continue
+        if not asof and r.get('date'):
+            m = re.match(r'(\d{2})/(\d{2})/(\d{4})', r['date'])
+            if m:
+                asof = '%s-%s-%s' % (m.group(3), m.group(1), m.group(2))
+        cus = (r.get('cusip') or '').strip()
+        out.append(dict(t=tk, name=r.get('company'), isin='US' + cus if re.match(r'^[0-9][0-9A-Z]{8}$', cus) else '', country='', w=w, sec=''))
+    return out, asof, 'ARK Invest 每日持股'
 
 
 # ---------------------------------------------------------------- 寫檔
@@ -368,20 +406,25 @@ def run_us(U, only_codes, maxn, report):
             plan.append((c, 'SSGA', src_ssga))
         elif re.search(r'\bVanguard\b', n):
             plan.append((c, 'Vanguard', src_vanguard))
-        elif re.search(r'\bInvesco\b', n):
-            plan.append((c, 'Invesco', src_invesco))
+        elif c == 'QQQ':
+            plan.append((c, 'Invesco', src_invesco))   # Invesco 的 API 只有 QQQ 可用（其餘回傳 500）；QQQM 沿用 QQQ
+        elif c in ARK:
+            plan.append((c, 'ARK', src_ark))
         elif re.search(r'\bVanEck\b', n):
             plan.append((c, 'VanEck', src_vaneck))
     if maxn:
         plan = plan[:maxn]
-    log('US plan', len(plan), {k: sum(1 for p in plan if p[1] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck')})
+    log('US plan', len(plan), {k: sum(1 for p in plan if p[1] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', 'ARK')})
     for i, (c, who, fn) in enumerate(plan):
         try:
             rows, asof, src = fn(c)
             if rows:
-                eq = finalize(c, rows, asof, src, U)
+                extra = None
+                if who == 'Vanguard' and c in VG_META and VG_META[c][1] > VG_META[c][0]:
+                    extra = dict(partial=1, listed=VG_META[c][0], total=VG_META[c][1])
+                eq = finalize(c, rows, asof, src, U, extra)
                 report['ok'][c] = [who, asof, len(rows), eq]
-            elif BOND_RE.search(U[c][1]):
+            elif BOND_RE.search(U[c][1]) or (COMMODITY_RE.search(U[c][1]) and not EQUITY_WORDS.search(U[c][1])):
                 write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=U[c][1], asof=asof or TODAY, src=src + '（無股票持股：債券或現金型）', eq=0, n=0, h=[]))
                 report['ok'][c] = [who, asof, 0, 0]
             else:
@@ -507,8 +550,12 @@ def run_derived(U, report):
     for c, v in U.items():
         if v[3] != 'E' or have(c):
             continue
-        if (v[2] in ('TW', 'TWO') and c.endswith('B')) or (v[2] == 'US' and BOND_RE.search(v[1] or '')):
-            write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=v[1], asof=TODAY, src='債券型 ETF（依名稱或代號判定）：不持有股票', eq=0, n=0, h=[], guess=1))
+        nm = v[1] or ''
+        if (v[2] in ('TW', 'TWO') and c.endswith('B')) or (v[2] == 'US' and BOND_RE.search(nm)):
+            write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=nm, asof=TODAY, src='債券型 ETF（依名稱或代號判定）：不持有股票', eq=0, n=0, h=[], guess=1))
+            report['bond_guess'].append(c)
+        elif (v[2] in ('TW', 'TWO') and c.endswith('U')) or (v[2] == 'US' and COMMODITY_RE.search(nm) and not EQUITY_WORDS.search(nm)):
+            write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=nm, asof=TODAY, src='商品、期貨或加密資產型 ETF（依名稱或代號判定）：不持有股票', eq=0, n=0, h=[], guess=1))
             report['bond_guess'].append(c)
 
 
@@ -534,12 +581,12 @@ def main():
         lst.append([c, v[1], v[2], v[3], v[5], 1 if c in files else 0])
     # 名稱、類別、產業、可否拆解（每週變動）與價格（每日變動）分開存，避免每天重寫大檔
     write_json(os.path.join(OUT, 'universe.json'), dict(schema='bnasdaq-lt-universe/2', alias=ALIAS, cols=['code', 'name', 'market', 'kind', 'sector', 'lt'], list=lst))
-    write_json(os.path.join(OUT, 'px.json'), dict(schema='bnasdaq-lt-px/1', updated=dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%MZ'), fx=fx, asof=asof,
+    write_json(os.path.join(OUT, 'px.json'), dict(schema='bnasdaq-lt-px/1', updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), fx=fx, asof=asof,
                                                  px={c: (round(v[4], 4) if isinstance(v[4], (int, float)) else None) for c, v in U.items() if v[4]}))
     cov = lambda mk: (sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US') and x[6]), sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US')))
     meta = dict(updated=TODAY, coverage={'US': cov('US'), 'TW': cov('TW')}, ok=len(report['ok']), fail=report['fail'], empty=report['empty'], derived=report['derived'],
                 derived_missing=report['derived_missing'], bond_guess=len(report['bond_guess']),
-                sources={k: sum(1 for v in report['ok'].values() if v[0] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', '元大', '永豐')})
+                sources={k: sum(1 for v in report['ok'].values() if v[0] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', 'ARK', '元大', '永豐', '復華', '國泰', '群益')})
     if only & {'us', 'tw'}:
         write_json(os.path.join(OUT, 'meta.json'), meta)   # 只更新價格時保留上一次成分股的抓取紀錄
     log('done: ETF files', len(files), 'coverage', meta['coverage'], 'sources', meta['sources'], 'fail', len(report['fail']))
