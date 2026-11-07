@@ -42,11 +42,19 @@ jobs:
         continue-on-error: true
         run: python3 scripts/fetch_treasury.py
 
-      - name: Commit market.json / treasury.json if they changed
+      - name: Fetch FRED TB3MS (public data only; homepage backtest T-bill for new months)
+        continue-on-error: true
+        run: python3 scripts/fetch_tb3ms.py
+
+      - name: Fetch homepage comparison series to the last complete month (public data only)
+        continue-on-error: true
+        run: python3 scripts/fetch_home.py
+
+      - name: Commit public market data if it changed
         run: |
           git config user.name "bnasdaq-bot"
           git config user.email "bnasdaq-bot@users.noreply.github.com"
-          git add data/market.json data/treasury.json
+          for f in data/market.json data/treasury.json data/market_daily.json data/tb3ms.json data/home.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           if git diff --cached --quiet; then
             echo "market data unchanged"
           else

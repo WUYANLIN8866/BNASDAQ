@@ -1,12 +1,26 @@
 /* BNASDAQ｜回測起點：讓每一張回測圖表都能自由改起點（年／月），同一頁的圖表、表格與關鍵數字同步重算。
    資料：assets/bt.js（window.BT）＝同一套引擎產出的月底權益與日權益（1986-09 起）：BNASDAQ-26110 fund（專案規則 B.2）、
    BNASDAQ-26111 sat（B.3；2000-03 起才有訊號，之前為 null——用 first('sat') 取得最早可用月份）。
-   口徑與本站主回測完全相同：月底收盤為起點、2026-09-30 收盤為終點；年數＝日曆日 ÷ 365.25；
-   定期定額＝每月底扣款、每筆成本 0.1%、最後一個月底估值、IRR 以實際日期折算；最大回撤以日收盤計。
+   bt.js 每月初延伸到上個月最後一個交易日。終點：首頁（載入前設 window.BT_LIVE＝true）＝資料最新的月底；
+   其他頁＝data.js 的研究區間終點（SITE.window.end），所以研究、定期定額、個股對比頁的數字與研究區間一致、不隨每月更新而變。
+   口徑：月底收盤為起點；年數＝日曆日 ÷ 365.25；定期定額＝每月底扣款、每筆成本 0.1%、最後一個月底估值、IRR 以實際日期折算；最大回撤以日收盤計。
    QQQ 1999-03-10 前為 NDX 代理（價格指數）、QLD 2006-06 前為合成序列、SHV 為合成短期美債——起點早於這些日期時自動標註。 */
 (function () {
   'use strict';
-  const T = window.BT;
+  const T = capBT(window.BT);
+  // 研究頁截在研究區間終點：月線、日線、大跌事件起點表都只取到該日（歷史數值與完整資料逐值相同）
+  function capBT(T0) {
+    const S = window.SITE, cap = S && S.window && S.window.end;
+    if (!T0 || window.BT_LIVE || !cap || cap >= T0.end) return T0;
+    const k = T0.med.indexOf(cap); if (k < 0) return T0;
+    let t = Date.parse(T0.d0 + 'T00:00:00Z'), j = -1;
+    for (let i = 0; i < T0.dd.length; i++) { if (i > 0) t += T0.dd[i] * 86400000; if (new Date(t).toISOString().slice(0, 10) === cap) { j = i; break; } }
+    if (j < 0) return T0;
+    const cut = (o, n) => { const r = {}; for (const key in o) r[key] = Array.isArray(o[key]) ? o[key].slice(0, n) : o[key]; return r; };
+    const ym = +cap.slice(0, 4) * 12 + +cap.slice(5, 7) - 13;
+    return Object.assign({}, T0, { m: T0.m.slice(0, k + 1), med: T0.med.slice(0, k + 1), eq: cut(T0.eq, k + 1), dd: T0.dd.slice(0, j + 1), daily: cut(T0.daily, j + 1),
+      crisis_by_start: (T0.crisis_by_start || []).slice(0, k + 1), end: cap, max_start: Math.floor(ym / 12) + '-' + String(ym % 12 + 1).padStart(2, '0'), capped: true });
+  }
   window.BN = window.BN || {};
   if (!T) { BN.bt = null; return; }
   const M = T.m, MED = T.med, N = M.length, IDX = new Map(M.map((m, i) => [m, i]));

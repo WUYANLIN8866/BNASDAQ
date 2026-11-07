@@ -17,6 +17,7 @@ import json, os, sys, datetime as dt, urllib.request, io, csv, math
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = os.path.join(ROOT, 'data', 'market_base.json')
 OUT = os.path.join(ROOT, 'data', 'market.json')
+OUT_DAILY = os.path.join(ROOT, 'data', 'market_daily.json')   # 基準月之後的逐日還原收盤（首頁回測每月延伸用）
 TICKER = 'QQQ'
 
 
@@ -117,7 +118,26 @@ def build(base, rows, source):
     out = dict(schema='bnasdaq-market/1', base_last=last, k=k, ext=ext, current=current, asof=current['asof'],
                updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), source=source,
                note='公開市場資料（QQQ 還原收盤、月高低），不含任何策略規則。', months=base['months'])
-    return out
+    daily = dict(schema='bnasdaq-market-daily/1', base_last=last, k=k, asof=current['asof'], source=source,
+                 note='QQQ 逐日資料（基準月之後）：U＝還原收盤 × k（k 錨定基準月最後一個交易日，與專案序列連續）、c＝原始收盤、o＝原始開盤。公開市場資料，不含任何策略規則。',
+                 rows=[dict(d=r['date'], U=k * r['adjclose'], c=r['close'], o=r['open']) for r in after])
+    return out, daily
+
+
+def write_daily(daily):
+    """market_daily.json：只往前、內容沒變不重寫（失敗不影響 market.json）"""
+    try:
+        if os.path.exists(OUT_DAILY):
+            old = json.load(open(OUT_DAILY, encoding='utf-8'))
+            if old.get('asof', '') > daily['asof']:
+                log('daily: fetched data older than existing; keeping existing'); return
+            if {k: v for k, v in old.items() if k != 'source'} == {k: v for k, v in daily.items() if k != 'source'}:
+                return
+        with open(OUT_DAILY, 'w', encoding='utf-8') as f:
+            json.dump(daily, f, ensure_ascii=False, separators=(',', ':'))
+        log('written', OUT_DAILY, len(daily['rows']), 'days, asof', daily['asof'])
+    except Exception as e:  # noqa
+        log('daily write failed:', repr(e))
 
 
 def main():
@@ -141,9 +161,10 @@ def main():
     if not rows:
         log('all sources failed; keeping existing market.json'); return 1
     try:
-        out = build(base, rows, source)
+        out, daily = build(base, rows, source)
     except Exception as e:  # noqa
         log('build failed; keeping existing market.json:', repr(e)); return 1
+    write_daily(daily)
     # sanity: do not go backwards in time
     if os.path.exists(OUT):
         try:
