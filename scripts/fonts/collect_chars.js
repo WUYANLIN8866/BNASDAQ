@@ -3,7 +3,7 @@
 // 每頁都會：桌機與手機寬度各看一次、點過每個回測起點與分頁、展開所有 <details>。
 const { chromium } = require('playwright'); const fs = require('fs'); const path = require('path');
 const BASE = process.argv[2] || 'http://127.0.0.1:8765/';
-const PAGES = ['index', 'about', 'daily', 'research', 'dca', 'taiwan', 'valuation', 'calculator', 'explore', 'risk', 'faq', 'data', 'news', 'search', 'login', 'member', 'admin', '404'];
+const PAGES = ['index', 'about', 'daily', 'research', 'dca', 'taiwan', 'valuation', 'lookthrough', 'calculator', 'explore', 'risk', 'faq', 'data', 'news', 'search', 'login', 'member', 'admin', '404'];
 (async () => {
   const b = await chromium.launch(); const sets = {};
   const merge = o => { for (const [k, v] of Object.entries(o)) { sets[k] = sets[k] || new Set(); for (const ch of v) sets[k].add(ch); } };
