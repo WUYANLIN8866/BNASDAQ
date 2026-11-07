@@ -1,5 +1,6 @@
 /* BNASDAQ｜回測起點：讓每一張回測圖表都能自由改起點（年／月），同一頁的圖表、表格與關鍵數字同步重算。
-   資料：assets/bt.js（window.BT）＝同一套引擎產出的月底權益與日權益（B.3 核心策略官方參數；1986-09 起）。
+   資料：assets/bt.js（window.BT）＝同一套引擎產出的月底權益與日權益（1986-09 起）：核心策略 fund（專案規則 B.2）、
+   衛星策略 sat（B.3；2000-03 起才有訊號，之前為 null——用 first('sat') 取得最早可用月份）。
    口徑與本站主回測完全相同：月底收盤為起點、2026-09-30 收盤為終點；年數＝日曆日 ÷ 365.25；
    定期定額＝每月底扣款、每筆成本 0.1%、最後一個月底估值、IRR 以實際日期折算；最大回撤以日收盤計。
    QQQ 1999-03-10 前為 NDX 代理（價格指數）、QLD 2006-06 前為合成序列、SHV 為合成短期美債——起點早於這些日期時自動標註。 */
@@ -16,8 +17,10 @@
   const END = T.end, LAST = N - 1;
   const yrs = (a, b) => (Date.parse(b) - Date.parse(a)) / DAY / 365.25;
   const clamp = ym => { if (!/^\d{4}-\d{2}$/.test(String(ym))) return T.official; if (!IDX.has(ym)) { ym = ym < T.min_start ? T.min_start : (ym > T.max_start ? T.max_start : T.official); } return ym < T.min_start ? T.min_start : (ym > T.max_start ? T.max_start : ym); };
-  const KEYS = ['fund', 'qqq', 'qld', 'shv'];
-  const NAME = { fund: 'BNASDAQ', qqq: 'QQQ', qld: 'QLD', shv: 'SHV' };
+  const KEYS = ['fund', 'sat', 'qqq', 'qld', 'shv'];
+  const NAME = { fund: 'BNASDAQ', sat: 'BNASDAQ 衛星策略', qqq: 'QQQ', qld: 'QLD', shv: 'SHV' };
+  // 各序列最早可用的月份（衛星策略的模型自 2000-03 起才有訊號）；起點早於此月時，比較區塊自動改從此月開始
+  const first = key => (T.first && T.first[key]) || T.min_start;
 
   // ---- 月線 ----
   function i0Of(ym) { return IDX.get(clamp(ym)); }
@@ -159,7 +162,7 @@
     return wrap;
   }
 
-  BN.bt = { T, M, MED, DD, END, KEYS, NAME, yrs, clamp, i0Of, monthly, lump, daily, drawdown, maxDDInside, vol, sample, dca, irrDays, cal, periods, crises, proxyNote,
+  BN.bt = { T, M, MED, DD, END, KEYS, NAME, first, yrs, clamp, i0Of, monthly, lump, daily, drawdown, maxDDInside, vol, sample, dca, irrDays, cal, periods, crises, proxyNote,
     channel, def: ym => MAIN.def(ym), get: () => MAIN.get(), set: ym => MAIN.set(ym), on: (f, now) => MAIN.on(f, now), picker: (host, o) => picker(MAIN, host, o),
     min: T.min_start, max: T.max_start, official: T.official };
 })();

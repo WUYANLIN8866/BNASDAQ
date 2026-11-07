@@ -8,7 +8,7 @@
 <meta name="description" content="BNASDAQ 核心策略：以 QQQ 月線為訊號、在 QLD 與 SHV 之間配置的規則化策略，採邀請制。完整回測（可自訂起點）、定期定額、個股對比、目標資產試算與風險揭露。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=668bc65811">
+<link rel="stylesheet" href="assets/site.css?v=420e44ca51">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -48,8 +48,8 @@
 
 <div class="btzone">
 <section class="band alt" id="performance"><div class="wrap">
-  <div class="sechead"><div><span class="eyebrow">回測績效</span><h2>累積報酬比較：BNASDAQ 與主要市場</h2></div><a class="more" href="research.html">完整回測 ›</a></div>
-  <p class="lead">BNASDAQ、QQQ、QLD、SPY、波克夏 BRK-B、0050、台積電與 10 個國際股市指數，自同一起點起算的累積走勢。可自由調整回測起點，本區所有圖表、表格與主要指標會同步重算。</p>
+  <div class="sechead"><div><span class="eyebrow">回測績效</span><h2>累積報酬比較：BNASDAQ 策略與主要市場</h2></div><a class="more" href="research.html">完整回測 ›</a></div>
+  <p class="lead">BNASDAQ 核心策略與衛星策略、QQQ、QLD、SPY、波克夏 BRK-B、0050、台積電與 10 個國際股市指數，自同一起點起算的累積走勢。可自由調整回測起點，本區所有圖表、表格與主要指標會同步重算。</p>
   <div class="btpick sticky" id="bt-pick"></div>
   <div id="world-tabs" hidden></div>
   <div id="c-world"></div>
@@ -57,8 +57,19 @@
   <p class="small" id="world-note"></p>
 </div></section>
 
+<section class="band" id="compare"><div class="wrap">
+  <div class="sechead"><div><span class="eyebrow">策略對比</span><h2>核心策略與衛星策略：同一套回測，並列比較</h2></div><a class="more" href="research.html">完整回測 ›</a></div>
+  <div class="strat row2 cmp-cards">
+    <div class="card"><h3><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ 核心策略<small>BNASDAQ-26110</small></h3><p>以 QQQ 月線判斷，在 QLD（2 倍那斯達克 100）與 SHV（短期美債）之間配置，可全倉、半倉或全數避險；只在走勢平穩向上時全額運用槓桿。本站主力商品。</p></div>
+    <div class="card"><h3><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ 衛星策略<small>BNASDAQ-26111</small></h3><p>同樣以 QQQ 月線判斷、在 QLD 與 SHV 之間配置，但只有全倉或全數避險兩種狀態（不設半倉），由六個量化模型共同判斷；模型自 2000 年 3 月起每 24 個月只用當時已知的資料重新訓練，回測不使用未來資訊。</p></div>
+  </div>
+  <div id="t-cmp"></div>
+  <div class="row2 cmp-figs"><div id="c-cmp-dd"></div><div id="c-cmp-cal"></div></div>
+  <p class="small" id="cmp-note"></p>
+</div></section>
+
 <section class="band"><div class="wrap">
-  <div class="sechead"><h2>主要指標</h2><a class="more" href="research.html">完整回測 ›</a></div>
+  <div class="sechead"><h2>核心策略主要指標</h2><a class="more" href="research.html">完整回測 ›</a></div>
   <p class="small" id="ind-window"></p>
   <ul class="ind" id="ind">
     <li><span class="label">年化報酬率（單筆 100 萬，<span data-k="w0">2000-05-31</span>～2026-09-30）<small id="ind-cagr-s">QQQ 同期 9.4%、QLD 8.2%、SHV 1.7%</small></span><span class="val" id="ind-cagr">38.3%</span></li>
@@ -83,6 +94,7 @@
   <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="ann">公告</button><button role="tab" aria-selected="false" data-tab="res">研究更新</button><button role="tab" aria-selected="false" data-tab="vid">影片</button></div>
   <ul class="dev" id="dev-ann"><li><time>載入中</time><span>公告由管理員發布，請稍候。</span></li></ul>
   <ul class="dev" id="dev-res" hidden>
+    <li><time>2026-11-07</time><span><a href="#compare">首頁新增策略對比：核心策略與衛星策略並列（同一套回測引擎，可自訂起點）</a><span class="tag">研究</span></span></li>
     <li><time>2026-11-03</time><span><a href="research.html">網站改版：回測起點可自訂（1986-09～2025-09），所有回測圖表同步重算；介紹全面改寫</a><span class="tag">研究</span></span></li>
     <li><time>2026-10-28</time><span><a href="research.html">BNASDAQ 研究站上線：影片 v6 全部數字重算，與影片 0 差異</a><span class="tag">研究</span></span></li>
     <li><time>2026-10-26</time><span><a href="research.html#periods">全策略 CAGR 回測更新（資料至 2026-10-23）</a><span class="tag">回測</span></span></li>
@@ -96,7 +108,7 @@
   </ul>
 </div></section>
 
-<script src="assets/site.js?v=00b6fc3765"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=b7e9b26dc7"></script><script src="assets/period.js?v=93a6dc99f0"></script><script src="assets/charts.js?v=52553baf3c"></script>
+<script src="assets/site.js?v=00b6fc3765"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=e43dffbc01"></script><script src="assets/bt-sat.js?v=c4ecf776fc"></script><script src="assets/period.js?v=7470055c02"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 (function(){
   // 最新發布分頁與公告
@@ -128,13 +140,53 @@ let ALL=null,idxUpdated='',FX=null,TW=null,TSMC=null,TWMIN=null,J50=null,J33=nul
 function renderWorld(start){
   const off=BM.indexOf(start),M=BM.slice(off),W0=ymd(start),yrs=yrsBetween(start,BM[BM.length-1]);
   const series=[],skipped=[];
-  ALL.forEach(a=>{const vals=a.vals.slice(off);const b=vals[0];if(b==null){const i0=a.vals.findIndex(v=>v!=null);skipped.push(a.name+'（資料自 '+(i0>=0?BM[i0]:'—')+'）');return;}series.push({name:a.name,values:vals.map(v=>v==null?null:v/b*100),color:a.color,cur:a.cur,end:vals[vals.length-1]/b-1});});
+  ALL.forEach(a=>{const vals=a.vals.slice(off);const b=vals[0];if(b==null){const i0=a.vals.findIndex(v=>v!=null);skipped.push(a.name+'（'+(a.from||'資料自')+' '+(i0>=0?BM[i0]:'—')+'）');return;}series.push({name:a.name,values:vals.map(v=>v==null?null:v/b*100),color:a.color,cur:a.cur,end:vals[vals.length-1]/b-1});});
   $('c-world').innerHTML='';
   BN.charts.line($('c-world'),{title:'起點＝100 的累積走勢（對數刻度）',sub:W0+' 至 '+END+'，每月月底；ETF／個股含息，指數為價格指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',series:series.map(s=>({name:s.name,values:s.values,color:s.color}))});
   const rows=series.slice().sort((a,b)=>b.end-a.end);
   $('t-world').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+W0+' 至 '+END+'（'+yrs.toFixed(1)+' 年）的累積報酬與年化</caption><thead><tr><th class=l>標的</th><th>累積報酬</th><th>年化</th><th class=l>幣別／口徑</th></tr></thead><tbody>'+rows.map(s=>{const cagr=Math.pow(1+s.end,1/yrs)-1;return '<tr><td class=l><span class="sw" style="background:'+s.color+'"></span>'+s.name+'</td><td>'+(s.end>=0?'+':'')+(s.end*100).toLocaleString('zh-Hant-TW',{maximumFractionDigits:0})+'%</td><td>'+(cagr*100).toFixed(1)+'%</td><td class=l>'+s.cur+'</td></tr>';}).join('')+'</tbody></table></div>';
   const px=B.proxyNote(start);
-  $('world-note').textContent=(skipped.length?'未列入：'+skipped.join('、')+'，選較晚的起點即可納入。':'')+'BNASDAQ、QQQ、QLD 為本站回測序列（美元、含息）；SPY、波克夏 BRK-B、0050、台積電為 Yahoo 還原收盤（含息；BRK-B 不配息）；10 個指數為價格指數（不含息、當地幣別），所以指數會比同市場的含息 ETF 略低。各自以本身幣別計，未換匯。'+(idxUpdated?' 指數資料更新：'+idxUpdated+'。':'')+(px?' '+px:'');
+  $('world-note').textContent=(skipped.length?'未列入：'+skipped.join('、')+'，選較晚的起點即可納入。':'')+'BNASDAQ 核心策略、衛星策略與 QQQ、QLD 為本站回測序列（同一套引擎；美元、含息）；SPY、波克夏 BRK-B、0050、台積電為 Yahoo 還原收盤（含息；BRK-B 不配息）；10 個指數為價格指數（不含息、當地幣別），所以指數會比同市場的含息 ETF 略低。各自以本身幣別計，未換匯。'+(idxUpdated?' 指數資料更新：'+idxUpdated+'。':'')+(px?' '+px:'');
+}
+
+function renderCmp(start){
+  // 衛星策略的模型自 2000-03 起才有訊號：起點較早時，本區自動改從 2000-03 起比較（同站內「加入較晚上市標的」的規則）
+  const f0=B.first('sat'),s=start<f0?f0:start,w0=B.MED[BM.indexOf(s)],K=['fund','sat','qqq','qld'];
+  const L={},DW={},V={},D={};K.forEach(k=>{L[k]=B.lump(k,s);DW[k]=B.drawdown(k,s);V[k]=B.vol(k,s);D[k]=B.dca(k,s);});
+  const C=B.cal(s,K),full=C.list.filter(r=>!r.partial),nY=full.length;
+  const pos=k=>full.filter(r=>r[k]>0).length,beat=k=>full.filter(r=>r[k]>r.qqq).length,worst=k=>full.reduce((b,r)=>(!b||r[k]<b[k])?r:b,null);
+  // [名稱, 取值, 格式, 1＝越大越好／-1＝越小越好, 小字說明]
+  const rows=[
+    ['年化報酬率（單筆）',k=>L[k].cagr,v=>pct(v),1],
+    ['單筆 100 萬的期末價值（含期初成本 0.1%）',k=>L[k].end,v=>f.big(v),1],
+    ['最大回撤（日收盤）',k=>DW[k].mdd,v=>pct(v),1,k=>DW[k].peak+' → '+DW[k].trough],
+    ['年化波動度',k=>V[k],v=>pct(v),-1],
+    ['報酬／回撤比（年化報酬 ÷ 最大回撤）',k=>L[k].cagr/Math.abs(DW[k].mdd),v=>v.toFixed(2),1],
+    ['完整曆年中正報酬的年數',k=>pos(k),v=>v+'／'+nY,1],
+    ['曆年報酬高於 QQQ 的年數',k=>k==='qqq'?null:beat(k),v=>v+'／'+nY,1],
+    ['表現最差的曆年',k=>{const w=worst(k);return w?w[k]:null;},v=>pct(v),1,k=>{const w=worst(k);return w?w.y+' 年':'';}],
+    ['每月定期定額 1 萬：年化報酬（IRR）',k=>D[k].irr,v=>pct(v),1],
+    ['每月定期定額 1 萬：期末價值',k=>D[k].end,v=>f.big(v),1]
+  ];
+  const head='<thead><tr><th class=l>指標</th><th><span class="sw" style="background:var(--s-fund)"></span>核心策略</th><th><span class="sw" style="background:var(--s-sat)"></span>衛星策略</th><th>QQQ</th><th>QLD</th></tr></thead>';
+  // 手機版表頭隱藏，改在每格上方顯示欄名（.mth；桌機不顯示）
+  const MTH={fund:'<span class="mth"><span class="sw" style="background:var(--s-fund)"></span>核心策略</span>',sat:'<span class="mth"><span class="sw" style="background:var(--s-sat)"></span>衛星策略</span>',qqq:'<span class="mth">QQQ</span>',qld:'<span class="mth">QLD</span>'};
+  const body=rows.map(r=>{const vf=r[1]('fund'),vs=r[1]('sat'),win=(vf==null||vs==null||vf===vs)?null:((vf>vs)===(r[3]>0)?'fund':'sat');
+    return '<tr><td class=l>'+r[0]+'</td>'+K.map(k=>{const v=r[1](k),t=v==null?'—':r[2](v),sub=(r[4]&&v!=null)?'<small>'+r[4](k)+'</small>':'';return '<td>'+MTH[k]+(win===k?'<b>'+t+'</b>':t)+sub+'</td>';}).join('')+'</tr>';}).join('')
+    +'<tr><td class=l>配置調整次數<span class="tagfix">正式回測區間</span></td><td>'+MTH.fund+'59 次<small>17 次全進全出、42 次半倉進出</small></td><td>'+MTH.sat+'73 次<small>皆為全進全出</small></td><td>'+MTH.qqq+'—</td><td>'+MTH.qld+'—</td></tr>';
+  $('t-cmp').innerHTML='<div class="tblwrap"><table class="tbl cmp"><caption>'+w0+' 至 '+END+'（'+B.yrs(w0,END).toFixed(1)+' 年）；粗體為兩個策略中較佳者</caption>'+head+'<tbody>'+body+'</tbody></table></div>';
+  // 回撤水位：兩個策略各自抽樣（保留每段最低點）後取聯集，兩條線在同一組日期上取值
+  (()=>{const h=$('c-cmp-dd');h.innerHTML='';const a=DW.fund,b=DW.sat,ev=Math.max(2,Math.round(a.dates.length/900));
+    const ix=new Map(a.dates.map((x,i)=>[x,i])),xs=Array.from(new Set(B.sample(a.dates,a.dd,ev).x.concat(B.sample(b.dates,b.dd,ev).x))).sort();
+    BN.charts.line(h,{title:'回撤水位：距離前高還差多少',sub:w0+' 至 '+END+'，日收盤',x:xs,xTicks:yearTicks(xs.map(x=>x.slice(0,7)),span(xs[0],xs[xs.length-1]),2005),yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',zero:true,yMax:0.02,
+      series:[{name:'核心策略',values:xs.map(x=>a.dd[ix.get(x)]),color:'var(--s-fund)'},{name:'衛星策略',values:xs.map(x=>b.dd[ix.get(x)]),color:'var(--s-sat)'}],noEndLabels:true,
+      note:'最深：核心策略 '+pct(a.mdd)+'（'+a.trough+'）、衛星策略 '+pct(b.mdd)+'（'+b.trough+'）'});})();
+  // 逐年報酬
+  (()=>{const h=$('c-cmp-cal');h.innerHTML='';const rs=C.list;if(!rs.length)return;const last=rs[rs.length-1];
+    BN.charts.bars(h,{title:'逐年報酬：核心策略 vs 衛星策略',sub:rs[0].y+'～'+last.y+' 曆年報酬'+(last.partial?'；'+last.y+' 年僅計至 '+END.slice(5,7)+' 月底（標 *）':''),groups:rs.map(r=>String(r.y).slice(2)+(r.partial?'*':'')),
+      series:[{name:'核心策略',values:rs.map(r=>r.fund),color:'var(--s-fund)'},{name:'衛星策略',values:rs.map(r=>r.sat),color:'var(--s-sat)'}],yfmt:v=>(v*100).toFixed(0)+'%',valfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%'});})();
+  const px=B.proxyNote(s);
+  $('cmp-note').textContent=(start<f0?'衛星策略的模型自 '+f0+' 起才有訊號，本區自 '+w0+' 起比較（其他區塊仍依所選起點）。':'')+'兩個策略使用同一套逐日回測引擎與同一份資料：每月最後一個交易日收盤判斷、下一個交易日開盤調整、單邊成本 0.1%，QLD 與 SHV 皆以相同方式計算。'+(px?' '+px:'');
 }
 
 function renderMini(start){
@@ -175,7 +227,7 @@ function renderInd(start){
 (async()=>{try{
   const [idx,spy,brk,tw,tsmc,fx]=await Promise.all([getJ('data/indices.json'),getJ('data/tw/SPY.json'),getJ('data/tw/BRK-B.json'),getJ('data/tw/0050.json'),getJ('data/tw/2330.json'),getJ('data/tw/_fx.json')]);
   FX=fx&&fx.months?fx.months:null;
-  ALL=[{name:'BNASDAQ',vals:B.T.eq.fund,color:pal[0],cur:'美元，含息'},{name:'QQQ',vals:B.T.eq.qqq,color:pal[1],cur:'美元，含息'},{name:'QLD',vals:B.T.eq.qld,color:pal[2],cur:'美元，含息'}];
+  ALL=[{name:'BNASDAQ 核心策略',vals:B.T.eq.fund,color:pal[0],cur:'美元，含息'},{name:'BNASDAQ 衛星策略',vals:B.T.eq.sat,color:'var(--s-sat)',cur:'美元，含息',from:'訊號自'},{name:'QQQ',vals:B.T.eq.qqq,color:pal[1],cur:'美元，含息'},{name:'QLD',vals:B.T.eq.qld,color:pal[2],cur:'美元，含息'}];
   if(spy&&spy.w26&&spy.w26.monthly)ALL.push({name:'SPY',vals:pad26(spy.w26.monthly),color:pal[3],cur:'美元，含息'});
   if(brk&&brk.w26&&brk.w26.monthly)ALL.push({name:'波克夏 BRK-B',vals:pad26(brk.w26.monthly),color:'#6250d6',cur:'美元（不配息）'});
   const v0050=fromTw(tw),v2330=fromTw(tsmc);TW=v0050;TSMC=v2330;J50=tw;J33=tsmc;
@@ -184,7 +236,7 @@ function renderInd(start){
   const i50=v0050?v0050.findIndex(v=>v!=null):-1,i33=v2330?v2330.findIndex(v=>v!=null):-1;TWMIN=BM[Math.max(i50,i33,OFF)];
   B.def('2000-05');
   B.picker('bt-pick',{presets:[['1986-09','最早 1986'],['1996-09','近 30 年'],['2000-05','正式回測'],['2009-01','2009-01 起'],['2013-12','2013-12 起'],['2020-12','2020 年底']]});
-  B.on(st=>{renderWorld(st);renderMini(st);renderInd(st);});
+  B.on(st=>{renderWorld(st);renderCmp(st);renderMini(st);renderInd(st);});
 }catch(e){$('world-note').textContent='走勢圖載入失敗：'+(e&&e.message||e);}})();
 })();
 </script>

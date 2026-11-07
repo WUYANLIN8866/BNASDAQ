@@ -55,7 +55,7 @@ def site_chars():
     wide = lambda s: {c for c in s if ord(c) > 0x7e and not c.isspace()}
     out = set()
     for f in glob.glob(os.path.join(ROOT, '*.html')) + glob.glob(os.path.join(ROOT, 'assets', '*.js')) + glob.glob(os.path.join(ROOT, 'data', '*.json')) + glob.glob(os.path.join(ROOT, 'data', 'daily', '*.json')):
-        if os.path.basename(f) == 'bt.js': continue
+        if os.path.basename(f) in ('bt.js', 'bt-sat.js'): continue  # 回測數字資料檔
         out |= wide(open(f, encoding='utf-8').read())
     return out
 
