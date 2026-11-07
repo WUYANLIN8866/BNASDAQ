@@ -413,6 +413,7 @@ pre.code { background: var(--band); border: 1px solid var(--line); padding: 10px
 .icard .chipm { position: absolute; left: 28px; top: 42%; width: 46px; height: 34px; border-radius: 6px; background: linear-gradient(135deg, #e3c88f, #9c7b3c); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .25); }
 .icard .t { position: absolute; left: 28px; bottom: 24px; font-size: 11.5px; letter-spacing: .32em; color: var(--gold-hi); }
 .icard .t2 { position: absolute; right: 28px; bottom: 24px; font-size: 11.5px; letter-spacing: .18em; color: #a9a59c; }
+@media (max-width: 420px) { .icard .t, .icard .t2 { line-height: 1.2; } .icard .t2 { right: auto; left: 28px; bottom: 44px; } }  /* 窄卡片：兩行說明上下排，避免重疊 */
 .band.dark .eyebrow { color: var(--gold-hi); }
 .band.dark .facts th { color: #9a968d; } .band.dark .facts td { color: #eceae5; } .band.dark .facts, .band.dark .facts th, .band.dark .facts td { border-color: #2b2e33; }
 @media (max-width: 860px) { .invite { grid-template-columns: 1fr; gap: 32px; } .icard { max-width: 360px; } }
