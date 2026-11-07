@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
-      - run: pip install --quiet openpyxl
-      - run: python3 scripts/lookthrough/probe8.py
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
+      - run: mkdir -p shots && node scripts/lookthrough/live_check.js https://wuyanlin8866.github.io/BNASDAQ/ shots
