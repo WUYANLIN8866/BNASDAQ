@@ -1,4 +1,4 @@
-"""暫時用：第 11 輪——統一完整解析驗證、中信 token 與參數、Invesco 搜尋參數"""
+"""暫時用：第 12 輪——中信 AuthToken 與 etf API、Invesco 清單參數"""
 import urllib.request, urllib.error, urllib.parse, re, json, sys, http.cookiejar, html
 sys.stdout.reconfigure(line_buffering=True)
 BROWSER = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
@@ -8,7 +8,7 @@ def get(url, method='GET', data=None, headers=None):
     with OP.open(urllib.request.Request(url, method=method, data=data, headers=h), timeout=45) as r:
         return r.status, r.headers.get('Content-Type', ''), r.read()
 def fetch(name, url, show=0, **kw):
-    print('\n======', name, '|', url[:200])
+    print('\n======', name, '|', url[:220])
     try:
         st, ct, b = get(url, **kw); print('status', st, '|', ct, '|', len(b))
         if show: print(b[:show].decode('utf-8', 'replace'))
@@ -20,27 +20,32 @@ def fetch(name, url, show=0, **kw):
     return None
 def around(t, w, n=2, a=200, b=400):
     for mm in list(re.finditer(re.escape(w), t))[:n]: print('  [' + w + '] …', re.sub(r'\s+', ' ', t[max(0, mm.start() - a):mm.start() + b]))
-# 1) 統一：完整解析
-for fc in ('49YTW', '46YTW', '36YTW', '50YTW'):
-    t = fetch('統一 ' + fc, 'https://www.ezmoney.com.tw/ETF/Fund/Info?FundCode=' + fc)
-    if not t: continue
-    m = re.search(r'="(\[\{&quot;FundCode&quot;:&quot;%s&quot;,&quot;AssetCode&quot;:&quot;NAV&quot;.*?\])"' % fc, t, re.S)
-    if not m: print('no asset attr'); continue
-    A = json.loads(html.unescape(m.group(1)))
-    print('groups', [(a.get('AssetCode'), a.get('AssetName'), a.get('Value'), len(a.get('Details') or []), round(sum(float(d.get('NavRate') or 0) for d in (a.get('Details') or [])), 4)) for a in A])
-    for a in A:
-        D = a.get('Details') or []
-        if D: print(' ', a.get('AssetCode'), 'first', json.dumps({k: D[0].get(k) for k in ('DetailCode', 'DetailName', 'Position', 'Share', 'Amount', 'NavRate', 'TranDate', 'MoneyType', 'IssuserCname')}, ensure_ascii=False), '| last', D[-1].get('DetailCode'), D[-1].get('DetailName'), D[-1].get('NavRate'))
-    u = html.unescape(t); mm = re.search(r'"sFundCode":"%s","sFundName":"([^"]+)","sFundShortName":"([^"]+)"' % fc, u); print('fund', mm and mm.groups())
-# 2) 中信：token 與 ETFHoldingWeight 參數
-t = fetch('中信 Combination', 'https://www.ctbcinvestments.com/assets/Combination-B8hBMoLG.js')
-if t:
-    around(t, 'ETFHoldingWeight', 3, 400, 300)
-t = fetch('中信 index', 'https://www.ctbcinvestments.com/assets/index-CWcOqYfT.js')
-if t:
-    for w in ('token:', '.token=', 'token=', 'GetToken', 'getToken', 'Token"', 'setToken'): around(t, w, 2, 200, 300)
-# 3) Invesco 搜尋參數
+CT = 'https://www.ctbcinvestments.com.tw/API/'
+H = {'Content-Type': 'application/json; charset=utf-8', 'Origin': 'https://www.ctbcinvestments.com', 'Referer': 'https://www.ctbcinvestments.com/'}
+def ct_post(w, tok, body=None, show=800):
+    q = urllib.parse.urlencode({'token': tok}); d = dict(token=tok); d.update(body or {})
+    return fetch('中信 ' + w, CT + w + '?' + q, show=show, method='POST', data=json.dumps(d, ensure_ascii=False).encode(), headers=H)
+t = ct_post('home/AuthToken', 'www.ctbcinvestments.com', show=300)
+tok = None
+try: tok = json.loads(t)['Data']['token']
+except Exception as e: print('token fail', repr(e)[:100])
+print('token len', len(tok or ''))
+js = fetch('中信 index', 'https://www.ctbcinvestments.com/assets/index-CWcOqYfT.js')
+names = sorted(set(re.findall(r'["\'`]((?:etf|fund|Etf|Fund)/[A-Za-z]+)["\'`]', js or '')))
+print('api names', names)
+for w in names:
+    if re.search(r'(?i)list|detail|info|holding', w): around(js, '"' + w + '"', 1, 150, 250)
+if tok:
+    for w, body in [('etf/ETFList', {}), ('etf/FundList', {}), ('etf/ETFDetail', {'ETF_ID': '00934'}), ('etf/FundDetail', {'ETF_ID': '00934'})]:
+        if w in names: ct_post(w, tok, body, show=600)
+# Invesco：清單 API 參數
 t = fetch('Invesco 清單頁', 'https://www.invesco.com/us/financial-products/etfs/product-list')
 if t:
     u = html.unescape(t)
-    for w in ('product/search', 'searchApi', 'productListApi', 'plpApi'): around(u, w, 2, 300, 300)
+    for w in ('searchFrequency', 'returnType', 'variationType', 'uniqueIdentifier'):
+        print(w, sorted(set(re.findall(r'"%s"\s*:\s*"([^"]{0,40})"' % w, u)))[:10])
+    around(u, 'solrQuery', 2, 100, 400); around(u, '"fq"', 2, 100, 300); around(u, 'facet.pivot', 1, 600, 50)
+for q in ['idType=cusip&productType=ETF&searchFrequency=daily&returnType=json&variationType=etf', 'idType=ticker&productType=ETF&searchFrequency=daily']:
+    fetch('Invesco list', 'https://dng-api.invesco.com/cache/v1/accounts/en_US/shareclasses?' + q, show=400)
+for q in ['q=*:*&rows=5&wt=json', 'q=*%3A*&fq=productType%3AETF&rows=5', 'country=US&locale=en_US&rows=5&q=RSP']:
+    fetch('Invesco solr', 'https://dng-api.invesco.com/product/search?' + q, show=400)
