@@ -126,12 +126,14 @@
     $('ltKv').innerHTML = k + '</div>';
     const top = r.cos.filter(c => c.w > 0).slice(0, 15);
     $('fTop').innerHTML = ''; $('fSec').innerHTML = '';
-    if (top.length) BN.charts.hbars($('fTop'), { title: '前 15 大公司（占總資產）', sub: '同一家公司在不同 ETF 與個股的持有已合併', items: top.map(c => ({ name: short(c.name), value: c.w * 100, color: 'var(--s-fund)' })), fmt: v => v.toFixed(2) + '%', labelW: 170 });
+    const W = Math.max(340, Math.min(820, ($('fTop').clientWidth || 820) - 34)), narrow = W < 560;
+    if (top.length) BN.charts.hbars($('fTop'), { title: '前 15 大公司（占總資產）', sub: '同一家公司在不同 ETF 與個股的持有已合併', items: top.map(c => ({ name: short(c.name, narrow ? 12 : 22), value: c.w * 100, color: 'var(--s-fund)' })), fmt: v => v.toFixed(2) + '%', labelW: narrow ? 118 : 170, padR: narrow ? 64 : 120, rowH: narrow ? 30 : 34, W });
     const secs = r.sectors.filter(s => s[1] > 0).slice(0, 12);
-    if (secs.length) BN.charts.hbars($('fSec'), { title: '產業分布（占總資產）', sub: '依各公司所屬產業加總；非股票資產不列入', items: secs.map(s => ({ name: s[0], value: s[1] * 100, color: 'var(--s-qld)' })), fmt: v => v.toFixed(1) + '%', labelW: 110 });
+    if (secs.length) BN.charts.hbars($('fSec'), { title: '產業分布（占總資產）', sub: '依各公司所屬產業加總；非股票資產不列入', items: secs.map(s => ({ name: s[0], value: s[1] * 100, color: 'var(--s-qld)' })), fmt: v => v.toFixed(1) + '%', labelW: narrow ? 80 : 110, padR: narrow ? 56 : 120, rowH: narrow ? 30 : 34, W });
     table(r); overlap(r); sources(r);
   }
-  const short = s => { s = String(s || ''); return s.length > 22 ? s.slice(0, 21) + '…' : s; };
+  const SUF = /[,\s]+(Inc\.?|Incorporated|Corporation|Corp\.?|Co\.?|Company|Ltd\.?|Limited|plc|PLC|N\.?V\.?|S\.?A\.?|AG|SE|Holdings?|Group|Class [A-C]|Cl [A-C]|CL [A-C]|ADR|The)$/i;
+  const short = (s, n) => { s = String(s || '').trim(); let t; do { t = s; s = s.replace(SUF, '').trim(); } while (s !== t && s.length > 3); n = n || 22; return s.length > n ? s.slice(0, n - 1) + '…' : s; };
   const tile = (k, v, s) => '<div class="tile"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v) + '</div><div class="s">' + esc(s) + '</div></div>';
   function table(r) {
     const list = showAll ? r.cos : r.cos.slice(0, 50);
