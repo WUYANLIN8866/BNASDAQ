@@ -82,4 +82,14 @@ try:
     m.src_invesco('SPLV'); sys.exit('Invesco 代號比對失效')
 except RuntimeError:
     pass
+# 母基金同時列出子基金與其成分股（約 200%）→ 只留成分股；股票略高於 100%（負現金）可發布；150% 仍擋下
+m.ETF_DIR = tempfile.mkdtemp()
+UF = {'EFA': ['EFA', 'iShares MSCI EAFE ETF', 'US', 'E', 90, ''], 'HEFA': ['HEFA', 'x', 'US', 'E', 40, ''], 'X': ['X', 'x', 'US', 'E', 1, '']}
+eq = m.finalize('HEFA', [dict(t='EFA', name='E', isin='', country='', w=99.7, sec='')] + [dict(t='S%d' % i, name='s', isin='', country='', w=0.997, sec='') for i in range(100)], '2026-11-05', 'iShares 每日持股', UF)
+d = json.load(open(os.path.join(m.ETF_DIR, 'HEFA.json'), encoding='utf-8')); assert abs(eq - 99.7) < 1e-6 and 'EFA' not in [x[0] for x in d['h']] and '子基金' in d['note']
+assert m.finalize('X', [dict(t='A', name='a', isin='', country='', w=103.4, sec='')], '', 'x', UF) == 103.4
+try:
+    m.finalize('X', [dict(t='A', name='a', isin='', country='', w=150, sec='')], '', 'x', UF); sys.exit('150% 防呆失效')
+except ValueError:
+    pass
 print('資料管線規則：全部通過')

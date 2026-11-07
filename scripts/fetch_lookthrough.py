@@ -217,15 +217,17 @@ def src_ssga(code):
                 asof = dt.datetime.strptime(m.group(0), '%d-%b-%Y').date().isoformat()
     hi = next((i for i, r in enumerate(rows) if r and r[0] == 'Name' and 'Weight' in r), None)
     if hi is None or 'Ticker' not in rows[hi]:
-        return [], asof, 'State Street SPDR 每日持股'   # 債券型等沒有股票代號欄的檔案：視為沒有股票持股
+        if hi is not None:
+            NO_STOCK.add(code)   # 有表頭、沒有股票代號欄＝債券型：確認沒有股票持股
+        return [], asof, 'State Street SPDR 每日持股'
     H = rows[hi]; ix = {k: H.index(k) for k in H if k}
     out = []
     for r in rows[hi + 1:]:
         if not r or r[0] in (None, ''):
             break
         w = num(r[ix['Weight']]); t = r[ix['Ticker']]; cus = str(r[ix.get('Identifier', 2)] or '')
-        if w is None or not t or str(t).strip() in ('-', 'CASH_USD', 'USD'):
-            continue
+        if w is None or w < 0 or not t or str(t).strip() in ('-', 'CASH_USD', 'USD'):
+            continue   # 負權重＝賣出的選擇權等衍生品，不是公司持股
         out.append(dict(t=t, name=r[0], isin='US' + cus if re.match(r'^[0-9][0-9A-Z]{8}$', cus) else '', country='' if re.match(r'^[0-9]', cus) else 'Intl', w=w, sec=sector_zh(r[ix['Sector']]) if 'Sector' in ix else ''))
     return out, asof, 'State Street SPDR 每日持股'
 
@@ -256,14 +258,17 @@ def src_ishares(code):
     hi = next((i for i, l in enumerate(lines) if l.startswith('Ticker,') or l.startswith('"Ticker"')), None)
     if hi is None:
         return [], asof, 'iShares 每日持股'
-    out = []
+    out, n = [], 0
     for r in csv.DictReader(lines[hi:]):
+        n += 1
         if (r.get('Asset Class') or '').strip() != 'Equity':
             continue
         w = num(r.get('Weight (%)') or r.get('Market Weight'))
         if w is None:
             continue
         out.append(dict(t=r.get('Ticker'), name=r.get('Name'), isin=r.get('ISIN') or '', country=(r.get('Location') or '').strip(), w=w, sec=sector_zh(r.get('Sector'))))
+    if not out and n:
+        NO_STOCK.add(code)
     return out, asof, 'iShares 每日持股'
 
 
@@ -281,6 +286,8 @@ def src_vanguard(code):
             if start == 1:
                 raise
             break
+        if 'fund' not in j and start == 1:
+            raise RuntimeError('Vanguard API 回傳錯誤：%s' % str(j.get('response') or j.get('message') or '')[:60])
         ents = ((j.get('fund') or {}).get('entity')) or []
         asof = (j.get('asOfDate') or '')[:10] or asof
         size = max(size, int(j.get('size') or 0))
@@ -297,6 +304,8 @@ def src_vanguard(code):
         start += 500
         time.sleep(0.3)
     VG_META[code] = (len(out), size)
+    if not out and size == 0:
+        NO_STOCK.add(code)
     return out, asof, 'Vanguard 月底持股'
 
 
@@ -332,6 +341,15 @@ def src_invesco(code):
 
 def src_vaneck(code):
     b = get('https://www.vaneck.com/us/en/etf/equity/%s/holdings/download/xlsx/' % code.lower())
+    if b[:2] != b'PK':   # 舊網址不適用（會轉到產品頁、甚至別檔基金）：改到該檔產品頁，找「/downloads/holdings/」正式下載網址
+        c = re.escape(code.lower())
+        t = get('https://www.vaneck.com/us/en/investments/%s/holdings/' % code.lower(), tries=2).decode('utf-8', 'replace')
+        cand = re.findall(r'href="(/us/en/(?:investments/[a-z0-9-]+-%s/downloads/holdings/|etf/(?!equity/)[a-z-]+/%s/holdings/download/xlsx/))"' % (c, c), t)
+        cand += ['/us/en/investments/%s/downloads/holdings/' % sl for sl in re.findall(r'/us/en/investments/([a-z0-9-]+-%s)/' % c, t)]
+        for l in list(dict.fromkeys(cand))[:3]:
+            b = get('https://www.vaneck.com' + l, tries=2)
+            if b[:2] == b'PK':
+                break
     if b[:2] != b'PK':
         return [], '', 'VanEck 每日持股'
     rows = xlsx_rows(b)
@@ -425,9 +443,18 @@ def finalize(code, rows, asof, src, U, extra=None):
     h = sorted(agg.values(), key=lambda x: -x[1])
     h = [[x[0], round(x[1], 4), x[2], x[3]] for x in h if abs(x[1]) >= 0.00005]
     eq = round(sum(x[1] for x in h), 4)
-    if eq > 102 or any(x[1] < -0.5 for x in h):
+    note = ''
+    if eq > 105:   # 母基金的持股檔同時列出「子基金」和子基金的成分股（加總約 200%）：拿掉子基金那幾列，只留成分股
+        sub = [x for x in h if (U.get(x[0]) or [0, 0, 0, ''])[3] == 'E']
+        rest = round(eq - sum(x[1] for x in sub), 4)
+        if sub and 50 <= rest <= 105:
+            h = [x for x in h if x not in sub]; eq = rest
+            note = '持股檔同時列出子基金（%s）與其成分股，已只計成分股' % '、'.join(x[0] for x in sub[:5])
+    if eq > 105 or any(x[1] < -0.5 for x in h):   # 股票可略高於 100%（負現金、待交割）；更高或有大額負值多半是格式改變，寧可不發布
         raise ValueError('權重加總 %.2f%% 不合理，不發布（保留前一版）' % eq)
     d = dict(code=code, name=(U.get(code) or [code, code])[1], asof=asof or TODAY, src=src, eq=eq, n=len(h), h=h)
+    if note:
+        d['note'] = src + '；' + note
     if extra:
         d.update(extra)
     write_json(os.path.join(ETF_DIR, code + '.json'), d)
@@ -482,8 +509,8 @@ def run_us(U, only_codes, maxn, report):
                     extra = dict(partial=1, listed=VG_META[c][0], total=VG_META[c][1])
                 eq = finalize(c, rows, asof, src, U, extra)
                 report['ok'][c] = [who, asof, len(rows), eq]
-            elif BOND_RE.search(U[c][1]) or (COMMODITY_RE.search(U[c][1]) and not EQUITY_WORDS.search(U[c][1])):
-                write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=U[c][1], asof=asof or TODAY, src=src + '（無股票持股：債券或現金型）', eq=0, n=0, h=[]))
+            elif c in NO_STOCK or BOND_RE.search(U[c][1]) or (COMMODITY_RE.search(U[c][1]) and not EQUITY_WORDS.search(U[c][1])):
+                write_json(os.path.join(ETF_DIR, c + '.json'), dict(code=c, name=U[c][1], asof=asof or TODAY, src=src + '（無股票持股：債券、商品或現金型）', eq=0, n=0, h=[]))
                 report['ok'][c] = [who, asof, 0, 0]
             else:
                 report['empty'][c] = who
@@ -655,14 +682,14 @@ CATHAY = {'00878': 'CN'}   # 已確認：國泰 API 內部代號 CN＝00878（Ge
 
 
 def cathay_list():
-    for q in ['', '?pageSize=100', '?PageSize=100', '?pageIndex=2', '?pageIndex=3', '?pageIndex=4', '?pageIndex=5', '?page=2', '?page=3', '?page=4', '?page=5', '?pageNo=2', '?currentPage=2']:
-        try:
-            j = json.loads(get('https://cwapi.cathaysite.com.tw/api/ETF/GetETFList' + q, headers=CT_H, tries=1))
-        except Exception:  # noqa
-            continue
+    page, pages = 1, 1
+    while page <= pages and page <= 30:   # 每頁 10 檔；分頁參數是 currentPage（totalPage 告訴總頁數）
+        j = json.loads(get('https://cwapi.cathaysite.com.tw/api/ETF/GetETFList?currentPage=%d' % page, headers=CT_H, tries=2))
+        pages = int(j.get('totalPage') or 1)
         for x in j.get('result') or []:
             if x.get('stockCode') and x.get('fundCode'):
                 CATHAY.setdefault(str(x['stockCode']).strip(), str(x['fundCode']).strip())
+        page += 1
         time.sleep(0.2)
     log('國泰', len(CATHAY))
     return CATHAY
