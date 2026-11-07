@@ -1,7 +1,7 @@
 name: Look-through pipeline trial (temporary)
 on:
   push:
-    branches: [lookthrough-probe]
+    branches: [lookthrough-trial2]
 permissions:
   contents: write
 jobs:
@@ -17,4 +17,4 @@ jobs:
       - run: |
           git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
           git add data/lt
-          git diff --cached --quiet || { git commit -qm "trial: data/lt"; git push origin HEAD:lookthrough-probe; }
+          git diff --cached --quiet || { git commit -qm "trial: data/lt"; git push origin HEAD:lookthrough-trial2; }

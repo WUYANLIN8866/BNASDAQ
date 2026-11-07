@@ -550,6 +550,73 @@ def src_fuhhwa(code):
     return out, asof, '復華投信 基金資產明細'
 
 
+CF_H = {'Content-Type': 'application/json', 'Accept': 'application/json, text/plain, */*', 'Origin': 'https://www.capitalfund.com.tw', 'Referer': 'https://www.capitalfund.com.tw/etf'}
+CF_ITEMS = {}
+
+
+def capital_items():
+    if not CF_ITEMS:
+        j = json.loads(get('https://www.capitalfund.com.tw/CFWeb/api/etf/items', headers=CF_H, data=b'null'))
+        for x in j.get('data') or []:
+            if x.get('stockNo') and x.get('fundNo'):
+                CF_ITEMS[str(x['stockNo']).strip()] = str(x['fundNo']).strip()
+        log('群益', len(CF_ITEMS))
+    return CF_ITEMS
+
+
+def src_capital(code):
+    """群益：申購買回清單（含每檔股票權重）；從今天往前找最近一個有資料的日期"""
+    fno = capital_items()[code]
+    for k in range(0, 8):
+        d = (dt.date.today() - dt.timedelta(days=k)).strftime('%Y/%m/%d')
+        try:
+            j = json.loads(get('https://www.capitalfund.com.tw/CFWeb/api/etf/buyback', headers=CF_H, data=json.dumps({'fundId': fno, 'date': d}).encode(), tries=1))
+        except Exception:  # noqa
+            continue
+        st = ((j.get('data') or {}).get('stocks')) or []
+        if j.get('code') == 200 and st:
+            out = []
+            for x in st:
+                w = num(x.get('weight')); c = str(x.get('stocNo') or '').strip()
+                if w is None or not c:
+                    continue
+                out.append(dict(t=c, name=x.get('stocName') or x.get('stocEname'), isin='', country='Taiwan' if re.match(r'^\d{4}$', c) else '', w=w, sec=''))
+            return out, d.replace('/', '-'), '群益投信 申購買回清單'
+        time.sleep(0.2)
+    return [], '', '群益投信 申購買回清單'
+
+
+CT_H = {'Accept': 'application/json, text/plain, */*', 'Origin': 'https://www.cathaysite.com.tw', 'Referer': 'https://www.cathaysite.com.tw/'}
+CATHAY = {'00878': 'CN'}   # 已確認：國泰 API 內部代號 CN＝00878（GetBuySale 回傳 stockCode 00878）
+
+
+def cathay_list():
+    for q in ['', '?pageSize=100', '?PageSize=100', '?pageIndex=2', '?pageIndex=3', '?pageIndex=4', '?pageIndex=5', '?page=2', '?page=3', '?page=4', '?page=5', '?pageNo=2', '?currentPage=2']:
+        try:
+            j = json.loads(get('https://cwapi.cathaysite.com.tw/api/ETF/GetETFList' + q, headers=CT_H, tries=1))
+        except Exception:  # noqa
+            continue
+        for x in j.get('result') or []:
+            if x.get('stockCode') and x.get('fundCode'):
+                CATHAY.setdefault(str(x['stockCode']).strip(), str(x['fundCode']).strip())
+        time.sleep(0.2)
+    log('國泰', len(CATHAY))
+    return CATHAY
+
+
+def src_cathay(code):
+    """國泰：投信公布的標的指數成分股權重（指數化 ETF 的持股與指數幾乎相同，以此近似）"""
+    j = json.loads(get('https://cwapi.cathaysite.com.tw/api/ETF/GetIndexStockWeights?fundCode=' + urllib.parse.quote(CATHAY[code]), headers=CT_H))
+    r = j.get('result') or {}
+    out = []
+    for x in r.get('stockWeights') or []:
+        w = num(x.get('weights')); c = str(x.get('stockCode') or '').strip()
+        if w is None or not c:
+            continue
+        out.append(dict(t=c, name=x.get('stockName'), isin='', country='Taiwan' if re.match(r'^\d{4}$', c) else '', w=w, sec=''))
+    return out, str(r.get('date') or '').replace('/', '-'), '國泰投信 公布的標的指數成分股權重（以指數權重近似實際持股）'
+
+
 SINOPAC = ['00930', '00907', '00901', '00888', '00887', '00886', '00858', '006204', '00410A']
 
 
@@ -566,6 +633,19 @@ def run_tw(U, only_codes, report):
     for c in SINOPAC:
         if c in U and c not in LEVER:
             plan.append((c, '永豐', src_sinopac))
+    skip = lambda c: c not in U or c in LEVER or c[-1:] in ('B', 'L', 'R', 'U')
+    try:
+        for c in sorted(capital_items()):
+            if not skip(c):
+                plan.append((c, '群益', src_capital))
+    except Exception as e:  # noqa
+        log('群益 items failed', repr(e)[:150])
+    try:
+        for c in sorted(cathay_list()):
+            if not skip(c):
+                plan.append((c, '國泰', src_cathay))
+    except Exception as e:  # noqa
+        log('國泰 list failed', repr(e)[:150])
     try:
         for c in sorted(fh_scan()):
             if c in U and c not in LEVER and not c.endswith('B'):
