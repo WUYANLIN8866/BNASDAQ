@@ -499,6 +499,57 @@ def src_sinopac(code):
     return out, asof, '永豐投信 申購買回清單'
 
 
+FH = {}
+
+
+def fh_scan():
+    """復華：內部代號 ETF01～ETF40 逐一下載最近一個有資料的交易日持股 Excel，從標題讀出證券代號"""
+    if FH:
+        return FH
+    import openpyxl
+    days = [(dt.date.today() - dt.timedelta(days=k)).strftime('%Y%m%d') for k in range(0, 8)]
+    for i in range(1, 41):
+        fid = 'ETF%02d' % i
+        for d in days:
+            try:
+                b = get('https://www.fhtrust.com.tw/api/assetsExcel/%s/%s' % (fid, d), tries=1)
+            except Exception:  # noqa
+                continue
+            if b[:2] != b'PK':
+                continue
+            rows = [list(r) for r in openpyxl.load_workbook(io.BytesIO(b), read_only=True, data_only=True).worksheets[0].iter_rows(values_only=True)]
+            m = re.search(r'證[劵券]代碼：\s*([0-9A-Z]{4,7})', str(rows[0][0] if rows and rows[0] else ''))
+            if m:
+                FH[m.group(1)] = (fid, d, rows)
+            break
+        time.sleep(0.2)
+    log('復華', len(FH), sorted(FH))
+    return FH
+
+
+def src_fuhhwa(code):
+    fid, d, rows = fh_scan()[code]
+    asof = '%s-%s-%s' % (d[:4], d[4:6], d[6:])
+    for r in rows[:6]:
+        m = re.search(r'(\d{4})/(\d{2})/(\d{2})', str(r[0] or ''))
+        if m:
+            asof = '-'.join(m.groups()); break
+    hi = next((i for i, r in enumerate(rows) if r and r[0] == '證券代號'), None)
+    out = []
+    if hi is None:
+        return out, asof, '復華投信 基金資產明細'
+    H = rows[hi]
+    wi = next((j for j, h in enumerate(H) if h and '權重' in str(h)), 4)
+    for r in rows[hi + 1:]:
+        if not r or not r[0]:
+            continue
+        w = num(r[wi]); c = str(r[0]).strip()
+        if w is None:
+            continue
+        out.append(dict(t=c, name=r[1], isin='', country='Taiwan' if re.match(r'^\d{4}$', c) else '', w=w, sec=''))
+    return out, asof, '復華投信 基金資產明細'
+
+
 SINOPAC = ['00930', '00907', '00901', '00888', '00887', '00886', '00858', '006204', '00410A']
 
 
@@ -515,6 +566,12 @@ def run_tw(U, only_codes, report):
     for c in SINOPAC:
         if c in U and c not in LEVER:
             plan.append((c, '永豐', src_sinopac))
+    try:
+        for c in sorted(fh_scan()):
+            if c in U and c not in LEVER and not c.endswith('B'):
+                plan.append((c, '復華', src_fuhhwa))
+    except Exception as e:  # noqa
+        log('復華 scan failed', repr(e)[:150])
     if only_codes:
         plan = [p for p in plan if p[0] in only_codes]
     log('TW plan', len(plan))

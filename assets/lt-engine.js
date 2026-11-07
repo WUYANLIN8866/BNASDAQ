@@ -31,10 +31,10 @@
     if (d.base) {
       const b = E.get(d.base);
       if (!b || !b.h) return null;
-      return { h: b.h, lev: (d.lev || 1) * (b.lev || 1), eq: b.eq, base: d.base, asof: b.asof, src: b.src, nonEq: b.nonEq || 0 };
+      return { h: b.h, lev: (d.lev || 1) * (b.lev || 1), eq: b.eq, base: d.base, asof: b.asof, src: b.src, partial: !!b.partial };
     }
     if (!d.h) return null;
-    return { h: d.h, lev: d.lev || 1, eq: d.eq, base: null, asof: d.asof, src: d.src, nonEq: d.nonEq || 0 };
+    return { h: d.h, lev: d.lev || 1, eq: d.eq, base: null, asof: d.asof, src: d.src, partial: !!d.partial };
   };
 
   /**
@@ -43,7 +43,7 @@
    */
   LT.compute = function (rows, o) {
     const U = o.U, E = o.E, alias = o.alias || {}, fx = +o.fx || 0;
-    const out = { errors: [], warnings: [], assets: [], cos: [], undec: [], nonEq: 0, levExtra: 0, stockExp: 0, total: null, sumPct: null, overlap: [], sectors: [] };
+    const out = { errors: [], warnings: [], assets: [], cos: [], undec: [], nonEq: 0, unlisted: 0, levExtra: 0, stockExp: 0, total: null, sumPct: null, overlap: [], sectors: [] };
     const A = [];
     rows.forEach((r, i) => {
       const raw = String(r.code || '').trim();
@@ -93,8 +93,10 @@
         a.status = H.h.length ? 'lt' : 'nonEq'; a.lev = H.lev; a.base = H.base; a.asof = H.asof; a.src = H.src;
         let eqSum = 0;
         H.h.forEach(x => { eqSum += x[1]; add(x[0], x[2], x[3], a.w * H.lev * x[1] / 100, a.code); });
-        out.nonEq += a.w * (1 - eqSum / 100);
-        out.levExtra += a.w * (H.lev - 1) * eqSum / 100;
+        // 發行商只列出部分持股（例如 Vanguard 分頁未抓齊）：沒列出的部分仍是股票，記為「未逐一列出的小額持股」，不算非股票
+        if (H.partial) out.unlisted += a.w * H.lev * (1 - eqSum / 100); else out.nonEq += a.w * (1 - eqSum / 100);
+        out.levExtra += a.w * (H.lev - 1) * (H.partial ? 1 : eqSum / 100);
+        a.partial = H.partial;
         HB.set(a.code, H);
       } else {
         a.status = 'stock';
@@ -129,7 +131,7 @@
   /** 摘要：公司家數、前十大合計、最大單一公司 */
   LT.summary = function (r) {
     const pos = r.cos.filter(c => c.w > 0);
-    return { n: pos.length, top10: pos.slice(0, 10).reduce((t, c) => t + c.w, 0), top: pos[0] || null, nonEq: r.nonEq, levExtra: r.levExtra, stockExp: r.stockExp, undec: r.undec.reduce((t, u) => t + u.w, 0) };
+    return { n: pos.length, top10: pos.slice(0, 10).reduce((t, c) => t + c.w, 0), top: pos[0] || null, nonEq: r.nonEq, unlisted: r.unlisted, levExtra: r.levExtra, stockExp: r.stockExp, undec: r.undec.reduce((t, u) => t + u.w, 0) };
   };
 
   /** 匯出 CSV（UTF-8 BOM，Excel 開啟不亂碼） */
@@ -137,6 +139,7 @@
     const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
     const lines = [['排名', '公司', '代號', '產業', '占總資產(%)', '金額(台幣)', '來源'].map(q).join(',')];
     r.cos.forEach((c, i) => lines.push([i + 1, c.name, c.key, c.sector, (c.w * 100).toFixed(4), r.total ? Math.round(c.w * r.total) : '', Object.entries(c.src).map(([k, w]) => k + ' ' + (w * 100).toFixed(3) + '%').join('；')].map(q).join(',')));
+    if (r.unlisted) lines.push(['', '其他小額持股（發行商未逐一列出）', '', '', (r.unlisted * 100).toFixed(4), r.total ? Math.round(r.unlisted * r.total) : '', ''].map(q).join(','));
     if (r.nonEq) lines.push(['', '非股票資產（現金、債券等）', '', '', (r.nonEq * 100).toFixed(4), r.total ? Math.round(r.nonEq * r.total) : '', ''].map(q).join(','));
     r.undec.forEach(u => lines.push(['', '未拆解：' + u.name, u.code, '', (u.w * 100).toFixed(4), r.total ? Math.round(u.w * r.total) : '', '成分股資料暫缺'].map(q).join(',')));
     return '﻿' + lines.join('\r\n');

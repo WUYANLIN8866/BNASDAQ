@@ -46,4 +46,9 @@ assert(LT.norm(' brk.b ') === 'BRK-B' && LT.norm('2330.TW') === '2330' && LT.nor
 // 10) CSV
 r = LT.compute([{ code: 'QQQ', v: 60 }, { code: 'SHV', v: 40 }], { mode: 'pct', U, E, fx: 32, alias, total: 1000000 });
 const csv = LT.csv(r); assert(csv.startsWith('﻿') && csv.includes('非股票資產') && csv.split('\r\n').length === 1 + r.cos.length + 1);
-console.log('計算核心：10 組測試全部通過');
+// 11) 發行商只列出部分持股：沒列出的部分算「未逐一列出的小額持股」，不算非股票
+E.set('VXUS', { h: [['2330', 4.24, '台積電', '資訊科技'], ['X:KR7005930003', 2.02, 'Samsung', '資訊科技']], eq: 6.26, partial: 1 });
+U.set('VXUS', { n: 'Vanguard Total Intl', m: 'US', k: 'E', p: 70 });
+r = LT.compute([{ code: 'VXUS', v: 100 }], { mode: 'pct', U, E, fx: 32, alias });
+near(r.unlisted, 1 - 0.0626, '未列出'); near(r.nonEq, 0, '不算非股票'); near(r.stockExp + r.unlisted + r.nonEq - r.levExtra, 1, '恆等式（部分）');
+console.log('計算核心：11 組測試全部通過');

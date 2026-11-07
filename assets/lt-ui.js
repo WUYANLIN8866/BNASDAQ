@@ -121,6 +121,7 @@
       tile('最大單一公司', S.top ? pct(S.top.w, 1) : '—', S.top ? S.top.name + '（' + S.top.key + '）' : '') +
       tile('非股票資產', pct(S.nonEq, 1), '現金、債券等不屬於任何公司的部分');
     if (Math.abs(S.levExtra) > 1e-9) k += tile('股票曝險合計', pct(S.stockExp, 1), '含槓桿 ETF 多出的 ' + pct(S.levExtra, 1) + '（反向 ETF 為負）');
+    if (S.unlisted > 1e-9) k += tile('其他小額持股', pct(S.unlisted, 1), '發行商資料未逐一列出的小額股票');
     if (S.undec > 0) k += tile('未拆解資產', pct(S.undec, 1), '成分股資料暫缺的 ETF，以整檔列出');
     if (r.total) k += tile('總金額（台幣）', money(r.total), st.mode === 'shares' ? '股數 × 收盤價' + (FX ? '（美元 × ' + nf(FX, 3) + '）' : '') : '依輸入的總金額');
     $('ltKv').innerHTML = k + '</div>';
@@ -142,6 +143,7 @@
       const src = Object.entries(c.src).sort((p, q) => Math.abs(q[1]) - Math.abs(p[1])).map(([k, w]) => esc(k) + ' ' + pct(w, 2)).join('、');
       h += '<tr><td class="c">' + (i + 1) + '</td><td class="l">' + esc(c.name) + '</td><td class="l">' + esc(c.key.startsWith('X:') ? c.key.slice(2) : c.key) + '</td><td class="l">' + esc(c.sector || '未分類') + '</td><td' + (c.w < 0 ? ' class="neg"' : '') + '>' + pct(c.w, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(c.w * r.total)) + '</td>' : '') + '<td class="l small">' + src + '</td></tr>';
     });
+    if (r.unlisted) h += '<tr class="hl"><td></td><td class="l">其他小額持股（發行商未逐一列出）</td><td></td><td></td><td>' + pct(r.unlisted, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(r.unlisted * r.total)) + '</td>' : '') + '<td></td></tr>';
     if (r.nonEq) h += '<tr class="hl"><td></td><td class="l">非股票資產（現金、債券等）</td><td></td><td></td><td>' + pct(r.nonEq, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(r.nonEq * r.total)) + '</td>' : '') + '<td></td></tr>';
     r.undec.forEach(u => { h += '<tr class="hl"><td></td><td class="l">未拆解：' + esc(u.name) + '</td><td class="l">' + esc(u.code) + '</td><td></td><td>' + pct(u.w, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(u.w * r.total)) + '</td>' : '') + '<td class="l small">成分股資料暫缺</td></tr>'; });
     h += '</tbody></table></div>';
