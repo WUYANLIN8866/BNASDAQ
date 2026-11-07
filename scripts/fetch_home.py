@@ -62,6 +62,25 @@ def stock_series(code, market, months, start, end):
     return [None if v is None else round(v / base, 6) for v in vals], rows[-1][0].isoformat()
 
 
+def same(o, n):
+    """內容是否實質相同：月份、序列都一樣，數值相對差都小於 1e-4（Yahoo 每次回傳的還原收盤在小數第 6 位會有些微差異，不因此重寫檔案）"""
+    if o.get('end') != n.get('end') or o.get('months') != n.get('months'):
+        return False
+    for grp in ('series', 'indices'):
+        if set(o.get(grp, {})) != set(n.get(grp, {})):
+            return False
+        for k, it in n[grp].items():
+            a, b = o[grp][k].get('values', []), it.get('values', [])
+            if len(a) != len(b):
+                return False
+            for x, y in zip(a, b):
+                if (x is None) != (y is None):
+                    return False
+                if x is not None and abs(x - y) > 1e-4 * max(abs(x), abs(y), 1e-12):
+                    return False
+    return True
+
+
 def main():
     end_m = last_complete_month()
     months = month_list(START, end_m)
@@ -98,8 +117,8 @@ def main():
             old = None
     if old and old.get('end', '') > end_m:
         log('existing file is newer (', old.get('end'), '>', end_m, '); keeping existing'); return 1
-    if old and {k: v for k, v in old.items() if k != 'updated'} == {k: v for k, v in out.items() if k != 'updated'}:
-        log('unchanged'); return 0
+    if old and same(old, out):
+        log('unchanged (differences, if any, are below 1e-4 relative: Yahoo rounding noise)'); return 0
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     log('written', OUT, 'end', end_m, len(out['series']), 'stocks', len(out['indices']), 'indices', 'errors', list(out['errors']))
     return 0
