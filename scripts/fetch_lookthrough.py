@@ -720,7 +720,7 @@ def main():
     write_json(os.path.join(OUT, 'universe.json'), dict(schema='bnasdaq-lt-universe/2', alias=ALIAS, cols=['code', 'name', 'market', 'kind', 'sector', 'lt'], list=lst))
     write_json(os.path.join(OUT, 'px.json'), dict(schema='bnasdaq-lt-px/1', updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%MZ'), fx=fx, asof=asof,
                                                  px={c: (round(v[4], 4) if isinstance(v[4], (int, float)) else None) for c, v in U.items() if v[4]}))
-    cov = lambda mk: (sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US') and x[6]), sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US')))
+    cov = lambda mk: (sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US') and x[5]), sum(1 for x in lst if x[3] == 'E' and (x[2] == 'US') == (mk == 'US')))
     meta = dict(updated=TODAY, coverage={'US': cov('US'), 'TW': cov('TW')}, ok=len(report['ok']), fail=report['fail'], empty=report['empty'], derived=report['derived'],
                 derived_missing=report['derived_missing'], bond_guess=len(report['bond_guess']),
                 sources={k: sum(1 for v in report['ok'].values() if v[0] == k) for k in ('iShares', 'SSGA', 'Vanguard', 'Invesco', 'VanEck', 'ARK', '元大', '永豐', '復華', '國泰', '群益')})
