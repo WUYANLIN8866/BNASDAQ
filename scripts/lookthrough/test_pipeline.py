@@ -53,7 +53,7 @@ except RuntimeError:
 def jpm_xlsx(title, frac):
     wb = openpyxl.Workbook(); ws = wb.active
     for _ in range(5): ws.append([])
-    ws.append(['Holdings', title, 'As of Date: 11/06/2026']); ws.append([])
+    ws.append(['Holdings', None, title, None, None, 'As of Date: 11/06/2026']); ws.append([])   # 官方檔的標題列中間有空白儲存格
     H = ['Ticker', 'Security Description', 'Security Type', 'Method', 'Shares/Par', 'Market Value (USD)', 'Country', 'Currency', 'Sector', 'Industry', 'Coupon', 'Maturity Date', 'Effective Date', 'Contract Size', 'Strike Price', '% of Market Value', '% of Net Assets']
     ws.append(H)
     k = 0.01 if frac else 1
