@@ -69,7 +69,11 @@
       `<span class="xp-meta">最後更新 ${tpe(d.updated_at)}（台北時間）・${age < 1 ? '不到 1 分鐘前' : age + ' 分鐘前'}・本頁每 60 秒自動更新</span>`;
   }
 
-  function tile(k, v, s, cls) { return `<div class="tile"><div class="k">${k}</div><div class="v${cls ? ' ' + cls : ''}">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`; }
+  // a long plain number stays on one line and shrinks only when its tile is too narrow (cqi = 1% of the tile's inner
+  // width; 0.567 em per digit, 0.332 em per comma, measured on the page's serif figures) -- 2026-11-07
+  const fitStyle = v => { const t = String(v), em = 0.567 * (t.match(/\d/g) || []).length + 0.332 * (t.match(/[,.]/g) || []).length + 0.05;
+    return ` style="font-size:min(26px, calc(98cqi / ${em.toFixed(3)}))"`; };
+  function tile(k, v, s, cls) { return `<div class="tile"><div class="k">${k}</div><div class="v${cls ? ' ' + cls : ''}"${cls === 'fit' ? fitStyle(v) : ''}>${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`; }
 
   function render() {
     const d = DATA; if (!d) return;
@@ -80,7 +84,7 @@
     const gap = d.gap_pp == null ? null : d.gap_pp;
     $('xp-kv').innerHTML = [
       tile('本階段進度', pct(d.stage_pct, 1), d.stage ? esc(d.stage) : '—'),
-      tile('累計已回測組數', full(d.tested), `涵蓋 ${full(d.types_tested)} 種方法組合`),
+      tile('累計已回測組數', full(d.tested), `涵蓋 ${full(d.types_tested)} 種方法組合`, 'fit'),
       tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap != null ? `，還差 ${gap.toFixed(2)} 個百分點` : ''}`),
       tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
     ].join('');
