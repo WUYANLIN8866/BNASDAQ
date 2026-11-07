@@ -413,10 +413,11 @@ def src_jpm(code):
         raise RuntimeError('J.P. Morgan 沒有回傳 Excel')
     rows = xlsx_rows(b)
     head = next((r for r in rows[:12] if r and r[0] == 'Holdings'), None)
-    if not head or cus not in str(head[1] or '') or title.replace(' ETF', '') not in str(head[1] or ''):
-        raise RuntimeError('J.P. Morgan 檔案標題不符：%s' % (head and head[1]))
+    line = ' '.join(str(x) for x in (head or []) if x not in (None, ''))   # 標題列中間可能有空白儲存格
+    if not head or cus not in line or title.replace(' ETF', '') not in line:
+        raise RuntimeError('J.P. Morgan 檔案標題不符：%s' % line[:120])
     asof = ''
-    m = re.search(r'(\d{2})/(\d{2})/(\d{4})', str(head[2] or ''))
+    m = re.search(r'As of Date:\s*(\d{2})/(\d{2})/(\d{4})', line)
     if m:
         asof = '%s-%s-%s' % (m.group(3), m.group(1), m.group(2))
     hi = next(i for i, r in enumerate(rows) if r and r[0] == 'Ticker' and '% of Net Assets' in r)
