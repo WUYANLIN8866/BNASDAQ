@@ -13,4 +13,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
       - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
-      - run: mkdir -p shots && node scripts/lookthrough/live_check.js https://wuyanlin8866.github.io/BNASDAQ/ shots
+      - run: |
+          mkdir -p shots
+          curl -s https://wuyanlin8866.github.io/BNASDAQ/lookthrough.html | grep -o 'lt-[a-z]*.js?v=[0-9a-z]*' | sort -u
+          node scripts/lookthrough/live_cash.js https://wuyanlin8866.github.io/BNASDAQ/ shots
