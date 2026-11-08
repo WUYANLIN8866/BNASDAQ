@@ -15,8 +15,10 @@
     { t: '0050＋QQQ 各半', m: 'pct', r: [['0050', 50], ['QQQ', 50]] },
     { t: '半導體雙雄', m: 'pct', r: [['SOXX', 50], ['SMH', 50]] },
     { t: '全球一檔', m: 'pct', r: [['VT', 100]] },
-    { t: '槓桿＋短債', m: 'pct', r: [['QLD', 50], ['SHV', 50]] }
+    { t: '槓桿＋短債', m: 'pct', r: [['QLD', 50], ['SHV', 50]] },
+    { t: '含現金', m: 'pct', r: [['0050', 50], ['QQQ', 30], ['現金', 20]] }
   ];
+  const CASHQ = /現|金|台幣|美元|美金|cash|twd|ntd/i;   // 搜尋建議：打到這些字就把兩種現金列在前面
   let U = null, UNI = null, ALIAS = {}, FX = null, META = null, VER = '';
   const E = new Map();
   let st = { mode: 'pct', rows: [], total: '' }, last = null, showAll = false;
@@ -49,12 +51,13 @@
     const s = LT.norm(q), low = String(q || '').trim().toLowerCase(), out = [];
     if (!U || !low) return out;
     const exact = U.get(s); if (exact) out.push([s, exact]);
+    if (CASHQ.test(low)) Object.entries(LT.CASH).forEach(([c, u]) => out.push([c, u]));
     for (const [c, u] of U) { if (out.length >= 12) break; if (c !== s && c.startsWith(s)) out.push([c, u]); }
     if (out.length < 30 && low.length >= 1) for (const [c, u] of U) { if (out.length >= 30) break; if (!c.startsWith(s) && u.n && u.n.toLowerCase().includes(low)) out.push([c, u]); }
     return out;
   }
   function fillList(q) {
-    const dl = $('ltlist'); dl.innerHTML = suggest(q).map(([c, u]) => '<option value="' + esc(c) + '">' + esc(u.n + '｜' + (MK[u.m] || u.m) + (u.k === 'E' ? ' ETF' : '') + (u.k === 'E' ? (u.lt ? '' : '（暫不支援拆解）') : '')) + '</option>').join('');
+    const dl = $('ltlist'); dl.innerHTML = suggest(q).map(([c, u]) => '<option value="' + esc(c) + '">' + esc(u.k === 'C' ? u.n + '｜不拆解，計入非股票資產' : u.n + '｜' + (MK[u.m] || u.m) + (u.k === 'E' ? ' ETF' : '') + (u.k === 'E' ? (u.lt ? '' : '（暫不支援拆解）') : '')) + '</option>').join('');
   }
 
   // ---------------- 狀態保存 ----------------
@@ -76,22 +79,32 @@
 
   // ---------------- 輸入表 ----------------
   function drawRows() {
-    $('vHead').textContent = st.mode === 'shares' ? '股數' : '比例（%）';
+    $('vHead').textContent = st.mode === 'shares' ? '股數（現金填金額）' : '比例（%）';
     document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === st.mode)));
     $('ltTotalWrap').hidden = st.mode === 'shares';
     $('ltRows').classList.toggle('shares', st.mode === 'shares');
-    $('rows').innerHTML = st.rows.map((r, i) => '<tr data-i="' + i + '"><td class="l"><label class="sr-only" for="c' + i + '">第 ' + (i + 1) + ' 列代號</label><input id="c' + i + '" class="code" list="ltlist" autocomplete="off" spellcheck="false" placeholder="例：0050、QQQ、台積電" value="' + esc(r.code) + '"></td>' +
-      '<td><label class="sr-only" for="v' + i + '">' + (st.mode === 'shares' ? '股數' : '比例') + '</label><input id="v' + i + '" class="v" type="number" inputmode="decimal" min="0" step="any" value="' + esc(r.v) + '"></td>' +
+    $('rows').innerHTML = st.rows.map((r, i) => '<tr data-i="' + i + '"><td class="l"><label class="sr-only" for="c' + i + '">第 ' + (i + 1) + ' 列代號</label><input id="c' + i + '" class="code" list="ltlist" autocomplete="off" spellcheck="false" placeholder="例：0050、QQQ、台積電、現金" value="' + esc(r.code) + '"></td>' +
+      '<td><label class="sr-only" for="v' + i + '">' + (st.mode === 'shares' ? '股數' : '比例') + '</label><input id="v' + i + '" class="v" type="number" inputmode="decimal" min="0" step="any" placeholder="' + (st.mode === 'shares' ? '股數' : '比例 %') + '" value="' + esc(r.v) + '"></td>' +
       '<td class="pxc"><label class="sr-only" for="p' + i + '">價格</label><input id="p' + i + '" class="px" type="number" inputmode="decimal" min="0" step="any" placeholder="自動" value="' + esc(r.px || '') + '"></td>' +
       '<td class="l info" id="i' + i + '"></td><td class="c"><button type="button" class="sm danger del" aria-label="刪除第 ' + (i + 1) + ' 列">刪除</button></td></tr>').join('');
     st.rows.forEach((r, i) => info(i));
   }
+  function cashRow(i, isCash) {   // 現金列：價格固定（不能手動改），數值欄提示填金額
+    const p = $('p' + i), v = $('v' + i); if (!p || !v) return;
+    p.disabled = isCash; p.placeholder = isCash ? '—' : '自動'; if (isCash) { p.value = ''; st.rows[i].px = ''; }
+    v.placeholder = st.mode === 'shares' ? (isCash ? '金額' : '股數') : '比例 %';
+  }
   function info(i) {
     const r = st.rows[i], cell = $('i' + i); if (!cell) return;
     if (!U) { cell.textContent = '載入中…'; return; }
-    if (!String(r.code || '').trim()) { cell.textContent = ''; return; }
-    const c = LT.norm(r.code), u = U.get(c);
+    if (!String(r.code || '').trim()) { cell.textContent = ''; cashRow(i, false); return; }
+    const s = LT.resolve(r.code, U), u = s;
+    cashRow(i, !!(s && s.k === 'C'));
     if (!u) { cell.innerHTML = '<span class="neg">找不到這個代號</span>'; return; }
+    if (u.k === 'C') {
+      const how = st.mode === 'shares' ? (u.cur === 'USD' ? '填金額（美元），依匯率 ' + (FX ? nf(FX, 3) : '—') + ' 換算成台幣' : '填金額（元）') : '填比例';
+      cell.innerHTML = '<b>' + esc(u.n) + '</b> <small>' + esc(how) + '</small> <span class="lt-tag ok">現金</span>'; return;
+    }
     const tag = u.k === 'E' ? (u.lt ? '<span class="lt-tag ok">可拆解</span>' : '<span class="lt-tag">暫不支援拆解</span>') : '<span class="lt-tag">個股</span>';
     const px = u.p ? (u.m === 'US' ? '快照價 ' : '收盤 ') + nf(u.p, u.p < 10 ? 3 : 2) + (u.m === 'US' ? ' 美元' : ' 元') : '無價格';
     cell.innerHTML = '<b>' + esc(u.n) + '</b> <small>' + esc((MK[u.m] || u.m) + (u.k === 'E' ? ' ETF' : '') + '｜' + px) + '</small> ' + tag;
@@ -119,11 +132,11 @@
       tile('公司家數', nf(S.n) + ' 家', '拆解後實際持有的公司') +
       tile('前十大合計', pct(S.top10, 1), '前 10 家公司占總資產') +
       tile('最大單一公司', S.top ? pct(S.top.w, 1) : '—', S.top ? S.top.name + '（' + S.top.key + '）' : '') +
-      tile('非股票資產', pct(S.nonEq, 1), '現金、債券等不屬於任何公司的部分');
+      tile('非股票資產', pct(S.nonEq + S.cash, 1), S.cash > 1e-12 ? '含你輸入的現金 ' + pct(S.cash, 1) + '；其餘為 ETF 內的現金、債券等' : '現金、債券等不屬於任何公司的部分');
     if (Math.abs(S.levExtra) > 1e-9) k += tile('股票曝險合計', pct(S.stockExp, 1), '含槓桿 ETF 多出的 ' + pct(S.levExtra, 1) + '（反向 ETF 為負）');
     if (S.unlisted > 1e-9) k += tile('其他小額持股', pct(S.unlisted, 1), '發行商資料未逐一列出的小額股票');
     if (S.undec > 0) k += tile('未拆解資產', pct(S.undec, 1), '成分股資料暫缺的 ETF，以整檔列出');
-    if (r.total) k += tile('總金額（台幣）', money(r.total), st.mode === 'shares' ? '股數 × 價格' + (FX ? '（美元 × ' + nf(FX, 3) + '）' : '') : '依輸入的總金額');
+    if (r.total) k += tile('總金額（台幣）', money(r.total), st.mode === 'shares' ? '股數 × 價格' + (S.cash > 1e-12 ? '＋現金' : '') + (FX ? '（美元 × ' + nf(FX, 3) + '）' : '') : '依輸入的總金額');
     $('ltKv').innerHTML = k + '</div>';
     const top = r.cos.filter(c => c.w > 0).slice(0, 15);
     $('fTop').innerHTML = ''; $('fSec').innerHTML = '';
@@ -144,7 +157,8 @@
       h += '<tr><td class="c">' + (i + 1) + '</td><td class="l">' + esc(c.name) + '</td><td class="l">' + esc(c.key.startsWith('X:') ? c.key.slice(2) : c.key) + '</td><td class="l">' + esc(c.sector || '未分類') + '</td><td' + (c.w < 0 ? ' class="neg"' : '') + '>' + pct(c.w, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(c.w * r.total)) + '</td>' : '') + '<td class="l small">' + src + '</td></tr>';
     });
     if (r.unlisted) h += '<tr class="hl"><td></td><td class="l">其他小額持股（發行商未逐一列出）</td><td></td><td></td><td>' + pct(r.unlisted, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(r.unlisted * r.total)) + '</td>' : '') + '<td></td></tr>';
-    if (r.nonEq) h += '<tr class="hl"><td></td><td class="l">非股票資產（現金、債券等）</td><td></td><td></td><td>' + pct(r.nonEq, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(r.nonEq * r.total)) + '</td>' : '') + '<td></td></tr>';
+    Object.entries(r.cashBy || {}).forEach(([c, w]) => { h += '<tr class="hl"><td></td><td class="l">' + esc(LT.CASH[c].n) + '（自行輸入）</td><td class="l">' + esc(c) + '</td><td></td><td>' + pct(w, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(w * r.total)) + '</td>' : '') + '<td class="l small">現金不拆解</td></tr>'; });
+    if (r.nonEq) h += '<tr class="hl"><td></td><td class="l">非股票資產（' + (r.cash ? 'ETF 內的' : '') + '現金、債券等）</td><td></td><td></td><td>' + pct(r.nonEq, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(r.nonEq * r.total)) + '</td>' : '') + '<td></td></tr>';
     r.undec.forEach(u => { h += '<tr class="hl"><td></td><td class="l">未拆解：' + esc(u.name) + '</td><td class="l">' + esc(u.code) + '</td><td></td><td>' + pct(u.w, 3) + '</td>' + (r.total ? '<td>' + nf(Math.round(u.w * r.total)) + '</td>' : '') + '<td class="l small">成分股資料暫缺</td></tr>'; });
     h += '</tbody></table></div>';
     if (r.cos.length > 50) h += '<p><button type="button" class="btn line" id="ltAll">' + (showAll ? '只看前 50 家' : '顯示全部 ' + nf(r.cos.length) + ' 家') + '</button></p>';
@@ -158,8 +172,8 @@
     box.innerHTML = '<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">ETF 組合</th><th>重疊度</th><th class="l">意思</th></tr></thead><tbody>' + rows.map(o => '<tr><td class="l">' + esc(o[0]) + ' × ' + esc(o[1]) + '</td><td>' + pct(o[2], 1) + '</td><td class="l small">兩檔各自的持股權重，取同一家公司較小者加總</td></tr>').join('') + '</tbody></table></div>';
   }
   function sources(r) {
-    const how = a => a.status === 'stock' ? '個股本身' : a.status === 'none' ? '暫不支援拆解（以整檔列出）' : a.status === 'nonEq' ? '非股票（債券／現金）' : a.base ? '以 ' + a.base + ' 成分股 × ' + a.lev + ' 推算' : '發行商公布的成分股';
-    const etfs = r.assets.map(a => { const d = E.get(a.code); return '<tr><td class="l">' + esc(a.code) + '</td><td class="l">' + esc(a.name) + '</td><td>' + pct(a.w, 2) + '</td><td class="l">' + esc(how(a)) + '</td><td class="l">' + esc(a.asof || (d && d.asof) || '—') + '</td><td class="l small">' + esc((d && (d.note || d.src)) || (a.status === 'stock' ? (a.market === 'US' ? 'Nasdaq 篩選器快照價' : '證交所／櫃買中心收盤價') : '—')) + '</td></tr>'; }).join('');
+    const how = a => a.status === 'cash' ? '現金（不拆解）' : a.status === 'stock' ? '個股本身' : a.status === 'none' ? '暫不支援拆解（以整檔列出）' : a.status === 'nonEq' ? '非股票（債券／現金）' : a.base ? '以 ' + a.base + ' 成分股 × ' + a.lev + ' 推算' : '發行商公布的成分股';
+    const etfs = r.assets.map(a => { const d = E.get(a.code); return '<tr><td class="l">' + esc(a.code) + '</td><td class="l">' + esc(a.name) + '</td><td>' + pct(a.w, 2) + '</td><td class="l">' + esc(how(a)) + '</td><td class="l">' + esc(a.asof || (d && d.asof) || '—') + '</td><td class="l small">' + esc((d && (d.note || d.src)) || (a.status === 'cash' ? '自行輸入' + (a.fx && a.fx !== 1 ? '；美元 × ' + nf(a.fx, 3) + ' 換算成台幣' : '') : a.status === 'stock' ? (a.market === 'US' ? 'Nasdaq 篩選器快照價' : '證交所／櫃買中心收盤價') : '—')) + '</td></tr>'; }).join('');
     $('ltSrc').innerHTML = '<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">名稱</th><th>資產占比</th><th class="l">拆解方式</th><th class="l">成分股資料日</th><th class="l">來源</th></tr></thead><tbody>' + etfs + '</tbody></table></div>' +
       '<p class="small">價格日期：台股上市 ' + esc((UNI.asof || {}).TW || '—') + '、上櫃 ' + esc((UNI.asof || {}).TWO || '—') + '（證交所／櫃買中心收盤價）；美股 ' + esc((UNI.asof || {}).US || '—') + '（Nasdaq 篩選器快照價' + ((UNI.asof || {}).USETF ? '，ETF 為美東時間 ' + esc(UNI.asof.USETF) : '') + '；接近收盤，不一定是正式收盤價）；美元兌台幣 ' + (FX ? nf(FX, 3) : '—') + '（' + esc((UNI.fx || {}).date || '') + '）。資料更新：' + esc(VER) + '。</p>';
   }
@@ -182,6 +196,7 @@
     $('rows').addEventListener('focusin', e => { if (e.target.classList.contains('code')) fillList(e.target.value); });
     $('rows').addEventListener('click', e => { if (!e.target.classList.contains('del')) return; st.rows.splice(+e.target.closest('tr').dataset.i, 1); if (!st.rows.length) st.rows.push({ code: '', v: '', px: '' }); drawRows(); schedule(); });
     $('ltAdd').onclick = () => { st.rows.push({ code: '', v: '', px: '' }); drawRows(); const n = $('c' + (st.rows.length - 1)); if (n) n.focus(); };
+    $('ltCash').onclick = () => { st.rows.push({ code: '現金', v: '', px: '' }); drawRows(); const n = $('v' + (st.rows.length - 1)); if (n) n.focus(); schedule(); };
     $('ltClear').onclick = () => { st.rows = [{ code: '', v: '', px: '' }]; st.total = ''; $('ltTotal').value = ''; drawRows(); schedule(); };
     document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { if (st.mode === b.dataset.mode) return; st.mode = b.dataset.mode; drawRows(); schedule(); });
     $('ltTotal').addEventListener('input', e => { st.total = e.target.value; schedule(); });

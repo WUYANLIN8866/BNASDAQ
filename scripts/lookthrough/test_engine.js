@@ -51,4 +51,22 @@ E.set('VXUS', { h: [['2330', 4.24, '台積電', '資訊科技'], ['X:KR700593000
 U.set('VXUS', { n: 'Vanguard Total Intl', m: 'US', k: 'E', p: 70 });
 r = LT.compute([{ code: 'VXUS', v: 100 }], { mode: 'pct', U, E, fx: 32, alias });
 near(r.unlisted, 1 - 0.0626, '未列出'); near(r.nonEq, 0, '不算非股票'); near(r.stockExp + r.unlisted + r.nonEq - r.levExtra, 1, '恆等式（部分）');
-console.log('計算核心：11 組測試全部通過');
+// 12) 現金（比例模式）：QQQ 70%＋現金 30% → AAPL＝0.7×10%；現金 30% 不算任何公司；恆等式含現金
+r = LT.compute([{ code: 'QQQ', v: 70 }, { code: '現金', v: 30 }], { mode: 'pct', U, E, fx: 32, alias });
+near(get(r, 'AAPL'), 0.07, '含現金 AAPL'); near(r.cash, 0.30, '現金占比'); near(r.cashBy['現金'], 0.30, '台幣現金'); near(r.nonEq, 0.7 * (1 - 0.248), 'ETF 內非股票不含現金');
+near(r.stockExp + r.unlisted + r.nonEq + r.cash - r.levExtra, 1, '恆等式（含現金）'); assert(!r.cos.find(c => c.key === '現金'), '現金不應出現在公司明細');
+near(LT.summary(r).cash, 0.30, '摘要的現金');
+// 13) 現金（股數模式）：台幣現金 100,000 元＋美元現金 1,000 美元（匯率 32）＋10 股 QQQ（600 美元）；手動價格對現金無效
+r = LT.compute([{ code: '台幣現金', v: 100000, px: 5 }, { code: '美金', v: 1000 }, { code: 'QQQ', v: 10 }], { mode: 'shares', U, E, fx: 32, alias });
+near(r.total, 100000 + 1000 * 32 + 10 * 600 * 32, '總額含現金'); near(r.cashBy['現金'], 100000 / r.total, '台幣現金占比'); near(r.cashBy['美元現金'], 32000 / r.total, '美元現金占比');
+assert(r.assets[0].code === '現金' && r.assets[1].code === '美元現金' && r.assets[0].px === 1, '別名對應與價格固定 1');
+// 14) 真實代號不被當成現金：USD（ProShares 2 倍半導體）、CASH（Pathward Financial）
+const U2 = new Map([...U, ['USD', { n: 'ProShares Ultra Semiconductors', m: 'US', k: 'E', p: 100 }], ['CASH', { n: 'Pathward Financial', m: 'US', k: 'S', p: 70 }]]);
+assert(LT.resolve('USD', U2).k === 'E' && LT.resolve('cash', U2).k === 'S' && LT.resolve('現金', U2).k === 'C' && LT.resolve(' 現金 USD ', U2).code === '美元現金', '代號優先、現金別名只用中文組合');
+assert(LT.resolve('USD', U) === null, '沒有 USD 代號時也不會變成現金');
+// 15) CSV 有現金列；只有現金時沒有公司
+r = LT.compute([{ code: '現金', v: 100 }], { mode: 'pct', U, E, fx: 32, alias, total: 500000 });
+assert(r.cos.length === 0 && LT.summary(r).n === 0 && LT.csv(r).includes('現金（台幣）（自行輸入）') && LT.csv(r).includes('500000'), '只有現金');
+// 16) 美元現金沒有匯率 → 提示
+r = LT.compute([{ code: '美元現金', v: 100 }], { mode: 'shares', U, E, fx: 0, alias }); assert(r.errors[0].msg.includes('匯率'), '缺匯率');
+console.log('計算核心：16 組測試全部通過');

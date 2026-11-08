@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0c">
 <title>投資組合透視｜BNASDAQ</title>
-<meta name="description" content="輸入持有的 ETF 與股票（比例或股數），逐層拆解至成分股，看見每一家公司占總資產的實際比重。台股、美股都能輸入；免登入，資料不上傳。">
+<meta name="description" content="輸入持有的 ETF、股票與現金（比例或股數），逐層拆解至成分股，看見每一家公司占總資產的實際比重。台股、美股都能輸入；免登入，資料不上傳。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=68dcf7362a">
+<link rel="stylesheet" href="assets/site.css?v=3b9f0ceae4">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
@@ -18,6 +18,7 @@
 .lt-rows td{vertical-align:middle}
 .lt-rows .code{min-width:130px}
 .lt-rows .v,.lt-rows .px{min-width:92px;text-align:right}
+.lt-rows input:disabled{background:var(--line-2);color:var(--muted);cursor:not-allowed}
 .lt-rows:not(.shares) .pxc{display:none}
 .lt-rows .info{white-space:normal;min-width:180px}
 .lt-rows .info small{color:var(--muted)}
@@ -50,14 +51,14 @@ td.neg,.neg{color:var(--bad)}
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html" aria-current=page>投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 投資組合透視</div><p class="lt-eyebrow">PORTFOLIO LOOK-THROUGH</p><h1>投資組合透視</h1><p class="lede">輸入持有的 ETF 與股票，逐層拆解至成分股，呈現每一家公司占總資產的實際比重。台股（上市、上櫃）與美股都能輸入；計算全部在你的瀏覽器完成，持有資料不會上傳。免登入即可使用。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 投資組合透視</div><p class="lt-eyebrow">PORTFOLIO LOOK-THROUGH</p><h1>投資組合透視</h1><p class="lede">輸入持有的 ETF、股票與現金，逐層拆解至成分股，呈現每一家公司占總資產的實際比重。台股（上市、上櫃）與美股都能輸入，也能加入台幣或美元現金；計算全部在你的瀏覽器完成，持有資料不會上傳。免登入即可使用。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <div class="panel">
     <div class="tabs" role="tablist" aria-label="輸入方式"><button type="button" role="tab" data-mode="pct" aria-selected="true">依比例（%）</button><button type="button" role="tab" data-mode="shares" aria-selected="false">依股數</button></div>
     <div class="tblwrap"><table class="tbl lt-rows" id="ltRows"><thead><tr><th class="l">代號或名稱</th><th id="vHead">比例（%）</th><th class="pxc">價格（可手動）</th><th class="l">資產</th><th class="c">刪除</th></tr></thead><tbody id="rows"></tbody></table></div>
     <datalist id="ltlist"></datalist>
-    <div class="lt-actions"><button type="button" class="btn navy" id="ltAdd">＋ 新增一列</button><button type="button" class="btn line" id="ltClear">清除全部</button></div>
+    <div class="lt-actions"><button type="button" class="btn navy" id="ltAdd">＋ 新增一列</button><button type="button" class="btn line" id="ltCash">＋ 現金</button><button type="button" class="btn line" id="ltClear">清除全部</button></div>
     <div class="field lt-total" id="ltTotalWrap"><label for="ltTotal">總投資金額（台幣，可不填；填了會顯示每家公司的金額）</label><input id="ltTotal" type="number" inputmode="numeric" min="0" step="any" placeholder="例：1000000"></div>
     <p class="small">範例組合：<span id="ltEx"></span></p>
     <p class="small muted" id="ltCov">載入資料中…</p>
@@ -80,6 +81,7 @@ td.neg,.neg{color:var(--bad)}
   <h2 id="how">計算方式與限制</h2>
   <div class="note"><p><b>計算方式（每一步都可手算）</b></p><ul>
     <li>股數模式：市值＝股數 × 價格（見下方「價格」說明）；美股再乘以美元兌台幣匯率。每項資產占比＝市值 ÷ 全部市值。</li>
+    <li>現金：按「＋ 現金」或直接輸入「現金」（台幣）、「美元現金」。比例模式填比例；股數模式填金額，美元現金依美元兌台幣匯率換算。現金不拆解，計入「非股票資產」，並在明細另列一行。</li>
     <li>比例模式：直接用你填的比例；加總不是 100% 時，自動等比例換算成 100% 並提示。</li>
     <li>每家公司占總資產＝把每項資產的「資產占比 × 這家公司在該 ETF 的權重 × 槓桿倍數」加總；個股本身算 100%。</li>
     <li>同一家公司的不同代號會合併，例如 GOOGL＋GOOG＝Alphabet、TSM（美國存託憑證）＋2330＝台積電。</li>
@@ -100,7 +102,7 @@ td.neg,.neg{color:var(--bad)}
   <div class="side"><h3>相關頁面</h3><ul><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div>
 </aside>
 </div></div></div>
-<script src="assets/site.js?v=4771a894fc"></script><script src="assets/charts.js?v=52553baf3c"></script><script src="assets/lt-engine.js?v=195721ecd2"></script><script src="assets/lt-ui.js?v=c593a8d684"></script>
+<script src="assets/site.js?v=4771a894fc"></script><script src="assets/charts.js?v=52553baf3c"></script><script src="assets/lt-engine.js?v=34b95b48b0"></script><script src="assets/lt-ui.js?v=dc2d853195"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">

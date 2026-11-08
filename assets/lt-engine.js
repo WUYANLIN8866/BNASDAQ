@@ -5,7 +5,9 @@
      股數模式：市值＝股數 × 價格（台股最近收盤價；美股 Nasdaq 快照價；美股再 × 美元兌台幣匯率）；資產占比＝市值 ÷ 全部市值
      比例模式：資產占比＝輸入比例 ÷ 全部比例合計（合計不是 100 時等比例換算並提示）
      公司占總資產＝Σ（資產占比 × 該公司在這檔 ETF 的權重 × 槓桿倍數）；個股本身權重＝100%
-     非股票資產＝Σ（資產占比 × ETF 內非股票部分）；槓桿額外曝險＝Σ（資產占比 ×（倍數－1）× ETF 股票權重合計） */
+     非股票資產＝Σ（資產占比 × ETF 內非股票部分）；槓桿額外曝險＝Σ（資產占比 ×（倍數－1）× ETF 股票權重合計）
+     現金（自行輸入）：比例模式直接用比例；股數模式填金額（台幣現金＝金額，美元現金＝金額 × 匯率），不拆解、不算任何公司
+     恆等式：股票曝險合計＋其他小額持股＋非股票資產＋現金－槓桿額外曝險＝100% */
 (function (root) {
   'use strict';
   const LT = {};
@@ -18,10 +20,23 @@
     return c;
   };
 
-  /** 把一筆持有解析成證券資訊；找不到回傳 null */
+  /** 現金：固定兩種幣別（k＝'C'；p＝每 1 單位的價格，台幣 1 元、美元 1 美元，股數模式的「股數」就是金額）
+      別名只用中文組合：USD（ProShares 2 倍半導體 ETF）、CASH（Pathward Financial）是真實美股代號，不能拿來當現金 */
+  LT.CASH = {
+    '現金': { n: '現金（台幣）', m: 'TW', k: 'C', cur: 'TWD', p: 1, s: '' },
+    '美元現金': { n: '現金（美元）', m: 'US', k: 'C', cur: 'USD', p: 1, s: '' }
+  };
+  LT.CASH_ALIAS = {
+    '台幣': '現金', '台幣現金': '現金', '現金台幣': '現金', '新台幣': '現金', '新台幣現金': '現金', '現金(台幣)': '現金', '現金（台幣）': '現金', '現金TWD': '現金', 'TWD現金': '現金',
+    '美元': '美元現金', '美金': '美元現金', '美金現金': '美元現金', '現金美元': '美元現金', '現金美金': '美元現金', '現金(美元)': '美元現金', '現金（美元）': '美元現金', '現金USD': '美元現金', 'USD現金': '美元現金'
+  };
+
+  /** 把一筆持有解析成證券資訊（先查證券總表，再查現金）；找不到回傳 null */
   LT.resolve = function (code, U) {
     const c = LT.norm(code);
-    return U.get(c) ? Object.assign({ code: c }, U.get(c)) : null;
+    if (U.get(c)) return Object.assign({ code: c }, U.get(c));
+    const k = LT.CASH[c] ? c : LT.CASH_ALIAS[c];
+    return k ? Object.assign({ code: k }, LT.CASH[k]) : null;
   };
 
   /** 取得 ETF 的成分股（槓桿／反向 ETF 用基準 ETF × 倍數）；回傳 {h, lev, eq, base, asof, src} 或 null */
@@ -43,7 +58,7 @@
    */
   LT.compute = function (rows, o) {
     const U = o.U, E = o.E, alias = o.alias || {}, fx = +o.fx || 0;
-    const out = { errors: [], warnings: [], assets: [], cos: [], undec: [], nonEq: 0, unlisted: 0, levExtra: 0, stockExp: 0, total: null, sumPct: null, overlap: [], sectors: [] };
+    const out = { errors: [], warnings: [], assets: [], cos: [], undec: [], nonEq: 0, unlisted: 0, levExtra: 0, stockExp: 0, cash: 0, cashBy: {}, total: null, sumPct: null, overlap: [], sectors: [] };
     const A = [];
     rows.forEach((r, i) => {
       const raw = String(r.code || '').trim();
@@ -51,14 +66,15 @@
       const s = LT.resolve(raw, U);
       const v = +r.v;
       if (!s) { out.errors.push({ row: i, msg: '找不到代號「' + raw + '」' }); return; }
-      if (!(v > 0)) { out.errors.push({ row: i, msg: s.code + ' 的' + (o.mode === 'shares' ? '股數' : '比例') + '需大於 0' }); return; }
+      if (!(v > 0)) { out.errors.push({ row: i, msg: s.code + ' 的' + (o.mode === 'shares' ? (s.k === 'C' ? '金額' : '股數') : '比例') + '需大於 0' }); return; }
       const a = { row: i, code: s.code, name: s.n, kind: s.k, market: s.m, v };
       if (o.mode === 'shares') {
-        const px = +r.px > 0 ? +r.px : +s.p;
+        const px = s.k === 'C' ? 1 : +r.px > 0 ? +r.px : +s.p;   // 現金不吃手動價格：填的就是金額
         if (!(px > 0)) { out.errors.push({ row: i, msg: s.code + ' 沒有價格資料，請手動輸入價格' }); return; }
         const usd = s.m === 'US';
         if (usd && !(fx > 0)) { out.errors.push({ row: i, msg: '缺少美元兌台幣匯率' }); return; }
         a.px = px; a.cur = usd ? 'USD' : 'TWD'; a.value = v * px * (usd ? fx : 1);
+        if (s.k === 'C') a.fx = usd ? fx : 1;
       }
       A.push(a);
     });
@@ -87,6 +103,10 @@
     };
     const HB = new Map();
     A.forEach(a => {
+      if (a.kind === 'C') {   // 現金：不拆解、不算任何公司
+        a.status = 'cash'; out.cash += a.w; out.cashBy[a.code] = (out.cashBy[a.code] || 0) + a.w;
+        return;
+      }
       if (a.kind === 'E') {
         const H = LT.holdings(a.code, E);
         if (!H) { a.status = 'none'; out.undec.push({ code: a.code, name: a.name, w: a.w }); return; }
@@ -131,7 +151,7 @@
   /** 摘要：公司家數、前十大合計、最大單一公司 */
   LT.summary = function (r) {
     const pos = r.cos.filter(c => c.w > 0);
-    return { n: pos.length, top10: pos.slice(0, 10).reduce((t, c) => t + c.w, 0), top: pos[0] || null, nonEq: r.nonEq, unlisted: r.unlisted, levExtra: r.levExtra, stockExp: r.stockExp, undec: r.undec.reduce((t, u) => t + u.w, 0) };
+    return { n: pos.length, top10: pos.slice(0, 10).reduce((t, c) => t + c.w, 0), top: pos[0] || null, nonEq: r.nonEq, cash: r.cash || 0, unlisted: r.unlisted, levExtra: r.levExtra, stockExp: r.stockExp, undec: r.undec.reduce((t, u) => t + u.w, 0) };
   };
 
   /** 匯出 CSV（UTF-8 BOM，Excel 開啟不亂碼） */
@@ -140,7 +160,8 @@
     const lines = [['排名', '公司', '代號', '產業', '占總資產(%)', '金額(台幣)', '來源'].map(q).join(',')];
     r.cos.forEach((c, i) => lines.push([i + 1, c.name, c.key, c.sector, (c.w * 100).toFixed(4), r.total ? Math.round(c.w * r.total) : '', Object.entries(c.src).map(([k, w]) => k + ' ' + (w * 100).toFixed(3) + '%').join('；')].map(q).join(',')));
     if (r.unlisted) lines.push(['', '其他小額持股（發行商未逐一列出）', '', '', (r.unlisted * 100).toFixed(4), r.total ? Math.round(r.unlisted * r.total) : '', ''].map(q).join(','));
-    if (r.nonEq) lines.push(['', '非股票資產（現金、債券等）', '', '', (r.nonEq * 100).toFixed(4), r.total ? Math.round(r.nonEq * r.total) : '', ''].map(q).join(','));
+    Object.entries(r.cashBy || {}).forEach(([k, w]) => lines.push(['', LT.CASH[k].n + '（自行輸入）', k, '', (w * 100).toFixed(4), r.total ? Math.round(w * r.total) : '', '現金不拆解'].map(q).join(',')));
+    if (r.nonEq) lines.push(['', '非股票資產（ETF 內的現金、債券等）', '', '', (r.nonEq * 100).toFixed(4), r.total ? Math.round(r.nonEq * r.total) : '', ''].map(q).join(','));
     r.undec.forEach(u => lines.push(['', '未拆解：' + u.name, u.code, '', (u.w * 100).toFixed(4), r.total ? Math.round(u.w * r.total) : '', '成分股資料暫缺'].map(q).join(',')));
     return '﻿' + lines.join('\r\n');
   };
