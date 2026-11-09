@@ -1,0 +1,774 @@
+{
+ "schema": "bnasdaq-daily/1",
+ "date": "2026-11-09",
+ "session": "2026-11-06",
+ "generated": "2026-11-09T00:43:06Z",
+ "headline": "週一盤前：黃仁勳承認與被指為中國情報人員的 Alice Huang 有婚外情、Nvidia 董事會啟動獨立調查，那指期貨週日開盤一度 −1%；胡塞飛彈波及利雅德阿美大樓；週二 CPI 前那指 100 上週 −4.91%",
+ "summary": "美股週一開盤前（台北時間 11/9 早上），現貨指數仍沿用 11/6（週五）收盤：那指 100 26,989.99（週 −4.91%）、費半 9,390.25（週 −12.15%）、標普 7,376.86（週 −2.68%）、道瓊 51,285.73（週 −0.94%）、羅素 2000 2,754.11（週 −2.05%）。過去 24 小時重點：①11/8（週日）Nvidia 執行長黃仁勳發全公司信承認「對妻子不忠」，對象據《紐約時報》為美國情報單位認定的中國情報人員、Megaspeed 前主管 Alice Huang；董事會由獨立董事組委員會並聘外部律師調查是否洩密，稱「沒有理由相信國安或公司機密外洩」、對黃仁勳仍有信心；那指期貨美東週日 18:00 開盤一度 −1%、數分鐘內收復，19:00 約 −0.5%、標普期貨 −0.11%（TokenPost）；②胡塞武裝 11/8 飛彈攻擊利雅德阿卜杜拉國王金融區，沙烏地阿美辦公大樓受彈片輕微損壞、無人傷亡，聯軍稱攔截 2 枚彈道飛彈與 2 枚巡弋飛彈；IRGC 稱 3 艘走未授權航道的油輪起火；③Anthropic IPO 已展開法人路演，目標估值 1.25～1.75 兆美元、募資 800～1,000 億，力拚感恩節（11/26）前掛牌（Seeking Alpha）；④中國 10 月出口管制暫停條款法定到期日為 11/10（稀土等）與 11/27（鎵鍺銻對美禁令），政治承諾則延至 2027-01-10。本週焦點：11/9 中國 10 月 CPI；11/10（週二）美國 10 月 CPI（預期月增 0.3%、核心 0.2%）＋CoreWeave 財報＋台積電 10 月營收；11/11 退伍軍人節債市休市；11/12 Cisco、Applied Materials、Nebius；11/13 PPI；11/17 Nvidia 財報、11/18 黃仁勳國會閉門簡報。12 月升息機率約 76%～77%。",
+ "indices": [
+  {
+   "key": "NDX",
+   "name": "那斯達克 100",
+   "close": 26989.99,
+   "chg": 1.35,
+   "prev_week": 28384.85,
+   "wk": -4.91,
+   "note": "11/6 收盤（週一尚未開盤）；距 10/6 高點 31,224.47 仍 −13.6%；NQ 期貨週日晚開盤一度 −1%，美東 19:00 約 −0.5%（Nvidia 調查消息）"
+  },
+  {
+   "key": "SOX",
+   "name": "費城半導體",
+   "close": 9390.25,
+   "chg": 4.21,
+   "prev_week": 10688.8,
+   "wk": -12.15,
+   "note": "+379.11 點，30 檔成分股 28 漲 2 跌；AMD +11.04%、Lam Research +8.2%、Intel +7.7%、Micron +5.1%、Nvidia +2.78%"
+  },
+  {
+   "key": "SPX",
+   "name": "標普 500",
+   "close": 7376.86,
+   "chg": 0.31,
+   "prev_week": 7580.07,
+   "wk": -2.68,
+   "note": "11/6 收盤；連四週收黑、距 10/6 紀錄 7,818.93 約 −5.7%；ES 期貨美東週日 19:00 約 −0.11%；200 日均線約 7,312"
+  },
+  {
+   "key": "DJI",
+   "name": "道瓊工業",
+   "close": 51285.73,
+   "chg": -0.46,
+   "prev_week": 51770.31,
+   "wk": -0.94,
+   "note": "−237.33 點；必需消費、醫療、金融在週初創高後回吐"
+  },
+  {
+   "key": "RUT",
+   "name": "羅素 2000",
+   "close": 2754.11,
+   "chg": 0.89,
+   "prev_week": 2811.84,
+   "wk": -2.05,
+   "note": "+24.22 點；仍在修正區"
+  },
+  {
+   "key": "IXIC",
+   "name": "那斯達克綜合",
+   "close": 24579.42,
+   "chg": 1.09,
+   "prev_week": 25437.0,
+   "wk": -3.37,
+   "note": "+264.43 點；盤中一度 +1.7% 後漲幅收斂；連四週收黑"
+  }
+ ],
+ "week_path": {
+  "dates": [
+   "10/30",
+   "11/02",
+   "11/03",
+   "11/04",
+   "11/05",
+   "11/06"
+  ],
+  "note": "10/30 為基期（＝100）；那指 100 與費半缺本週每日收盤公開來源，僅以週線呈現於下表。四條線本週累積：標普 −2.70%、道瓊 −0.94%、那斯達克綜合 −3.36%、羅素 −2.06%（逐日四捨五入累乘，與收盤÷上週五收盤差 ≤0.02 個百分點）。",
+  "series": [
+   {
+    "name": "標普 500",
+    "chg": [
+     0,
+     -0.51,
+     0.36,
+     1.58,
+     -4.36,
+     0.31
+    ]
+   },
+   {
+    "name": "道瓊",
+    "chg": [
+     0,
+     0.41,
+     -0.38,
+     3.03,
+     -3.44,
+     -0.46
+    ]
+   },
+   {
+    "name": "那斯達克綜合",
+    "chg": [
+     0,
+     -1.07,
+     0.83,
+     1.44,
+     -5.52,
+     1.09
+    ]
+   },
+   {
+    "name": "羅素 2000",
+    "chg": [
+     0,
+     -0.21,
+     0.23,
+     1.58,
+     -4.45,
+     0.89
+    ]
+   }
+  ]
+ },
+ "big_move": {
+  "triggered": true,
+  "threshold": 2,
+  "intro": "最近一個交易日（11/6）五大指數中只有費城半導體單日漲幅超過 2%（+4.21%）。週一盤前更新：週日 Nvidia 董事會調查黃仁勳的消息讓那指期貨一度 −1%，代表「政策恐慌降溫」之外又多一項個股治理風險；三項主因權重不變。機率為本站依新聞證據權重所作的主觀估計（合計 100%），不是統計推論。",
+  "causes": [
+   {
+    "p": 55,
+    "title": "超跌後的技術性反彈：空單回補＋逢低承接",
+    "evidence": [
+     "費半前一日 −12.25% 為史上第二大單日跌幅、2020 年 3 月以來最差，進入週五前本季已 −28%；VIX 週四單日 +70%，CBOE 資料顯示 1991 年以來只發生 8 次",
+     "StoneX／Forex.com 的 Fawad Razaqzada：週五反彈「較像空單回補與逢低承接，尚不足以證明情緒已明確轉向」；高盛交易團隊：拋售已將恐慌推向極端，歷史上常伴隨反彈",
+     "StockTitan 統計 8 檔大型晶片股平均只收復週四跌幅的 36%，部分個股尾盤回吐漲幅——典型的反彈而非反轉",
+     "盤前 Nasdaq 100 期貨 +1.82%、SMH +4.8%，盤中那斯達克 +1.7% 後收斂至 +1.09%",
+     "週末 Topstep 週報：NQ 期貨週 −4.84%、RSI 31.4，仍低於所有主要均線；週日晚 NQ 期貨開盤一度 −1%——技術面屬超賣反彈而非趨勢反轉"
+    ],
+    "counter": "技術面可以解釋「為什麼漲」，卻無法解釋為何半導體（+4.2%）明顯強於大盤（+0.3%）；需要搭配下面兩項的個別消息。"
+   },
+   {
+    "p": 30,
+    "title": "政策恐慌稍降溫：資料中心「暫停」範圍被釐清",
+    "evidence": [
+     "德州州長當選人 Gina Hinojosa 表示已取得許可的資料中心專案可以完工（Yahoo Finance）；同時強調應先立法保護居民——降低「全面停工」的尾部風險",
+     "OpenAI 財務長表示選舉結果不會改變其 AI 基礎建設計畫（TradingKey）",
+     "Jefferies 策略師：週四下跌是「反射性的，不是基本面重置」；Yardeni 稱拋售是買點並維持標普年底 7,900 目標"
+    ],
+    "counter": "高盛估約 45%、Susquehanna 估約 60 GW 規劃中的資料中心容量仍可能受限，新官員 2027 年 1 月才上任，政策不確定性並未消除。"
+   },
+   {
+    "p": 15,
+    "title": "個別公司利多：回購、財報與新業務",
+    "evidence": [
+     "Lam Research 宣布最高 250 億美元庫藏股，股價 +8.2%",
+     "IREN 季度 AI 營收 2 億美元（前一季 7,100 萬）並簽兩份新合約，股價 +20%；Coherent、Lumentum 等光通訊股 +5% 以上",
+     "《The Information》：台積電應 Nvidia 要求評估生產 3D DRAM，台積電 ADR +6.33%",
+     "AMD +11.04%、Intel +7.71%、Micron +5.12%，均為前一日跌幅最深的族群"
+    ],
+    "counter": "11/7 台積電否認替 Nvidia 開發 3D DRAM（456X Evening Brief），週五台積電 ADR +6.33% 的部分理由消失；Melius 同步下修 Nvidia、Broadcom、AMD、Marvell 目標價。利多集中於個股，不足以單獨帶動指數 +4%。；11/8 Nvidia 董事會就黃仁勳與 Alice Huang 關係啟動獨立調查，週五 Nvidia +2.78% 的反彈基礎再受考驗。"
+   }
+  ]
+ },
+ "weekly": {
+  "range": "2026-10-30 → 2026-11-06",
+  "cols": [
+   "10/30",
+   "11/06"
+  ],
+  "stock": {
+   "title": "股市：選後慶祝 → AI 崩跌 → 部分反彈，那指與標普連四週收黑",
+   "rows": [
+    [
+     "那斯達克 100",
+     "28,384.85",
+     "26,989.99",
+     "−4.91%"
+    ],
+    [
+     "費城半導體",
+     "10,688.80",
+     "9,390.25",
+     "−12.15%"
+    ],
+    [
+     "標普 500",
+     "7,580.07",
+     "7,376.86",
+     "−2.68%"
+    ],
+    [
+     "道瓊工業",
+     "51,770.31",
+     "51,285.73",
+     "−0.94%"
+    ],
+    [
+     "羅素 2000",
+     "2,811.84",
+     "2,754.11",
+     "−2.05%"
+    ],
+    [
+     "VIX",
+     "19.42",
+     "25.64",
+     "+32.0%"
+    ]
+   ],
+   "text": "週一至週三橫盤偏多（週三選後道瓊 +3.03%），週四 AI 交易崩跌（那指 100 −6.36%、費半 −12.25%），週五晶片股帶動部分反彈。板塊一週：科技 XLK 約 −7%～−8%、能源 XLE 約 −11%～−12%（油價崩）；必需消費、醫療、金融週初創歷史新高，週五回吐。那指 100 距 10/6 高點 −13.6%，仍在修正區。FactSet：若結果維持，七巨頭本季獲利成長將自 2022 年 Q4 以來首次低於其餘 493 家公司。本週焦點：11/10（週二）10 月 CPI（預期年增約 3.7%）、11/17 Nvidia 財報。週日晚期貨：那指 −0.5%、標普 −0.11%（美東 19:00）。市場寬度：標普 500 約 41% 成分股站上 50 日線、43% 站上 200 日線；CNN 恐懼貪婪指數 22（極度恐懼）；AAII 看空 48.4%。"
+  },
+  "fx": {
+   "title": "匯市：非農大超預期，美元週五急彈收週線小漲",
+   "rows": [
+    [
+     "美元指數 DXY",
+     "101.92",
+     "102.32",
+     "+0.39%"
+    ],
+    [
+     "EUR/USD",
+     "1.1166",
+     "1.1143",
+     "−0.21%"
+    ],
+    [
+     "USD/JPY",
+     "157.52",
+     "158.43",
+     "+0.58%"
+    ],
+    [
+     "GBP/USD（11/6）",
+     "—",
+     "1.34",
+     "英國央行 11/5 升息後"
+    ]
+   ],
+   "text": "美元指數週三選後跌至 101.26 一個月低點，週五非農公布後單日 +0.76% 至 102.32，週線反轉為 +0.39%。強勁就業讓 12 月升息機率由週四約 67%～70% 回升至約 78%（公布後一度 85%），利差再度支撐美元；日圓週四避險走強後週五回貶至 158 以上。"
+  },
+  "bond": {
+   "title": "債市：避險買盤 vs 升息預期，週線仍下行但週五短端反彈",
+   "rows": [
+    [
+     "2 年",
+     "4.56%",
+     "4.51%",
+     "週 −5.9 bp；週五 +5 bp"
+    ],
+    [
+     "10 年",
+     "4.94%",
+     "4.86%",
+     "週約 −7 bp；五週 −41.8 bp"
+    ],
+    [
+     "30 年",
+     "5.31%",
+     "5.26%",
+     "週約 −5 bp"
+    ]
+   ],
+   "text": "週四股災把 10 年期壓到 4.84%（9 月以來低點），週五非農 +16.5 萬、失業率 4.1%、時薪年增 3.1% 讓 2 年期單日 +5 bp，曲線週五小幅趨平。聖路易聯準銀行總裁 Musalem：通膨是轄區企業最大憂慮，AI 投資短期仍會推升通膨；舊金山聯準銀行 Daly：「通膨跑步機」，更多升息可能。交易員把下一次（也可能是最後一次）升息預期由 6 月提前到 4 月。密大消費者信心初值 51.0（預期 48.0）。 本週供給：11/10 10 年期、11/12 30 年期標售；11/11 債市休市。高收益債利差（ICE BofA HY OAS）3.48%，高於 3 月高點 3.46%；AI 相關垃圾債利差約 503 bp、6 月以來 +244 bp（Palma Futures 週報）。"
+  },
+  "other": {
+   "title": "商品與加密：油價單週崩約 13%、黃金週漲約 5%、比特幣持平",
+   "rows": [
+    [
+     "黃金（12 月期貨）",
+     "3,898.90",
+     "4,074.90",
+     "+4.5%（現貨週約 +5.2%）"
+    ],
+    [
+     "布蘭特原油",
+     "113.43",
+     "98.32",
+     "−13.3%，新冠以來最大週跌幅"
+    ],
+    [
+     "WTI 原油",
+     "104.12",
+     "90.83",
+     "−12.8%"
+    ],
+    [
+     "比特幣",
+     "76,758",
+     "約 75,943",
+     "−1.1%"
+    ]
+   ],
+   "text": "油價本週最大反轉：市場押注共和黨敗選後伊朗戰爭加速退場，加上出現供給過剩跡象；但荷姆茲海峽觸雷事件仍持續，週五小漲收尾。黃金受週四避險帶動站上 4,000 美元，週五因美元與殖利率反彈小跌。比特幣週四 −5.7% 後週五持平。 週日：胡塞飛彈波及利雅德阿美大樓、IRGC 稱 3 艘油輪於荷姆茲起火，油價週一開盤的地緣溢價需留意。"
+  }
+ },
+ "events": [
+  {
+   "cat": "科技與那斯達克",
+   "items": [
+    "11/8（週日）黃仁勳全公司信：「I was unfaithful to my wife」「I am deeply sorry」；董事會成立獨立董事委員會、聘外部律師調查國安或公司機密是否外洩，稱目前「沒有理由相信」外洩、對黃仁勳與經營團隊有信心；發言人：黃仁勳將「不中斷」續任 CEO（SF Standard）",
+    "背景：《紐約時報》10/29 報導美國情報單位認定 Megaspeed 前主管 Alice Huang 為中國情報人員；FT 11/6 報導美國政府備忘錄描述兩人戀愛關係；中國外交部稱「毫無根據的臆測」；參議員 Coons：「國會將調查」",
+    "那指期貨美東週日 18:00 開盤一度 −1%、數分鐘內收復並短暫翻紅，19:00 約 −0.5%；標普期貨 −0.11%（TokenPost）",
+    "Anthropic 啟動 IPO 法人路演，目標估值 1.25～1.75 兆美元（9,650 億現值、一個月前市場曾期待 2 兆）、募資 800～1,000 億美元，力拚 11/26 感恩節前掛牌；Kalshi 12 月前 IPO 機率回到 80% 以上（Seeking Alpha Wall Street Brunch）",
+    "OKX-ICE 代幣化股票平台：Apple、Meta 加入反對名單後，七巨頭全數拒絕被代幣化，反對公司增至 67 家（Decrypt 11/7）",
+    "本週財報：11/9 Take-Two、Rocket Lab、KKR；11/10 CoreWeave、Rigetti、D-Wave；11/12 Cisco、Applied Materials、Nebius；11/17 Nvidia"
+   ]
+  },
+  {
+   "cat": "國際情勢",
+   "items": [
+    "11/8 胡塞武裝飛彈攻擊利雅德阿卜杜拉國王金融區，沙烏地阿美辦公大樓受彈片「輕微損壞」、無人傷亡（沙國能源部／SPA）；聯軍發言人：攔截 2 枚飛向利雅德的彈道飛彈與南部 2 枚巡弋飛彈",
+    "IRGC 稱 3 艘使用未授權航道的油輪在荷姆茲海峽起火（未具名、未證實）；美軍中央司令部稱在阿曼灣使一艘企圖突破伊朗封鎖的聖克里斯多福籍船 M/V Huda 失去動力（TFTC 綜整）",
+    "伊朗 11/7 重申美方接受七項條件前不重開荷姆茲；俄烏美三方 11/10–11 阿布達比會談；川習預計 11/18–19 深圳 APEC 會面"
+   ]
+  },
+  {
+   "cat": "貨幣政策與央行",
+   "items": [
+    "11/10（週二）美國 10 月 CPI：預期整體月增 0.3%（前值 0.6%）、核心 0.2%（前值 0.3%），為 12/9 FOMC 前最後一份通膨數據；11/13 PPI 預期月增 0.4%（前值 1.3%）（TWI Weekly）",
+    "Fed funds 期貨 12 月升息 25 bp 機率約 76%～77%；Wells Fargo：核心數據即使偏軟也難改升息看法",
+    "11/9 中國 10 月 CPI（美東 11/8 20:30 公布）；11/11 退伍軍人節債市休市、股市照常；本週季度再融資標售（10 年 11/10、30 年 11/12）"
+   ]
+  },
+  {
+   "cat": "美國政治",
+   "items": [
+    "眾院三位共和黨委員會主席要求黃仁勳 11/18 自願出席閉門簡報，說明與 Alice Huang 的關係及 Nvidia 防諜措施；跨黨派關注升溫（CNBC 11/8）",
+    "中國 2025 年 10 月出口管制（第 70 號公告：鈥鉺銩銪鐿等 5 種稀土、0.1% 外國產品規則、鋰電池與石墨負極）暫停期法定到期日 11/10；對美鎵鍺銻禁令（第 72 號）11/27 到期；商務部稱吉隆坡安排延續至 2027-01-10，但截至 10/27 兩份公告未修訂（Materials Dispatch）"
+   ]
+  },
+  {
+   "cat": "金融環境",
+   "items": [
+    "高收益債利差 3.48%（9 月底 2.66%），已高於今年 3 月高點 3.46%；AI 相關垃圾債利差約 503 bp；現貨比特幣 ETF 一週淨流出約 12.8 億美元（Palma Futures 11/8 週報）",
+    "情緒：CNN 恐懼貪婪 22（極度恐懼）、AAII 看空 48.4%（9/16 以來最高）、NAAIM 82.55；那斯達克 52 週新低約 2,300 檔 vs 新高約 830 檔",
+    "亞洲：Bloomberg 稱日股、台股上週已進入熊市（自高點 −20% 以上），全球股市指標創 6 個月低點，週一亞股恐再受 Nvidia 調查拖累；比特幣約 75,000 美元"
+   ]
+  }
+ ],
+ "mega": {
+  "intro": "依市值排名。市值以 StockTitan 11/5 收盤市值 × 11/6 單日漲跌換算（11/6 股價、漲跌幅取自鉅亨網／21 財經／TradingKey 收盤報導，股價與換算交叉驗證誤差 < 0.02 美元）；BRK.B、LLY、WMT 未取得 11/6 收盤公開來源，沿用 11/5 數據。沙烏地阿美以 10 月初市值列入。 週一盤前版：股價與市值沿用 11/6 收盤，新聞欄更新為 11/8–11/9 最新消息；無新消息者註明。",
+  "wk_label": "11/6 單日",
+  "rows": [
+   {
+    "t": "AAPL",
+    "n": "Apple",
+    "cap": "4.97 兆",
+    "px": "342.37",
+    "wk": "−0.52%",
+    "news": "11/7 Decrypt：Apple 與 Meta 拒絕 OKX-ICE 代幣化股票平台上架自家股票，七巨頭全數退出。另：財報指引假期季毛利率 45%～46%（記憶體成本上升）。",
+    "impact": "代幣化拒絕對基本面無影響；記憶體漲價壓毛利仍是主線。",
+    "win": [
+     "MU",
+     "SKHY（記憶體漲價）"
+    ],
+    "lose": [
+     "AAPL（毛利）",
+     "ICE（新平台吸引力）"
+    ]
+   },
+   {
+    "t": "NVDA",
+    "n": "Nvidia",
+    "cap": "4.51 兆",
+    "px": "186.64",
+    "wk": "+2.78%",
+    "news": "11/8 黃仁勳全公司信承認婚外情（對象據 NYT 為被美情報認定為中國情報人員的 Alice Huang）；董事會成立獨立委員會＋外部律師調查是否洩密，稱目前無外洩跡象、續挺 CEO。週日晚那指期貨一度 −1%；鏈上 Nvidia 期貨合約下跌。11/17 財報、11/18 國會閉門簡報。",
+    "impact": "短線：CEO 治理風險＋出口管制政治化，財報前估值折價擴大；若調查發現機密外洩或 CEO 異動，將衝擊整個 AI 供應鏈。中期：需求面（記憶體長約、超大規模資本支出）未變。",
+    "win": [
+     "AMD（替代供應）",
+     "AVGO（ASIC）",
+     "GOOGL（TPU）"
+    ],
+    "lose": [
+     "NVDA",
+     "TSM",
+     "SMCI",
+     "Megaspeed 相關通路"
+    ]
+   },
+   {
+    "t": "MSFT",
+    "n": "Microsoft",
+    "cap": "3.94 兆",
+    "px": "530.61",
+    "wk": "−0.99%",
+    "news": "〔11/8–11/9 無新公司公告〕讓 Oracle 舊 GPU 租約到期並汰換舊設施；手上仍有逾 800 億美元第三方算力承諾（CoreWeave、Nscale、Nebius），2026 資本支出約 1,700 億美元；IREN 承接的 Horizon 專案延至 2027 年 2 月。",
+    "impact": "資本支出更挑剔：對 MSFT 自身現金流中性偏正，對 NeoCloud 供應商是延遲風險。",
+    "win": [
+     "MSFT",
+     "ORCL（已轉租、租金 +20%）"
+    ],
+    "lose": [
+     "IREN",
+     "CRWV",
+     "NBIS"
+    ]
+   },
+   {
+    "t": "GOOGL",
+    "n": "Alphabet",
+    "cap": "3.50 兆",
+    "px": "284.78",
+    "wk": "+0.78%",
+    "news": "〔11/8–11/9 無新公司公告〕波克夏 Q3 10-Q 已公布（持股變化細節待 13F 11/14 前）；2026 資本支出指引約 2,000 億美元、TPU 部署擴大。",
+    "impact": "TPU 自研降低對 Nvidia 依賴；民主黨國會反壟斷議程仍是主要風險。",
+    "win": [
+     "GOOGL",
+     "AVGO（TPU 代工設計）"
+    ],
+    "lose": [
+     "NVDA（份額）"
+    ]
+   },
+   {
+    "t": "AMZN",
+    "n": "Amazon",
+    "cap": "2.80 兆",
+    "px": "259.30",
+    "wk": "−0.35%",
+    "news": "〔11/8–11/9 無新公司公告〕2026 資本支出約 2,200 億美元；Goldman 上調 2030 全球資料中心容量預測至 273 GW。本週 +7.9%（AWS +39%），七巨頭中最佳。",
+    "impact": "自建比例高、受「暫停」衝擊較小，是 AI 基建的相對贏家。",
+    "win": [
+     "AMZN",
+     "VRT"
+    ],
+    "lose": [
+     "—"
+    ]
+   },
+   {
+    "t": "TSM",
+    "n": "台積電",
+    "cap": "1.95 兆",
+    "px": "375.44",
+    "wk": "+6.33%",
+    "news": "週二 11/10 公布 10 月營收；11/7 否認替 Nvidia 開發 3D DRAM；Bloomberg 稱台股上週已進入熊市。週一面臨 Nvidia 調查與 ADR 溢價收斂雙重壓力。",
+    "impact": "最大客戶 CEO 治理風險直接傳導；10 月營收若強可部分抵銷。",
+    "win": [
+     "TSM（漲價）",
+     "2330.TW"
+    ],
+    "lose": [
+     "TSM ADR（溢價收斂）"
+    ]
+   },
+   {
+    "t": "SPCX",
+    "n": "SpaceX",
+    "cap": "1.82 兆",
+    "px": "134.27",
+    "wk": "+8.62%",
+    "news": "〔11/8–11/9 無新公司公告〕馬斯克 11/6 於 Baron 投資大會稱 SpaceX 可收購一家傳統電信商、頻譜使用效率「高 10 倍」，未點名；德電 CEO 估進入門檻至少約 2,200 億美元。",
+    "impact": "衛星直連手機若加上地面頻譜，直接威脅三大電信；但併購需 FCC 與反壟斷核准。",
+    "win": [
+     "SPCX"
+    ],
+    "lose": [
+     "VZ",
+     "T",
+     "TMUS"
+    ]
+   },
+   {
+    "t": "META",
+    "n": "Meta",
+    "cap": "1.56 兆",
+    "px": "610.15",
+    "wk": "+0.84%",
+    "news": "11/7 與 Apple 一起拒絕 OKX-ICE 代幣化股票上架。2026 資本支出約 1,400 億美元；Arm 客製 CPU 交貨時程不變。週末無新公司公告。",
+    "impact": "無直接基本面影響；AI 資本支出敘事受 Nvidia 調查與資料中心公投連帶檢視。",
+    "win": [
+     "META",
+     "ARM"
+    ],
+    "lose": [
+     "VST",
+     "CEG"
+    ]
+   },
+   {
+    "t": "AVGO",
+    "n": "Broadcom",
+    "cap": "1.40 兆",
+    "px": "293.69",
+    "wk": "+0.74%",
+    "news": "Anthropic 啟動 IPO 路演、目標估值 1.25～1.75 兆美元；Broadcom 為其 630 億美元設備融資提供最高約 430 億第一損失擔保。",
+    "impact": "Anthropic 定價高低直接影響 Broadcom 擔保的信用風險評價；Nvidia 治理疑慮反而凸顯 ASIC 替代路線。",
+    "win": [
+     "AVGO（ASIC 訂單）",
+     "ANT（若順利定價）"
+    ],
+    "lose": [
+     "NVDA（份額）"
+    ]
+   },
+   {
+    "t": "TSLA",
+    "n": "Tesla",
+    "cap": "1.42 兆",
+    "px": "358.22",
+    "wk": "+4.23%",
+    "news": "〔11/8–11/9 無新公司公告〕計劃以租賃方式提供 Optimus 機器人；Fremont 已開始組裝，外部交付預計 2027 年底。週五 +4.23%，但本週 −10.4%。",
+    "impact": "Robotaxi＋人形機器人敘事延續，短期營收貢獻有限。",
+    "win": [
+     "TSLA"
+    ],
+    "lose": [
+     "Cybertruck 供應商"
+    ]
+   },
+   {
+    "t": "BRK.B",
+    "n": "波克夏",
+    "cap": "1.23 兆（11/5）",
+    "px": "572.33（11/5）",
+    "wk": "—",
+    "news": "〔11/8–11/9 無新公司公告〕11/7 公布 Q3：營業利益 127 億美元（−5.8%）；保險承保稅後 −43%；回購約 96 億美元（較 Q2 翻倍以上）；現金與國庫券 3,523 億美元、Q3 股票淨賣約 4 億；7 月以約 68 億美元現金完成 Taylor Morrison 收購。",
+    "impact": "Abel 時代首次大規模回購，等於管理層認為自家股票比市場便宜；承保獲利下滑是週一短線壓力。",
+    "win": [
+     "BRK.B",
+     "TMHC（已併入）"
+    ],
+    "lose": [
+     "—"
+    ]
+   },
+   {
+    "t": "LLY",
+    "n": "禮來",
+    "cap": "1.22 兆（11/5）",
+    "px": "1,364.73（11/5）",
+    "wk": "—",
+    "news": "〔11/8–11/9 無新公司公告〕週四盤中 −3.5%，市值約 1.29 兆美元；GLP-1 價格競爭仍是成長與毛利風險；與 Hims & Hers 遠距醫療合作。週末無新公告。",
+    "impact": "自費通路擴大有利量、壓縮單價。",
+    "win": [
+     "LLY",
+     "HIMS"
+    ],
+    "lose": [
+     "NVO"
+    ]
+   },
+   {
+    "t": "WMT",
+    "n": "沃爾瑪",
+    "cap": "1.01 兆（11/5）",
+    "px": "127.72（11/5）",
+    "wk": "—",
+    "news": "〔11/8–11/9 無新公司公告〕週末無新公告；油價週 −13% 有利消費者實質購買力，必需消費週初創高後回吐。",
+    "impact": "防禦輪動的主要受惠者；資金若回流科技則短線落後。",
+    "win": [
+     "WMT",
+     "COST"
+    ],
+    "lose": [
+     "—"
+    ]
+   },
+   {
+    "t": "2222.SR",
+    "n": "沙烏地阿美",
+    "cap": "約 1.6 兆（10/2）",
+    "px": "—",
+    "wk": "—",
+    "news": "11/8 胡塞飛彈波及利雅德阿卜杜拉國王金融區的阿美辦公大樓，彈片造成輕微損壞、無人傷亡；聯軍攔截 2 枚彈道飛彈、2 枚巡弋飛彈。IRGC 稱荷姆茲 3 艘油輪起火。",
+    "impact": "攻擊目標由能源設施延伸到金融中心，提高沙國投資與營運風險溢價；油價上週 −13% 後可能出現地緣反彈。",
+    "win": [
+     "XOM",
+     "CVX",
+     "LMT（防空）",
+     "RTX（Patriot）"
+    ],
+    "lose": [
+     "2222.SR",
+     "DAL",
+     "UAL"
+    ]
+   }
+  ]
+ },
+ "sources": [
+  {
+   "t": "SF Standard：Nvidia launches probe as Jensen Huang admits affair with suspected Chinese spy（11/8 14:15 PT）",
+   "u": "https://sfstandard.com/2026/11/08/nvidia-jensen-huang-affair-board-investigation-chinese-spy/"
+  },
+  {
+   "t": "TokenPost：Nvidia CEO Jensen Huang Admits Infidelity as Nasdaq Futures Briefly Fall 1%（11/8 19:07 ET，期貨數字）",
+   "u": "https://www.tokenpost.com/news/business/51935"
+  },
+  {
+   "t": "CNBC：Nvidia CEO Jensen Huang faces bipartisan congressional scrutiny（11/8）",
+   "u": "https://www.cnbc.com/2026/11/08/jensen-huang-nvidia-china-spy-congress.html"
+  },
+  {
+   "t": "CNN：Nvidia launches investigation into CEO Jensen Huang（11/8）",
+   "u": "https://www.cnn.com/2026/11/08/business/nvidia-investigation-ceo-jensen-huang"
+  },
+  {
+   "t": "Bloomberg／TradingView：Asian stocks face new pressure as Nvidia spy probe rattles tech sector",
+   "u": "https://www.tradingview.com/news/seekingalpha:ccb9fd36e094b:0-asian-stocks-face-new-pressure-as-nvidia-spy-probe-rattles-tech-sector/"
+  },
+  {
+   "t": "Seeking Alpha：Houthi strike damages Aramco offices in Riyadh（11/8 13:39 ET）",
+   "u": "https://seekingalpha.com/news/4668770-houthi-strike-damages-aramco-offices-in-riyadh-raising-business-risks"
+  },
+  {
+   "t": "TFTC：Houthi Missile Hits Aramco Tower as Three Tankers Burn in Hormuz（11/8）",
+   "u": "https://www.tftc.io/houthi-missile-aramco-tower-hormuz-tankers-fire"
+  },
+  {
+   "t": "Bloomberg：Saudi Aramco Tower Targeted in Rare Strike on Riyadh Finance Hub（11/8）",
+   "u": "https://www.bloomberg.com/news/articles/2026-11-08/saudi-aramco-tower-targeted-in-rare-strike-on-riyadh-finance-hub"
+  },
+  {
+   "t": "Seeking Alpha：Wall Street Brunch — Anthropic IPO Goes On The Road（估值、本週行事曆）",
+   "u": "https://seekingalpha.com/article/4964841-wall-street-brunch-anthropic-ipo-goes-on-the-road"
+  },
+  {
+   "t": "TWI Weekly November 8, 2026（CPI／PPI 預期、本週行事曆）",
+   "u": "https://tradewithinsight.substack.com/p/the-twi-weekly-november-8-2026"
+  },
+  {
+   "t": "Palma Futures：Sunday Post — Recap & Week Ahead 11/8/2026（寬度、情緒、信用利差）",
+   "u": "https://palmafutures.substack.com/p/sunday-post-recap-and-week-ahead-19f"
+  },
+  {
+   "t": "LA NACION／AP：How major US stock indexes fared Friday 11/6/2026（收盤交叉驗證）",
+   "u": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-friday-1162026-nid06112026/"
+  },
+  {
+   "t": "Decrypt：Every Magnificent Seven stock opts out of OKX-ICE venue（11/7）",
+   "u": "https://decrypt.co/382768/apple-meta-every-magnificent-seven-stock-opts-out-okx-ice-venue"
+  },
+  {
+   "t": "Materials Dispatch：China's November 2026 Export-Control Cliff（11/10、11/27）",
+   "u": "https://www.materialsdispatch.com/en/blog/china-november-2026-export-control-cliff"
+  },
+  {
+   "t": "Bloomingbit：China October CPI due Nov 9",
+   "u": "https://en.bloomingbit.io/feed/news/123931"
+  },
+  {
+   "t": "StockTitan：Berkshire Hathaway Q3 2026 earnings — cash falling after Taylor Morrison deal",
+   "u": "https://www.stocktitan.net/articles/berkshire-hathaway-q3-2026-earnings-abel-cash-pile"
+  },
+  {
+   "t": "CNBC：Berkshire Hathaway more than doubles buybacks in third quarter as earnings decline",
+   "u": "https://www.cnbc.com/2026/11/07/berkshire-hathaway-q3-2026-earnings-buybacks.html"
+  },
+  {
+   "t": "Forbes：Berkshire Hathaway Q3 Earnings Miss On Insurance, Not On Strategy",
+   "u": "https://www.forbes.com/sites/bill_stone/2026/11/07/berkshire-hathaway-q3-earnings-miss-on-insurance-not-on-strategy/"
+  },
+  {
+   "t": "House of Saud：Iran Army Spokesman Says Hormuz Stays Closed Until US Accepts 7 Conditions（11/7）",
+   "u": "https://houseofsaud.com/iran-hormuz-no-backing-down-nov7/"
+  },
+  {
+   "t": "Malay Mail：Iran army spokesman — Hormuz is ours, and it stays shut",
+   "u": "https://www.malaymail.com/news/world/2026/11/07/iran-army-spokesman-hormuz-is-ours-and-it-stays-shut-until-washington-gives-in/242364"
+  },
+  {
+   "t": "Newswire／DW：US asks China to uphold Busan trade deal commitments（11/7）",
+   "u": "https://www.newswire.lk/2026/11/07/us-asks-china-to-uphold-busan-trade-deal-commitments/"
+  },
+  {
+   "t": "456X Evening Brief — November 7, 2026（台積電否認 3D DRAM、Anthropic／Broadcom 融資、資本支出）",
+   "u": "https://404kresearch.substack.com/p/456x-evening-brief-november-7-2026"
+  },
+  {
+   "t": "Reuters／Investing.com：Fed's Hammack favors gradual rate-hike path",
+   "u": "https://www.investing.com/news/economy-news/feds-hammack-favors-gradual-ratehike-path-to-lower-inflation-5004429"
+  },
+  {
+   "t": "Topstep：Weekly Market Kickoff November 8, 2026（下週行事曆、期貨技術位）",
+   "u": "https://www.topstep.com/blog/weekly-market-kickoff"
+  },
+  {
+   "t": "Edward Lane：Stock Market Report for November 7, 2026（週線、ETF）",
+   "u": "https://edwardlane.substack.com/p/stock-market-report-for-november-366"
+  },
+  {
+   "t": "Stocktwits：The MAG 7's Week-In Commentary — Midterm Election Edition",
+   "u": "https://stocktwits.com/news-articles/markets/equity/musk-tesla-cybertruck-ternus-memory-warning-mag-7-voices-in-midterm-election-week/cNGlofFR9Ic"
+  },
+  {
+   "t": "24/7 Wall St.：Musk Says SpaceX Could Buy a Legacy Telco（11/7）",
+   "u": "https://247wallst.com/investing/2026/11/07/musk-says-spacex-could-buy-a-legacy-telco-and-use-its-spectrum-10-times-better"
+  },
+  {
+   "t": "Shattered：Anthropic IPO valuation slips to $1.2T floor（11/6）",
+   "u": "https://shattered.io/anthropic-ipo-valuation-buyers-1-2-trillion-2026/"
+  },
+  {
+   "t": "Dailypolitical：Eli Lilly stock falls 3.5%（市值 1.29 兆）",
+   "u": "https://www.dailypolitical.com/2026/11/07/eli-lilly-and-company-nyselly-stock-falls-3-5-should-you-sell.html"
+  },
+  {
+   "t": "NewsBytes：House Republicans ask Nvidia CEO Jensen Huang explain China ties",
+   "u": "https://www.newsbytesapp.com/news/business/house-republicans-ask-nvidia-ceo-jensen-huang-explain-china-ties/tldr"
+  },
+  {
+   "t": "Capp Notes：Closing Look — Friday, November 6, 2026（指數、殖利率、匯率、商品）",
+   "u": "https://cappnotes.substack.com/p/closing-look-friday-november-6-2026"
+  },
+  {
+   "t": "TradingKey：Nasdaq Rebounds 1%, SpaceX Shares Jump Over 8%（費半 9,390.25、SpaceX）",
+   "u": "https://www.tradingkey.com/analysis/stocks/us-stocks/262293726-us-stock-market-nasdaq-rebounds-ai-chip-spacex-surges-tradingkey"
+  },
+  {
+   "t": "鉅亨網：〈美股盤後〉晶片股反彈！費半勁揚逾 4.2% 台積電 ADR 升超 6%（個股收盤價）",
+   "u": "https://news.cnyes.com/news/id/6651785"
+  },
+  {
+   "t": "21 財經：美股科技股大反攻，SpaceX 大漲超 8%（七巨頭漲跌、商品）",
+   "u": "https://m.21jingji.com/article/20261107/herald/3b6fe157328692471ee2ab211ced8e9f.html"
+  },
+  {
+   "t": "FX168：AI 股大血洗後美股科技股暴力反彈（美元指數、Anthropic、Lam 回購）",
+   "u": "https://fx168news.com/article/1113304"
+  },
+  {
+   "t": "Yahoo Finance：Nasdaq and S&P 500 rebound, Dow slips to cap bruising week（收盤、非農、德州州長）",
+   "u": "https://finance.yahoo.com/markets/live/stock-market-today-friday-november-6-dow-sp-500-nasdaq-jobs-report-earnings-135953863.html"
+  },
+  {
+   "t": "Investrade：Market Review November 06, 2026（週線、殖利率週變化、密大信心）",
+   "u": "https://investrade.com/market-review-november-06-2026/"
+  },
+  {
+   "t": "StockTitan：Chip Stocks Bounce Back, November 6, 2026",
+   "u": "https://www.stocktitan.net/articles/stock-market-today-live-november-6-2026"
+  },
+  {
+   "t": "StockTitan：Largest companies by market cap（11/5）",
+   "u": "https://www.stocktitan.net/rankings/companies-market-cap"
+  },
+  {
+   "t": "Reuters／Business Recorder：Fed seen sticking to December rate hike after jobs data",
+   "u": "https://www.brecorder.com/news/40447788/fed-seen-sticking-to-december-rate-hike-after-jobs-data"
+  },
+  {
+   "t": "CNBC：Fed's Daly — 'treadmill of high inflation'",
+   "u": "https://cnbc.com/2026/11/06/fed-daly-interest-rates-inflation.html"
+  },
+  {
+   "t": "TheStreet：Stock Market Today Nov. 6, 2026（Microsoft/Oracle、Tesla、Lilly/Hims）",
+   "u": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-nov-06-2026"
+  },
+  {
+   "t": "Signal SCV／AP：Nasdaq rebounds after worst selloff in 19 months（川普、FactSet）",
+   "u": "https://signalscv.com/2026/11/nasdaq-rebounds-after-worst-selloff-in-19-months/"
+  },
+  {
+   "t": "Yahoo Finance：Nvidia, AMD, Micron lead chip sector higher",
+   "u": "https://finance.yahoo.com/markets/article/nvidia-amd-micron-sandsik-lead-chip-sector-higher-134336542.html"
+  },
+  {
+   "t": "CBS News：Iran war live updates — ships attacked in Persian Gulf",
+   "u": "https://www.cbsnews.com/live-updates/iran-war-us-trump-midterms-strait-of-hormuz/"
+  },
+  {
+   "t": "Motley Fool／AOL：Berkshire Hathaway Reports Nov. 7 — Its Cash Pile Is the Number to Watch",
+   "u": "https://www.aol.com/articles/berkshire-hathaway-reports-nov-7-203702000.html"
+  },
+  {
+   "t": "Capp Notes：Closing Look — Friday, October 30, 2026（上週五收盤基準）",
+   "u": "https://cappnotes.substack.com/p/closing-look-friday-october-30-2026"
+  },
+  {
+   "t": "本站 2026-11-07 報告（11/6 收盤、週表與逐日漲跌原始版）",
+   "u": "daily.html?d=2026-11-07"
+  }
+ ]
+}
