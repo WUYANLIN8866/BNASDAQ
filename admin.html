@@ -30,7 +30,7 @@
   <div class="panel" id="sig-cur"></div>
   <div class="panel" id="sig-prov"></div>
   <div class="panel"><div class="field" style="max-width:320px"><label for="custom">自訂 QQQ 月底收盤價試算</label><input id="custom" type="number" step="0.01" placeholder="例如 687.29"></div><div id="sig-custom"></div></div>
-  <details><summary>最近 24 個月的正式訊號</summary><div class="ans"><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">訊號月</th><th>還原收盤</th><th>五項成立</th><th>煞車</th><th>B.2 持有</th><th>B.3 持有</th></tr></thead><tbody id="hist-body"></tbody></table></div></div></details>
+  <details><summary>最近 24 個月的正式訊號</summary><div class="ans"><div class="tblwrap"><table class="tbl"><thead id="hist-head"><tr><th class="l">訊號月</th><th>還原收盤</th></tr></thead><tbody id="hist-body"></tbody></table></div></div></details>
   <div class="panel"><h3>市場資料</h3><p class="small">每個交易日美股收盤後由 GitHub Actions 自動更新（Yahoo Finance）；也可以手動觸發。</p><div class="actions"><button class="btn navy" type="button" id="dispatch">立即更新市場資料並重新部署</button><a class="btn line" href="https://github.com/WUYANLIN8866/BNASDAQ/actions" target="_blank" rel="noopener">查看自動更新紀錄</a></div><div id="data-msg"></div></div>
 
   <h2 id="accounts">帳號管理</h2>
@@ -132,25 +132,37 @@
   $('#annf').addEventListener('submit',async e=>{e.preventDefault();const t=$('#at').value.trim();if(!t)return;SITE.announcements=SITE.announcements||[];SITE.announcements.unshift({date:$('#ad').value||new Date().toISOString().slice(0,10),title:t,body:$('#ab').value.trim()});renderAnn();$('#at').value='';$('#ab').value='';await saveSite('admin: add announcement');});
   $('#ad').value=new Date().toISOString().slice(0,10);
 
-  // ---------- signals (full detail) ----------
+  // ---------- signals（條件名稱、數值、門檻都由規則提供；頁面不寫任何策略內容）----------
   const f2=x=>(x==null||isNaN(x))?'—':(+x).toFixed(4);
-  function condRows(e,P,H){const c=e.cond,h=e.hedge;const yn=b=>b?'<b style="color:var(--good)">成立</b>':'<span style="color:var(--bad)">不成立</span>';
-    const rows=[['MV'+P.v1+' < '+P.t1,f2(c.mv3),yn(c.c1),(c.mv3-P.t1).toFixed(2)],['MV'+P.v2+' < '+P.t2,f2(c.mv5),yn(c.c2),(c.mv5-P.t2).toFixed(2)],['MV'+P.v3+' < '+P.t3,f2(c.mv11),yn(c.c3),(c.mv11-P.t3).toFixed(2)],[P.mp+'MP：收盤 > '+P.mp+' 個月前收盤',f2(e.close)+' vs '+f2(c.close3),yn(c.mp),((e.close/c.close3-1)*100).toFixed(2)+'%'],['MA'+P.ma+'：收盤 > 近 '+P.ma+' 月均價',f2(e.close)+' vs '+f2(c.ma5),yn(c.ma),((e.close/c.ma5-1)*100).toFixed(2)+'%'],
-      ['煞車 A：RSV'+H.rsv_n+' 在 ['+H.lo+','+H.hi+') 且下降','本月 '+f2(h.rsv)+'／上月 '+f2(h.rsvPrev),yn(h.A),''],['煞車 B：RSI'+H.rsi_n+' > '+H.rsi_t,f2(h.rsi),yn(h.B),(h.rsi-H.rsi_t).toFixed(2)]];
-    return '<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">條件</th><th>數值</th><th>成立？</th><th>距離</th></tr></thead><tbody>'+rows.map(r=>'<tr><td class="l">'+r[0]+'</td><td>'+r[1]+'</td><td class="c">'+r[2]+'</td><td>'+r[3]+'</td></tr>').join('')+'</tbody><tfoot><tr><td colspan="4">五項成立 '+e.votes+' 項 → B.2：'+rules.holdingText(e.w['B.2'])+'；B.3：'+rules.holdingText(e.w['B.3'])+'</td></tr></tfoot></table></div>';}
-  async function loadSignals(){rules=await BN.auth.loadRules(sess);market=await fetch('data/market.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json());const L=rules.latest(market);const S=L.series;const c=market.current;
-    $('#mstat').innerHTML='資料截至 <b>'+market.asof+'</b>｜QQQ 收盤 '+c.c.toFixed(2)+'（U '+c.U.toFixed(4)+'，本月高 '+c.H.toFixed(4)+'／低 '+c.L.toFixed(4)+'）｜來源 '+esc(market.source)+'｜更新 '+esc(market.updated);
-    $('#sig-cur').innerHTML='<h4>正式訊號：'+L.lastComplete.month+' 月底（決定 '+nextMonth(L.lastComplete.month)+' 持有）</h4>'+condRows(L.lastComplete,rules.P,rules.H);
-    $('#sig-prov').innerHTML='<h4>推算：把最新收盤 '+c.c.toFixed(2)+' 當作 '+c.m+' 月底收盤（決定 '+nextMonth(c.m)+' 持有）</h4>'+condRows(L.provisional,rules.P,rules.H)+(L.flips?'<p class="small">翻轉價位（原始價）：往下 '+(L.flips.down?(L.flips.down.price/market.k).toFixed(2)+' → B.2 '+rules.holdingText(L.flips.down.w['B.2'])+'／B.3 '+rules.holdingText(L.flips.down.w['B.3']):'無')+'；往上 '+(L.flips.up?(L.flips.up.price/market.k).toFixed(2)+' → B.2 '+rules.holdingText(L.flips.up.w['B.2'])+'／B.3 '+rules.holdingText(L.flips.up.w['B.3']):'無')+'</p>':'');
-    $('#custom').addEventListener('input',()=>{const px=+$('#custom').value;if(!(px>0))return;const e=rules.provisional(S,px*market.k,c);$('#sig-custom').innerHTML='<h4>自訂收盤 '+px.toFixed(2)+' 的推算</h4>'+condRows(e,rules.P,rules.H);});
-    // history (last 24 complete months)
-    const hist=[];for(let k=S.M.length-1;k>=Math.max(0,S.M.length-24);k--){const e=rules.evaluate(S,k);hist.push('<tr><td class="l">'+e.month+'</td><td>'+f2(e.close)+'</td><td>'+e.votes+'</td><td class="c">'+(e.hedge.A?'A':'')+(e.hedge.B?'B':'')+'</td><td>'+rules.holdingText(e.w['B.2'])+'</td><td>'+rules.holdingText(e.w['B.3'])+'</td></tr>');}
+  const yn=b=>b?'<b style="color:var(--good)">成立</b>':'<span style="color:var(--bad)">不成立</span>';
+  function condRows(e){return rules.STRATEGIES.map(st=>{const d=e.detail[st.id];
+    if(!d) return '<h4 style="margin:12px 0 6px">'+esc(st.id)+'</h4><p class="small">這個月份沒有可用模型，無法計算。</p>';
+    return '<h4 style="margin:12px 0 6px">'+esc(st.id)+'（專案 '+esc(st.ref)+'）</h4><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">條件</th><th>數值</th><th>成立？</th><th>距離</th></tr></thead><tbody>'
+      +d.rows.map(r=>'<tr><td class="l">'+esc(r[0])+'</td><td>'+esc(r[1])+'</td><td class="c">'+yn(r[2])+'</td><td>'+esc(r[3])+'</td></tr>').join('')
+      +'</tbody><tfoot><tr><td colspan="4">'+esc(d.summary)+'</td></tr></tfoot></table></div>';}).join('');}
+  async function loadSignals(){rules=await BN.auth.loadRules(sess);
+    market=await fetch('data/market.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json());
+    const tb=await fetch('data/tb3ms.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
+    const rs=await fetch('data/rules-status.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+    if(!(rules.version>=2)){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">會員規則還是舊版（第 1 版）：請先完成下方「帳號管理」裡的「會員規則金鑰（一次性設定）」，新版規則會自動發布。</p>';return;}
+    const L=rules.latest(market,tb);const S=L.series;const c=market.current;const bv=rules.spec&&rules.spec.b_ver;
+    const sync=!rs?'<span style="color:var(--bad)">讀不到同步狀態檔</span>':rs.state!=='ok'?'<b style="color:var(--bad)">同步中：'+esc(rs.note||'B 區有更新')+'（自 '+esc(rs.since||'')+'）</b>':rs.b_ver!==bv?'<b style="color:var(--bad)">規則與 B 區最新版本不一致</b>':'<span class="ok-dot"></span>與 B 區最新版本一致（'+esc(bv)+'）';
+    const exp=rules.validUntil&&c.m>rules.validUntil?'｜<b style="color:var(--bad)">模型已到期，需要重新訓練</b>':'';
+    $('#mstat').innerHTML='資料截至 <b>'+market.asof+'</b>｜QQQ 收盤 '+c.c.toFixed(2)+'（U '+c.U.toFixed(4)+'，本月高 '+c.H.toFixed(4)+'／低 '+c.L.toFixed(4)+'）｜來源 '+esc(market.source)+'｜更新 '+esc(market.updated)+'｜規則版本 <b>'+esc(rules.built)+'</b>（模型有效至 '+esc(rules.validUntil)+'）｜'+sync+exp;
+    $('#sig-cur').innerHTML='<h3>正式訊號：'+L.lastComplete.month+' 月底（決定 '+nextMonth(L.lastComplete.month)+' 持有）</h3>'+condRows(L.lastComplete);
+    $('#sig-prov').innerHTML='<h3>推算：把最新收盤 '+c.c.toFixed(2)+' 當作 '+c.m+' 月底收盤（決定 '+nextMonth(c.m)+' 持有）</h3>'+condRows(L.provisional)
+      +'<p class="small">翻轉價位（原始價）：'+rules.STRATEGIES.map(st=>{const f=L.flips[st.id]||{};return esc(st.id)+' 往下 '+(f.down?f.down.raw.toFixed(2)+' → '+rules.holdingText(f.down.w):'無')+'、往上 '+(f.up?f.up.raw.toFixed(2)+' → '+rules.holdingText(f.up.w):'無');}).join('｜')+'</p>';
+    $('#custom').addEventListener('input',()=>{const px=+$('#custom').value;if(!(px>0))return;const e=rules.provisional(S,px*market.k,c,L.preps);$('#sig-custom').innerHTML='<h3>自訂收盤 '+px.toFixed(2)+' 的推算</h3>'+condRows(e);});
+    // 最近 24 個完整月
+    $('#hist-head').innerHTML='<tr><th class="l">訊號月</th><th>還原收盤</th>'+rules.STRATEGIES.map(st=>'<th>'+esc(st.id)+' 成立</th><th>'+esc(st.id)+' 下月持有</th>').join('')+'</tr>';
+    const hist=[];for(let k=S.M.length-1;k>=Math.max(0,S.M.length-24);k--){const e=rules.evaluate(S,k);
+      hist.push('<tr><td class="l">'+e.month+'</td><td>'+f2(e.close)+'</td>'+rules.STRATEGIES.map(st=>{const d=e.detail[st.id];return '<td>'+(d?d.votes+'／'+d.of:'—')+'</td><td>'+(d?rules.holdingText(d.w):'—')+'</td>';}).join('')+'</tr>');}
     $('#hist-body').innerHTML=hist.join('');}
   function nextMonth(m){const [y,mm]=m.split('-').map(Number);const d=new Date(y,mm,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
   $('#dispatch').addEventListener('click',async()=>{if(!pat){msg('#data-msg','需要 PAT（Actions: Read and write）。','err');return;}msg('#data-msg','觸發中…');try{await BN.auth.ghDispatch(pat);msg('#data-msg','已觸發，約 2～3 分鐘後重新整理本頁。','ok');}catch(e){msg('#data-msg',e.message,'err');}});
   try{await loadDB();}catch(e){msg('#acct-msg',e.message,'err');}
   await loadSite();
-  try{await loadSignals();}catch(e){$('#sig-cur').innerHTML='<p class="msg err">'+esc(e.message||e)+'</p>';}
+  try{await loadSignals();}catch(e){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">'+(e&&e.name==='OperationError'?'規則無法用目前的會員主金鑰解密：多半是剛重新建立會員規則金鑰，規則還沒用新金鑰重新發布（每日同步檢查會自動重新發布）。':esc(e.message||e))+'</p>';}
 })();
 </script>
 <script>
