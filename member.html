@@ -66,7 +66,7 @@
     else if(rs&&rs.b_ver&&rs.b_ver!==bv) why.push('會員規則和專案 B 區最新版本不一致，同步中');
     if(rules.validUntil&&c&&c.m>rules.validUntil) why.push('模型需要依排程重新訓練');
     if(why.length) return pending(why.join('；')+'。');
-    const sync=rs&&rs.b_ver===bv?'；與 B 區最新版本一致 <span class="ok-dot"></span>':'';
+    const sync=rs&&rs.b_ver===bv?'；每天自動比對專案 B 區兩次，有更新就自動重建 <span class="ok-dot"></span>':'';
     const T=rules.holdingText, L=rules.latest(market,tb), k=market.k;
     const holdM=L.lastComplete.month?rules.nextMonth(L.lastComplete.month):'—', prevM=rules.nextMonth(L.prevComplete.month), nextM=c?rules.nextMonth(c.m):'—';
     const left=c?rules.tradingDaysLeft(market.asof,c.m):0;

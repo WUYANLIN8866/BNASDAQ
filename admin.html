@@ -146,7 +146,7 @@
     const rs=await fetch('data/rules-status.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
     if(!(rules.version>=2)){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">會員規則還是舊版（第 1 版）：請先完成下方「帳號管理」裡的「會員規則金鑰（一次性設定）」，新版規則會自動發布。</p>';return;}
     const L=rules.latest(market,tb);const S=L.series;const c=market.current;const bv=rules.spec&&rules.spec.b_ver;
-    const sync=!rs?'<span style="color:var(--bad)">讀不到同步狀態檔</span>':rs.state!=='ok'?'<b style="color:var(--bad)">同步中：'+esc(rs.note||'B 區有更新')+'（自 '+esc(rs.since||'')+'）</b>':rs.b_ver!==bv?'<b style="color:var(--bad)">規則與 B 區最新版本不一致</b>':'<span class="ok-dot"></span>與 B 區最新版本一致（'+esc(bv)+'）';
+    const sync=!rs?'<span style="color:var(--bad)">讀不到同步狀態檔</span>':rs.state!=='ok'?'<b style="color:var(--bad)">同步中：'+esc(rs.note||'B 區有更新')+'（自 '+esc(rs.since||'')+'）</b>':rs.b_ver!==bv?'<b style="color:var(--bad)">規則與 B 區最新版本不一致</b>':'<span class="ok-dot"></span>與最近一次同步檢查的 B 區版本一致（'+esc(bv)+'，每天 07:53、19:53 自動檢查）';
     const exp=rules.validUntil&&c.m>rules.validUntil?'｜<b style="color:var(--bad)">模型已到期，需要重新訓練</b>':'';
     $('#mstat').innerHTML='資料截至 <b>'+market.asof+'</b>｜QQQ 收盤 '+c.c.toFixed(2)+'（U '+c.U.toFixed(4)+'，本月高 '+c.H.toFixed(4)+'／低 '+c.L.toFixed(4)+'）｜來源 '+esc(market.source)+'｜更新 '+esc(market.updated)+'｜規則版本 <b>'+esc(rules.built)+'</b>（模型有效至 '+esc(rules.validUntil)+'）｜'+sync+exp;
     $('#sig-cur').innerHTML='<h3>正式訊號：'+L.lastComplete.month+' 月底（決定 '+nextMonth(L.lastComplete.month)+' 持有）</h3>'+condRows(L.lastComplete);
