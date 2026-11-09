@@ -1,6 +1,7 @@
 /* BNASDAQ 帳號／加密／GitHub 寫入（純前端；帳號檔 data/accounts.json 只存雜湊與包裝後的金鑰）
    - 密碼驗證：PBKDF2-SHA256（310,000 次）→ 32 bytes → base64 與 accounts.json 的 auth.hash 比對
    - 規則金鑰 CK：以「密碼派生金鑰（另一個 salt）」用 AES-GCM 包裝，存在每個帳號的 wrap 欄位；登入後解開 CK → 解密 data/rules.enc.json → 在瀏覽器執行規則
+  - 第 2 版規則（rules.enc.json 有 ek 欄位）：CK 先解開 data/rules-key.json 的 RSA 私鑰，再解開規則的一次性金鑰；發布規則只需要公鑰
    - 管理員寫入：GitHub Contents API（fine-grained PAT，只存在管理員自己的瀏覽器，且以 CK 加密） */
 (function () {
   'use strict';
@@ -59,7 +60,17 @@
   async function loadRules(sess) {
     if (window.BN_RULES) return window.BN_RULES;
     const r = await fetch('data/rules.enc.json?t=' + Date.now(), { cache: 'no-store' }); const j = await r.json();
-    const src = dec.decode(await aesDec(b64.dec(sess.ck), j.iv, j.ct));
+    let src;
+    if (j.ek) {
+      // 第 2 版：規則用一次性 AES 金鑰加密，該金鑰再用「會員規則公鑰」（RSA-OAEP-SHA256）包裝；
+      // 對應的私鑰以會員主金鑰（CK）加密後存在 data/rules-key.json，所以只有登入的會員能解開，而發布規則的一方不需要任何秘密
+      const kf = await (await fetch('data/rules-key.json?t=' + Date.now(), { cache: 'no-store' })).json();
+      const pk = await crypto.subtle.importKey('pkcs8', await aesDec(b64.dec(sess.ck), kf.priv.iv, kf.priv.ct), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+      const dk = new Uint8Array(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, pk, b64.dec(j.ek)));
+      src = dec.decode(await aesDec(dk, j.iv, j.ct));
+    } else {
+      src = dec.decode(await aesDec(b64.dec(sess.ck), j.iv, j.ct));
+    }
     (new Function(src))();
     if (!window.BN_RULES) throw new Error('規則載入失敗');
     window.BN_RULES._src = src;

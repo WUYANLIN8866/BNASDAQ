@@ -40,6 +40,13 @@
     <div class="row2"><div class="field"><label for="pat">Personal access token</label><input id="pat" type="password" autocomplete="off" placeholder="github_pat_…"></div><div class="field" style="align-self:end"><div class="actions"><button class="btn navy" type="button" id="pat-save">測試並儲存</button><button class="btn line" type="button" id="pat-clear">清除</button></div></div></div>
     <p class="small" id="pat-status"></p><div id="pat-msg"></div>
   </div>
+  <div class="panel" id="rkey">
+    <h3>會員規則金鑰（一次性設定）</h3>
+    <p class="small">設定一次後，專案 B 區的策略只要有變更，系統就能自動把新規則加密發布到會員專區，不必再經過你的瀏覽器。做法：這台瀏覽器產生一組 RSA 金鑰；公鑰公開（只能用來加密），私鑰先用你的會員主金鑰加密才存到 GitHub，所以只有登入的會員解得開。</p>
+    <p class="small" id="rk-status">檢查中…</p>
+    <div class="actions"><button class="btn navy" type="button" id="rk-make">建立會員規則金鑰</button><a id="rk-dl" class="btn line" download="rules-key.json" hidden>下載 rules-key.json（手動上傳用）</a></div>
+    <div id="rk-msg"></div>
+  </div>
   <div class="panel">
     <h3>帳號清單 <span class="small">（最後更新 <span id="acct-updated">—</span>）</span></h3>
     <div class="tblwrap"><table class="tbl" id="acct-table"><thead><tr><th class="l">帳號</th><th class="l">角色</th><th class="l">建立</th><th class="l">狀態</th><th class="l">備註</th><th class="l">操作</th></tr></thead><tbody id="acct-body"><tr><td colspan="6">載入中…</td></tr></tbody></table></div>
@@ -67,7 +74,7 @@
   </div>
   <div class="note"><p>安全提醒：accounts.json 是公開檔案，只存密碼雜湊（PBKDF2 310,000 次）與包裝後的金鑰；請給會員夠長的密碼。管理員的 PAT 只存在這台瀏覽器（以你的金鑰加密），不會進入 repo。</p></div>
 </div></div>
-<script src="assets/site.js?v=4771a894fc"></script><script src="assets/auth.js?v=e3bb2a6771"></script>
+<script src="assets/site.js?v=4771a894fc"></script><script src="assets/auth.js?v=d4c04c5c73"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -79,6 +86,26 @@
   patStatus();
   $('#pat-save').addEventListener('click',async()=>{const v=$('#pat').value.trim();if(!v)return;msg('#pat-msg','測試中…');try{await BN.auth.ghTest(v);await BN.auth.savePAT(sess,v);pat=v;$('#pat').value='';patStatus();msg('#pat-msg','PAT 可用並已儲存。','ok');}catch(e){msg('#pat-msg',e.message,'err');}});
   $('#pat-clear').addEventListener('click',()=>{BN.auth.clearPAT();pat=null;patStatus();msg('#pat-msg','已清除。','ok');});
+
+  // ---------- 會員規則金鑰（一次性設定） ----------
+  async function rkStatus(){let j=null;try{j=await BN.auth.fetchJSON('data/rules-key.json');}catch(e){}
+    $('#rk-status').innerHTML=j&&j.pub?'<span class="ok-dot"></span>已設定（建立於 '+esc(j.created||'')+'）。之後規則更新會自動發布，不需要再按。':'<span style="color:var(--bad)">尚未設定</span>：按下方按鈕一次即可。';
+    $('#rk-make').textContent=j&&j.pub?'重新建立（一般不需要）':'建立會員規則金鑰';return j;}
+  $('#rk-make').addEventListener('click',async()=>{const cur=await rkStatus();if(cur&&cur.pub&&!confirm('已經設定過；重新建立會換一組金鑰，之後要重新發布規則。確定？'))return;
+    msg('#rk-msg','產生金鑰中…');
+    try{const kp=await crypto.subtle.generateKey({name:'RSA-OAEP',modulusLength:3072,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['encrypt','decrypt']);
+      const pub=new Uint8Array(await crypto.subtle.exportKey('spki',kp.publicKey)),priv=new Uint8Array(await crypto.subtle.exportKey('pkcs8',kp.privateKey));
+      const w=await BN.auth.aesEnc(BN.auth.b64.dec(sess.ck),priv);
+      // 自我檢查：用會員主金鑰解回私鑰，再用公鑰加密、私鑰解密一次，相同才寫入
+      const back=await BN.auth.aesDec(BN.auth.b64.dec(sess.ck),w.iv,w.ct);const pk=await crypto.subtle.importKey('pkcs8',back,{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
+      const probe=crypto.getRandomValues(new Uint8Array(32));const got=new Uint8Array(await crypto.subtle.decrypt({name:'RSA-OAEP'},pk,await crypto.subtle.encrypt({name:'RSA-OAEP'},kp.publicKey,probe)));
+      if(got.length!==probe.length||got.some((x,i)=>x!==probe[i]))throw new Error('自我檢查失敗，沒有寫入。');
+      const text=JSON.stringify({schema:'bnasdaq-rules-key/1',created:new Date().toISOString().slice(0,10),alg:'RSA-OAEP-3072-SHA256',pub:BN.auth.b64.enc(pub),priv:{iv:w.iv,ct:w.ct}},null,1);
+      if(!pat){msg('#rk-msg','金鑰已產生，但這台瀏覽器沒有 PAT，無法直接寫回 GitHub。請按「下載 rules-key.json」，把檔案交給 Claude 上傳（檔內私鑰已加密，可以安全傳送）。','err');$('#rk-dl').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#rk-dl').hidden=false;return;}
+      await BN.auth.ghPut(pat,'data/rules-key.json',text,'admin: 建立會員規則金鑰（公鑰＋以會員主金鑰加密的私鑰）');
+      msg('#rk-msg','完成：已寫入 data/rules-key.json。之後的規則更新會自動發布。','ok');setTimeout(rkStatus,1500);
+    }catch(e){msg('#rk-msg',(e&&e.message)||String(e),'err');}});
+  rkStatus();
 
   // ---------- accounts ----------
   async function loadDB(){DB=await BN.auth.fetchAccounts();renderAccounts();}
