@@ -3,21 +3,13 @@ on:
   push:
     branches: [lookthrough-probe8]
 permissions:
-  contents: write
+  contents: read
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: |
-          pip install -q pypdf cryptography
-          git fetch -q origin main && git checkout origin/main -- data/heatmap/latest.json data/fund
-          python3 scripts/fetch_company.py --codes NVDA,AMD,AVGO,INTC,TSM,MU,AAPL,MSFT,JPM,KO,2330,2317,2454,2308,2881
-          mkdir -p out && cp -r data/company out/
-      - run: |
-          git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
-          git checkout --orphan probe-out2 && git rm -rq --cached . && git add -f out && git commit -qm "probe output" && git push -qf origin probe-out2
+      - run: python3 probe/datasrc.py
