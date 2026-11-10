@@ -10,20 +10,24 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-      - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
       - run: |
-          B=https://wuyanlin8866.github.io/BNASDAQ
-          echo "線上 daily/index.json latest：$(curl -s "$B/data/daily/index.json?t=$(date +%s)" | python3 -c 'import json,sys;print(json.load(sys.stdin)["latest"])')"
-          echo "線上 market.json asof：$(curl -s "$B/data/market.json?t=$(date +%s)" | python3 -c 'import json,sys;print(json.load(sys.stdin)["asof"])')"
-          cat > dailycheck.js <<'EOF'
-          const { chromium } = require('playwright');
-          (async () => { const b = await chromium.launch(); const p = await b.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-            await p.goto(process.argv[2] + 'daily.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
-            const t = await p.evaluate(() => document.body.innerText);
-            console.log('網頁含 2026-11-10：', t.includes('2026-11-10'), '｜含 11/9 那指 27,907.63：', /27,?907\.63/.test(t));
-            console.log('網頁開頭：', t.replace(/\s+/g, ' ').slice(t.replace(/\s+/g, ' ').indexOf('每日市場分析'), t.replace(/\s+/g, ' ').indexOf('每日市場分析') + 160));
-            console.log('頁面錯誤：', errs.length ? errs : '無'); await b.close(); })();
-          EOF
-          node dailycheck.js $B/
+          mkdir -p data/lt/etf data/heatmap
+          for e in QQQ SPY; do curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/etf/$e.json" -o "data/lt/etf/$e.json"; done
+          time python3 scripts/fetch_heatmap.py --force
+          python3 - <<'PY'
+          import json
+          d = json.load(open('data/heatmap/latest.json'))
+          print('session', d['session'], 'notes', d['notes'][:10])
+          for k, s in d['sets'].items():
+              t = s['tiles']; print(k, s['name'], 'n', s['n'], 'cap_total_bn', s['cap_total_bn'], 'holdings', s['holdings_asof'])
+              print('  估算市值', [x[0] for x in t if x[6]][:20], '| 沒漲跌', [x[0] for x in t if x[4] is None][:20])
+              for sym in ['NVDA', 'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'AVGO', 'TSLA', 'BRK-B', 'FOXA', 'NWSA']:
+                  r = [x for x in t if x[0] == sym]
+                  if r: print('  ', r[0])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: heatmap
+          path: data/heatmap/latest.json
