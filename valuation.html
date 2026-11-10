@@ -144,8 +144,28 @@ body:not(.am) .am-only{display:none!important}
 .btn.ghost{background:transparent;color:var(--navy-ink);border:1px solid var(--line-2)}
 body.am #verdict{margin-top:6px}
 @media(max-width:820px){.kp{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pxsel{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.pxsel button{font:inherit;font-size:13.5px;padding:5px 12px;border:1px solid var(--line);background:var(--paper);color:var(--ink-2);border-radius:999px;cursor:pointer}
+.pxsel button:hover{color:var(--ink);border-color:var(--axis)}
+.pxsel button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:600}
+.pxsel button:focus-visible,.dlrow a:focus-visible{outline:none;box-shadow:var(--focus)}
+.r52{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--ink-2);margin:6px 0 4px;max-width:620px;font-variant-numeric:tabular-nums}
+.r52 span{flex:none}
+.r52b{position:relative;flex:1;height:6px;border-radius:3px;background:var(--line)}
+.r52b i{position:absolute;top:50%;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;background:var(--s-fund);border:2px solid var(--paper);box-shadow:0 0 0 1px var(--s-fund)}
+.ptb td,.ptb th{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ptb .me{background:var(--band)}
+.dlrow{display:flex;flex-wrap:wrap;gap:8px;max-width:none}
+.dlrow a.btn{font-size:14px;padding:6px 14px;text-decoration:none}
+main .btn.ghost:hover{color:var(--ink);background:var(--band);border-color:var(--axis)}
+.esg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:8px 0 6px}
+.esg>div{border:1px solid var(--line);border-radius:3px;background:var(--paper);padding:12px 14px;min-width:0}
+.esg>div>b{display:block;font-size:15px;margin-bottom:6px}
+.esg dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px}
+.esg dt{color:var(--muted)}.esg dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+@media(max-width:900px){.esg{grid-template-columns:1fr}}
 </style>
-<script src="assets/company.js?v=5dbfef84d1"></script><script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=52553baf3c"></script>
+<script src="assets/company.js?v=3a21968738"></script><script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);

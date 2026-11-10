@@ -39,6 +39,8 @@
   const getJ = u => fetch(u, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   const last = a => { const v = (a || []).filter(x => x != null); return v.length ? v[v.length - 1] : null; };
   const yr = d => String(d || '').slice(0, 4) + (String(d || '').slice(5, 7) !== '12' ? '/' + String(d || '').slice(5, 7) : '');
+  const roc = x => String(x || '').trim().replace(/^(\d{3})(\d{2})(\d{2})$/, (_, y, m, d) => (+y + 1911) + '-' + m + '-' + d);
+  const nz = x => { const v = parseFloat(String(x == null ? '' : x).replace(/[,%+\s]/g, '')); return isFinite(v) ? v : null; };
 
   // ---------------------------------------------------------------- 圖
   function radar(axes, series, size) {
@@ -100,18 +102,45 @@
     for (let i = n + 1; i < a.length; i++) { const d = a[i] - a[i - 1]; g = (g * (n - 1) + Math.max(d, 0)) / n; l = (l * (n - 1) + Math.max(-d, 0)) / n; }
     return l === 0 ? 100 : 100 - 100 / (1 + g / l);
   }
-  function pxChart(days, closes, ma50, ma200, cur) {
+  function pxChart(days, closes, mas, cur, mon) { // mas: [{v, name, c, w, dash}]；mon＝月線
     const W = 760, H = 260, pl = 56, pr = 64, pt = 12, pb = 28, n = closes.length;
-    const all = closes.concat(ma50.filter(v => v != null), ma200.filter(v => v != null)), lo = Math.min(...all) * 0.97, hi = Math.max(...all) * 1.03;
-    const X = i => pl + (W - pl - pr) * i / (n - 1), Y = v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
+    const all = closes.concat(...mas.map(a => a.v.filter(v => v != null))), lo = Math.min(...all) * 0.97, hi = Math.max(...all) * 1.03;
+    const X = i => pl + (W - pl - pr) * i / Math.max(1, n - 1), Y = v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
     const path = a => a.map((v, i) => v == null ? null : X(i).toFixed(1) + ',' + Y(v).toFixed(1)).filter(Boolean).join(' ');
-    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="近 1 年股價：' + esc(days[0] + ' ' + closes[0].toFixed(2) + ' → ' + days[n - 1] + ' ' + closes[n - 1].toFixed(2)) + '">';
-    for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11">' + v.toFixed(v >= 100 ? 0 : 1) + '</text>'; }
-    [0, Math.floor(n / 4), Math.floor(n / 2), Math.floor(3 * n / 4), n - 1].forEach(i => { s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11">' + esc(days[i].slice(2, 7).replace('-', '/')) + '</text>'; });
-    s += '<polyline fill="none" style="stroke:var(--s-shv);stroke-width:1.4;stroke-dasharray:5 4" points="' + path(ma200) + '"/><polyline fill="none" style="stroke:var(--s-qqq);stroke-width:1.6" points="' + path(ma50) + '"/>';
+    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="股價走勢：' + esc(days[0] + ' ' + closes[0].toFixed(2) + ' → ' + days[n - 1] + ' ' + closes[n - 1].toFixed(2)) + '">';
+    for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11">' + v.toFixed(v >= 100 ? 0 : v >= 10 ? 1 : 2) + '</text>'; }
+    const lab = d => !mon && n <= 70 ? d.slice(5).replace('-', '/') : d.slice(2, 7).replace('-', '/');
+    [...new Set([0, Math.floor(n / 4), Math.floor(n / 2), Math.floor(3 * n / 4), n - 1])].forEach(i => { s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11">' + esc(lab(days[i])) + '</text>'; });
+    mas.forEach(a => { const p = path(a.v); if (p.indexOf(' ') > 0) s += '<polyline fill="none" style="stroke:' + a.c + ';stroke-width:' + a.w + (a.dash ? ';stroke-dasharray:5 4' : '') + '" points="' + p + '"/>'; });
     s += '<polyline fill="none" style="stroke:var(--s-fund);stroke-width:2.2" points="' + path(closes) + '"/>';
     const lv = closes[n - 1]; s += '<circle cx="' + X(n - 1).toFixed(1) + '" cy="' + Y(lv).toFixed(1) + '" r="3.5" style="fill:var(--s-fund)"/><text class="viz-lbl" x="' + (X(n - 1) + 6).toFixed(1) + '" y="' + (Y(lv) + 4).toFixed(1) + '" font-size="12" font-weight="700">' + lv.toFixed(2) + '</text>';
-    return s + '</svg><div class="legend"><span><i style="background:var(--s-fund)"></i>收盤（' + esc(cur) + '）</span><span><i style="background:var(--s-qqq)"></i>50 日均線</span><span><i style="background:var(--s-shv)"></i>200 日均線（虛線）</span></div>';
+    return s + '</svg><div class="legend"><span><i style="background:var(--s-fund)"></i>收盤（' + esc(cur) + '）</span>' + mas.filter(a => a.v.some(v => v != null)).map(a => '<span><i style="background:' + a.c + '"></i>' + esc(a.name) + '</span>').join('') + '</div>';
+  }
+  function river(rows, mults, cur) { // 本益比河流圖：rows [{m, px, e}]；mults 由小到大
+    const W = 760, H = 290, pl = 56, pr = 70, pt = 12, pb = 28, n = rows.length;
+    const bands = mults.map(k => rows.map(r => r.e > 0 ? r.e * k : null));
+    const pxs = rows.map(r => r.px), lo = Math.max(0, Math.min(...pxs) * 0.55), hi = Math.max(...pxs) * 1.5;   // 縱軸以股價為準，超出範圍的河道裁掉
+    const X = i => pl + (W - pl - pr) * i / Math.max(1, n - 1), Y = v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
+    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="本益比河流圖：' + esc(rows[0].m + '～' + rows[n - 1].m + '，股價與 ' + mults.join('、') + ' 倍本益比') + '">' +
+      '<defs><clipPath id="rvclip"><rect x="' + pl + '" y="' + pt + '" width="' + (W - pl - pr) + '" height="' + (H - pt - pb) + '"/></clipPath></defs>';
+    for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11">' + v.toFixed(v >= 100 ? 0 : v >= 10 ? 1 : 2) + '</text>'; }
+    [...new Set([0, Math.floor(n / 4), Math.floor(n / 2), Math.floor(3 * n / 4), n - 1])].forEach(i => { s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11">' + esc(rows[i].m.slice(2, 7).replace('-', '/')) + '</text>'; });
+    const runs = ok => { const out = []; let seg = []; rows.forEach((_, i) => { if (ok(i)) seg.push(i); else { if (seg.length > 1) out.push(seg); seg = []; } }); if (seg.length > 1) out.push(seg); return out; };
+    s += '<g clip-path="url(#rvclip)">';
+    for (let j = 0; j < bands.length - 1; j++) runs(i => bands[j][i] != null && bands[j + 1][i] != null).forEach(seg => {
+      const up = seg.map(i => X(i).toFixed(1) + ',' + Y(bands[j + 1][i]).toFixed(1)), dn = seg.slice().reverse().map(i => X(i).toFixed(1) + ',' + Y(bands[j][i]).toFixed(1));
+      s += '<polygon points="' + up.concat(dn).join(' ') + '" style="fill:var(--s-qld);fill-opacity:' + (0.06 + 0.06 * j).toFixed(2) + ';stroke:none"/>'; });
+    const labs = [], above = [], below = [];
+    bands.forEach((b, j) => { runs(i => b[i] != null).forEach(seg => { s += '<polyline fill="none" style="stroke:var(--s-qld);stroke-width:1;stroke-opacity:.75" points="' + seg.map(i => X(i).toFixed(1) + ',' + Y(b[i]).toFixed(1)).join(' ') + '"/>'; });
+      const e = b[n - 1]; if (e == null) return; if (e > hi) above.push(mults[j]); else if (e < lo) below.push(mults[j]); else labs.push([Y(e), mults[j] + ' 倍']); });
+    s += '</g>';
+    if (above.length) s += '<text class="viz-lbl" x="' + (W - pr - 6) + '" y="' + (pt + 14) + '" text-anchor="end" font-size="11">↑ 超出圖表：' + esc(above.join('、')) + ' 倍</text>';
+    if (below.length) s += '<text class="viz-lbl" x="' + (W - pr - 6) + '" y="' + (H - pb - 6) + '" text-anchor="end" font-size="11">↓ 低於圖表：' + esc(below.join('、')) + ' 倍</text>';
+    labs.sort((a, b) => a[0] - b[0]); for (let k = 1; k < labs.length; k++) if (labs[k][0] - labs[k - 1][0] < 12) labs[k][0] = labs[k - 1][0] + 12;
+    labs.forEach(([y, t]) => { s += '<text class="viz-lbl" x="' + (W - pr + 6) + '" y="' + (y + 4).toFixed(1) + '" font-size="11">' + esc(t) + '</text>'; });
+    s += '<polyline fill="none" style="stroke:var(--s-fund);stroke-width:2.2" points="' + rows.map((r, i) => X(i).toFixed(1) + ',' + Y(r.px).toFixed(1)).join(' ') + '"/>';
+    rows.forEach((r, i) => { s += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(r.px).toFixed(1) + '" r="' + (i === n - 1 ? 3.6 : 2.2) + '" style="fill:var(--s-fund)"><title>' + esc(r.m + '｜收盤 ' + r.px.toFixed(2) + ' ' + cur + '｜EPS ' + r.e.toFixed(2) + '（' + r.src + '）｜本益比 ' + (r.e > 0 ? (r.px / r.e).toFixed(1) + ' 倍' : '—（EPS 為負）')) + '</title></circle>'; });
+    return s + '</svg><div class="legend"><span><i style="background:var(--s-fund)"></i>月收盤（' + esc(cur) + '）</span><span><i style="background:var(--s-qld)"></i>EPS × 本益比倍數（顏色越深倍數越高）</span></div>';
   }
 
   // ---------------------------------------------------------------- 主程式
@@ -128,6 +157,9 @@
       const pf = (D.tw || {}).profile, rocD = x => String(x || '').replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
       const rowsP = [['市場／幣別', (D.market === 'TW' ? '台灣上市' : '美國上市') + '，股價 ' + D.cur + (D.fin_cur && D.fin_cur !== D.cur ? '、財報 ' + D.fin_cur : '')], ['產業', (D.sector || '—') + (D.industry ? '／' + D.industry : '')], ['市值', money((D.cap_bn || 0) * 1e9, D.cur)], ['最新財報年度', yr(last(ds) || '')]];
       if (pf) rowsP.unshift(['公司全名', pf.full + (pf.en ? '（' + pf.en + '）' : '')]), rowsP.push(['董事長／總經理', pf.chair + '／' + pf.ceo], ['發言人', pf.spokes], ['成立／上市', rocD(pf.est) + '／' + rocD(pf.listed)], ['實收資本額', money(pf.capital, 'TWD')], ['簽證會計師', pf.auditor], ['地址', pf.addr], ['網站', pf.url ? '<a href="' + esc(/^https?:/.test(pf.url) ? pf.url : 'https://' + pf.url) + '" target="_blank" rel="noopener">' + esc(pf.url) + '</a>' : '—']);
+      const gv = (D.tw || {}).gov, ag = (D.tw || {}).agm;
+      if (gv && gv.dual) rowsP.push(['董事長兼任總經理', gv.dual]);
+      if (ag && ag.d) rowsP.push(['最近一次股東會', roc(ag.d) + (ag.type ? '（' + ag.type + '）' : '')]);
       h += '<h3 id="co-prof">公司資料</h3><div class="tblwrap"><table class="tbl"><tbody>' + rowsP.map(r => '<tr><td class="l" style="width:140px">' + esc(r[0]) + '</td><td class="l">' + (String(r[1]).startsWith('<a ') ? r[1] : esc(r[1])) + '</td></tr>').join('') + '</tbody></table></div>' +
         (pf ? '<p class="small">來源：證交所上市公司基本資料。</p>' : '');
     }
@@ -141,6 +173,8 @@
       if (m.de != null && m.de > 2) cons.push('負債權益比 ' + m.de.toFixed(2) + ' 倍偏高');
       if (m.shs_chg != null && m.shs_chg > 0.03) cons.push('股數一年增加 ' + (m.shs_chg * 100).toFixed(1) + '%（稀釋）');
       if (m.shs_chg != null && m.shs_chg < -0.01) pros.push('股數一年減少 ' + (-m.shs_chg * 100).toFixed(1) + '%（買回）');
+      ((D.tw || {}).alert || []).forEach(a => cons.push('證交所公布為' + (a.kind === 'punish' ? '處置' : '注意') + '股票（' + roc(a.d) + (a.period ? '，處置期間 ' + a.period : '') + '）'));
+      ((D.tw || {}).fsc || []).forEach(a => cons.push('金管會證期局裁罰（' + roc(a.d) + '）：' + a.act));
       h += '<h3 id="co-pc">優勢與風險（自動清單）</h3><div class="pc"><div class="pc-p"><b>優勢</b><ul>' + (pros.length ? pros.map(t => '<li>' + esc(t) + '</li>').join('') : '<li>沒有特別突出的面向</li>') + '</ul></div><div class="pc-c"><b>風險</b><ul>' + (cons.length ? cons.map(t => '<li>' + esc(t) + '</li>').join('') : '<li>沒有特別落後的面向</li>') + '</ul></div></div>' +
         '<p class="small">規則：14 個面向中分數 ≥ 75（同市場前 25%）列為優勢、≤ 25（後 25%）列為風險，再加上 Piotroski、Altman Z、負債、股數變化等門檻；全部由資料自動產生，不含主觀判斷。</p>';
     }
@@ -154,15 +188,47 @@
     h += '<div class="tblwrap"><table class="tbl sct"><caption>十四個分析面向的分數（0～100，同市場百分位）與 ' + esc(D.code) + ' 的代表指標</caption><thead><tr><th class="l">面向</th>' + ser.map(se => '<th>' + esc(se.code) + '</th>').join('') + '<th class="l">' + esc(D.code) + ' 代表指標</th></tr></thead><tbody>' +
       DIMS.map(d => '<tr><td class="l"><b>' + DN[d] + '</b><br><small>' + esc(DD[d][0]) + '</small></td>' + ser.map((se, k) => { const x = k ? P[k - 1] : D, v = (x.s || {})[d]; return '<td class="scc"><span class="sb" style="--w:' + (v == null ? 0 : v) + '%"></span>' + sc(v) + '</td>'; }).join('') +
         '<td class="l small">' + DD[d][1].map(k => MN[k] + ' ' + fmtM(k, m[k])).join('、') + '</td></tr>').join('') + '</tbody></table></div>';
+    // ---- 同業關鍵數據對照（實際數值）----
+    const ALL = [D].concat(P), dy = x => (x.m || {}).div_ttm && (x.m || {}).last_px ? x.m.div_ttm / x.m.last_px : null;
+    const RW = [['市值', x => (x.cap_bn || 0) * 1e9 || null, 0, v => money(v, cur)], ['本益比（近四季）', 'pe', -1], ['股價營收比', 'ps', -1], ['EV/EBITDA', 'ev_ebitda', -1], ['股價淨值比', 'pb', -1],
+      ['營收年增', 'rev_yoy', 1], ['營收 3 年年化', 'rev_cagr3', 1], ['毛利率', 'gm', 1], ['營業利益率', 'om', 1], ['淨利率', 'nm', 1], ['ROE', 'roe', 1], ['ROIC', 'roic', 1], ['FCF 殖利率', 'fcf_yield', 1],
+      ['負債權益比', 'de', -1], ['現金殖利率', dy, 1, v => (v * 100).toFixed(2) + '%'], ['近 1 年報酬', 'ret_1y', 1], ['年化波動', 'vol_1y', -1], ['Beta', 'beta_1y', 0]];
+    const rv0 = (r, x) => { const v = typeof r[1] === 'function' ? r[1](x) : (x.m || {})[r[1]]; return v == null || !isFinite(v) ? null : v; };
+    const rf = (r, v) => v == null ? '—' : r[3] ? r[3](v) : fmtM(r[1], v);
+    const med = a => { const v = a.filter(x => x != null).sort((p, q) => p - q); return v.length ? (v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2) : null; };
+    const peerTbl = RW.map(r => { const vs = ALL.map(x => rv0(r, x)), ok = vs.map((v, i) => v != null && !(r[1] === 'pe' && v <= 0) ? i : -1).filter(i => i >= 0);
+      const best = r[2] && ok.length > 1 ? ok.reduce((b, i) => (r[2] > 0 ? vs[i] > vs[b] : vs[i] < vs[b]) ? i : b, ok[0]) : -1; return { r, vs, best, md: med(vs.slice(1)) }; }).filter(x => x.vs.some(v => v != null));
+    if (P.length) h += '<h3 id="co-peers">同業關鍵數據對照</h3><div class="tblwrap"><table class="tbl ptb"><caption>' + esc(nm) + ' 與 ' + P.length + ' 家主要對手的實際數值（粗體＝該列最好；中位數不含本公司）</caption><thead><tr><th class="l">項目</th>' + ALL.map((x, i) => '<th' + (i ? '' : ' class="me"') + '>' + esc(x.code) + '</th>').join('') + '<th>同業中位數</th></tr></thead><tbody>' +
+      peerTbl.map(t => '<tr><td class="l">' + esc(t.r[0]) + '</td>' + t.vs.map((v, i) => '<td' + (i ? '' : ' class="me"') + '>' + (i === t.best ? '<b>' + rf(t.r, v) + '</b>' : rf(t.r, v)) + '</td>').join('') + '<td>' + rf(t.r, t.md) + '</td></tr>').join('') + '</tbody></table></div>' +
+      '<p class="small">估值與報酬用各公司資料更新日的股價；財報比率用最新年度（本益比、股價營收比、FCF 殖利率用近四季）。「最好」只是數字方向（例如本益比越低越好），不代表投資建議。</p>';
     // ---- 股價走勢與技術面 ----
+    let pxDraw = null;
     const p1 = (D.p1y || []).filter(x => x[1] != null);
     if (p1.length > 60) {
       const days = p1.map(x => x[0]), cl = p1.map(x => x[1]), m50 = sma(cl, 50), m200 = sma(cl, 200), lv = cl[cl.length - 1];
       const r14 = rsi(cl, 14), e12 = ema(cl, 12), e26 = ema(cl, 26), macd = e12.map((v, i) => v - e26[i]), sig = ema(macd, 9), mh = macd[macd.length - 1] - sig[sig.length - 1];
       const a50 = last(m50), a200 = last(m200), hi = Math.max(...cl), lo = Math.min(...cl);
+      const pos = hi > lo ? (lv - lo) / (hi - lo) * 100 : 50;
+      const r52 = '<div class="r52" role="img" aria-label="' + esc('52 週收盤區間 ' + lo.toFixed(2) + '～' + hi.toFixed(2) + '，目前 ' + lv.toFixed(2)) + '"><span>52 週低 ' + lo.toFixed(2) + '</span><div class="r52b"><i style="left:' + pos.toFixed(1) + '%"></i></div><span>52 週高 ' + hi.toFixed(2) + '</span></div>';
+      const PER = [['1m', '1 個月'], ['3m', '3 個月'], ['6m', '6 個月'], ['ytd', '今年以來'], ['1y', '1 年'], ['5y', '5 年（月線）']];
+      pxDraw = key => {
+        const box = document.getElementById('pxFig'); if (!box) return;
+        const tail = (d0, p0, d1, pv) => '<p class="fnote">期間報酬 <b>' + (pv / p0 - 1 >= 0 ? '+' : '') + ((pv / p0 - 1) * 100).toFixed(1) + '%</b>（' + esc(d0) + ' 收盤 ' + p0.toFixed(2) + ' → ' + esc(d1) + ' ' + pv.toFixed(2) + '；原始收盤，未含股利）</p>';
+        if (key === '5y') {
+          const mp = new Map(); (D.p5y || []).forEach(x => { if (x[1] != null) mp.set(x[0], x[1]); });
+          const mk = [...mp.keys()], mc = mk.map(k => mp.get(k));
+          box.innerHTML = mc.length < 13 ? '<p class="small">5 年月線資料將在下一次資料更新後顯示。</p>' : '<p class="ftitle">近 5 年月收盤（' + esc(cur) + '；最後一點為本月至今）</p>' + pxChart(mk, mc, [{ v: sma(mc, 10), name: '10 個月均線（約 200 日）', c: 'var(--s-shv)', w: 1.4, dash: true }], cur, true) + tail(mk[0], mc[0], mk[mk.length - 1], mc[mc.length - 1]);
+        } else {
+          const N = cl.length; let i0 = key === '1m' ? N - 21 : key === '3m' ? N - 63 : key === '6m' ? N - 126 : key === 'ytd' ? days.findIndex(d => d >= days[N - 1].slice(0, 4) + '-01-01') : 0;
+          i0 = Math.min(Math.max(0, i0), N - 2);
+          const sl = a => a.slice(i0);
+          box.innerHTML = '<p class="ftitle">' + esc(PER.find(p => p[0] === key)[1]) + '日收盤（' + esc(cur) + '）</p>' + pxChart(sl(days), sl(cl), [{ v: sl(m50), name: '50 日均線', c: 'var(--s-qqq)', w: 1.6 }, { v: sl(m200), name: '200 日均線（虛線）', c: 'var(--s-shv)', w: 1.4, dash: true }], cur) + tail(days[i0], cl[i0], days[N - 1], cl[N - 1]);
+        }
+        host.querySelectorAll('.pxsel button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === key)));
+      };
       const trend = a50 && a200 ? (lv > a50 && a50 > a200 ? '多頭排列（股價 > 50 日線 > 200 日線）' : lv < a50 && a50 < a200 ? '空頭排列（股價 < 50 日線 < 200 日線）' : '盤整（均線交錯）') : '資料不足';
       h += '<h3 id="co-tech">股價走勢與技術面</h3><p>近 1 年 ' + (m.ret_1y >= 0 ? '+' : '') + fmtM('ret_1y', m.ret_1y) + '（還原權息）；距 52 週高點 ' + ((lv / hi - 1) * 100).toFixed(1) + '%、距低點 +' + ((lv / lo - 1) * 100).toFixed(1) + '%。趨勢：<b>' + trend + '</b>。</p>' +
-        '<div class="fig">' + pxChart(days, cl, m50, m200, cur) + '</div>' +
+        r52 + '<div class="pxsel" role="group" aria-label="股價走勢期間">' + PER.map(p => '<button type="button" data-p="' + p[0] + '" aria-pressed="' + (p[0] === '1y') + '">' + p[1] + '</button>').join('') + '</div><div class="fig" id="pxFig"></div>' +
         '<div class="kp">' + [['RSI(14)', r14 == null ? '—' : r14.toFixed(1), r14 == null ? '' : r14 >= 70 ? '偏熱（≥ 70）' : r14 <= 30 ? '偏冷（≤ 30）' : '中性（30～70）'],
           ['MACD 柱狀（12,26,9）', mh.toFixed(2), mh > 0 ? '多方（MACD 在訊號線上）' : '空方（MACD 在訊號線下）'],
           ['距 50／200 日線', a50 ? ((lv / a50 - 1) * 100).toFixed(1) + '%' : '—', a200 ? '200 日線 ' + ((lv / a200 - 1) * 100).toFixed(1) + '%' : '200 日線資料不足'],
@@ -192,6 +258,7 @@
       if (dirs.length) h += '<div class="tblwrap"><table class="tbl"><caption>董事、監察人與大股東持股（證交所 ' + esc(String(dirs[0].ym || '').replace(/^(\d{3})(\d{2})$/, (_, y, mo) => (+y + 1911) + '-' + mo)) + '）</caption><thead><tr><th class="l">職稱</th><th class="l">姓名</th><th>目前持股（股）</th><th>占已發行股數</th><th>設質比例</th></tr></thead><tbody>' +
         dirs.map(x => '<tr><td class="l">' + esc(x.title) + '</td><td class="l">' + esc(x.name) + '</td><td>' + Math.round(x.shares).toLocaleString('en-US') + '</td><td>' + (out ? (x.shares / out * 100).toFixed(2) + '%' : '—') + '</td><td>' + esc(x.pledge_pct || '—') + '</td></tr>').join('') + '</tbody></table></div>';
       if ((tw.major10 || []).length) h += '<p>持股逾 10% 的大股東：<b>' + esc(tw.major10.join('、')) + '</b>（證交所）。</p>';
+      if (tw.qfii && tw.qfii.pct != null) h += '<p>外資及陸資持股 <b>' + tw.qfii.pct.toFixed(2) + '%</b>（集中市場外資持股比率前 20 名中第 ' + tw.qfii.rank + ' 名；投資上限 ' + (tw.qfii.limit == null ? '—' : tw.qfii.limit + '%') + '，證交所）。</p>';
       if (tw.dist && tw.dist.lv) { const L = tw.dist.lv, g = ks => ks.reduce((t, k) => t + ((L[k] || [])[2] || 0), 0), cnt = ks => ks.reduce((t, k) => t + ((L[k] || [])[0] || 0), 0);
         const grp = [['散戶（50 張以下）', ['1', '2', '3', '4', '5', '6', '7', '8']], ['中實戶（50～400 張）', ['9', '10', '11']], ['大戶（400～1,000 張）', ['12', '13', '14']], ['千張大戶（1,000 張以上）', ['15']]];
         h += '<div class="fig"><p class="ftitle">股權分散（集保 ' + esc(String(tw.dist.date).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) + '，占集保庫存比例）</p>' + hbars(grp.map(([l, ks], i) => ({ l: l + '｜' + Math.round(cnt(ks)).toLocaleString('en-US') + ' 人', v: g(ks) / 100, me: i === 3, tip: l })), { max: 1, fmt: v => (v * 100).toFixed(2) + '%', title: '股權分散', L: 250 }) +
@@ -220,6 +287,23 @@
     if (D.market === 'TW' && tw.monthly) { const mo = tw.monthly, ym = String(mo.ym || '').replace(/^(\d{3})(\d{2})$/, (_, y, x) => (+y + 1911) + ' 年 ' + (+x) + ' 月');
       h += '<p><b>最新月營收（' + esc(ym) + '）</b>：' + money(mo.rev * 1000, 'TWD') + '，月增 ' + (mo.mom >= 0 ? '+' : '') + (mo.mom || 0).toFixed(1) + '%、年增 ' + (mo.yoy >= 0 ? '+' : '') + (mo.yoy || 0).toFixed(1) + '%；今年累計年增 ' + (mo.ytd_yoy >= 0 ? '+' : '') + (mo.ytd_yoy || 0).toFixed(1) + '%。' + (mo.note && mo.note !== '-' ? '公司說明：「' + esc(mo.note) + '」' : '') + '（證交所每月營收彙總）</p>'; }
     h += '<div class="note"><p><b>產品別／地區別營收占比：</b>' + (D.market === 'TW' ? '台股公司的產品別營收只在年報揭露，沒有開放資料可自動更新；上方以年度、季度與月營收呈現營收結構的變化。' : '來源是公司年報（10-K）中的分部資訊，同樣需要 SEC 資料開通後才能自動帶入。') + '</p></div>';
+    // ---- 財報三率 ----
+    {
+      let drop = 0;
+      const rate = (X, k) => (X.d || []).map((_, i) => { if (!(X[k] && X.rev && X[k][i] != null && X.rev[i])) return null; const v = X[k][i] / X.rev[i]; if (Math.abs(v) > 1.5) { drop++; return null; } return v; });
+      const RS = [['毛利率', 'gp', COL[0]], ['營業利益率', 'opi', COL[1]], ['淨利率', 'ni', COL[2]]], Q = D.Q || {};
+      const serA = RS.map(([n, k, c], j) => ({ name: n, v: rate(A, k), c, me: j === 0 })).filter(se => se.v.filter(v => v != null).length >= 2);
+      const serQ = RS.map(([n, k, c], j) => ({ name: n, v: rate(Q, k), c, me: j === 0 })).filter(se => se.v.filter(v => v != null).length >= 2);
+      if (serA.length) {
+        const two = se => { const v = se.v.filter(x => x != null); return [v[v.length - 1], v.length >= 2 ? v[v.length - 1] - v[v.length - 2] : null]; };
+        const pp = d => d == null ? '—' : (d >= 0 ? '+' : '−') + Math.abs(d * 100).toFixed(1) + ' 個百分點';
+        const ch = serA.map(se => two(se)[1]), dir = serA.length < 3 ? '' : ch.every(x => x > 0) ? '三率同步上升' : ch.every(x => x < 0) ? '三率同步下降' : '三率互有升降';
+        h += '<h3 id="co-rates">財報三率</h3><p>最新年度 ' + serA.map(se => { const [v, d] = two(se); return se.name + ' <b>' + (v * 100).toFixed(1) + '%</b>（較前一年 ' + pp(d) + '）'; }).join('、') + (dir ? '：<b>' + dir + '</b>' : '') + '。毛利率反映產品與訂價；營業利益率再扣掉研發、管銷；淨利率再扣掉利息、稅與業外損益。</p>' +
+          '<div class="fig"><p class="ftitle">年度財報三率</p>' + lines(ds.map(yr), serA, { fmt: v => (v * 100).toFixed(0) + '%', title: '年度財報三率' }) + '</div>' +
+          (serQ.length ? '<div class="fig"><p class="ftitle">最近 ' + (Q.d || []).length + ' 季財報三率</p>' + lines((Q.d || []).map(d => d.slice(0, 7)), serQ, { fmt: v => (v * 100).toFixed(0) + '%', title: '季度財報三率' }) + '</div>' : '') +
+          (drop ? '<p class="fnote">有 ' + drop + ' 個數值超過 ±150%（多半是該期營收資料異常），圖中不畫。</p>' : '');
+      }
+    }
     // ---- 市占率與壟斷性 ----
     const ind = m.ind;
     h += '<h3 id="co-share">市占率與壟斷性</h3>';
@@ -258,6 +342,36 @@
         h += '<p>營運週轉：應收帳款約 <b>' + (dso == null ? '—' : Math.round(dso) + ' 天') + '</b>收回、存貨約 <b>' + (dio == null ? '—' : Math.round(dio) + ' 天') + '</b>賣出（最新年度；天數越短，資金卡在營運的時間越少）。</p>';
       }
     }
+    // ---- 財務安全 ----
+    {
+      const g = (k, i) => (A[k] || [])[i];
+      let tlFb = false, sti = false;
+      const rowsS = ds.map((d, i) => { const ca = g('ca', i), cl = g('cl', i), debt = g('debt', i), eq = g('eq', i), ta = g('ta', i), eb = g('ebitda', i);
+        let tl = g('tl', i); if (tl == null && ta != null && eq != null) { tl = ta - eq; tlFb = true; }
+        let cash = g('cash_sti', i); if (cash != null) sti = true; else cash = g('cash', i);
+        const ie = g('intexp', i), ebit = g('ebit', i) != null ? g('ebit', i) : g('opi', i);
+        return { y: yr(d), cr: ca != null && cl ? ca / cl : null, dr: tl != null && ta ? tl / ta : null, de: debt != null && eq > 0 ? debt / eq : null, nc: cash != null && debt != null ? cash - debt : null, ic: ebit != null && ie ? ebit / Math.abs(ie) : null, nd: debt != null && cash != null && eb > 0 ? (debt - cash) / eb : null }; })
+        .filter(r => [r.cr, r.dr, r.de, r.ic, r.nd].some(v => v != null));
+      if (rowsS.length) {
+        const f2 = (v, u) => v == null ? '—' : v.toFixed(2) + (u || ''), L = rowsS[rowsS.length - 1], fc = D.fin_cur || cur;
+        h += '<h3 id="co-safe">財務安全</h3><p>最新年度（' + esc(L.y) + '）：流動比 <b>' + f2(L.cr, ' 倍') + '</b>、負債比 <b>' + (L.dr == null ? '—' : (L.dr * 100).toFixed(1) + '%') + '</b>、' + (L.nc == null ? '' : L.nc >= 0 ? '現金比借款多 <b>' + money(L.nc, fc) + '</b>（淨現金）' : '借款比現金多 <b>' + money(-L.nc, fc) + '</b>（淨負債）') + (L.ic == null ? '' : '、利息保障 <b>' + (L.ic >= 100 ? Math.round(L.ic) : L.ic.toFixed(1)) + ' 倍</b>') + '。</p>' +
+          '<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">年度</th><th>流動比</th><th>負債比</th><th>借款 ÷ 權益</th><th>淨現金（現金 − 借款）</th><th>利息保障倍數</th><th>淨負債 ÷ EBITDA</th></tr></thead><tbody>' +
+          rowsS.map(r => '<tr><td class="l">' + esc(r.y) + '</td><td>' + f2(r.cr, ' 倍') + '</td><td>' + (r.dr == null ? '—' : (r.dr * 100).toFixed(1) + '%') + '</td><td>' + f2(r.de, ' 倍') + '</td><td>' + (r.nc == null ? '—' : money(r.nc, fc)) + '</td><td>' + (r.ic == null ? '—' : (r.ic >= 100 ? Math.round(r.ic) : r.ic.toFixed(1)) + ' 倍') + '</td><td>' + (r.nd == null ? '—' : r.nd.toFixed(2) + ' 倍') + '</td></tr>').join('') + '</tbody></table></div>' +
+          '<p class="small">現金＝' + (sti ? '現金、約當現金與短期投資' : '現金及約當現金（財報沒有提供短期投資合計）') + (tlFb ? '；財報沒有總負債時，負債比用（總資產 − 股東權益）÷ 總資產' : '') + '。流動比＝流動資產 ÷ 流動負債；負債比＝總負債 ÷ 總資產；利息保障倍數＝EBIT ÷ 利息費用；淨負債 ÷ EBITDA 為負代表現金多於借款。銀行、保險的資產負債結構不同，這些比率不適合跨產業比較。</p>';
+      }
+    }
+    // ---- 現金流與盈餘品質 ----
+    {
+      const fc = D.fin_cur || cur, col = k => ds.map((_, i) => { const v = (A[k] || [])[i]; return v == null ? null : v; });
+      const serC = [{ name: '營業現金流', v: col('ocf'), c: COL[0], me: true }, { name: '自由現金流', v: col('fcf'), c: COL[2] }, { name: '淨利', v: col('ni'), c: COL[1] }].filter(se => se.v.filter(v => v != null).length >= 2);
+      if (serC.length >= 2) {
+        const both = ds.map((_, i) => (A.fcf || [])[i] != null && (A.ni || [])[i] != null ? [A.fcf[i], A.ni[i]] : null).filter(Boolean), sf = both.reduce((t, x) => t + x[0], 0), sn = both.reduce((t, x) => t + x[1], 0);
+        const cx = last(A.capex), r0 = last(A.rev);
+        h += '<h3 id="co-cash">現金流與盈餘品質</h3><p>' + (both.length ? '近 ' + both.length + ' 個年度累計自由現金流 ' + money(sf, fc) + '，' + (sn > 0 ? '是同期累計淨利的 <b>' + (sf / sn * 100).toFixed(0) + '%</b>' : '同期累計淨利為負') + '。' : '') +
+          (cx != null && r0 ? '最新年度資本支出占營收 <b>' + (Math.abs(cx) / r0 * 100).toFixed(1) + '%</b>。' : '') + '自由現金流＝營業現金流 − 資本支出；長期接近或高於淨利，代表帳上獲利有真的收到現金。</p>' +
+          '<div class="fig"><p class="ftitle">營業現金流、自由現金流與淨利（' + esc(fc) + '）</p>' + lines(ds.map(yr), serC, { fmt: axM, title: '現金流與淨利' }) + '</div>';
+      }
+    }
     // ---- 歷年估值 ----
     const p5 = new Map((D.p5y || []).map(x => [x[0], x[1]]));
     if ((!D.fin_cur || D.fin_cur === D.cur) && (A.eps || []).some(v => v != null) && p5.size) {
@@ -272,6 +386,27 @@
         h += '<p>過去 ' + pv.length + ' 個年度結束時的本益比平均 <b>' + avg.toFixed(1) + ' 倍</b>（' + Math.min(...pv).toFixed(1) + '～' + Math.max(...pv).toFixed(1) + '）；目前 <b>' + fmtM('pe', m.pe) + '</b>，' + (m.pe == null ? '' : m.pe > avg ? '高於' : '低於') + '自己的歷史平均。</p>';
       }
     }
+    // ---- 本益比河流圖 ----
+    if ((!D.fin_cur || D.fin_cur === D.cur) && (D.p5y || []).length >= 24) {
+      const ymI = t => +String(t).slice(0, 4) * 12 + (+String(t).slice(5, 7) - 1), ev = [];
+      ds.forEach((d, i) => { const e = (A.eps || [])[i]; if (e != null) ev.push([ymI(d) + 3, e, yr(d) + ' 年度']); });
+      const Q = D.Q || {}, qd = Q.d || [], qe = Q.eps || [];
+      for (let i = 3; i < qd.length; i++) { const w = [i - 3, i - 2, i - 1, i];
+        if (w.every(j => qe[j] != null) && w.slice(1).every((j, k) => { const gap = ymI(qd[j]) - ymI(qd[w[k]]); return gap >= 2 && gap <= 4; })) ev.push([ymI(qd[i]) + 2, w.reduce((t, j) => t + qe[j], 0), '近四季至 ' + qd[i].slice(0, 7)]); }
+      ev.sort((a, b) => a[0] - b[0]);
+      const mp = new Map(); D.p5y.forEach(x => { if (x[1] != null) mp.set(x[0], x[1]); });
+      const at = t => { let r = null; ev.forEach(x => { if (x[0] <= t) r = x; }); return r; };
+      const rowsR = [...mp.entries()].map(([mo, px]) => { const e = at(ymI(mo)); return e ? { m: mo, px, e: e[1], src: e[2] } : null; }).filter(Boolean);
+      const pes = rowsR.filter(r => r.e > 0).map(r => r.px / r.e).sort((a, b) => a - b);
+      if (rowsR.length >= 18 && pes.length >= 18) {
+        const q = p => pes[Math.round(p * (pes.length - 1))], rd = v => v >= 20 ? Math.round(v) : Math.round(v * 10) / 10;
+        const mults = [...new Set([0.1, 0.3, 0.5, 0.7, 0.9].map(q).map(rd))];
+        const L = rowsR[rowsR.length - 1], cpe = L.e > 0 ? L.px / L.e : null, rank = cpe == null ? null : pes.filter(v => v <= cpe).length / pes.length;
+        h += '<h3 id="co-river">本益比河流圖</h3><p>近 ' + rowsR.length + ' 個月，股價 ÷ 當時已公布的每股盈餘（EPS）大多落在 <b>' + mults[0] + '～' + mults[mults.length - 1] + ' 倍</b>（第 10～90 百分位）。' +
+          (cpe == null ? '目前 EPS 為負，不計算本益比。' : '最新月約 <b>' + cpe.toFixed(1) + ' 倍</b>（用 ' + esc(L.src) + ' EPS ' + L.e.toFixed(2) + '），這段期間有 <b>' + Math.round((1 - rank) * 100) + '%</b> 的月份本益比比現在高。') + '</p>' +
+          '<div class="fig">' + river(rowsR, mults, cur) + '<p class="fnote">縱軸範圍以股價為準，超出範圍的河道以 ↑／↓ 標示。每條河道線＝當時 EPS × 固定倍數；倍數取這段期間月本益比的第 10、30、50、70、90 百分位。EPS 的採用時間模擬財報公布：年度 EPS 在會計年度結束 3 個月後、近四季 EPS 在季度結束 2 個月後才採用，避免用到當時還不知道的數字。股價為月收盤（已調整分割、未含股利）；與上方「近四季本益比」的計算時點不同，數字可能略有差異。</p></div>';
+      }
+    }
     // ---- 股利與股東回饋 ----
     const dv = D.divs || [];
     h += '<h3 id="co-div">股利與股東回饋</h3>';
@@ -283,6 +418,39 @@
       h += '<p>近 12 個月現金股利 ' + (m.div_ttm ? m.div_ttm.toFixed(m.div_ttm < 1 ? 3 : 2) + ' ' + esc(cur) + '／股' : '—') + '，殖利率 <b>' + (yld == null ? '—' : (yld * 100).toFixed(2) + '%') + '</b>；加上股票買回，股東回饋率（÷ 市值）' + fmtM('sh_yield', m.sh_yield) + '，占淨利 ' + fmtM('payout', m.payout) + '。</p>' +
         '<div class="fig"><p class="ftitle">每年現金股利（每股，' + esc(cur) + '；' + yNow + ' 年為目前已發放）</p>' + vbars(ys, ys.map(y => byY[y]), { fmt: v => v.toFixed(v < 1 ? 3 : 2), axis: v => v.toFixed(v < 1 ? 2 : 1), title: '每年現金股利' }) + '</div>';
     } else h += '<p>近 5 年沒有發放現金股利' + (m.sh_yield ? '；股東回饋主要靠股票買回，回饋率（÷ 市值）' + fmtM('sh_yield', m.sh_yield) : '') + '。</p>';
+    if (D.market === 'TW' && ((D.tw || {}).divpol || []).length) {
+      const dp = D.tw.divpol.slice().sort((a, b) => (String(b.span) + b.bd).localeCompare(String(a.span) + a.bd)).slice(0, 6), sp = x => String(x || '').split('~').map(roc).join('～');
+      h += '<div class="tblwrap"><table class="tbl"><caption>股利分派決議（證交所彙總，最近 ' + dp.length + ' 筆）</caption><thead><tr><th class="l">股利所屬期間</th><th class="l">進度</th><th>董事會日期</th><th>現金股利（元／股）</th><th>股票股利（元／股）</th><th>現金股利總額</th></tr></thead><tbody>' +
+        dp.map(x => '<tr><td class="l">' + esc(sp(x.span) || (x.yr + ' ' + x.per)) + '</td><td class="l">' + esc(x.stage) + '</td><td>' + esc(roc(x.bd) || '—') + '</td><td>' + (x.cash ? x.cash.toFixed(4).replace(/0+$/, '').replace(/\.$/, '') : '0') + '</td><td>' + (x.stock ? x.stock.toFixed(4).replace(/0+$/, '').replace(/\.$/, '') : '0') + '</td><td>' + (x.total ? money(x.total, 'TWD') : '—') + '</td></tr>').join('') + '</tbody></table></div>';
+    }
+    if (D.market === 'TW' && ((D.tw || {}).exdiv || []).length) h += '<p><b>即將除權息（證交所預告）</b>：' + D.tw.exdiv.map(x => esc(roc(x.d)) + ' 除' + esc(x.type) + (x.cash ? '，現金股利 ' + x.cash + ' 元' : '') + (x.stock ? '，配股率 ' + x.stock : '')).join('；') + '。</p>';
+    // ---- ESG 與公司治理 ----
+    h += '<h3 id="co-esg">ESG 與公司治理</h3>';
+    const E = (D.tw || {}).esg;
+    if (D.market === 'TW' && E) {
+      const g = (o, k) => (o || {})[k], fmtN = (v, u) => v == null ? '—' : v.toLocaleString('en-US', { maximumFractionDigits: v >= 100 ? 0 : 2 }) + (u || '');
+      const repY = (E.ghg || E.board || E.people || {})['報告年度'], yTxt = repY ? (+repY + 1911) + ' 年度（民國 ' + repY + ' 年）' : '最近一年';
+      const ver = v => v ? '（取得驗證：' + v + '）' : '';
+      const pS = v => { const x = nz(v); return x == null ? (v || '—') : (+x.toFixed(2)) + '%'; };
+      const env = [], soc = [], gov = [];
+      if (E.ghg) { const x = E.ghg; env.push(['溫室氣體 範疇一', fmtN(nz(g(x, '範疇一排放量(噸CO2e)')), ' 噸 CO₂e') + (g(x, '範疇一取得驗證') === '是' ? '（已驗證）' : '')], ['範疇二（外購電力等）', fmtN(nz(g(x, '範疇二排放量(噸CO2e)')), ' 噸 CO₂e')], ['範疇三（價值鏈）', fmtN(nz(g(x, '範疇三排放量(噸CO2e)')), ' 噸 CO₂e')], ['排放密集度', fmtN(nz(g(x, '溫室氣體排放密集度(噸CO2e/單位)')), '')]); }
+      if (E.energy) env.push(['再生能源使用率', pS(g(E.energy, '使用率(再生能源/總能源)')) + ver(g(E.energy, '取得驗證'))]);
+      if (E.water) env.push(['用水量', fmtN(nz(g(E.water, '用水量(公噸)')), ' 公噸')], ['用水密集度', fmtN(nz(g(E.water, '用水密集度-密集度(公噸/單位)')), ' ' + (g(E.water, '用水密集度-單位') || ''))]);
+      if (E.waste) env.push(['廢棄物（有害／非有害）', fmtN(nz(g(E.waste, '有害廢棄物量-數據(公噸)')), '') + '／' + fmtN(nz(g(E.waste, '非有害廢棄物量-數據(公噸)')), ' 公噸')]);
+      if (E.people) { const x = E.people; soc.push(['員工薪資平均數', fmtN(nz(g(x, '員工薪資平均數(仟元/人)')), ' 千元')], ['非主管全時員工薪資中位數', fmtN(nz(g(x, '非擔任主管之全時員工薪資中位數(仟元/人)')), ' 千元') + (g(x, '非擔任主管職務之全時員工薪資中位數變動百分比') ? '（年變動 ' + pS(g(x, '非擔任主管職務之全時員工薪資中位數變動百分比')) + '）' : '')], ['女性主管占比', pS(g(x, '管理職女性主管佔比'))]); }
+      if (E.safety) soc.push(['職業災害', fmtN(nz(g(E.safety, '職業災害人數及比率-人數')), ' 人') + '（' + pS(g(E.safety, '職業災害人數及比率-比率')) + '）']);
+      if (E.infosec && g(E.infosec, '資訊外洩事件數量') && g(E.infosec, '資訊外洩事件數量') !== 'N/A') soc.push(['資訊外洩事件', g(E.infosec, '資訊外洩事件數量')]);
+      if (E.board) { const x = E.board; gov.push(['董事席次', fmtN(nz(g(x, '董事席次(含獨立董事)(席)')), ' 席') + '（獨立董事 ' + fmtN(nz(g(x, '獨立董事席次(席)')), ' 席') + '、女性 ' + fmtN(nz(g(x, '女性董事席次及比率-席')), ' 席') + '）'], ['董事會出席率', pS(g(x, '董事出席董事會出席率'))]); }
+      if (E.comm) gov.push(['審計委員會', fmtN(nz(g(E.comm, '審計委員會席次')), ' 席') + '，出席率 ' + pS(g(E.comm, '審計委員會出席率'))], ['薪酬委員會', fmtN(nz(g(E.comm, '薪酬委員會席次')), ' 席') + '（獨立董事 ' + fmtN(nz(g(E.comm, '薪酬委員會獨立董事席次')), ' 席') + '）']);
+      if (E.ir) gov.push(['一年召開法說會', fmtN(nz(g(E.ir, '公司年度召開法說會次數(次)')), ' 次')]);
+      const gv = (D.tw || {}).gov || {};
+      if (gv.dual) gov.push(['董事長兼任總經理', gv.dual]);
+      if (gv.pay && gv.pay.pct != null) gov.push(['董事酬金占稅後淨利', gv.pay.pct.toFixed(4).replace(/0+$/, '').replace(/\.$/, '') + '%' + (gv.pay.pct2 != null ? '（含兼任員工酬金 ' + gv.pay.pct2.toFixed(4).replace(/0+$/, '').replace(/\.$/, '') + '%）' : '')], ['平均每位董事酬金', gv.pay.avg == null ? '—' : money(gv.pay.avg, 'TWD')]);
+      if (E.anti && nz(g(E.anti, '因與反競爭行為條例相關的法律訴訟而造成的金錢損失總額(仟元)')) != null) gov.push(['反競爭訴訟損失', fmtN(nz(g(E.anti, '因與反競爭行為條例相關的法律訴訟而造成的金錢損失總額(仟元)')), ' 千元')]);
+      const card = (t, rows) => '<div><b>' + t + '</b><dl>' + (rows.length ? rows.map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('') : '<dt>—</dt><dd>公司未揭露</dd>') + '</dl></div>';
+      h += '<p>公司依證交所規定揭露的 ' + esc(yTxt) + ' ESG 資料（原始數字，未經本站評分）。不同產業的排放、用水規模差很大，請和同產業比較。</p><div class="esg">' + card('環境（E）', env) + card('社會（S）', soc) + card('治理（G）', gov) + '</div>';
+    } else if (D.market === 'TW') h += '<p class="small">ESG 資料將在下一次資料更新後顯示。</p>';
+    else h += '<div class="note"><p><b>美股 ESG 與公司治理：</b>美國沒有像證交所這樣免費、可自動更新的官方 ESG 彙總資料；常見的 ESG 評分（MSCI、Sustainalytics 等）是付費授權資料，本站不提供評分。董事會組成與高階主管薪酬在公司向 SEC 申報的委託書（DEF 14A），需 SEC 資料開通後才能自動帶入。</p></div>';
     // ---- 關鍵指標 ----
     h += '<h3 id="co-kpi">關鍵指標</h3>';
     const fz = m.f_score, az = m.altman_z, peg = (m.pe && m.eps_yoy > 0) ? m.pe / (m.eps_yoy * 100) : null;
@@ -308,16 +476,23 @@
       rows.filter(r => (A[r[1]] || []).some(v => v != null)).map(r => '<tr><td class="l">' + r[0] + '</td>' + ds.map((_, i) => { const v = (A[r[1]] || [])[i]; return '<td>' + (v == null ? '—' : r[1] === 'eps' ? v.toFixed(2) : money(v, D.fin_cur || cur).replace(/(美元|台幣|[A-Z]{3})$/, '')) + '</td>'; }).join('') + '</tr>').join('') +
       '<tr><td class="l">毛利率</td>' + ds.map((_, i) => '<td>' + (gms[i] == null ? '—' : (gms[i] * 100).toFixed(1) + '%') + '</td>').join('') + '</tr>' +
       '<tr><td class="l">營業利益率</td>' + ds.map((_, i) => { const v = A.opi && A.rev && A.opi[i] != null && A.rev[i] ? A.opi[i] / A.rev[i] : null; return '<td>' + (v == null ? '—' : (v * 100).toFixed(1) + '%') + '</td>'; }).join('') + '</tr></tbody></table></div>' +
-      '<p class="small"><a href="#" class="csvdl" data-kind="fin">下載年度財報 CSV</a>　<a href="#" class="csvdl" data-kind="px">下載近 1 年日收盤 CSV</a>　<a href="#" class="csvdl" data-kind="score">下載 14 面向分數 CSV</a></p>';
+      '';
+    h += '<h3 id="co-dl">資料下載（CSV）</h3><p class="dlrow">' + [['fin', '年度財報'], ['q', '季度財報'], ['px', '近 1 年日收盤'], ['m5', '近 5 年月收盤'], ['div', '現金股利紀錄'], ['peer', '同業關鍵數據'], ['score', '14 面向分數']]
+      .map(k => '<a href="#" class="csvdl btn ghost" data-kind="' + k[0] + '">' + k[1] + '</a>').join('') + '</p><p class="small">檔案在你的瀏覽器裡產生（UTF-8，Excel 可直接開啟），數字與本頁相同，可自行驗算；財報金額為原始報表幣別（' + esc(D.fin_cur || cur) + '），股價為 ' + esc(cur) + '。</p>';
     // ---- 資料來源與算法（放在整個分析的最後：#dCoSrc）----
     let src = '<h3 id="co-src">資料來源與算法</h3><ul class="small">' + (D.src || []).map(s => '<li><a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.t) + '</a></li>').join('') +
       '<li>分數：每個面向由 1～4 個指標組成；每個指標先在同一市場的所有公司中排百分位（方向相反的指標先取負號），再取平均。資料更新：' + esc(String(D.updated).slice(0, 10)) + fxNote + '。</li></ul>';
     host.innerHTML = h;
+    if (pxDraw) { pxDraw('1y'); host.querySelectorAll('.pxsel button').forEach(b => b.addEventListener('click', () => pxDraw(b.dataset.p))); }
     const sh = document.getElementById('dCoSrc'); if (sh) sh.innerHTML = src;
     // CSV 下載（在瀏覽器產生，不經伺服器）
     host.querySelectorAll('.csvdl').forEach(a => a.addEventListener('click', e => { e.preventDefault(); const k = a.dataset.kind; let rowsC = [];
       if (k === 'fin') { const keys = Object.keys(A).filter(x => x !== 'd'); rowsC = [['項目（' + (D.fin_cur || cur) + '）'].concat(ds)].concat(keys.map(x => [x].concat(ds.map((_, i) => (A[x] || [])[i] ?? '')))); }
       else if (k === 'px') rowsC = [['日期', '收盤（' + cur + '）']].concat((D.p1y || []).map(x => [x[0], x[1]]));
+      else if (k === 'q') { const Q = D.Q || {}, qk = Object.keys(Q).filter(x => x !== 'd'); rowsC = [['項目（' + (D.fin_cur || cur) + '）'].concat(Q.d || [])].concat(qk.map(x => [x].concat((Q.d || []).map((_, i) => (Q[x] || [])[i] ?? '')))); }
+      else if (k === 'm5') { const mp = new Map(); (D.p5y || []).forEach(x => mp.set(x[0], x[1])); rowsC = [['月份', '月收盤（' + cur + '，已調整分割、未含股利）']].concat([...mp.entries()]); }
+      else if (k === 'div') rowsC = [['除息日', '每股現金股利（' + cur + '）']].concat(D.divs || []);
+      else if (k === 'peer') rowsC = [['項目'].concat(ALL.map(x => x.code)).concat(['同業中位數'])].concat(peerTbl.map(t => [t.r[0]].concat(t.vs.map(v => v ?? '')).concat([t.md ?? ''])));
       else rowsC = [['面向'].concat(ser.map(se => se.code))].concat(Object.keys(DN).map(d => [DN[d]].concat(ser.map((se, kk) => { const x = kk ? P[kk - 1] : D; return (x.s || {})[d] ?? ''; }))));
       const csv = '\ufeff' + rowsC.map(r => r.map(v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v).join(',')).join('\n');
       const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })), dl = document.createElement('a'); dl.href = url; dl.download = 'BNASDAQ-' + D.code + '-' + k + '.csv'; document.body.appendChild(dl); dl.click(); dl.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }));
