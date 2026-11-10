@@ -254,7 +254,7 @@ def main():
     out = dict(schema='bnasdaq-heatmap/1', session=session, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
                cols=['代號', '名稱', '產業', '市值（十億美元）', '單日漲跌%', '收盤', '市值為估算'],
                method='方塊面積＝市值（Nasdaq 篩選器市值依該交易日收盤換算）；顏色＝該交易日收盤相對前一交易日收盤的漲跌。',
-               sources=[dict(t='成分股與產業：Invesco QQQ、SSGA SPY 每日持股', u='https://www.invesco.com/qqq-etf/en/home.html'),
+               sources=[dict(t='成分股與產業：Invesco QQQ、iShares IVV 每日持股', u='https://www.ishares.com/us/products/239726/ishares-core-sp-500-etf'),
                         dict(t='市值：Nasdaq 股票篩選器', u='https://www.nasdaq.com/market-activity/stocks/screener'),
                         dict(t='收盤價：Yahoo Finance', u='https://finance.yahoo.com/')],
                notes=sorted(notes), sets=sets)
