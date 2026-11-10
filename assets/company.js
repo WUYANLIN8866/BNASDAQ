@@ -90,6 +90,30 @@
     return s + '</svg>';
   }
 
+  // ---------------------------------------------------------------- 技術指標
+  const sma = (a, n) => a.map((_, i) => i + 1 < n ? null : a.slice(i + 1 - n, i + 1).reduce((t, x) => t + x, 0) / n);
+  const ema = (a, n) => { const k = 2 / (n + 1); let e = null; return a.map(x => (e = e == null ? x : x * k + e * (1 - k))); };
+  function rsi(a, n) { // Wilder RSI
+    if (a.length <= n) return null; let g = 0, l = 0;
+    for (let i = 1; i <= n; i++) { const d = a[i] - a[i - 1]; if (d > 0) g += d; else l -= d; }
+    g /= n; l /= n;
+    for (let i = n + 1; i < a.length; i++) { const d = a[i] - a[i - 1]; g = (g * (n - 1) + Math.max(d, 0)) / n; l = (l * (n - 1) + Math.max(-d, 0)) / n; }
+    return l === 0 ? 100 : 100 - 100 / (1 + g / l);
+  }
+  function pxChart(days, closes, ma50, ma200, cur) {
+    const W = 760, H = 260, pl = 56, pr = 64, pt = 12, pb = 28, n = closes.length;
+    const all = closes.concat(ma50.filter(v => v != null), ma200.filter(v => v != null)), lo = Math.min(...all) * 0.97, hi = Math.max(...all) * 1.03;
+    const X = i => pl + (W - pl - pr) * i / (n - 1), Y = v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
+    const path = a => a.map((v, i) => v == null ? null : X(i).toFixed(1) + ',' + Y(v).toFixed(1)).filter(Boolean).join(' ');
+    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="近 1 年股價：' + esc(days[0] + ' ' + closes[0].toFixed(2) + ' → ' + days[n - 1] + ' ' + closes[n - 1].toFixed(2)) + '">';
+    for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11">' + v.toFixed(v >= 100 ? 0 : 1) + '</text>'; }
+    [0, Math.floor(n / 4), Math.floor(n / 2), Math.floor(3 * n / 4), n - 1].forEach(i => { s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11">' + esc(days[i].slice(2, 7).replace('-', '/')) + '</text>'; });
+    s += '<polyline fill="none" style="stroke:var(--s-shv);stroke-width:1.4;stroke-dasharray:5 4" points="' + path(ma200) + '"/><polyline fill="none" style="stroke:var(--s-qqq);stroke-width:1.6" points="' + path(ma50) + '"/>';
+    s += '<polyline fill="none" style="stroke:var(--s-fund);stroke-width:2.2" points="' + path(closes) + '"/>';
+    const lv = closes[n - 1]; s += '<circle cx="' + X(n - 1).toFixed(1) + '" cy="' + Y(lv).toFixed(1) + '" r="3.5" style="fill:var(--s-fund)"/><text class="viz-lbl" x="' + (X(n - 1) + 6).toFixed(1) + '" y="' + (Y(lv) + 4).toFixed(1) + '" font-size="12" font-weight="700">' + lv.toFixed(2) + '</text>';
+    return s + '</svg><div class="legend"><span><i style="background:var(--s-fund)"></i>收盤（' + esc(cur) + '）</span><span><i style="background:var(--s-qqq)"></i>50 日均線</span><span><i style="background:var(--s-shv)"></i>200 日均線（虛線）</span></div>';
+  }
+
   // ---------------------------------------------------------------- 主程式
   async function render(code, ctx) {
     const host = document.getElementById('dCo'); if (!host) return;
@@ -109,6 +133,21 @@
     h += '<div class="tblwrap"><table class="tbl sct"><caption>十四個分析面向的分數（0～100，同市場百分位）與 ' + esc(D.code) + ' 的代表指標</caption><thead><tr><th class="l">面向</th>' + ser.map(se => '<th>' + esc(se.code) + '</th>').join('') + '<th class="l">' + esc(D.code) + ' 代表指標</th></tr></thead><tbody>' +
       DIMS.map(d => '<tr><td class="l"><b>' + DN[d] + '</b><br><small>' + esc(DD[d][0]) + '</small></td>' + ser.map((se, k) => { const x = k ? P[k - 1] : D, v = (x.s || {})[d]; return '<td class="scc"><span class="sb" style="--w:' + (v == null ? 0 : v) + '%"></span>' + sc(v) + '</td>'; }).join('') +
         '<td class="l small">' + DD[d][1].map(k => MN[k] + ' ' + fmtM(k, m[k])).join('、') + '</td></tr>').join('') + '</tbody></table></div>';
+    // ---- 股價走勢與技術面 ----
+    const p1 = (D.p1y || []).filter(x => x[1] != null);
+    if (p1.length > 60) {
+      const days = p1.map(x => x[0]), cl = p1.map(x => x[1]), m50 = sma(cl, 50), m200 = sma(cl, 200), lv = cl[cl.length - 1];
+      const r14 = rsi(cl, 14), e12 = ema(cl, 12), e26 = ema(cl, 26), macd = e12.map((v, i) => v - e26[i]), sig = ema(macd, 9), mh = macd[macd.length - 1] - sig[sig.length - 1];
+      const a50 = last(m50), a200 = last(m200), hi = Math.max(...cl), lo = Math.min(...cl);
+      const trend = a50 && a200 ? (lv > a50 && a50 > a200 ? '多頭排列（股價 > 50 日線 > 200 日線）' : lv < a50 && a50 < a200 ? '空頭排列（股價 < 50 日線 < 200 日線）' : '盤整（均線交錯）') : '資料不足';
+      h += '<h3 id="co-tech">股價走勢與技術面</h3><p>近 1 年 ' + (m.ret_1y >= 0 ? '+' : '') + fmtM('ret_1y', m.ret_1y) + '（還原權息）；距 52 週高點 ' + ((lv / hi - 1) * 100).toFixed(1) + '%、距低點 +' + ((lv / lo - 1) * 100).toFixed(1) + '%。趨勢：<b>' + trend + '</b>。</p>' +
+        '<div class="fig">' + pxChart(days, cl, m50, m200, cur) + '</div>' +
+        '<div class="kp">' + [['RSI(14)', r14 == null ? '—' : r14.toFixed(1), r14 == null ? '' : r14 >= 70 ? '偏熱（≥ 70）' : r14 <= 30 ? '偏冷（≤ 30）' : '中性（30～70）'],
+          ['MACD 柱狀（12,26,9）', mh.toFixed(2), mh > 0 ? '多方（MACD 在訊號線上）' : '空方（MACD 在訊號線下）'],
+          ['距 50／200 日線', a50 ? ((lv / a50 - 1) * 100).toFixed(1) + '%' : '—', a200 ? '200 日線 ' + ((lv / a200 - 1) * 100).toFixed(1) + '%' : '200 日線資料不足'],
+          ['波動與 Beta', fmtM('vol_1y', m.vol_1y), 'Beta ' + fmtM('beta_1y', m.beta_1y) + '（對 ' + esc(D.bench || '') + '）']].map(k => '<div><small>' + k[0] + '</small><b>' + esc(k[1]) + '</b><span>' + esc(k[2]) + '</span></div>').join('') + '</div>' +
+        '<p class="small">技術指標以近 1 年原始日收盤在瀏覽器計算；只描述目前狀態，不是買賣訊號。</p>';
+    }
     // ---- 股東結構 ----
     h += '<h3 id="co-hold">股東結構：前 10 大持有股東</h3>';
     const tw = D.tw || {};
@@ -165,6 +204,27 @@
     const moatCls = m.roic_avg == null ? null : (m.roic_avg >= 0.15 && (m.om_std == null || m.om_std < 0.08)) ? '寬護城河' : m.roic_avg >= 0.08 ? '窄護城河' : '沒有明顯護城河';
     h += '<p><b>護城河分數 ' + sc(S.moat) + '</b>（' + lvl(S.moat) + '）' + (moatCls ? '；依本站量化規則屬於 <b>' + moatCls + '</b>' : '') + '：投入資本報酬率近年平均 ' + fmtM('roic_avg', m.roic_avg) + '（最新 ' + fmtM('roic', m.roic) + '）、營業利益率 ' + fmtM('om', m.om) + '（標準差 ' + fmtM('om_std', m.om_std) + '）。</p>' +
       '<p class="small">量化規則：ROIC 近年平均 ≥ 15% 且營業利益率標準差 < 8 個百分點＝寬護城河；ROIC 平均 ≥ 8%＝窄護城河；其餘＝沒有明顯護城河。長期賺到明顯高於資金成本的報酬、而且獲利不大起大落，是護城河存在的財務證據；品牌、專利、網路效應、轉換成本等來源會反映在這些數字上。</p>';
+    // ---- 歷年估值 ----
+    const p5 = new Map((D.p5y || []).map(x => [x[0], x[1]]));
+    if ((!D.fin_cur || D.fin_cur === D.cur) && (A.eps || []).some(v => v != null) && p5.size) {
+      const pts = ds.map((d, i) => { const px = p5.get(String(d).slice(0, 7)), e = (A.eps || [])[i]; return { y: yr(d), px, e, pe: px && e > 0 ? px / e : null }; }).filter(x => x.px != null);
+      if (pts.filter(x => x.pe != null).length >= 2) {
+        h += '<h3 id="co-val">歷年估值：財報年度結束時的本益比</h3><div class="fig"><p class="ftitle">本益比＝該月收盤 ÷ 該年度 EPS；最右邊是目前（近四季）</p>' +
+          vbars(pts.map(x => x.y).concat(['目前']), pts.map(x => x.pe).concat([m.pe]), { fmt: v => v == null ? '—' : v.toFixed(1) + ' 倍', axis: v => v.toFixed(0) + '倍', title: '歷年本益比' }) + '</div>';
+        const pv = pts.map(x => x.pe).filter(v => v != null), avg = pv.reduce((t, v) => t + v, 0) / pv.length;
+        h += '<p>過去 ' + pv.length + ' 個年度結束時的本益比平均 <b>' + avg.toFixed(1) + ' 倍</b>（' + Math.min(...pv).toFixed(1) + '～' + Math.max(...pv).toFixed(1) + '）；目前 <b>' + fmtM('pe', m.pe) + '</b>，' + (m.pe == null ? '' : m.pe > avg ? '高於' : '低於') + '自己的歷史平均。</p>';
+      }
+    }
+    // ---- 股利與股東回饋 ----
+    const dv = D.divs || [];
+    h += '<h3 id="co-div">股利與股東回饋</h3>';
+    if (dv.length) {
+      const byY = {}; dv.forEach(([d, a]) => { byY[d.slice(0, 4)] = (byY[d.slice(0, 4)] || 0) + a; });
+      const ys = Object.keys(byY).sort().slice(-6), yNow = String(new Date().getFullYear());
+      const yld = m.div_ttm && m.last_px ? m.div_ttm / m.last_px : null;
+      h += '<p>近 12 個月現金股利 ' + (m.div_ttm ? m.div_ttm.toFixed(m.div_ttm < 1 ? 3 : 2) + ' ' + esc(cur) + '／股' : '—') + '，殖利率 <b>' + (yld == null ? '—' : (yld * 100).toFixed(2) + '%') + '</b>；加上股票買回，股東回饋率（÷ 市值）' + fmtM('sh_yield', m.sh_yield) + '，占淨利 ' + fmtM('payout', m.payout) + '。</p>' +
+        '<div class="fig"><p class="ftitle">每年現金股利（每股，' + esc(cur) + '；' + yNow + ' 年為目前已發放）</p>' + vbars(ys, ys.map(y => byY[y]), { fmt: v => v.toFixed(v < 1 ? 3 : 2), axis: v => v.toFixed(v < 1 ? 2 : 1), title: '每年現金股利' }) + '</div>';
+    } else h += '<p>近 5 年沒有發放現金股利' + (m.sh_yield ? '；股東回饋主要靠股票買回，回饋率（÷ 市值）' + fmtM('sh_yield', m.sh_yield) : '') + '。</p>';
     // ---- 關鍵指標 ----
     h += '<h3 id="co-kpi">關鍵指標</h3>';
     const fz = m.f_score, az = m.altman_z, peg = (m.pe && m.eps_yoy > 0) ? m.pe / (m.eps_yoy * 100) : null;

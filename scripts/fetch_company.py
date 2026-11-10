@@ -123,13 +123,35 @@ def table(ts, prefix, names, keep):
     return t
 
 
-def price_1y(sym):
+CLOSE = {'US': ('America/New_York', (16, 15)), 'TW': ('Asia/Taipei', (13, 45))}   # 收盤（含緩衝）之前，當天的日線還不完整
+
+
+def price_1y(sym, market='US'):
+    """近 1 年日線：還原權息收盤（算報酬、波動、Beta）＋原始收盤（畫股價走勢、技術指標）；還沒收盤的當天不算。"""
     j = json.loads(get(f'https://query2.finance.yahoo.com/v8/finance/chart/{sym}?range=1y&interval=1d'))
     r = j['chart']['result'][0]
-    c = [x for x in (r['indicators'].get('adjclose') or [{}])[0].get('adjclose') or r['indicators']['quote'][0]['close']]
+    raw = r['indicators']['quote'][0]['close']
+    c = [x for x in (r['indicators'].get('adjclose') or [{}])[0].get('adjclose') or raw]
     ts = r.get('timestamp') or []
     pts = [(t, v) for t, v in zip(ts, c) if v is not None]
-    return pts, r.get('meta') or {}
+    from zoneinfo import ZoneInfo
+    tz, hm = CLOSE.get(market, CLOSE['US']); z = ZoneInfo(tz); now = dt.datetime.now(z)
+    daily = [(dt.datetime.fromtimestamp(t, z).strftime('%Y-%m-%d'), round(v, 4)) for t, v in zip(ts, raw) if v is not None]
+    if daily and daily[-1][0] == now.strftime('%Y-%m-%d') and (now.hour, now.minute) < hm:
+        daily = daily[:-1]
+        if pts and dt.datetime.fromtimestamp(pts[-1][0], z).strftime('%Y-%m-%d') == now.strftime('%Y-%m-%d'):
+            pts = pts[:-1]
+    return pts, r.get('meta') or {}, daily
+
+
+def price_5y(sym):
+    """近 5 年月線收盤（原始）＋現金股利紀錄（Yahoo chart events=div）。"""
+    j = json.loads(get(f'https://query2.finance.yahoo.com/v8/finance/chart/{sym}?range=5y&interval=1mo&events=div'))
+    r = j['chart']['result'][0]
+    ts, cl = r.get('timestamp') or [], r['indicators']['quote'][0]['close']
+    mon = [(dt.datetime.fromtimestamp(t, dt.timezone.utc).strftime('%Y-%m'), round(v, 4)) for t, v in zip(ts, cl) if v is not None]
+    dv = sorted((dt.datetime.fromtimestamp(int(d['date']), dt.timezone.utc).strftime('%Y-%m-%d'), round(d['amount'], 6)) for d in ((r.get('events') or {}).get('dividends') or {}).values())
+    return mon, dv
 
 
 # ------------------------------------------------------------------ 台股：證交所、集保
@@ -364,7 +386,7 @@ def px_stats(pts, bench):
     out['pos52'] = (c[-1] - out['lo52']) / (out['hi52'] - out['lo52']) if out['hi52'] > out['lo52'] else None
     out['dd52'] = c[-1] / out['hi52'] - 1
     if bench:
-        bm = {dt.datetime.fromtimestamp(t, dt.timezone.utc).date(): v for t, v in bench}
+        bm = {dt.datetime.fromtimestamp(t, dt.timezone.utc).date(): v for t, v in bench[0]}
         pairs = [(bm.get(dt.datetime.fromtimestamp(t, dt.timezone.utc).date()), v) for t, v in pts]
         pairs = [(b, v) for b, v in pairs if b]
         if len(pairs) > 60:
@@ -442,7 +464,7 @@ def main():
     bench = {}
     for mk, sym in (('US', 'SPY'), ('TW', '0050.TW')):
         try:
-            bench[mk] = price_1y(sym)[0]
+            bench[mk] = price_1y(sym, mk)
         except Exception as e:  # noqa
             log('基準價失敗', sym, repr(e)[:100])
 
@@ -459,11 +481,15 @@ def main():
         except Exception as e:  # noqa
             rec['err_fin'] = repr(e)[:120]
         try:
-            pts, meta = price_1y(sym)
+            pts, meta, rec['p1y'] = price_1y(sym, u['market'])
             rec['px'] = px_stats(pts, bench.get(u['market']))
             rec['px_meta'] = {k: meta.get(k) for k in ('currency', 'longName', 'fiftyTwoWeekHigh', 'fiftyTwoWeekLow')}
         except Exception as e:  # noqa
             rec['err_px'] = repr(e)[:120]
+        try:
+            rec['p5y'], rec['divs'] = price_5y(sym)
+        except Exception as e:  # noqa
+            rec['err_p5y'] = repr(e)[:120]
         return c, rec
 
     got = {}
@@ -491,6 +517,10 @@ def main():
     for c, r in got.items():
         u = uni[c]
         cap = (u['cap_bn'] or 0) * 1e9
+        dv = r.get('divs') or []
+        if dv and (r.get('px') or {}).get('last_px'):
+            cut = (NOW - dt.timedelta(days=365)).strftime('%Y-%m-%d')
+            r.setdefault('px', {})['div_ttm'] = sum(a for d, a in dv if d > cut)
         if r.get('fx') is None:   # 換不了匯率：只算與幣別無關的比率
             M[c] = metrics(r.get('A') or {}, {}, r.get('px') or {}, None, u['sector'] + ' ' + u.get('industry', ''))
         else:
@@ -539,6 +569,7 @@ def main():
         out = {'schema': 'bnasdaq-company/1', 'code': c, 'name': u['name'], 'market': u['market'], 'cur': 'TWD' if u['market'] == 'TW' else 'USD', 'sector': u['sector'], 'industry': u.get('industry') or '',
                'updated': NOW.strftime('%Y-%m-%dT%H:%M:%SZ'), 'cap_bn': u['cap_bn'], 'fin_cur': r.get('fin_cur'), 'fx': r.get('fx'), 'A': r.get('A'), 'Q': r.get('Q'), 'T': r.get('T'), 'T_d': r.get('T_d'), 'm': m, 's': S[c], 'peers': peers,
                'tw': tw.get(c) or None, 'err': {k: v for k, v in r.items() if k.startswith('err_')} or None,
+               'p1y': r.get('p1y'), 'p5y': r.get('p5y'), 'divs': r.get('divs'), 'bench': 'SPY' if u['market'] == 'US' else '0050',
                'src': [{'t': '財報：Yahoo Finance（fundamentals-timeseries，年度、季度、近四季）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/financials'},
                        {'t': '股價：Yahoo Finance 近 1 年日線（還原權息）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/history'}]}
         if u['market'] == 'TW':
