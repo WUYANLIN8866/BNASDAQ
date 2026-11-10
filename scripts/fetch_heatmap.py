@@ -44,9 +44,15 @@ YUA = 'Mozilla/5.0 (BNASDAQ heatmap fetch)'   # 與 fetch_market.py 相同風格
 ET = ZoneInfo('America/New_York')
 
 
-def _bars(ts, closes):
-    """[(美東日期, 收盤)]，去掉還沒收盤的今天（美東 16:15 前）。"""
-    bars = [(dt.datetime.fromtimestamp(t, ET).date().isoformat(), c) for t, c in zip(ts or [], closes or []) if c is not None]
+def _bars(ts, closes, meta=None):
+    """[(美東日期, 收盤)]。Yahoo 當天日線收盤常常還是空值，這時用 meta 的 regularMarketPrice（時間要在美東 16:00 之後）補上；
+    還沒收盤的今天（美東 16:15 前）不算。"""
+    raw = [(dt.datetime.fromtimestamp(t, ET).date().isoformat(), c) for t, c in zip(ts or [], closes or [])]
+    if raw and raw[-1][1] is None and meta and meta.get('regularMarketPrice') and meta.get('regularMarketTime'):
+        mt = dt.datetime.fromtimestamp(meta['regularMarketTime'], ET)
+        if mt.date().isoformat() == raw[-1][0] and (mt.hour, mt.minute) >= (16, 0):
+            raw[-1] = (raw[-1][0], float(meta['regularMarketPrice']))
+    bars = [(d, c) for d, c in raw if c is not None]
     now = dt.datetime.now(ET)
     if bars and bars[-1][0] == now.date().isoformat() and (now.hour, now.minute) < (16, 15):
         bars = bars[:-1]
@@ -56,7 +62,7 @@ def _bars(ts, closes):
 def yahoo_bars(sym):
     j = json.loads(get(f'https://query2.finance.yahoo.com/v8/finance/chart/{sym}?range=10d&interval=1d', ua=YUA))
     r = j['chart']['result'][0]
-    return _bars(r.get('timestamp'), r['indicators']['quote'][0].get('close'))
+    return _bars(r.get('timestamp'), r['indicators']['quote'][0].get('close'), r.get('meta'))
 
 
 def yahoo_spark(batch):
@@ -72,7 +78,7 @@ def yahoo_spark(batch):
             for r in ((j.get('spark') or {}).get('result') or []):
                 try:
                     resp = r['response'][0]
-                    out[norm(r['symbol'])] = _bars(resp.get('timestamp'), resp['indicators']['quote'][0].get('close'))
+                    out[norm(r['symbol'])] = _bars(resp.get('timestamp'), resp['indicators']['quote'][0].get('close'), resp.get('meta'))
                 except Exception:
                     pass
         elif isinstance(j, dict):
@@ -80,6 +86,7 @@ def yahoo_spark(batch):
                 if isinstance(v, dict) and v.get('timestamp') and v.get('close') and (v.get('dataGranularity') in (None, 86400, '1d')):
                     out[norm(k)] = _bars(v['timestamp'], v['close'])
         if out:
+            yahoo_spark.fmt = url.split('/finance/')[0][-2:] + ('-meta' if isinstance(j, dict) and 'spark' in j else '')
             return out
     return {}
 
@@ -98,8 +105,11 @@ def norm(sym):
 
 def clean(name):
     """名稱去掉股別、上市地等尾巴：Accenture plc Class A Ordinary Shares (Ireland) → Accenture plc"""
-    n = re.sub(r'\s*\((?:Ireland|Jersey|Bermuda|Netherlands|Switzerland|United Kingdom|Canada)\)\s*$', '', name or '')
-    n = re.sub(r'\s+(?:Class [A-Z]\b.*|Common Stock.*|Ordinary Shares.*|Registered Shares.*|Capital Stock.*)$', '', n)
+    n = name or ''
+    if n.isupper():
+        n = n.title().replace(' Inc', ' Inc.').replace('..', '.')
+    n = re.sub(r'\s*\((?:Ireland|Jersey|Bermuda|Netherlands|Switzerland|United Kingdom|Canada)\)\s*$', '', n)
+    n = re.sub(r'\s+(?:Class [A-Z]\b.*|Common Stock.*|Ordinary Shares.*|Registered Shares.*|Capital Stock.*)$', '', n, flags=re.I)
     return n.strip()
 
 
@@ -192,7 +202,7 @@ def main():
             if v:
                 px[s] = v
         time.sleep(0.4)
-    log('spark 取得', len(px), '/', len(syms))
+    log('spark 取得', len(px), '/', len(syms), '格式', getattr(yahoo_spark, 'fmt', '—'))
 
     def one(s):
         try:
