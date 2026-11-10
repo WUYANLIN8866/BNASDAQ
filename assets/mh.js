@@ -132,7 +132,7 @@
     h += '<div><h3>透視：實際持有的前 10 大公司</h3>' + (top.length ? bars(top.map(c => [c.key + ' ' + (c.name || ''), c.w, ''])) : '<p class="small">沒有可拆解的股票部位。</p>') + '</div></div>';
     h += '<div class="mh-two"><div><h3>產業分布（股票曝險）</h3>' + (R.sectors.length ? bars(R.sectors.slice(0, 11).map(s => [s[0], s[1], ''])) : '<p class="small">—</p>') + '</div>';
     // 策略對照
-    h += '<div><h3>和 BNASDAQ 策略本月目標比較</h3>' + strategy(R) + '</div></div>';
+    h += '<div><h3>' + (targets && targets.list && targets.list.length ? '和 ' + targets.list.map(t => esc(t.id)).join('、') + ' 本月目標比較' : '和策略本月目標比較') + '</h3>' + strategy(R) + '</div></div>';
     h += '<p class="small">說明：價格為各市場最近收盤（美股大型股用最新交易日收盤，其餘用每日價格檔），日期列在價格下方；ETF 依發行商公布的持股拆解，槓桿 ETF 依倍數放大。以上為依你輸入的數字所做的計算，不構成投資建議。</p>';
     out.innerHTML = h;
   }

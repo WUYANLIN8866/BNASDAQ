@@ -21,7 +21,7 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="about.html" aria-current=page>關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 關於 BNASDAQ</div><h1>關於 BNASDAQ</h1><p class="lede">BNASDAQ-26110 以那斯達克100指數為核心，由 AI 模型探勘、驗證與回測交易規則，經實際資金執行後再回饋優化，週而復始、持續演進。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 關於 BNASDAQ</div><h1>關於 BNASDAQ</h1><p class="lede">BNASDAQ-26110 與 BNASDAQ-26111 以那斯達克100指數為核心，由 AI 模型探勘、驗證與回測交易規則，經實際資金執行後再回饋優化，週而復始、持續演進。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols-full">
 <div>
   <h2 id="loop">研究流程：持續迭代的 AI 循環</h2>
@@ -31,12 +31,12 @@
   <div class="loop"><div class="step"><b>探勘交易策略</b><span>AI 模型在 QQQ 月線上搜尋規則</span></div><div class="step"><b>驗證交易策略</b><span>參數鄰域、決策日偏移、逐步前推</span></div><div class="step"><b>回測交易策略</b><span>26 年回測，含成本、次日開盤執行</span></div><div class="step"><b>進入市場驗證</b><span>以實際資金依規則執行</span></div><div class="step"><b>優化交易策略</b><span>將實際執行結果回饋模型</span></div><div class="step"><b>回到第一步</b><span>無限循環，持續改進</span></div></div>
 
   <h2 id="what">投資標的與配置架構</h2>
-  <p>本策略只持有兩項資產，並在三種配置之間調整：<b>100% QLD</b>、<b>50% QLD＋50% SHV</b>、<b>100% SHV</b>。</p>
+  <p>BNASDAQ-26110 與 BNASDAQ-26111 都只持有兩項資產：BNASDAQ-26110 在三種配置之間調整（<b>100% QLD</b>、<b>50% QLD＋50% SHV</b>、<b>100% SHV</b>）；BNASDAQ-26111 只有 <b>100% QLD</b> 與 <b>100% SHV</b> 兩種配置（不設半倉），由六個量化模型共同判斷。</p>
   <ul>
     <li><b>進攻部位：QLD</b>（ProShares Ultra QQQ），追求 Nasdaq-100 指數單日報酬 2 倍的槓桿型 ETF。</li>
     <li><b>防守部位：SHV</b>（iShares Short Treasury Bond ETF），投資剩餘期限一年以內的美國公債。</li>
   </ul>
-  <p>槓桿型 ETF 每日重設槓桿倍數，持有超過一日的報酬並不等於指數報酬的 2 倍，行情劇烈震盪時落差尤其明顯：正式回測期間 QLD 長期持有的年化報酬率為 8.2%，反而低於 QQQ 的 9.4%。這也說明了本策略為何依市場狀態調整配置，而非長期持有 QLD。</p>
+  <p>槓桿型 ETF 每日重設槓桿倍數，持有超過一日的報酬並不等於指數報酬的 2 倍，行情劇烈震盪時落差尤其明顯：正式回測期間 QLD 長期持有的年化報酬率為 8.2%，反而低於 QQQ 的 9.4%。這也說明了 BNASDAQ-26110 與 BNASDAQ-26111 為何依市場狀態調整配置，而非長期持有 QLD。</p>
 </div>
 
 </div></div></div>

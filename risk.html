@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0c">
 <title>風險與代價｜BNASDAQ</title>
-<meta name="description" content="BNASDAQ 的 3 個風險、完整代價 6 點、參數鄰域與決策日挪動驗證、逐步前推結果。">
+<meta name="description" content="BNASDAQ-26110 與 BNASDAQ-26111 的 3 個風險、完整代價 6 點、參數穩健性與決策日挪動驗證、逐步前推結果。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css?v=736dd971b2">
@@ -21,50 +21,53 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html" aria-current=page>風險與代價</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 風險與代價</div><h1>風險與代價</h1><p class="lede">投入前須了解的三項主要風險、六項代價與限制，以及用於檢驗回測結果是否源自事後挑選參數的穩健性測試。除逐步前推外，本頁數字皆依正式回測區間（2000-05-31～2026-09-30）計算。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 風險與代價</div><h1>風險與代價</h1><p class="lede">BNASDAQ-26110 與 BNASDAQ-26111 投入前須了解的三項主要風險、六項代價與限制，以及用於檢驗回測結果是否源自事後挑選參數的穩健性測試。除逐步前推外，本頁數字皆依正式回測區間（2000-05-31～2026-09-30）計算。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <h2 id="three">投入前須了解的三項風險</h2>
   <ol class="steps">
-    <li><b>短期急跌無法即時迴避。</b>2025 年關稅衝擊期間，BNASDAQ 出現回測期間最大回撤 -42.3%（2024-12-16～2025-04-08），同期 QQQ 下跌 22.8%。策略每月僅於月底判斷一次，對數週內發生的急跌來不及反應；當時又持有 2 倍槓桿部位，跌幅因而放大。</li>
-    <li><b>波動度高。</b>年化波動度 33.2%，高於 QQQ 的 25.7%（QLD 為 51.5%）。年化波動度＝日對數報酬的樣本標準差 × √252。</li>
-    <li><b>須嚴守執行紀律。</b>月底判斷只要延後一個交易日，26 年年化報酬率便由 38.0% 降至 20.8%。</li>
+    <li><b>短期急跌無法即時迴避。</b>2025 年關稅衝擊期間，BNASDAQ-26110 出現回測期間最大回撤 -42.3%（2024-12-16～2025-04-08），同期 QQQ 下跌 22.8%；同一段 QQQ 高點至低點（2025-02-19～2025-04-08），BNASDAQ-26111 下跌 26.0%。兩個策略都只於月底判斷一次，對數週內發生的急跌來不及反應；當時又持有 2 倍槓桿部位，跌幅因而放大。BNASDAQ-26111 的回測最大回撤為 -34.7%（2006-01-11～2006-07-21）。</li>
+    <li><b>波動度高。</b>年化波動度 BNASDAQ-26110 33.2%、BNASDAQ-26111 31.1%，高於 QQQ 的 25.7%（QLD 為 51.5%）。年化波動度＝日對數報酬的樣本標準差 × √252。</li>
+    <li><b>須嚴守執行紀律。</b>月底判斷只要延後一個交易日，BNASDAQ-26110 的 26 年年化報酬率便由 38.0% 降至 20.8%；BNASDAQ-26111 的決策日偏移檢驗驗證中。</li>
   </ol>
   <div class="note warn"><p>因此，僅宜投入長期不需動用的資金。</p></div>
 
   <h2 id="six">六項代價與限制</h2>
   <ol class="steps">
-    <li><b>無法迴避短期急跌</b>（最大回撤 -42.3%）。</li>
-    <li><b>波動度高</b>（年化波動度 33.2%）。</li>
-    <li><b>須嚴守執行紀律</b>（決策日延後一個交易日，年化報酬率由 38.0% 降至 20.8%）。</li>
-    <li><b>減碼訊號可能誤判。</b>回測期間減碼機制（煞車）共啟動 21 次：14 次避開了後續下跌，其餘 7 次則錯失了後續上漲。</li>
-    <li><b>不宜以 38.3% 作為預期。</b>正式參數在 78,732 組參數鄰域中排名第 3；較務實的預期為年化 25%～34%。</li>
-    <li><b>僅用當時可得的資料重新選定參數，報酬明顯降低。</b>以逐步前推檢驗（每 6 年僅用當時可得的資料重新選定參數），1995～2026 年的年化報酬率為 24.6%，最大回撤 -53.1%。</li>
+    <li><b>無法迴避短期急跌</b>（最大回撤：BNASDAQ-26110 -42.3%、BNASDAQ-26111 -34.7%）。</li>
+    <li><b>波動度高</b>（年化波動度：BNASDAQ-26110 33.2%、BNASDAQ-26111 31.1%）。</li>
+    <li><b>須嚴守執行紀律</b>（BNASDAQ-26110 決策日延後一個交易日，年化報酬率由 38.0% 降至 20.8%；BNASDAQ-26111 驗證中）。</li>
+    <li><b>減碼訊號可能誤判。</b>BNASDAQ-26110 回測期間減碼機制（煞車）共啟動 21 次：14 次避開了後續下跌，其餘 7 次則錯失了後續上漲。BNASDAQ-26111 不設半倉，每次都是全數進出（正式回測區間共 73 次）。</li>
+    <li><b>不宜以回測值作為預期。</b>BNASDAQ-26110 的 38.3% 在 78,732 組參數鄰域中排名第 3，較務實的預期為年化 25%～34%；BNASDAQ-26111 的 43.2% 高於全部 300 組隨機參數，較務實的預期為年化 26%～37%。</li>
+    <li><b>僅用當時可得的資料重新選定參數，報酬明顯降低。</b>以逐步前推檢驗（每 6 年僅用當時可得的資料重新選定參數），BNASDAQ-26110 在 1995～2026 年的年化報酬率為 24.6%，最大回撤 -53.1%。BNASDAQ-26111 的模型本身每 24 個月只用當時已知的資料重新訓練，但門檻的逐步前推重選驗證中。</li>
   </ol>
 
   <h2 id="robust">參數穩健性檢驗</h2>
-  <p>回測最常見的疑慮是過度配適：最佳績效可能只是從大量組合中事後挑出的特例。為此，我們將 13 個參數各上調或下調 10%，完整重算全部 78,732 種組合。結果：年化報酬率最差 20.9%、第 5 百分位 25.4%、中位數 29.5%、第 95 百分位 33.8%、最佳 38.4%，100% 的組合都高於 QQQ（9.4%）與 QLD（8.2%）長期持有。</p>
-  <p>解讀：績效並非只在單一參數點成立，鄰域中最差的組合仍明顯高於 QQQ 長期持有；但本站主回測位於分布高端，不宜直接作為預期報酬。此檢驗衡量的是參數在鄰近範圍內的敏感度；以全期資料選定參數所產生的偏誤，則由下方的逐步前推檢驗評估。</p>
+  <p>回測最常見的疑慮是過度配適：最佳績效可能只是從大量組合中事後挑出的特例。<b>BNASDAQ-26110</b>：將 13 個參數各上調或下調 10%，完整重算全部 78,732 種組合。結果：年化報酬率最差 20.9%、第 5 百分位 25.4%、中位數 29.5%、第 95 百分位 33.8%、最佳 38.4%，100% 的組合都高於 QQQ（9.4%）與 QLD（8.2%）長期持有。</p>
+  <p>解讀：績效並非只在單一參數點成立，鄰域中最差的組合仍明顯高於 QQQ 長期持有；但 BNASDAQ-26110 的主回測位於分布高端，不宜直接作為預期報酬。此檢驗衡量的是參數在鄰近範圍內的敏感度；以全期資料選定參數所產生的偏誤，則由下方的逐步前推檢驗評估。</p>
   <div id="c-nb"></div>
+  <p><b>BNASDAQ-26111</b>：模型參數與門檻共 16 項同時在合理區間內隨機抖動（模型參數 ±10%，門檻以該分數歷史標準差的 10% 為幅度），重算 300 組。結果：年化報酬率最差 23.0%、第 5 百分位 25.5%、中位數 31.6%、第 95 百分位 37.2%、最佳 42.4%，100% 的組合都高於 QQQ（9.4%）與 QLD（8.2%）長期持有；正式參數的 43.2% 高於全部 300 組隨機參數，同樣位於分布高端。最大回撤的中位數為 -42.6%（最差 -54.8%）。兩個策略的檢驗方法不同（全部組合 vs. 隨機抽樣），區間不宜直接比較高低。</p>
+  <div id="c-nb2"></div>
   <h3 id="shift">決策日偏移檢驗</h3>
-  <p>將月底決策日提早或延後 1～10 個交易日，連同準時判斷共 21 種情境，全部高於 QQQ（最差 11.2%、中位數 21.2%）；但只有準時於月底最後一個交易日收盤後判斷，才能取得 38.0%，這正是前述「須嚴守執行紀律」的依據。</p>
+  <p>BNASDAQ-26110：將月底決策日提早或延後 1～10 個交易日，連同準時判斷共 21 種情境，全部高於 QQQ（最差 11.2%、中位數 21.2%）；但只有準時於月底最後一個交易日收盤後判斷，才能取得 38.0%，這正是前述「須嚴守執行紀律」的依據。BNASDAQ-26111 的決策日偏移檢驗驗證中，完成前不列數字。</p>
   <div id="c-shift"></div>
   <h3 id="ladder">以單筆 100 萬換算的合理預期</h3>
-  <p>以單筆 100 萬於正式回測期間（26.3 年）投入換算：參數鄰域第 5～95 百分位對應的期末價值為 3.90 億～21.2 億，中位數 9.10 億；本站主回測的 50.6 億位於分布高端，不宜作為預期。</p>
-  <div class="tblwrap"><table class="tbl"><thead><tr><th class=l>情境</th><th>期末價值（單筆 100 萬）</th></tr></thead><tbody><tr><td class=l>官方參數（本站主回測）</td><td>50.56 億</td></tr><tr><td class=l>參數 ±10% 鄰域：第 95 百分位</td><td>21.20 億</td></tr><tr><td class=l>參數 ±10% 鄰域：中位數</td><td>9.10 億</td></tr><tr><td class=l>參數 ±10% 鄰域：第 5 百分位</td><td>3.90 億</td></tr><tr><td class=l>決策日偏移：中位數</td><td>1.58 億</td></tr><tr><td class=l>決策日偏移：最差</td><td>1,649 萬</td></tr><tr><td class=l>QQQ 長期持有</td><td>1,056 萬</td></tr><tr><td class=l>QLD 長期持有</td><td>798 萬</td></tr></tbody></table></div>
+  <p>以單筆 100 萬於正式回測期間（26.3 年）投入換算：BNASDAQ-26110 參數鄰域第 5～95 百分位對應的期末價值為 3.90 億～21.2 億，中位數 9.10 億，主回測的 50.6 億位於分布高端；BNASDAQ-26111 隨機抖動第 5～95 百分位為 4.0 億～41.4 億，中位數 13.9 億，主回測的 128.8 億同樣不宜作為預期。</p>
+  <div class="tblwrap"><table class="tbl"><thead><tr><th class=l>情境</th><th>期末價值（單筆 100 萬）</th></tr></thead><tbody><tr><td class=l>BNASDAQ-26110 官方參數（主回測）</td><td>50.56 億</td></tr><tr><td class=l>BNASDAQ-26110 參數 ±10% 鄰域：第 95 百分位</td><td>21.20 億</td></tr><tr><td class=l>BNASDAQ-26110 參數 ±10% 鄰域：中位數</td><td>9.10 億</td></tr><tr><td class=l>BNASDAQ-26110 參數 ±10% 鄰域：第 5 百分位</td><td>3.90 億</td></tr><tr><td class=l>BNASDAQ-26110 決策日偏移：中位數</td><td>1.58 億</td></tr><tr><td class=l>BNASDAQ-26110 決策日偏移：最差</td><td>1,649 萬</td></tr><tr><td class=l>BNASDAQ-26111 官方參數（主回測）</td><td>128.77 億</td></tr><tr><td class=l>BNASDAQ-26111 隨機抖動：第 95 百分位</td><td>41.40 億</td></tr><tr><td class=l>BNASDAQ-26111 隨機抖動：中位數</td><td>13.91 億</td></tr><tr><td class=l>BNASDAQ-26111 隨機抖動：第 5 百分位</td><td>3.98 億</td></tr><tr><td class=l>BNASDAQ-26111 決策日偏移</td><td>驗證中</td></tr><tr><td class=l>QQQ 長期持有</td><td>1,056 萬</td></tr><tr><td class=l>QLD 長期持有</td><td>798 萬</td></tr></tbody></table></div>
   <h3 id="walk">逐步前推（walk-forward）：僅使用當時可得的資料</h3>
-  <p>這是最嚴格的一項檢驗：每 6 年僅以當時可得的資料重新搜尋參數，再以其後 6 年的資料驗證，並將各段結果串接為 1995-12-29～2026-09-25 的完整績效：年化報酬率 24.6%、最大回撤 -53.1%。結果仍高於 QQQ 長期持有，但明顯低於 38.3%；在無法預知未來的前提下，這是較貼近實際的參考值。</p>
+  <p>這是最嚴格的一項檢驗：每 6 年僅以當時可得的資料重新搜尋參數，再以其後 6 年的資料驗證，並將各段結果串接為 1995-12-29～2026-09-25 的完整績效：BNASDAQ-26110 年化報酬率 24.6%、最大回撤 -53.1%。結果仍高於 QQQ 長期持有，但明顯低於 38.3%；在無法預知未來的前提下，這是較貼近實際的參考值。BNASDAQ-26111 的模型自 2000-03 起每 24 個月只用當時已知的資料重新訓練，但門檻是以全期資料選定，門檻的逐步前推重選驗證中，完成前不列數字。</p>
 
   <h2 id="disc">免責聲明</h2>
   <p>本站所有數字均為歷史回測，並非保證報酬，亦不構成投資建議；回測已計入換倉成本，但未計入稅負與滑價；QLD 於 2006-06 上市前以合成序列代理。詳見<a href="data.html">資料口徑與免責聲明</a>。</p>
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#three">三項主要風險</a></li><li><a href="#six">六項代價與限制</a></li><li><a href="#robust">參數穩健性</a></li><li><a href="#shift">決策日偏移</a></li><li><a href="#ladder">合理預期</a></li><li><a href="#walk">逐步前推</a></li><li><a href="#disc">免責聲明</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html#dd">回撤水位圖</a></li><li><a href="research.html#crises">大幅修正期間的表現</a></li><li><a href="data.html">資料口徑</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=52553baf3c"></script>
+<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/sat-nb.js?v=770b05a5b5"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 (function(){const S=window.SITE,f=BN.fmt,nb=S.nb;
-BN.charts.hist(document.getElementById('c-nb'),{title:'參數 ±10% 鄰域：'+nb.n.toLocaleString()+' 種組合的年化報酬率分布',sub:'13 個參數各上調／下調 10% 的全部組合；虛線為 QQQ、QLD 長期持有與本站主回測',note:'依正式回測區間（2000-05-31～2026-09-30）；每換一次起點需重跑 78,732 組參數，無法在瀏覽器即時重算。',edges:nb.edges,counts:nb.counts,marks:[{x:S.lump.qqq.cagr,label:'QQQ '+(S.lump.qqq.cagr*100).toFixed(1)+'%',color:'var(--s-qqq)'},{x:S.lump.qld.cagr,label:'QLD '+(S.lump.qld.cagr*100).toFixed(1)+'%',color:'var(--s-qld)',dy:16},{x:nb.p5,label:'第 5 百分位 '+(nb.p5*100).toFixed(1)+'%',color:'var(--ink)',dy:32},{x:nb.p95,label:'第 95 百分位 '+(nb.p95*100).toFixed(1)+'%',color:'var(--ink)',anchor:'end',dx:-4,dy:32},{x:nb.official,label:'本站主回測 '+(nb.official*100).toFixed(1)+'%',color:'var(--gold)',anchor:'end',dx:-4}]});
-BN.charts.bars(document.getElementById('c-shift'),{title:'決策日提早／延後 1～10 個交易日的年化報酬率',sub:'0 ＝ 準時於月底最後一個交易日收盤後判斷；負值＝提早、正值＝延後',note:'依正式回測區間（2000-05-31～2026-09-30）；每換一次起點需重新回測 21 種決策日，無法在瀏覽器即時重算。',groups:S.shift.list.map(x=>String(x.o)),series:[{name:'年化報酬率',values:S.shift.list.map(x=>x.cagr),color:'var(--s-fund)'}],labels:false,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',height:260});
+BN.charts.hist(document.getElementById('c-nb'),{title:'BNASDAQ-26110 參數 ±10% 鄰域：'+nb.n.toLocaleString()+' 種組合的年化報酬率分布',sub:'13 個參數各上調／下調 10% 的全部組合；虛線為第 5、95 百分位與 BNASDAQ-26110 主回測；全部組合都高於 QQQ（'+(S.lump.qqq.cagr*100).toFixed(1)+'%）與 QLD（'+(S.lump.qld.cagr*100).toFixed(1)+'%）長期持有，兩者在圖的範圍之外',note:'依正式回測區間（2000-05-31～2026-09-30）；每換一次起點需重跑 78,732 組參數，無法在瀏覽器即時重算。',edges:nb.edges,counts:nb.counts,marks:[{x:nb.p5,label:'第 5 百分位 '+(nb.p5*100).toFixed(1)+'%',color:'var(--ink)',dy:32},{x:nb.p95,label:'第 95 百分位 '+(nb.p95*100).toFixed(1)+'%',color:'var(--ink)',anchor:'end',dx:-4,dy:32},{x:nb.official,label:'BNASDAQ-26110 主回測 '+(nb.official*100).toFixed(1)+'%',color:'var(--gold)',anchor:'end',dx:-4}]});
+const SN=window.SAT_NB;if(SN){const u=SN.us,pc=v=>(v*100).toFixed(1)+'%';BN.charts.hist(document.getElementById('c-nb2'),{title:'BNASDAQ-26111 參數隨機抖動：'+SN.n+' 組的年化報酬率分布',sub:'16 個參數與門檻同時在合理區間內隨機抖動；虛線為第 5、95 百分位與 BNASDAQ-26111 主回測；'+(u.beat_qqq>=1&&u.beat_qld>=1?'全部組合都高於':'與')+' QQQ（'+pc(S.lump.qqq.cagr)+'）與 QLD（'+pc(S.lump.qld.cagr)+'）長期持有'+(u.beat_qqq>=1&&u.beat_qld>=1?'，兩者在圖的範圍之外':'對照'),note:'依正式回測區間（'+u.window[0]+'～'+u.window[1]+'）；每組需重跑六個模型，無法在瀏覽器即時重算。',edges:SN.hist.edges,counts:SN.hist.counts,marks:[{x:u.p5,label:'第 5 百分位 '+pc(u.p5),color:'var(--ink)',dy:32},{x:u.p95,label:'第 95 百分位 '+pc(u.p95),color:'var(--ink)',anchor:'end',dx:-4,dy:32},{x:u.official,label:'BNASDAQ-26111 主回測 '+pc(u.official),color:'var(--gold)',anchor:'end',dx:-4}]});}
+BN.charts.bars(document.getElementById('c-shift'),{title:'BNASDAQ-26110 決策日提早／延後 1～10 個交易日的年化報酬率',sub:'0 ＝ 準時於月底最後一個交易日收盤後判斷；負值＝提早、正值＝延後',note:'依正式回測區間（2000-05-31～2026-09-30）；每換一次起點需重新回測 21 種決策日，無法在瀏覽器即時重算。',groups:S.shift.list.map(x=>String(x.o)),series:[{name:'年化報酬率',values:S.shift.list.map(x=>x.cagr),color:'var(--s-fund)'}],labels:false,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',height:260});
 })();
 </script>
 </main>

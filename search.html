@@ -26,7 +26,7 @@
   <form class="search" id="sf" role="search" style="max-width:560px"><label class="sr-only" for="q2">關鍵字</label><input id="q2" type="search" placeholder="例：最大回撤、0050、2,000 萬"><button type="submit">搜尋</button></form>
   <div id="res" style="margin-top:20px"></div>
 </div></div>
-<script src="assets/site.js?v=62df238a20"></script><script src="assets/search-index.js?v=67394a586f"></script>
+<script src="assets/site.js?v=62df238a20"></script><script src="assets/search-index.js?v=474cd30092"></script>
 <script>
 (function(){const idx=window.SEARCH_INDEX||[];const q0=new URLSearchParams(location.search).get('q')||'';const inp=document.getElementById('q2');inp.value=q0;
 function run(q){const res=document.getElementById('res');q=q.trim();if(!q){res.innerHTML='<p class="muted">請輸入關鍵字。</p>';return;}const terms=q.toLowerCase().split(/\s+/).filter(Boolean);const hits=idx.map(it=>{const t=(it.title+' '+it.text).toLowerCase();let s=0;terms.forEach(k=>{if(it.title.toLowerCase().includes(k))s+=3;const c=t.split(k).length-1;s+=c;});return [s,it];}).filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,30);

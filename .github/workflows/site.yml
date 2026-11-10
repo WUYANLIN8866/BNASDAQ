@@ -29,6 +29,9 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Check strategy codes on public pages (generic or outdated names block the deploy)
+        run: python3 scripts/strategy_names.py --check
+
       - name: Install optional data libraries
         run: pip install --quiet yfinance || true
 

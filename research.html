@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0c">
 <title>研究與回測｜BNASDAQ</title>
-<meta name="description" content="BNASDAQ-26110 完整回測（可自訂起點，1986-09～2025-09）：年化報酬率、各區間、逐年報酬、大幅修正期間表現、最大回撤與回撤水位。">
+<meta name="description" content="BNASDAQ-26110 與 BNASDAQ-26111 完整回測（可自訂起點，1986-09～2025-09）：年化報酬率、各區間、逐年報酬、大幅修正期間表現、最大回撤與回撤水位。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css?v=736dd971b2">
@@ -21,7 +21,7 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html" aria-current=page>研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 研究與回測</div><h1>研究與回測</h1><p class="lede">以單一資料來源與一致的交易成本，檢視 BNASDAQ-26110 的長期資產成長、各區間與逐年報酬、大幅修正期間的表現，以及最大回撤與回復時間。回測起點可自訂，本頁圖表、表格與關鍵數字隨之同步重算。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 研究與回測</div><h1>研究與回測</h1><p class="lede">以單一資料來源與一致的交易成本，檢視 BNASDAQ-26110 與 BNASDAQ-26111 的長期資產成長、各區間與逐年報酬、大幅修正期間的表現，以及最大回撤與回復時間（BNASDAQ-26111 的模型自 2000-03 起才有訊號，起點較早時自該月起算）。回測起點可自訂，本頁圖表、表格與關鍵數字隨之同步重算。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <div class="btpick" id="bt-pick"></div>
@@ -56,7 +56,7 @@
   <details><summary>展開逐年報酬明細表</summary><div class="ans"><div id="t-cal"></div></div></details>
 
   <h2 id="why">績效來源：三項關鍵機制</h2>
-  <p>本策略相對於買進持有的超額報酬，主要來自三項機制：控制回撤以保留複利基礎、在下跌趨勢延續時降低股票曝險，以及只在走勢平穩時運用槓桿。前兩項的數據隨所選起點更新；第三項涉及逐月持倉，依正式回測區間呈現。</p>
+  <p>BNASDAQ-26110 與 BNASDAQ-26111 相對於買進持有的超額報酬，主要來自三項機制：控制回撤以保留複利基礎、在下跌趨勢延續時降低股票曝險，以及只在走勢平穩時運用槓桿。前兩項的數據隨所選起點更新；第三項涉及逐月持倉，依正式回測區間呈現（半倉只有 BNASDAQ-26110 使用）。</p>
   <ol class="steps">
     <li id="why-1"></li>
     <li id="why-2"></li>
@@ -75,11 +75,11 @@
   <p class="small">名詞定義：最大回撤為期間內淨值自前高回落至其後低點的最大跌幅（日收盤）；回本所需倍數＝1 ÷（1 − 最大回撤），即低點須回升的倍數；年化波動度＝日對數報酬的樣本標準差 × √252。</p>
   <div id="c-dd"></div>
   <div id="t-dd"></div>
-  <div class="note warn"><p>本策略並非不會虧損：月底判斷能部分規避歷時較長的下跌，但無法規避數週內完成的急跌，此時 2 倍槓桿部位的跌幅可能大於 QQQ。投入前須了解的風險，請參閱<a href="risk.html">風險與代價</a>。</p></div>
+  <div class="note warn"><p>BNASDAQ-26110 與 BNASDAQ-26111 都並非不會虧損：月底判斷能部分規避歷時較長的下跌，但無法規避數週內完成的急跌，此時 2 倍槓桿部位的跌幅可能大於 QQQ。投入前須了解的風險，請參閱<a href="risk.html">風險與代價</a>。</p></div>
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#report">回測成績總覽</a></li><li><a href="#periods">各區間年化報酬</a></li><li><a href="#years">逐年報酬</a></li><li><a href="#why">績效來源</a></li><li><a href="#crises">大幅修正</a></li><li><a href="#dd">最大回撤</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="risk.html#robust">參數穩健性檢驗</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="dca.html">定期定額</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=c8ab2ed622"></script><script src="assets/period.js?v=72e0d40d19"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=52553baf3c"></script>
+<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=c8ab2ed622"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/sat-nb.js?v=770b05a5b5"></script><script src="assets/period.js?v=72e0d40d19"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 (function () {
   'use strict';
@@ -88,9 +88,14 @@
   const OFF = BT.official, END = BT.END, endM = +END.slice(5, 7);
   const OFF_RANGE = S.window.start + '～' + S.window.end;           // 正式回測區間
   const MONTHS = S.window.months, M1 = MONTHS.length - 1;          // 加入標的的月底序列對齊此月份（2000-05 起）
-  const KEYS = ['fund', 'qqq', 'qld'], ALL = ['fund', 'qqq', 'qld', 'shv'];
-  const COL = { fund: 'var(--s-fund)', qqq: 'var(--s-qqq)', qld: 'var(--s-qld)', shv: 'var(--s-shv)' };
-  const NM = { fund: 'BNASDAQ', qqq: 'QQQ', qld: 'QLD', shv: 'SHV' };
+  const KEYS = ['fund', 'sat', 'qqq', 'qld'], ALL = ['fund', 'sat', 'qqq', 'qld', 'shv'];
+  const COL = { fund: 'var(--s-fund)', sat: 'var(--s-sat)', qqq: 'var(--s-qqq)', qld: 'var(--s-qld)', shv: 'var(--s-shv)' };
+  const NM = { fund: 'BNASDAQ-26110', sat: 'BNASDAQ-26111', qqq: 'QQQ', qld: 'QLD', shv: 'SHV' };
+  const F0 = BT.first('sat');   // BNASDAQ-26111 的模型最早有訊號的月份；起點較早時，26111 自此月起算
+  const fin = v => (v == null || !isFinite(v)) ? null : v;
+  // BNASDAQ-26111 在 QQQ 大幅修正期間（高點至低點）的報酬：用日線直接算（bt.js 的大跌事件表只有 26110）
+  const SATD = (() => { const d = BT.daily('sat', F0), m = new Map(); d.dates.forEach((x, i) => m.set(x, d.values[i])); return m; })();
+  const satCr = c => { const a = SATD.get(c.peak), b = SATD.get(c.trough); return a && b ? b / a - 1 : null; };
   const OC = new Set(S.crises.map(c => c.name + '|' + c.peak + '|' + c.trough));   // 正式區間的大跌事件（加入標的只有這些事件的逐日報酬）
   const sw = c => '<span class="sw" style="background:' + c + '"></span>';
   const cell = v => v == null ? '<td>—</td>' : '<td><span class="' + (v >= 0 ? 'pos' : 'neg') + '">' + f.pctS(v) + '</span></td>';
@@ -153,7 +158,7 @@
 
     // ---- 自動調整說明 ----
     let nt = '';
-    if (adj) nt += '<p><b>有效回測起點已自動調整為 ' + sDate + '</b>（所選起點：' + uDate + '）。原因：' + why + '。本頁 BNASDAQ、QQQ、QLD、SHV 與加入標的皆改以共同期間 ' + sDate + '～' + END + ' 計算；移除該標的或改選較晚的起點即可恢復。</p>';
+    if (adj) nt += '<p><b>有效回測起點已自動調整為 ' + sDate + '</b>（所選起點：' + uDate + '）。原因：' + why + '。本頁 BNASDAQ-26110、BNASDAQ-26111、QQQ、QLD、SHV 與加入標的皆改以共同期間 ' + sDate + '～' + END + ' 計算；移除該標的或改選較晚的起點即可恢復。</p>';
     if (late) nt += '<p>共同期間不足一年（本站回測起點最晚為 ' + dateOf(BT.max) + '），以下改以月底資料比較期末價值、成長曲線、逐年報酬與最大回撤，且未計交易成本；各區間年化報酬、大幅修正與逐日回撤水位圖不適用。</p>';
     P.items.filter(x => x.mode === 'out').forEach(x => { nt += '<p>' + x.a.label + ' 的資料只到 ' + (x.w.end_used || '—') + '，未涵蓋至 ' + END + '，不列入本期間的計算。</p>'; });
     P.items.filter(x => x.mode !== 'out' && !AM.has(x.a.code)).forEach(x => { nt += '<p>' + x.a.label + ' 在 ' + sDate + ' 缺少月底資料，不列入本期間的計算；請改選相鄰月份為起點。</p>'; });
@@ -161,9 +166,11 @@
 
     // ---- 基礎序列（BNASDAQ／QQQ／QLD／SHV）----
     const L = {}, DDm = {}, R = {}, NB = {}; let X;
+    const Es = late || E >= F0 ? E : F0, satLate = Es !== E;   // 26111 起點
     if (!late) {
-      ALL.forEach(k => { L[k] = BT.lump(k, E); });
-      KEYS.forEach(k => { DDm[k] = BT.drawdown(k, E); const mo = BT.monthly(k, E); NB[k] = mo.values; X = mo.months; });
+      ALL.forEach(k => { L[k] = BT.lump(k, k === 'sat' ? Es : E); });
+      KEYS.forEach(k => { DDm[k] = BT.drawdown(k, k === 'sat' ? Es : E); const mo = BT.monthly(k, k === 'sat' ? Es : E); NB[k] = mo.values; if (k === 'fund') X = mo.months; });
+      if (satLate) NB.sat = Array(Math.max(0, X.indexOf(Es))).fill(null).concat(NB.sat);
     } else { // 共同期間不足一年：本站回測引擎的起點上限之後，改以月底序列計算
       const iB = BT.M.indexOf(E), iL = BT.M.length - 1;
       ALL.forEach(k => { const m = RB.metrics(BT.T.eq[k], BT.M, iB, iL); R[k] = m; L[k] = { end: m.lump, cagr: m.cagr, years: m.years, doubling: dbl(m.cagr) }; });
@@ -175,13 +182,14 @@
     document.querySelector('[data-rb-title]').textContent = '回測成績總覽' + (adj ? '（共同期間）' : '');
     $('p-report').textContent = '假設於 ' + ymTxt(sDate) + '（' + sDate + '）收盤單筆投入 100 萬，持有至 ' + ymTxt(END) + '（' + END + '）收盤，共 ' + L.fund.years.toFixed(1) + ' 年。以美元計價、股息再投入；'
       + (late ? '共同期間以月底資料計算，未計交易成本。' : '期初買進與每次換倉皆計單邊 0.1% 交易成本，未計稅負與滑價；年化報酬率（CAGR）以期初、期末價值及實際持有日數換算。')
-      + (US.length && !late ? '加入的比較標的以買進持有計算，未計交易成本。' : '');
+      + (US.length && !late ? '加入的比較標的以買進持有計算，未計交易成本。' : '') + (satLate ? 'BNASDAQ-26111 的模型自 ' + dateOf(Es) + ' 起才有訊號，自該日起算。' : '');
     const dTxt = d => (d && isFinite(d) && d > 0) ? '約每 ' + d.toFixed(1) + ' 年資產倍增' : '期末價值低於期初';
     const tile = (label, color, end, l1, l2) => '<div class="tile"><div class="k">' + sw(color) + label + '</div><div class="v">' + f.big(end) + '</div><div class="s">' + l1 + (l2 ? '<br>' + l2 : '') + '</div></div>';
     // 共同期間不足一年時不予年化，改列期間報酬
     const ret = m => late ? '期間報酬 ' + f.pctS(m.ratio - 1) : '年化報酬率 ' + p1(m.cagr);
     const qldMdd = late ? R.qld.mdd.mdd : DDm.qld.mdd, qldLow = L.qld.cagr < L.qqq.cagr;
     let kv = tile('BNASDAQ-26110', COL.fund, L.fund.end, ret(late ? R.fund : L.fund), late ? '未滿一年，不予年化' : dTxt(L.fund.doubling))
+      + tile('BNASDAQ-26111', COL.sat, L.sat.end, ret(late ? R.sat : L.sat), late ? '未滿一年，不予年化' : dTxt(L.sat.doubling) + (satLate ? '；自 ' + dateOf(Es) + ' 起' : ''))
       + tile('QQQ 買進持有', COL.qqq, L.qqq.end, ret(late ? R.qqq : L.qqq), late ? '' : dTxt(L.qqq.doubling))
       + tile('QLD 買進持有', COL.qld, L.qld.end, ret(late ? R.qld : L.qld), qldLow ? (late ? '2 倍槓桿，期間報酬反低於 QQQ' : '2 倍槓桿長期持有，年化報酬率反低於 QQQ') : '高於 QQQ，但最大回撤達 ' + a1(qldMdd))
       + tile('SHV 短期美國公債', COL.shv, L.shv.end, ret(late ? R.shv : L.shv), '對照：現金不投資，期末仍為 100 萬');
@@ -194,16 +202,17 @@
     $('c-eq').innerHTML = '';
     BN.charts.line($('c-eq'), { title: '單筆 100 萬的資產成長（對數刻度）', sub: sDate + ' 至 ' + END + '｜美元計價、股息再投入' + (late ? '、月底資料' : '、交易成本單邊 0.1%'), x: X, log: true, yfmt: v => f.big(v * 1e6), tipfmt: v => f.big(v * 1e6),
       series: KEYS.map(k => ({ name: NM[k], values: NB[k], color: COL[k] })).concat(US.map(x => ({ name: x.a.label, values: AM.get(x.a.code).norm, color: x.a.color }))),
-      note: notes(['縱軸為對數刻度，每一格代表 10 倍。', pxE, adjNote]) });
+      note: notes(['縱軸為對數刻度，每一格代表 10 倍。', satLate ? 'BNASDAQ-26111 自 ' + dateOf(Es) + ' 起（模型最早有訊號的月份）。' : '', pxE, adjNote]) });
 
     // ---- 各區間 ----
-    const per = late ? [] : BT.periods(E);
-    const pc = KEYS.map(k => [NM[k], p => p[k], COL[k]]).concat(US.map(x => [x.a.label, AM.get(x.a.code).per, x.a.color]));
+    const per = late ? [] : BT.periods(E, KEYS);
+    const pc = KEYS.map(k => [NM[k], p => fin(p[k]), COL[k]]).concat(US.map(x => [x.a.label, AM.get(x.a.code).per, x.a.color]));
     if (per.length) {
-      const nq = per.filter(p => p.fund > p.qqq).length, nl = per.filter(p => p.fund > p.qld).length, span = '近 ' + per[0].name.replace(/\D/g, '') + '～' + per[per.length - 1].name.replace(/\D/g, '') + ' 年';
-      $('p-per').textContent = (per.length === 1 ? '所選期間只涵蓋近 1 年區間，本策略的年化報酬率' + (nq && nl ? '高於 QQQ 與 QLD 買進持有。' : (nq ? '高於 QQQ、低於 QLD 買進持有。' : (nl ? '低於 QQQ、高於 QLD 買進持有。' : '低於 QQQ 與 QLD 買進持有。')))
-        : (nq === per.length && nl === per.length ? span + '的 ' + per.length + ' 個區間中，本策略的年化報酬率均高於 QQQ 與 QLD 買進持有。' : span + '的 ' + per.length + ' 個區間中，本策略的年化報酬率有 ' + nq + ' 個高於 QQQ、' + nl + ' 個高於 QLD 買進持有。'))
-        + '各區間終點固定為 ' + END + '，起點為對應月份的月底收盤，僅列出起點不早於所選回測起點的區間。短區間易受單一市場階段影響，宜與長區間對照解讀。';
+      const span = '近 ' + per[0].name.replace(/\D/g, '') + '～' + per[per.length - 1].name.replace(/\D/g, '') + ' 年';
+      const cnt = k => { const ok = per.filter(p => fin(p[k]) != null); return { n: ok.length, q: ok.filter(p => p[k] > p.qqq).length, l: ok.filter(p => p[k] > p.qld).length }; };
+      const say = (k, c) => NM[k] + (c.n !== per.length ? '（有資料的 ' + c.n + ' 個區間）' : ' ') + (c.n && c.q === c.n && c.l === c.n ? '全部高於 QQQ 與 QLD 買進持有' : '有 ' + c.q + ' 個高於 QQQ、' + c.l + ' 個高於 QLD 買進持有');
+      $('p-per').textContent = span + '的 ' + per.length + ' 個區間中，' + say('fund', cnt('fund')) + '；' + say('sat', cnt('sat')) + '。'
+        + '各區間終點固定為 ' + END + '，起點為對應月份的月底收盤，僅列出起點不早於所選回測起點的區間；BNASDAQ-26111 的模型自 ' + F0 + ' 起才有訊號，更早開始的區間以「—」表示。短區間易受單一市場階段影響，宜與長區間對照解讀。';
     } else $('p-per').textContent = '共同期間不足一年，沒有可比較的區間。';
     let h = '<div class="tblwrap"><table class="tbl"><caption>各區間年化報酬率（終點 ' + END + '；同資料、同成本）；粗體為該區間最高</caption><thead><tr><th class=l>區間</th>' + pc.map(c => '<th>' + c[0] + '</th>').join('') + '<th>起點</th></tr></thead><tbody>';
     per.forEach(p => { const vals = pc.map(c => c[1](p)), mx = Math.max(...vals.filter(v => v != null)); h += '<tr><td class=l>' + p.name + '</td>' + vals.map(v => v == null ? '<td>—</td>' : (v === mx ? '<td><b>' + p1(v) + '</b></td>' : '<td>' + p1(v) + '</td>')).join('') + '<td>' + p.start + '</td></tr>'; });
@@ -214,39 +223,45 @@
       note: notes([BT.proxyNote(per[per.length - 1].start.slice(0, 7)), adjNote]) || undefined });
 
     // ---- 逐年報酬 ----
-    const C = late ? null : BT.cal(E);
+    const C = late ? null : BT.cal(E, KEYS);
     const rows = late ? R.fund.annual.map(r => ({ y: r.y, label: r.label, partial: r.partial })) : C.list.map(r => ({ y: r.y, label: r.y + (r.partial ? '（至 ' + endM + ' 月底）' : ''), partial: r.partial }));
     const annOf = (arr, y) => { const r = arr.find(z => z.y === y); return r ? r.ret : null; };
-    const cc = KEYS.map(k => [NM[k], late ? (y => annOf(R[k].annual, y)) : (y => C.list.find(r => r.y === y)[k]), COL[k]]).concat(US.map(x => [x.a.label, AM.get(x.a.code).ann, x.a.color]));
+    const cc = KEYS.map(k => [NM[k], late ? (y => annOf(R[k].annual, y)) : (y => fin(C.list.find(r => r.y === y)[k])), COL[k]]).concat(US.map(x => [x.a.label, AM.get(x.a.code).ann, x.a.color]));
+    const gv = (k, y) => cc[KEYS.indexOf(k)][1](y);
     if (late) { $('years').textContent = '逐年報酬'; $('p-years').textContent = '共同期間不足一年，不提供年度統計；下表為共同期間內的曆年（含不完整年度）報酬，以月底資料計算。'; }
     else {
       const st = C.stats, full = C.list.filter(r => !r.partial), last = C.list[C.list.length - 1];
-      $('years').textContent = st.n ? '逐年報酬：' + st.n + ' 個完整年度中 ' + st.fund_pos + ' 年為正報酬' : '逐年報酬';
-      let t = st.n ? st.first + '～' + full[full.length - 1].y + ' 年共 ' + st.n + ' 個完整曆年中，本策略 ' + st.fund_pos + ' 年為正報酬、' + st.beat_qqq + ' 年高於 QQQ'
-        + (st.qqq_down ? '；QQQ 下跌的 ' + st.qqq_down + ' 個年度（' + join(st.qqq_down_years) + '）中，本策略有 ' + st.fund_pos_when_qqq_down + ' 年仍為正報酬。' : '；期間內 QQQ 沒有下跌的年度。')
-        + '表現最佳的年度為 ' + st.best.y + ' 年（' + f.pctS(st.best.fund) + '）。' : '所選期間內尚無完整曆年。';
+      const fs = full.filter(r => fin(r.sat) != null), sp = fs.filter(r => r.sat > 0).length, sq = fs.filter(r => r.sat > r.qqq).length, sd = fs.filter(r => r.qqq < 0), sb = fs.reduce((b, r) => (!b || r.sat > b.sat) ? r : b, null);
+      $('years').textContent = st.n ? '逐年報酬：' + st.n + ' 個完整年度中 BNASDAQ-26110 有 ' + st.fund_pos + ' 年、BNASDAQ-26111 有 ' + sp + (fs.length !== st.n ? '／' + fs.length : '') + ' 年為正報酬' : '逐年報酬';
+      let t = st.n ? st.first + '～' + full[full.length - 1].y + ' 年共 ' + st.n + ' 個完整曆年中，BNASDAQ-26110 ' + st.fund_pos + ' 年為正報酬、' + st.beat_qqq + ' 年高於 QQQ'
+        + (st.qqq_down ? '；QQQ 下跌的 ' + st.qqq_down + ' 個年度（' + join(st.qqq_down_years) + '）中，BNASDAQ-26110 有 ' + st.fund_pos_when_qqq_down + ' 年仍為正報酬' : '；期間內 QQQ 沒有下跌的年度')
+        + '，表現最佳的年度為 ' + st.best.y + ' 年（' + f.pctS(st.best.fund) + '）。'
+        + 'BNASDAQ-26111' + (fs.length !== st.n ? '（有訊號的 ' + fs.length + ' 個完整年度）' : ' ') + sp + ' 年為正報酬、' + sq + ' 年高於 QQQ' + (sd.length ? '；QQQ 下跌的 ' + sd.length + ' 個年度中有 ' + sd.filter(r => r.sat > 0).length + ' 年仍為正報酬' : '') + (sb ? '，表現最佳的年度為 ' + sb.y + ' 年（' + f.pctS(sb.sat) + '）。' : '。') : '所選期間內尚無完整曆年。';
       if (last && last.partial) t += last.y + ' 年僅計至 ' + endM + ' 月底，列於圖表但不納入統計';
       t += (E.slice(5) !== '12' ? '；起點所在的不完整年度不列入。' : '。');
       $('p-years').textContent = t;
     }
-    let tc = '<div class="tblwrap"><table class="tbl"><caption>逐年報酬（曆年、美元、含息）；✓ 表示本策略高於 QQQ</caption><thead><tr><th class=l>年度</th>' + cc.map(c => '<th>' + c[0] + '</th>').join('') + '<th>高於 QQQ</th></tr></thead><tbody>';
-    rows.forEach(r => { const fv = cc[0][1](r.y), qv = cc[1][1](r.y); tc += '<tr><td class=l>' + r.label + '</td>' + cc.map(c => cell(c[1](r.y))).join('') + '<td>' + (fv != null && qv != null && fv > qv ? '✓' : '') + '</td></tr>'; });
+    let tc = '<div class="tblwrap"><table class="tbl"><caption>逐年報酬（曆年、美元、含息）；✓ 表示該策略高於 QQQ</caption><thead><tr><th class=l>年度</th>' + cc.map(c => '<th>' + c[0] + '</th>').join('') + '<th>BNASDAQ-26110 高於 QQQ</th><th>BNASDAQ-26111 高於 QQQ</th></tr></thead><tbody>';
+    const ok = (a, b) => a != null && b != null && a > b ? '✓' : '';
+    rows.forEach(r => { const qv = gv('qqq', r.y); tc += '<tr><td class=l>' + r.label + '</td>' + cc.map(c => cell(c[1](r.y))).join('') + '<td>' + ok(gv('fund', r.y), qv) + '</td><td>' + ok(gv('sat', r.y), qv) + '</td></tr>'; });
     $('t-cal').innerHTML = tc + '</tbody></table></div>';
     $('c-cal').innerHTML = '';
     if (rows.length) {
       const y0 = rows[0].y, y1 = rows[rows.length - 1].y;
-      BN.charts.bars($('c-cal'), { title: '逐年報酬：BNASDAQ 與 QQQ' + (US.length ? '（含加入標的）' : ''), sub: sDate + ' 至 ' + END + '｜' + y0 + '～' + y1 + ' 曆年報酬；' + y1 + ' 年僅計至 ' + endM + ' 月底' + (late ? '；月底資料' : ''), groups: rows.map(r => String(r.y).slice(2)),
-        series: [{ name: 'BNASDAQ', values: rows.map(r => cc[0][1](r.y)), color: COL.fund }, { name: 'QQQ', values: rows.map(r => cc[1][1](r.y)), color: COL.qqq }].concat(cc.slice(3).map(c => ({ name: c[0], values: rows.map(r => c[1](r.y)), color: c[2] }))),
+      BN.charts.bars($('c-cal'), { title: '逐年報酬：BNASDAQ-26110、BNASDAQ-26111 與 QQQ' + (US.length ? '（含加入標的）' : ''), sub: sDate + ' 至 ' + END + '｜' + y0 + '～' + y1 + ' 曆年報酬；' + y1 + ' 年僅計至 ' + endM + ' 月底' + (late ? '；月底資料' : ''), groups: rows.map(r => String(r.y).slice(2)),
+        series: ['fund', 'sat', 'qqq'].map(k => ({ name: NM[k], values: rows.map(r => gv(k, r.y)), color: COL[k] })).concat(cc.slice(KEYS.length).map(c => ({ name: c[0], values: rows.map(r => c[1](r.y)), color: c[2] }))),
         labels: false, yfmt: v => (v * 100).toFixed(0) + '%', tipfmt: v => p1(v), height: 300, note: notes([late ? '' : BT.proxyNote((y0 - 1) + '-12'), adjNote]) || undefined });
     }
 
     // ---- 績效來源（前兩項隨起點；共同期間不足一年時改依正式回測區間）----
-    const WD = late ? { d: { fund: BT.drawdown('fund', OFF), qqq: BT.drawdown('qqq', OFF), qld: BT.drawdown('qld', OFF) }, cr: BT.crises(OFF), where: '正式回測區間內', lab: '<small class="muted">（共同期間不足一年，本項依正式回測區間 ' + OFF_RANGE + '）</small>' } : { d: DDm, cr: BT.crises(E), where: '所選期間內', lab: '' };
-    $('why-1').innerHTML = '<b>控制回撤，保留複利基礎。</b>虧損 50% 須上漲 100% 才能回本，回撤愈深，回本所需的漲幅愈呈倍數放大。' + WD.where + '，QLD 買進持有的最大回撤為 ' + a1(WD.d.qld.mdd) + '，須回升至低點的 ' + mult(WD.d.qld.need) + ' 倍才能回到前高；QQQ 最大回撤 ' + a1(WD.d.qqq.mdd) + '，須回升至 ' + mult(WD.d.qqq.need) + ' 倍；本策略最大回撤 ' + a1(WD.d.fund.mdd) + '，回升至低點的 ' + mult(WD.d.fund.need) + ' 倍即回到前高。'
-      + (Math.abs(WD.d.fund.mdd) > Math.abs(WD.d.qqq.mdd) ? '惟此期間本策略的最大回撤深於 QQQ，詳見下方「最大回撤與回撤水位」。' : '') + WD.lab;
+    const WD = late ? { d: { fund: BT.drawdown('fund', OFF), sat: BT.drawdown('sat', OFF < F0 ? F0 : OFF), qqq: BT.drawdown('qqq', OFF), qld: BT.drawdown('qld', OFF) }, cr: BT.crises(OFF), where: '正式回測區間內', lab: '<small class="muted">（共同期間不足一年，本項依正式回測區間 ' + OFF_RANGE + '）</small>' } : { d: DDm, cr: BT.crises(E), where: '所選期間內', lab: '' };
+    $('why-1').innerHTML = '<b>控制回撤，保留複利基礎。</b>虧損 50% 須上漲 100% 才能回本，回撤愈深，回本所需的漲幅愈呈倍數放大。' + WD.where + '，QLD 買進持有的最大回撤為 ' + a1(WD.d.qld.mdd) + '，須回升至低點的 ' + mult(WD.d.qld.need) + ' 倍才能回到前高；QQQ 最大回撤 ' + a1(WD.d.qqq.mdd) + '，須回升至 ' + mult(WD.d.qqq.need) + ' 倍；BNASDAQ-26110 最大回撤 ' + a1(WD.d.fund.mdd) + '，回升至低點的 ' + mult(WD.d.fund.need) + ' 倍即回到前高；BNASDAQ-26111' + (!late && satLate ? '（自 ' + dateOf(Es) + ' 起）' : ' ') + '最大回撤 ' + a1(WD.d.sat.mdd) + '，回升 ' + mult(WD.d.sat.need) + ' 倍即回到前高。'
+      + ['fund', 'sat'].filter(k => Math.abs(WD.d[k].mdd) > Math.abs(WD.d.qqq.mdd)).map(k => '惟此期間 ' + NM[k] + ' 的最大回撤深於 QQQ，詳見下方「最大回撤與回撤水位」。').join('') + WD.lab;
     const wb = WD.cr.filter(c => c.fund > c.qqq);
-    $('why-2').innerHTML = '<b>下跌趨勢延續時，降低股票曝險。</b>' + (!WD.cr.length ? WD.where + '沒有 QQQ 回落 20% 以上的事件。' : (wb.length ? WD.where + '，在本策略表現優於 QQQ 的大幅修正中，事件期間平均配置於短期美國公債（SHV）的資金比例為：' + join(wb.map(c => c.name + ' ' + p1(c.shv_share))) + '。' : WD.where + '沒有本策略表現優於 QQQ 的大幅修正。'))
-      + '下跌延續數月以上時，月底判斷有時間逐步把資金轉入短期美國公債，這是本策略在長期空頭中虧損明顯低於買進持有的主要原因。' + WD.lab;
+    const sc = WD.cr.filter(c => satCr(c) != null), sbt = sc.filter(c => satCr(c) > c.qqq);
+    $('why-2').innerHTML = '<b>下跌趨勢延續時，降低股票曝險。</b>' + (!WD.cr.length ? WD.where + '沒有 QQQ 回落 20% 以上的事件。' : (wb.length ? WD.where + '，在 BNASDAQ-26110 表現優於 QQQ 的大幅修正中，事件期間平均配置於短期美國公債（SHV）的資金比例為：' + join(wb.map(c => c.name + ' ' + p1(c.shv_share))) + '。' : WD.where + '沒有 BNASDAQ-26110 表現優於 QQQ 的大幅修正。')
+        + (sc.length ? 'BNASDAQ-26111（只有全倉或全數避險兩種狀態）在有訊號的 ' + sc.length + ' 次大幅修正中，有 ' + sbt.length + ' 次表現優於 QQQ。' : ''))
+      + '下跌延續數月以上時，月底判斷有時間逐步把資金轉入短期美國公債，這是兩個策略在長期空頭中虧損明顯低於買進持有的主要原因。' + WD.lab;
 
     // ---- 大幅修正 ----
     const CR = late ? [] : BT.crises(E), nC = CR.length;
@@ -255,21 +270,22 @@
     else if (!nC) $('p-crises').innerHTML = '<p>所選期間內，QQQ 沒有自前高回落 20% 以上的事件。</p>';
     else {
       const bt = CR.filter(c => c.fund > c.qqq), wt = CR.filter(c => !(c.fund > c.qqq));
+      const s2 = CR.filter(c => satCr(c) != null), sb2 = s2.filter(c => satCr(c) > c.qqq);
       const rng = a => { const d = a.map(c => c.days), lo = Math.min(...d), hi = Math.max(...d); return lo === hi ? lo + ' 個交易日' : lo + '～' + hi + ' 個交易日'; };
-      let t = '<p>所選期間內共 ' + nC + ' 次大幅修正，本策略有 ' + bt.length + ' 次表現優於 QQQ、' + wt.length + ' 次落後。</p><ul>';
+      let t = '<p>所選期間內共 ' + nC + ' 次大幅修正：BNASDAQ-26110 有 ' + bt.length + ' 次表現優於 QQQ、' + wt.length + ' 次落後；BNASDAQ-26111' + (s2.length !== nC ? '（有訊號的 ' + s2.length + ' 次）' : ' ') + '有 ' + sb2.length + ' 次優於 QQQ、' + (s2.length - sb2.length) + ' 次落後。以下說明 BNASDAQ-26110。</p><ul>';
       if (bt.length) t += '<li><b>表現優於 QQQ（' + bt.length + ' 次）</b>：' + join(bt.map(c => c.name)) + '，由高點至低點歷時 ' + rng(bt) + '；事件結束時 100 萬' + (bt.length > 1 ? '分別為 ' : '為 ') + join(bt.map(c => f.wan(1e6 * (1 + c.fund)))) + '，同期 QQQ 為 ' + join(bt.map(c => f.wan(1e6 * (1 + c.qqq)))) + '。下跌延續數月以上時，月底判斷有時間逐步把資金轉入短期美國公債。</li>';
       if (wt.length) t += '<li><b>表現落後 QQQ（' + wt.length + ' 次）</b>：' + join(wt.map(c => c.name)) + '，由高點至低點歷時 ' + rng(wt) + '。在數週至數月內完成的急跌中，月底判斷來不及調整部位，持有中的 2 倍槓桿反而放大跌幅。</li>';
       $('p-crises').innerHTML = t + '</ul>';
     }
-    const miss = US.length && CR.some(c => !OC.has(keyOf(c))), ncol = 8 + US.length;
-    let cr = '<div class="tblwrap"><table class="tbl"><caption>' + (nC ? nC + ' 次' : '') + '大幅修正期間（QQQ 高點至低點）的報酬；現金不投資一律為 0%</caption><thead><tr><th class=l>事件</th><th class=l>高點</th><th class=l>低點</th><th>交易日數</th><th>BNASDAQ</th><th>QQQ</th><th>QLD</th>' + US.map(x => '<th>' + x.a.label + '</th>').join('') + '<th>SHV 平均比重</th></tr></thead><tbody>';
-    CR.forEach(c => { cr += '<tr><td class=l>' + c.name + '</td><td class=l>' + c.peak + '</td><td class=l>' + c.trough + '</td><td>' + c.days + '</td>' + cell(c.fund) + cell(c.qqq) + cell(c.qld) + US.map(x => cell(AM.get(x.a.code).cr(c))).join('') + '<td>' + Math.round(c.shv_share * 100) + '%</td></tr>'; });
+    const miss = US.length && CR.some(c => !OC.has(keyOf(c))), ncol = 9 + US.length;
+    let cr = '<div class="tblwrap"><table class="tbl"><caption>' + (nC ? nC + ' 次' : '') + '大幅修正期間（QQQ 高點至低點）的報酬；現金不投資一律為 0%；BNASDAQ-26111 在模型有訊號前的事件以「—」表示</caption><thead><tr><th class=l>事件</th><th class=l>高點</th><th class=l>低點</th><th>交易日數</th><th>BNASDAQ-26110</th><th>BNASDAQ-26111</th><th>QQQ</th><th>QLD</th>' + US.map(x => '<th>' + x.a.label + '</th>').join('') + '<th>BNASDAQ-26110 的 SHV 平均比重</th></tr></thead><tbody>';
+    CR.forEach(c => { cr += '<tr><td class=l>' + c.name + '</td><td class=l>' + c.peak + '</td><td class=l>' + c.trough + '</td><td>' + c.days + '</td>' + cell(c.fund) + cell(satCr(c)) + cell(c.qqq) + cell(c.qld) + US.map(x => cell(AM.get(x.a.code).cr(c))).join('') + '<td>' + Math.round(c.shv_share * 100) + '%</td></tr>'; });
     if (!nC) cr += '<tr><td class=l colspan="' + ncol + '">' + (late ? '共同期間不足一年，不適用。' : '所選期間內沒有 QQQ 回落 20% 以上的事件。') + '</td></tr>';
     cr += '</tbody>' + (miss ? '<tfoot><tr><td colspan="' + ncol + '">加入標的僅有正式回測區間 ' + S.crises.length + ' 次大幅修正（固定高低點）的逐日報酬；事件區間因起點改變而不同時以「—」表示。</td></tr></tfoot>' : '');
     $('t-cr').innerHTML = cr + '</table></div>';
     $('c-cr').innerHTML = '';
     if (nC) BN.charts.bars($('c-cr'), { title: '大幅修正期間的報酬（' + nC + ' 次）', sub: sDate + ' 至 ' + END + '｜QQQ 高點至低點，日收盤；現金不投資一律為 0%', groups: CR.map(c => nC > 6 && /^\d{4} /.test(c.name) ? c.name.slice(0, 4) : c.name),
-      series: KEYS.map(k => ({ name: NM[k], values: CR.map(c => c[k]), color: COL[k] })).concat(US.map(x => ({ name: x.a.label, values: CR.map(c => AM.get(x.a.code).cr(c)), color: x.a.color }))),
+      series: KEYS.map(k => ({ name: NM[k], values: CR.map(c => k === 'sat' ? satCr(c) : c[k]), color: COL[k] })).concat(US.map(x => ({ name: x.a.label, values: CR.map(c => AM.get(x.a.code).cr(c)), color: x.a.color }))),
       yfmt: v => (v * 100).toFixed(0) + '%', valfmt: v => p1(v), tipfmt: v => p1(v),
       note: notes([BT.proxyNote(CR[0].peak.slice(0, 7)), miss ? '加入標的在事件區間與正式回測區間不同時不列示。' : '', adjNote]) || undefined });
 
@@ -277,23 +293,26 @@
     $('c-dd').hidden = late; $('c-dd').innerHTML = '';
     if (!late) {
       const d = DDm, dates = d.fund.dates, every = Math.max(1, Math.round(dates.length / 2200)), keep = new Set();
-      KEYS.forEach(k => BT.sample(dates, d[k].dd, every).x.forEach(s => keep.add(s)));
-      const pos = new Map(dates.map((s, i) => [s, i])), ix = [...keep].map(s => pos.get(s)).sort((a, b) => a - b);
+      KEYS.forEach(k => BT.sample(d[k].dates, d[k].dd, every).x.forEach(s => keep.add(s)));
+      const pos = new Map(dates.map((s, i) => [s, i])), ix = [...keep].map(s => pos.get(s)).filter(i => i != null).sort((a, b) => a - b);
+      const ddAt = k => { const m = new Map(d[k].dates.map((s, i) => [s, d[k].dd[i]])); return ix.map(i => m.has(dates[i]) ? m.get(dates[i]) : null); };
       BN.charts.line($('c-dd'), { title: '回撤水位：距離前高的跌幅', sub: sDate + ' 至 ' + END + '｜日收盤；0% 表示位於前高，數值愈低代表跌幅愈深', x: ix.map(i => dates[i]), xLabel: s => s, yfmt: v => (v * 100).toFixed(0) + '%', tipfmt: v => p1(v), zero: true, yMax: 0.02,
-        series: KEYS.map(k => ({ name: NM[k], values: ix.map(i => d[k].dd[i]), color: COL[k], fill: k === 'fund' })), noEndLabels: true,
-        note: notes(['最大回撤：BNASDAQ ' + p1(d.fund.mdd) + '（低點 ' + d.fund.trough + '）、QQQ ' + p1(d.qqq.mdd) + '（低點 ' + d.qqq.trough + '）、QLD ' + p1(d.qld.mdd) + '（低點 ' + d.qld.trough + '）。', pxE, adjNote]) });
+        series: KEYS.map(k => ({ name: NM[k], values: ddAt(k), color: COL[k], fill: k === 'fund' })), noEndLabels: true,
+        note: notes(['最大回撤：BNASDAQ-26110 ' + p1(d.fund.mdd) + '（低點 ' + d.fund.trough + '）、BNASDAQ-26111 ' + p1(d.sat.mdd) + '（低點 ' + d.sat.trough + (satLate ? '；自 ' + dateOf(Es) + ' 起' : '') + '）、QQQ ' + p1(d.qqq.mdd) + '（低點 ' + d.qqq.trough + '）、QLD ' + p1(d.qld.mdd) + '（低點 ' + d.qld.trough + '）。', pxE, adjNote]) });
       const cmp = (a, b) => Math.abs(a) < Math.abs(b) ? '淺於' : (Math.abs(a) > Math.abs(b) ? '深於' : '等於');
       const cv = CR.find(c => c.peak >= d.fund.peak && c.trough <= d.fund.trough), ov = cv || CR.find(c => !(c.trough < d.fund.peak || c.peak > d.fund.trough));
       const recY = m => m.recover ? '自高點起歷時 ' + m.recover_years.toFixed(1) + ' 年才回到前高' : '截至 ' + END + ' 尚未回到前高';
       const c1 = cmp(d.fund.mdd, d.qqq.mdd), c2 = cmp(d.fund.mdd, d.qld.mdd);
-      $('p-dd').innerHTML = '<p>所選期間內，本策略的最大回撤為 ' + a1(d.fund.mdd) + '，' + c1 + ' QQQ 的 ' + a1(d.qqq.mdd) + (c1 === c2 ? ' 與 ' : '，' + c2 + ' ') + 'QLD 買進持有的 ' + a1(d.qld.mdd) + '。</p><ul>'
-        + '<li><b>本策略</b>：' + d.fund.peak + ' 高點至 ' + d.fund.trough + ' 低點' + (cv ? '（期間涵蓋「' + cv.name + '」）' : (ov ? '（與「' + ov.name + '」期間重疊）' : '')) + '，' + (d.fund.recover ? '低點後 ' + Math.round(d.fund.trough_to_recover_months) + ' 個月（' + d.fund.recover + '）回到前高' : '截至 ' + END + ' 尚未回到前高') + '。</li>'
+      const cv2 = CR.find(c => c.peak >= d.sat.peak && c.trough <= d.sat.trough) || CR.find(c => !(c.trough < d.sat.peak || c.peak > d.sat.trough));
+      $('p-dd').innerHTML = '<p>所選期間內，BNASDAQ-26110 的最大回撤為 ' + a1(d.fund.mdd) + '，' + c1 + ' QQQ 的 ' + a1(d.qqq.mdd) + (c1 === c2 ? ' 與 ' : '，' + c2 + ' ') + 'QLD 買進持有的 ' + a1(d.qld.mdd) + '；BNASDAQ-26111' + (satLate ? '（自 ' + dateOf(Es) + ' 起）' : ' ') + '為 ' + a1(d.sat.mdd) + '。</p><ul>'
+        + '<li><b>BNASDAQ-26111</b>：' + d.sat.peak + ' 高點至 ' + d.sat.trough + ' 低點' + (cv2 ? '（與「' + cv2.name + '」期間重疊）' : '') + '，' + (d.sat.recover ? '低點後 ' + Math.round(d.sat.trough_to_recover_months) + ' 個月（' + d.sat.recover + '）回到前高' : '截至 ' + END + ' 尚未回到前高') + '；年化波動度 ' + p1(BT.vol('sat', Es)) + '，跌幅超過 20% 的回撤共 ' + d.sat.episodes_gt20 + ' 次。</li>'
+        + '<li><b>BNASDAQ-26110</b>：' + d.fund.peak + ' 高點至 ' + d.fund.trough + ' 低點' + (cv ? '（期間涵蓋「' + cv.name + '」）' : (ov ? '（與「' + ov.name + '」期間重疊）' : '')) + '，' + (d.fund.recover ? '低點後 ' + Math.round(d.fund.trough_to_recover_months) + ' 個月（' + d.fund.recover + '）回到前高' : '截至 ' + END + ' 尚未回到前高') + '。</li>'
         + '<li><b>QLD 買進持有</b>：' + d.qld.peak.slice(0, 7) + ' 高點至 ' + d.qld.trough.slice(0, 7) + ' 低點，' + recY(d.qld) + '。</li>'
         + '<li><b>QQQ 買進持有</b>：' + d.qqq.peak.slice(0, 7) + ' 高點至 ' + d.qqq.trough.slice(0, 7) + ' 低點，' + recY(d.qqq) + '。</li>'
-        + '<li><b>發生頻率與波動</b>：在約 ' + Math.round(L.fund.years) + ' 年的回測期間內，跌幅超過 20% 的回撤本策略共出現 ' + d.fund.episodes_gt20 + ' 次（QQQ ' + d.qqq.episodes_gt20 + ' 次、QLD ' + d.qld.episodes_gt20 + ' 次）；同期年化波動度為本策略 ' + p1(BT.vol('fund', E)) + '、QQQ ' + p1(BT.vol('qqq', E)) + '、QLD ' + p1(BT.vol('qld', E)) + '。</li></ul>';
+        + '<li><b>發生頻率與波動</b>：在約 ' + Math.round(L.fund.years) + ' 年的回測期間內，跌幅超過 20% 的回撤 BNASDAQ-26110 共出現 ' + d.fund.episodes_gt20 + ' 次（QQQ ' + d.qqq.episodes_gt20 + ' 次、QLD ' + d.qld.episodes_gt20 + ' 次）；同期年化波動度為 BNASDAQ-26110 ' + p1(BT.vol('fund', E)) + '、QQQ ' + p1(BT.vol('qqq', E)) + '、QLD ' + p1(BT.vol('qld', E)) + '。</li></ul>';
       $('t-dd').innerHTML = US.length ? '<div class="tblwrap"><table class="tbl"><caption>加入標的：' + sDate + ' 起的最大回撤（含息、美元）</caption><thead><tr><th class=l>標的</th><th>最大回撤</th><th class=l>高點 → 低點</th><th class=l>回到前高</th><th>回本所需倍數</th></tr></thead><tbody>'
         + US.map(x => { const m = AM.get(x.a.code).mdd || {}, w = x.w, nt2 = x.mode === 'pre' ? (w.partial ? '自 ' + w.start_used + ' 起算' : (w.partial_end ? '資料到 ' + w.end_used : '')) : ''; return '<tr><td class=l>' + sw(x.a.color) + x.a.label + (nt2 ? ' <small class="muted">（' + nt2 + '）</small>' : '') + (m.daily === false ? ' <small class="muted">（月底資料）</small>' : '') + '</td><td>' + (m.mdd != null ? p1(m.mdd) : '—') + '</td><td class=l>' + (m.peak || '—') + ' → ' + (m.trough || '—') + '</td><td class=l>' + (m.recover || '尚未回到前高') + '</td><td>' + (m.need != null ? m.need.toFixed(2) + ' 倍' : '—') + '</td></tr>'; }).join('')
-        + '</tbody><tfoot><tr><td colspan="5">對照（日收盤）：BNASDAQ ' + p1(d.fund.mdd) + '（回到前高 ' + (d.fund.recover || '尚未') + '）、QQQ ' + p1(d.qqq.mdd) + '（' + (d.qqq.recover || '尚未') + '）、QLD ' + p1(d.qld.mdd) + '（' + (d.qld.recover || '尚未') + '）。' + (US.some(x => (AM.get(x.a.code).mdd || {}).daily === false) ? '標註「月底資料」者：正式回測區間的最大回撤高點早於所選起點，改以月底收盤計算，跌幅通常比日資料淺。' : '') + '</td></tr></tfoot></table></div>' : '';
+        + '</tbody><tfoot><tr><td colspan="5">對照（日收盤）：BNASDAQ-26110 ' + p1(d.fund.mdd) + '（回到前高 ' + (d.fund.recover || '尚未') + '）、BNASDAQ-26111 ' + p1(d.sat.mdd) + '（' + (d.sat.recover || '尚未') + '）、QQQ ' + p1(d.qqq.mdd) + '（' + (d.qqq.recover || '尚未') + '）、QLD ' + p1(d.qld.mdd) + '（' + (d.qld.recover || '尚未') + '）。' + (US.some(x => (AM.get(x.a.code).mdd || {}).daily === false) ? '標註「月底資料」者：正式回測區間的最大回撤高點早於所選起點，改以月底收盤計算，跌幅通常比日資料淺。' : '') + '</td></tr></tfoot></table></div>' : '';
     } else {
       $('p-dd').innerHTML = '<p>共同期間不足一年，不提供逐日回撤水位圖；下表以月底收盤計算共同期間內的最大回撤，跌幅通常比日資料淺。</p>';
       const rr = ALL.map(k => ({ label: NM[k], color: COL[k], m: R[k].mdd })).concat(US.map(x => ({ label: x.a.label, color: x.a.color, m: AM.get(x.a.code).mdd }))).sort((p, q) => p.m.mdd - q.m.mdd);
@@ -305,9 +324,9 @@
 
   // ---- 正式回測區間的固定內容（涉及逐月持倉或參數鄰域，不隨起點重算）----
   const nb = S.nb, q = S.qld_avg_month;
-  $('p-robust').innerHTML = '<b>參數穩健性檢驗</b>（依正式回測區間 ' + OFF_RANGE + '，不隨起點重算）<br>本策略 ' + p1(nb.official) + ' 的年化報酬率在 ' + nb.n.toLocaleString('en-US') + ' 組參數鄰域（各參數 ±10%）中排名第 ' + (Math.round(nb.rank_share_above * nb.n) + 1) + '；以鄰域分布的第 5～95 百分位估計，較合理的年化報酬率預期為 ' + p1(nb.p5) + '～' + p1(nb.p95) + '（<a href="risk.html#robust">檢驗方法與結果</a>）。回測績效不代表未來報酬。';
-  $('why-3').innerHTML = '<b>槓桿只在走勢平穩時全額運用。</b>正式回測區間內，全額持有 QLD 的 ' + q['1.0'].n + ' 個月，QLD 平均月報酬 ' + f.pctS(q['1.0'].mean) + '；配置一半 QLD 的 ' + q['0.5'].n + ' 個月為 ' + f.pctS(q['0.5'].mean) + '；全數轉入 SHV 的 ' + q['0.0'].n + ' 個月為 ' + f.pctS(q['0.0'].mean) + '。2 倍槓桿 ETF 每日重設槓桿倍數，在劇烈震盪中會產生波動耗損，因此本策略只在走勢平穩向上時全額運用槓桿。<br><small class="muted">依正式回測區間（' + OFF_RANGE + '）；涉及逐月持倉，不隨起點重算。</small>';
-  BN.charts.bars($('c-avg'), { title: '三種配置狀態下，QLD 的平均月報酬', sub: '依正式回測區間（' + OFF_RANGE + '）；涉及逐月持倉，不隨起點重算', groups: ['100% QLD', '50% QLD＋50% SHV', '100% SHV'], series: [{ name: 'QLD 平均月報酬', values: [q['1.0'].mean, q['0.5'].mean, q['0.0'].mean], color: 'var(--s-qld)' }], yfmt: v => (v * 100).toFixed(0) + '%', valfmt: v => p1(v), tipfmt: v => (v * 100).toFixed(2) + '%', height: 240,
+  $('p-robust').innerHTML = '<b>參數穩健性檢驗</b>（依正式回測區間 ' + OFF_RANGE + '，不隨起點重算）<br>BNASDAQ-26110 ' + p1(nb.official) + ' 的年化報酬率在 ' + nb.n.toLocaleString('en-US') + ' 組參數鄰域（各參數 ±10%）中排名第 ' + (Math.round(nb.rank_share_above * nb.n) + 1) + '；以鄰域分布的第 5～95 百分位估計，較合理的年化報酬率預期為 ' + p1(nb.p5) + '～' + p1(nb.p95) + '（<a href="risk.html#robust">檢驗方法與結果</a>）。' + (window.SAT_NB ? (s => 'BNASDAQ-26111 ' + p1(s.us.official) + ' 的年化報酬率在 ' + s.n + ' 組參數隨機抖動（16 個參數與門檻同時在合理區間內變動）中' + (s.us.above_official ? '有 ' + s.us.above_official + ' 組不低於它' : '高於全部組合') + '；第 5～95 百分位為 ' + p1(s.us.p5) + '～' + p1(s.us.p95) + '（中位數 ' + p1(s.us.median) + '）；決策日偏移與逐步前推檢驗驗證中。')(window.SAT_NB) : 'BNASDAQ-26111 的參數穩健性檢驗驗證中，完成前不列數字。') + '回測績效不代表未來報酬。';
+  $('why-3').innerHTML = '<b>槓桿只在走勢平穩時全額運用。</b>正式回測區間內，BNASDAQ-26110 全額持有 QLD 的 ' + q['1.0'].n + ' 個月，QLD 平均月報酬 ' + f.pctS(q['1.0'].mean) + '；配置一半 QLD 的 ' + q['0.5'].n + ' 個月為 ' + f.pctS(q['0.5'].mean) + '；全數轉入 SHV 的 ' + q['0.0'].n + ' 個月為 ' + f.pctS(q['0.0'].mean) + '。2 倍槓桿 ETF 每日重設槓桿倍數，在劇烈震盪中會產生波動耗損，因此 BNASDAQ-26110 只在走勢平穩向上時全額運用槓桿；BNASDAQ-26111 只有全倉或全數避險兩種狀態，同類逐月統計尚未納入本頁。<br><small class="muted">依正式回測區間（' + OFF_RANGE + '）；涉及逐月持倉，不隨起點重算。</small>';
+  BN.charts.bars($('c-avg'), { title: 'BNASDAQ-26110 三種配置狀態下，QLD 的平均月報酬', sub: '依正式回測區間（' + OFF_RANGE + '）；涉及逐月持倉，不隨起點重算', groups: ['100% QLD', '50% QLD＋50% SHV', '100% SHV'], series: [{ name: 'QLD 平均月報酬', values: [q['1.0'].mean, q['0.5'].mean, q['0.0'].mean], color: 'var(--s-qld)' }], yfmt: v => (v * 100).toFixed(0) + '%', valfmt: v => p1(v), tipfmt: v => (v * 100).toFixed(2) + '%', height: 240,
     note: '各配置狀態的月數：100% QLD ' + q['1.0'].n + ' 個月／50% QLD＋50% SHV ' + q['0.5'].n + ' 個月／100% SHV ' + q['0.0'].n + ' 個月。' });
 
   // ---- 回測起點（主頻道，預設正式回測區間）與加入比較 ----

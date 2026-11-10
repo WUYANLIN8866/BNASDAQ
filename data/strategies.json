@@ -1,0 +1,8 @@
+{
+ "schema": "bnasdaq-strategies/1",
+ "note": "網站公開頁顯示的策略代號（只有代號，不含規則）。檢查：python3 scripts/strategy_names.py --check（site.yml 每次部署前執行）；規則沒變、只改代號：python3 scripts/strategy_names.py --rename fund=新代號。",
+ "strategies": [
+  {"role": "fund", "code": "BNASDAQ-26110", "section": "B.2", "label": "核心"},
+  {"role": "sat", "code": "BNASDAQ-26111", "section": "B.3", "label": "衛星"}
+ ]
+}

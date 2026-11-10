@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0c">
 <title>目標資產試算｜BNASDAQ</title>
-<meta name="description" content="每月投入多少、想存到多少，用六種做法的歷史年化報酬算要幾年；也可以輸入年數，看幾年後會有多少；BNASDAQ 用區間。">
+<meta name="description" content="每月投入多少、想存到多少，用六種做法的歷史年化報酬算要幾年；也可以輸入年數，看幾年後會有多少；BNASDAQ-26110 與 BNASDAQ-26111 用區間。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css?v=736dd971b2">
@@ -21,7 +21,7 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html" aria-current=page>目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 目標資產試算</div><h1>目標資產試算</h1><p class="lede">輸入每月投入金額與目標金額，依六種做法的歷史年化報酬率，估算達成目標所需的年數；也可指定年數，估算屆時的帳戶價值。BNASDAQ 一律以區間（第 5～95 百分位）呈現，而非單一數字。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 目標資產試算</div><h1>目標資產試算</h1><p class="lede">輸入每月投入金額與目標金額，依各做法的歷史年化報酬率，估算達成目標所需的年數；也可指定年數，估算屆時的帳戶價值。BNASDAQ-26110 與 BNASDAQ-26111 一律以參數穩健性檢驗的區間（第 5～95 百分位）呈現，而非單一數字。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <div class="panel">
@@ -35,37 +35,39 @@
         <div class="field"><label for="yrs">試算年數（年）</label><input id="yrs" type="number" inputmode="numeric" min="1" max="80" step="1" value="20"><div class="help">輸入年數，下方將列出屆時各做法的帳戶價值</div></div>
       </div>
       <div class="row2">
-        <div class="field"><label for="basis">報酬率基準</label><select id="basis"><option value="full">26 年全期（2000-05～2026-09，美元）：BNASDAQ 鄰域第 5～95 百分位</option><option value="tw">2013 年底～2026 年 9 月共同區間（台幣含息）：六種做法</option></select><div class="help">全期基準較保守；共同區間恰逢長期多頭，各做法的報酬率皆偏高</div></div>
+        <div class="field"><label for="basis">報酬率基準</label><select id="basis"><option value="full">26 年全期（2000-05～2026-09，美元）：BNASDAQ-26110、BNASDAQ-26111 第 5～95 百分位</option><option value="tw">2013 年底～2026 年 9 月共同區間（台幣含息）：七種做法</option></select><div class="help">全期基準較保守；共同區間恰逢長期多頭，各做法的報酬率皆偏高</div></div>
       </div>
     </form>
   </div>
   <h2 id="result" style="margin-top:8px">試算結果</h2>
   <div id="out"></div>
   <div id="c-grow"></div>
-  <div class="note"><p><b>本試算並非保證報酬。</b>年化報酬率取自歷史回測；BNASDAQ 採參數 ±10% 鄰域的第 5～95 百分位區間，而非表現最佳的單一參數組合。試算未計入稅負、通膨與投入成本，並假設每年報酬率固定；實際市場不會每年平均上漲，帳戶價值將隨行情明顯波動（BNASDAQ 回測最大回撤 42.3%）。</p><p>兩種報酬率基準皆為固定區間，不隨其他頁面的自訂回測起點變動。</p></div>
+  <div class="note"><p><b>本試算並非保證報酬。</b>年化報酬率取自歷史回測；BNASDAQ-26110 採參數 ±10% 鄰域（78,732 組）、BNASDAQ-26111 採參數隨機抖動 300 次的第 5～95 百分位區間，而非表現最佳的單一參數組合。試算未計入稅負、通膨與投入成本，並假設每年報酬率固定；實際市場不會每年平均上漲，帳戶價值將隨行情明顯波動（回測最大回撤：BNASDAQ-26110 42.3%、BNASDAQ-26111 34.7%）。</p><p>兩種報酬率基準皆為固定區間，不隨其他頁面的自訂回測起點變動。</p></div>
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#result">試算結果</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="dca.html#retireB">退休金 B：存到 2,000 萬要幾年</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="research.html">回測成績總覽</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=52553baf3c"></script>
+<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/sat-nb.js?v=770b05a5b5"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
-(function(){const S=window.SITE,f=BN.fmt;
+(function(){const S=window.SITE,f=BN.fmt,SN=window.SAT_NB||null;
+const SAT_NM='BNASDAQ-26111（隨機抖動第 5～95 百分位）';
 const BASES={
- full:{label:'26 年全期（美元）',opts:[['save','只存不投資',[0]],['shv','SHV 短期美債',[S.lump.shv.cagr]],['qqq','QQQ',[S.lump.qqq.cagr]],['qld','QLD',[S.lump.qld.cagr]],['fund','BNASDAQ（鄰域第 5～95 百分位）',[S.nb.p5,S.nb.p95]]]},
- tw:{label:'2013 年底～2026 年 9 月（台幣含息）',opts:[['save','只存不投資',[0]],['qqq','QQQ',S.six.rates.qqq],['tw','0050',S.six.rates.tw],['tsmc','台積電 2330',S.six.rates.tsmc],['qld','QLD',S.six.rates.qld],['fund','BNASDAQ（鄰域第 5～95 百分位）',S.six.rates.fund]]}
+ full:{label:'26 年全期（美元）',opts:[['save','只存不投資',[0]],['shv','SHV 短期美債',[S.lump.shv.cagr]],['qqq','QQQ',[S.lump.qqq.cagr]],['qld','QLD',[S.lump.qld.cagr]],['fund','BNASDAQ-26110（鄰域第 5～95 百分位）',[S.nb.p5,S.nb.p95]],['sat',SAT_NM,SN?[SN.us.p5,SN.us.p95]:null]]},
+ tw:{label:'2013 年底～2026 年 9 月（台幣含息）',opts:[['save','只存不投資',[0]],['qqq','QQQ',S.six.rates.qqq],['tw','0050',S.six.rates.tw],['tsmc','台積電 2330',S.six.rates.tsmc],['qld','QLD',S.six.rates.qld],['fund','BNASDAQ-26110（鄰域第 5～95 百分位）',S.six.rates.fund],['sat',SAT_NM,SN?[SN.tw.p5,SN.tw.p95]:null]]}
 };
-const col={save:'var(--s-save)',shv:'var(--s-shv)',qqq:'var(--s-qqq)',tw:'var(--s-tw)',tsmc:'var(--s-tsmc)',qld:'var(--s-qld)',fund:'var(--s-fund)'};
+const col={save:'var(--s-save)',shv:'var(--s-shv)',qqq:'var(--s-qqq)',tw:'var(--s-tw)',tsmc:'var(--s-tsmc)',qld:'var(--s-qld)',fund:'var(--s-fund)',sat:'var(--s-sat)'};
 function years(m,r,T,p0){const i=Math.pow(1+r,1/12)-1;if(T<=p0)return 0;if(r===0)return (T-p0)/m/12;const n=Math.log((T*i+m)/(p0*i+m))/Math.log(1+i);return n/12;}
 function fv(m,r,y,p0){const i=Math.pow(1+r,1/12)-1;const n=12*y;if(r===0)return p0+m*n;return p0*Math.pow(1+i,n)+m*(Math.pow(1+i,n)-1)/i;}
 function fmtY(y){if(!isFinite(y))return '—';if(y>150)return '超過 150 年';return y.toFixed(1)+' 年';}
 function run(){const m=+document.getElementById('m').value||0,T=+document.getElementById('t').value||0,p0=+document.getElementById('p0').value||0,b=BASES[document.getElementById('basis').value];let N=Math.round(+document.getElementById('yrs').value||0);if(!(N>=1))N=20;if(N>80)N=80;
 if(m<=0||T<=0){document.getElementById('out').innerHTML='<p class="msg err">請輸入每月投入與目標金額。</p>';return;}
 const rng=(a,fn)=>a.length>1?fn(Math.min(...a))+'～'+fn(Math.max(...a)):fn(a[0]);const principalN=p0+m*12*N;
-let rows=b.opts.map(([k,name,rs])=>{const ys=rs.map(r=>years(m,r,T,p0));const vN=rs.map(r=>fv(m,r,N,p0));const hit=vN.map(v=>v>T);return '<tr'+(k==='fund'?' class="hl"':'')+'><td class="l"><span class="sw" style="background:'+col[k]+'"></span>'+name+'</td><td>'+rng(rs,r=>(r*100).toFixed(1)+'%')+'</td><td><b>'+rng(ys,fmtY)+'</b></td><td><b>'+rng(vN,f.big)+'</b><br><span class="small" style="color:var(--muted)">本金的 '+rng(vN,v=>(v/principalN).toFixed(1))+' 倍'+(hit.every(x=>x)?'，已達目標':hit.some(x=>x)?'，區間內可能達標':'')+'</span></td></tr>';}).join('');
-const fundRs=b.opts.find(o=>o[0]==='fund')[2],vF=fundRs.map(r=>fv(m,r,N,p0)),yF=fundRs.map(r=>years(m,r,T,p0));
-const lead='<div class="kv" style="margin:0 0 14px"><div class="tile"><div class="k">'+N+' 年後，BNASDAQ 預估帳戶價值</div><div class="v">'+rng(vF,f.big)+'</div><div class="s">投入本金 '+f.big(principalN)+'（含已有本金），即只存不投資的期末金額</div></div><div class="tile"><div class="k">達成目標 '+f.big(T)+'，BNASDAQ 約需</div><div class="v">'+rng(yF,fmtY)+'</div><div class="s">只存不投資需 '+fmtY(years(m,0,T,p0))+'</div></div></div>';
-document.getElementById('out').innerHTML=lead+'<div class="tblwrap"><table class="tbl"><caption>每月 '+f.money(m)+'、目標 '+f.big(T)+(p0?'、已有本金 '+f.big(p0):'')+'｜基準：'+b.label+'</caption><thead><tr><th class="l">做法</th><th>年化報酬率</th><th>達成目標所需年數</th><th>'+N+' 年後帳戶價值</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td colspan="4">月底投入、月複利；'+N+' 年共投入 '+f.big(principalN)+'（每月 '+f.money(m)+' × '+(12*N)+' 個月'+(p0?'＋已有本金':'')+'）。BNASDAQ 為區間（鄰域第 5～95 百分位）。歷史回測，並非保證報酬。</td></tr></tfoot></table></div>';
+let rows=b.opts.map(([k,name,rs])=>{if(!rs)return '<tr><td class="l"><span class="sw" style="background:'+col[k]+'"></span>'+name+'</td><td colspan="3">驗證中（參數穩健性檢驗完成前不列推估）</td></tr>';const ys=rs.map(r=>years(m,r,T,p0));const vN=rs.map(r=>fv(m,r,N,p0));const hit=vN.map(v=>v>T);return '<tr'+(k==='fund'||k==='sat'?' class="hl"':'')+'><td class="l"><span class="sw" style="background:'+col[k]+'"></span>'+name+'</td><td>'+rng(rs,r=>(r*100).toFixed(1)+'%')+'</td><td><b>'+rng(ys,fmtY)+'</b></td><td><b>'+rng(vN,f.big)+'</b><br><span class="small" style="color:var(--muted)">本金的 '+rng(vN,v=>(v/principalN).toFixed(1))+' 倍'+(hit.every(x=>x)?'，已達目標':hit.some(x=>x)?'，區間內可能達標':'')+'</span></td></tr>';}).join('');
+const fundRs=b.opts.find(o=>o[0]==='fund')[2],satRs=b.opts.find(o=>o[0]==='sat')[2];
+const tiles=(code,rs)=>rs?'<div class="tile"><div class="k">'+N+' 年後，'+code+' 預估帳戶價值</div><div class="v">'+rng(rs.map(r=>fv(m,r,N,p0)),f.big)+'</div><div class="s">投入本金 '+f.big(principalN)+'（含已有本金），即只存不投資的期末金額</div></div><div class="tile"><div class="k">達成目標 '+f.big(T)+'，'+code+' 約需</div><div class="v">'+rng(rs.map(r=>years(m,r,T,p0)),fmtY)+'</div><div class="s">只存不投資需 '+fmtY(years(m,0,T,p0))+'</div></div>':'<div class="tile"><div class="k">'+code+'</div><div class="v">驗證中</div><div class="s">參數穩健性檢驗完成前不列推估</div></div>';
+const lead='<div class="kv" style="margin:0 0 14px">'+tiles('BNASDAQ-26110',fundRs)+tiles('BNASDAQ-26111',satRs)+'</div>';
+document.getElementById('out').innerHTML=lead+'<div class="tblwrap"><table class="tbl"><caption>每月 '+f.money(m)+'、目標 '+f.big(T)+(p0?'、已有本金 '+f.big(p0):'')+'｜基準：'+b.label+'</caption><thead><tr><th class="l">做法</th><th>年化報酬率</th><th>達成目標所需年數</th><th>'+N+' 年後帳戶價值</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><td colspan="4">月底投入、月複利；'+N+' 年共投入 '+f.big(principalN)+'（每月 '+f.money(m)+' × '+(12*N)+' 個月'+(p0?'＋已有本金':'')+'）。BNASDAQ-26110 與 BNASDAQ-26111 為區間（參數穩健性檢驗第 5～95 百分位）。歷史回測，並非保證報酬。</td></tr></tfoot></table></div>';
 const fundR=fundRs,qqqR=b.opts.find(o=>o[0]==='qqq')[2][0];const ymax=Math.min(80,Math.max(10,N+2,Math.min(40,Math.ceil(years(m,fundR[0],T,p0))+3)));const xs=[];for(let y=0;y<=ymax;y++)xs.push(String(y));
-const cg=document.getElementById('c-grow');cg.innerHTML='';BN.charts.line(cg,{title:'帳戶價值成長路徑（對數刻度）',sub:'每月 '+f.money(m)+'；虛線＝目標 '+f.big(T)+'；淡色直帶＝第 '+N+' 年',x:xs,xLabel:s=>'第 '+s+' 年',xTicks:xs.map((s,i)=>[i,s]).filter(x=>x[0]%Math.ceil(ymax/10)===0),log:true,yfmt:f.big,tipfmt:f.big,bands:[{from:N-0.12,to:N+0.12}],marks:[{i:N,v:fv(m,fundR[fundR.length-1],N,p0),color:'var(--s-fund)'},{i:N,v:fv(m,fundR[0],N,p0),color:'var(--s-fund)'},{i:N,v:fv(m,qqqR,N,p0),color:'var(--s-qqq)'},{i:N,v:fv(m,0,N,p0),color:'var(--s-save)'}],series:[{name:'BNASDAQ 第 95 百分位',short:'BNASDAQ p95',values:xs.map(y=>fv(m,fundR[1],+y,p0)||null),color:'var(--s-fund)'},{name:'BNASDAQ 第 5 百分位',short:'BNASDAQ p5',values:xs.map(y=>fv(m,fundR[0],+y,p0)||null),color:'var(--s-fund)',dash:'5 4'},{name:'QQQ',values:xs.map(y=>fv(m,qqqR,+y,p0)||null),color:'var(--s-qqq)'},{name:'只存不投資',short:'只存',values:xs.map(y=>fv(m,0,+y,p0)||null),color:'var(--s-save)'},{name:'目標',values:xs.map(()=>T),color:'var(--gold)',dash:'2 4',width:1.5}]});}
+const cg=document.getElementById('c-grow');cg.innerHTML='';BN.charts.line(cg,{title:'帳戶價值成長路徑（對數刻度）',sub:'每月 '+f.money(m)+'；虛線＝目標 '+f.big(T)+'；淡色直帶＝第 '+N+' 年',x:xs,xLabel:s=>'第 '+s+' 年',xTicks:xs.map((s,i)=>[i,s]).filter(x=>x[0]%Math.ceil(ymax/10)===0),log:true,yfmt:f.big,tipfmt:f.big,bands:[{from:N-0.12,to:N+0.12}],marks:[{i:N,v:fv(m,fundR[fundR.length-1],N,p0),color:'var(--s-fund)'},{i:N,v:fv(m,fundR[0],N,p0),color:'var(--s-fund)'}].concat(satRs?[{i:N,v:fv(m,satRs[1],N,p0),color:'var(--s-sat)'},{i:N,v:fv(m,satRs[0],N,p0),color:'var(--s-sat)'}]:[],[{i:N,v:fv(m,qqqR,N,p0),color:'var(--s-qqq)'},{i:N,v:fv(m,0,N,p0),color:'var(--s-save)'}]),series:[{name:'BNASDAQ-26110 第 95 百分位',short:'26110 p95',values:xs.map(y=>fv(m,fundR[1],+y,p0)||null),color:'var(--s-fund)'},{name:'BNASDAQ-26110 第 5 百分位',short:'26110 p5',values:xs.map(y=>fv(m,fundR[0],+y,p0)||null),color:'var(--s-fund)',dash:'5 4'}].concat(satRs?[{name:'BNASDAQ-26111 第 95 百分位',short:'26111 p95',values:xs.map(y=>fv(m,satRs[1],+y,p0)||null),color:'var(--s-sat)'},{name:'BNASDAQ-26111 第 5 百分位',short:'26111 p5',values:xs.map(y=>fv(m,satRs[0],+y,p0)||null),color:'var(--s-sat)',dash:'5 4'}]:[],[{name:'QQQ',values:xs.map(y=>fv(m,qqqR,+y,p0)||null),color:'var(--s-qqq)'},{name:'只存不投資',short:'只存',values:xs.map(y=>fv(m,0,+y,p0)||null),color:'var(--s-save)'},{name:'目標',values:xs.map(()=>T),color:'var(--gold)',dash:'2 4',width:1.5}])});}
 ['m','t','p0','yrs','basis'].forEach(id=>document.getElementById(id).addEventListener('input',run));run();})();
 </script>
 </main>
