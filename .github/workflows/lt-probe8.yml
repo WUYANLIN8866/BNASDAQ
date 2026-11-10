@@ -15,17 +15,15 @@ jobs:
       - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
       - run: |
           B=https://wuyanlin8866.github.io/BNASDAQ
-          for f in member.html admin.html; do echo "$f：rules-status 參照 $(curl -s $B/$f | grep -c 'rules-status.json') 次、通用版標記 $(curl -s $B/$f | grep -c 'rules.STRATEGIES') 次"; done
-          echo "member.html 同步說明：$(curl -s $B/member.html | grep -o '每天自動比對專案 B 區兩次' | head -1)"
-          echo "rules-status.json HTTP $(curl -s -o /dev/null -w '%{http_code}' $B/data/rules-status.json)"
-          echo "rules.enc.json 開頭：$(curl -s $B/data/rules.enc.json | head -c 30)"
-          echo "rules-key.json HTTP $(curl -s -o /dev/null -w '%{http_code}' $B/data/rules-key.json)"
-          echo "qqq_fhs.json：$(curl -s $B/data/qqq_fhs.json | head -c 90)"
-          cat > /tmp/nologin.js <<'EOF'
+          echo "線上 daily/index.json latest：$(curl -s "$B/data/daily/index.json?t=$(date +%s)" | python3 -c 'import json,sys;print(json.load(sys.stdin)["latest"])')"
+          echo "線上 market.json asof：$(curl -s "$B/data/market.json?t=$(date +%s)" | python3 -c 'import json,sys;print(json.load(sys.stdin)["asof"])')"
+          cat > dailycheck.js <<'EOF'
           const { chromium } = require('playwright');
           (async () => { const b = await chromium.launch(); const p = await b.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
-            await p.goto(process.argv[2] + 'member.html', { waitUntil: 'networkidle' }); console.log('未登入開 member.html → 停在', p.url().split('/').pop());
-            await p.goto(process.argv[2] + 'admin.html', { waitUntil: 'networkidle' }); console.log('未登入開 admin.html → 停在', p.url().split('/').pop());
+            await p.goto(process.argv[2] + 'daily.html', { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+            const t = await p.evaluate(() => document.body.innerText);
+            console.log('網頁含 2026-11-10：', t.includes('2026-11-10'), '｜含 11/9 那指 27,907.63：', /27,?907\.63/.test(t));
+            console.log('網頁開頭：', t.replace(/\s+/g, ' ').slice(t.replace(/\s+/g, ' ').indexOf('每日市場分析'), t.replace(/\s+/g, ' ').indexOf('每日市場分析') + 160));
             console.log('頁面錯誤：', errs.length ? errs : '無'); await b.close(); })();
           EOF
-          cp /tmp/nologin.js ./nologin.js && node nologin.js $B/
+          node dailycheck.js $B/
