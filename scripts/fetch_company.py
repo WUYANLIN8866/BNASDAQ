@@ -52,7 +52,7 @@ def num(x):
 ANNUAL = ['TotalRevenue', 'CostOfRevenue', 'GrossProfit', 'OperatingIncome', 'NetIncome', 'EBITDA', 'EBIT', 'ResearchAndDevelopment', 'SellingGeneralAndAdministration',
           'DilutedEPS', 'DilutedAverageShares', 'OrdinarySharesNumber', 'TotalAssets', 'TotalLiabilitiesNetMinorityInterest', 'StockholdersEquity', 'TotalDebt',
           'CashAndCashEquivalents', 'CurrentAssets', 'CurrentLiabilities', 'WorkingCapital', 'RetainedEarnings', 'Inventory', 'AccountsReceivable', 'InvestedCapital', 'Goodwill',
-          'OperatingCashFlow', 'CapitalExpenditure', 'FreeCashFlow', 'RepurchaseOfCapitalStock', 'CashDividendsPaid', 'InterestExpense', 'TaxProvision', 'PretaxIncome', 'StockBasedCompensation']
+          'OperatingCashFlow', 'CapitalExpenditure', 'FreeCashFlow', 'RepurchaseOfCapitalStock', 'CashDividendsPaid', 'InterestExpense', 'TaxProvision', 'PretaxIncome', 'StockBasedCompensation', 'CashCashEquivalentsAndShortTermInvestments']
 QUARTER = ['TotalRevenue', 'GrossProfit', 'OperatingIncome', 'NetIncome', 'DilutedEPS', 'FreeCashFlow']
 TRAIL = ['TotalRevenue', 'NetIncome', 'FreeCashFlow', 'EBITDA', 'GrossProfit', 'OperatingIncome']
 KEY = {  # 欄位短名
@@ -61,7 +61,8 @@ KEY = {  # 欄位短名
     'TotalAssets': 'ta', 'TotalLiabilitiesNetMinorityInterest': 'tl', 'StockholdersEquity': 'eq', 'TotalDebt': 'debt', 'CashAndCashEquivalents': 'cash',
     'CurrentAssets': 'ca', 'CurrentLiabilities': 'cl', 'WorkingCapital': 'wc', 'RetainedEarnings': 're', 'Inventory': 'inv', 'AccountsReceivable': 'ar',
     'InvestedCapital': 'ic', 'Goodwill': 'gw', 'OperatingCashFlow': 'ocf', 'CapitalExpenditure': 'capex', 'FreeCashFlow': 'fcf', 'RepurchaseOfCapitalStock': 'buyback',
-    'CashDividendsPaid': 'div', 'InterestExpense': 'intexp', 'TaxProvision': 'tax', 'PretaxIncome': 'pretax', 'StockBasedCompensation': 'sbc'}
+    'CashDividendsPaid': 'div', 'InterestExpense': 'intexp', 'TaxProvision': 'tax', 'PretaxIncome': 'pretax', 'StockBasedCompensation': 'sbc',
+    'CashCashEquivalentsAndShortTermInvestments': 'cash_sti'}
 
 
 def ysym(code, market):
@@ -71,8 +72,8 @@ def ysym(code, market):
 def timeseries(sym):
     types = ['annual' + t for t in ANNUAL] + ['quarterly' + t for t in QUARTER] + ['trailing' + t for t in TRAIL]
     out, curs = {}, {}
-    for i in range(0, len(types), 24):   # 一次最多 24 個欄位，避免網址過長
-        j = json.loads(get(f'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{sym}?symbol={sym}&type={",".join(types[i:i + 24])}'
+    for i in range(0, len(types), 60):   # 47 個欄位一次抓完（網址約 1,600 字元）
+        j = json.loads(get(f'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{sym}?symbol={sym}&type={",".join(types[i:i + 60])}'
                            f'&period1=1420070400&period2={int(time.time())}'))
         for r in (j.get('timeseries') or {}).get('result') or []:
             t = r['meta']['type'][0]
@@ -149,7 +150,7 @@ def price_5y(sym):
     j = json.loads(get(f'https://query2.finance.yahoo.com/v8/finance/chart/{sym}?range=5y&interval=1mo&events=div'))
     r = j['chart']['result'][0]
     ts, cl = r.get('timestamp') or [], r['indicators']['quote'][0]['close']
-    mon = [(dt.datetime.fromtimestamp(t, dt.timezone.utc).strftime('%Y-%m'), round(v, 4)) for t, v in zip(ts, cl) if v is not None]
+    mon = list({dt.datetime.fromtimestamp(t, dt.timezone.utc).strftime('%Y-%m'): round(v, 4) for t, v in zip(ts, cl) if v is not None}.items())   # 同月多筆只留最後一筆
     dv = sorted((dt.datetime.fromtimestamp(int(d['date']), dt.timezone.utc).strftime('%Y-%m-%d'), round(d['amount'], 6)) for d in ((r.get('events') or {}).get('dividends') or {}).values())
     return mon, dv
 
@@ -222,6 +223,83 @@ def tw_sources(codes):
         log('集保股權分散 OK')
     except Exception as e:  # noqa
         log('集保股權分散失敗', repr(e)[:120])
+    # ESG 資訊揭露（證交所彙總；最近一個報告年度；欄位名稱保留原文）
+    ESG = {'1': 'ghg', '2': 'energy', '3': 'water', '4': 'waste', '5': 'people', '6': 'board', '7': 'ir', '9': 'comm', '16': 'infosec', '20': 'anti', '21': 'safety'}
+    for k, name in ESG.items():
+        try:
+            for r in twse('/opendata/t187ap46_L_' + k):
+                c = str(r.get('公司代號', '')).strip()
+                if c in out:
+                    out[c].setdefault('esg', {})[name] = {str(kk).strip(): (str(vv).strip() if vv is not None else '') for kk, vv in r.items() if str(kk).strip() not in ('出表日期', '公司代號', '公司名稱')}
+            time.sleep(0.2)
+        except Exception as e:  # noqa
+            log('ESG 失敗', k, repr(e)[:120])
+    log('ESG 資料：', sum(1 for c in codes if out[c].get('esg')), '/', len(codes))
+    try:
+        for r in twse('/opendata/t187ap45_L'):
+            c = str(r.get('公司代號', '')).strip()
+            if c in out:
+                g = lambda k: num(r.get(k)) or 0
+                out[c].setdefault('divpol', []).append({'yr': (r.get('股利年度') or '').strip(), 'per': (r.get('股利所屬年(季)度') or '').strip(), 'span': (r.get('股利所屬期間') or '').strip(), 'stage': (r.get('決議（擬議）進度') or '').strip(),
+                                                        'bd': (r.get('董事會（擬議）股利分派日') or '').strip(), 'agm': (r.get('股東會日期') or '').strip(), 'cash': g('股東配發-盈餘分配之現金股利(元/股)') + g('股東配發-法定盈餘公積發放之現金(元/股)') + g('股東配發-資本公積發放之現金(元/股)'),
+                                                        'stock': g('股東配發-盈餘轉增資配股(元/股)') + g('股東配發-法定盈餘公積轉增資配股(元/股)') + g('股東配發-資本公積轉增資配股(元/股)'), 'ni': num(r.get('本期淨利(淨損)(元)')), 'total': num(r.get('股東配發-股東配發之現金(股利)總金額(元)'))})
+        log('證交所股利分派 OK')
+    except Exception as e:  # noqa
+        log('證交所股利分派失敗', repr(e)[:120])
+    try:
+        for r in twse('/exchangeReport/TWT48U_ALL'):
+            c = str(r.get('Code', '')).strip()
+            if c in out:
+                out[c].setdefault('exdiv', []).append({'d': (r.get('Date') or '').strip(), 'type': (r.get('Exdividend') or '').strip(), 'cash': num(r.get('CashDividend')), 'stock': num(r.get('StockDividendRatio'))})
+        log('證交所除權除息預告 OK')
+    except Exception as e:  # noqa
+        log('證交所除權除息預告失敗', repr(e)[:120])
+    try:
+        for r in twse('/opendata/t187ap38_L'):
+            c = str(r.get('公司代號', '')).strip()
+            d = (r.get('股東常(臨時)會日期-日期') or '').strip()
+            if c in out and d and d > (out[c].get('agm') or {}).get('d', ''):
+                out[c]['agm'] = {'type': (r.get('股東常(臨時)會日期-常或臨時') or '').strip(), 'd': d, 'ann': (r.get('公告日期') or '').strip()}
+        log('證交所股東會公告 OK')
+    except Exception as e:  # noqa
+        log('證交所股東會公告失敗', repr(e)[:120])
+    try:
+        for r in twse('/opendata/t187ap33_L'):
+            c = str(r.get('公司代號', '')).strip()
+            if c in out:
+                out[c].setdefault('gov', {})['dual'] = (r.get('董事長是否兼任總經理') or '').strip()
+        for r in twse('/opendata/t187ap29_A_L'):
+            c = str(r.get('公司代號', '')).strip()
+            if c in out:
+                out[c].setdefault('gov', {})['pay'] = {'d': (r.get('出表日期') or '').strip(), 'total': num(r.get('董事酬金-合計')), 'pct': num(r.get('酬金總額占稅後損益百分比(%)-董事酬金')), 'pct2': num(r.get('酬金總額占稅後損益百分比(%)-加計兼任員工酬金')),
+                                                       'avg': num(r.get('平均每位董事酬金-董事酬金')), 'avg2': num(r.get('平均每位董事酬金-加計兼任員工酬金'))}
+        log('證交所公司治理 OK')
+    except Exception as e:  # noqa
+        log('證交所公司治理失敗', repr(e)[:120])
+    try:
+        for r in twse('/fund/MI_QFIIS_sort_20'):
+            c = str(r.get('Code', '')).strip()
+            if c in out:
+                out[c]['qfii'] = {'rank': num(r.get('Rank')), 'pct': num(r.get('SharesHeldPer')), 'limit': num(r.get('Upperlimit'))}
+        log('外資持股前 20 名 OK')
+    except Exception as e:  # noqa
+        log('外資持股前 20 名失敗', repr(e)[:120])
+    for path, key in (('/announcement/notice', 'notice'), ('/announcement/punish', 'punish')):
+        try:
+            for r in twse(path):
+                c = str(r.get('Code', '')).strip()
+                if c in out:
+                    out[c].setdefault('alert', []).append({'kind': key, 'd': (r.get('Date') or '').strip(), 't': (r.get('TradingInfoForAttention') or r.get('ReasonsOfDisposition') or '').strip(), 'period': (r.get('DispositionPeriod') or '').strip()})
+        except Exception as e:  # noqa
+            log('交易警示失敗', path, repr(e)[:120])
+    try:
+        for r in twse('/opendata/t187ap22_L'):
+            c = str(r.get('股票代號', '')).strip()
+            if c in out:
+                out[c].setdefault('fsc', []).append({'d': (r.get('發函日期') or '').strip(), 't': (r.get('違規事由') or '').strip()[:400], 'act': (r.get('裁處情形') or '').strip()[:200]})
+        log('金管會裁罰 OK')
+    except Exception as e:  # noqa
+        log('金管會裁罰失敗', repr(e)[:120])
     try:
         links = {str(r.get('公司代號', '')).strip(): (r.get('前10大股東持股情形') or '').strip() for r in twse('/opendata/t187ap46_L_18')}
         for c in codes:
@@ -345,7 +423,8 @@ def metrics(A, T, px, cap, sector):
     ebit0 = last(A.get('ebit')) if A.get('ebit') else last(opi)
     ie = last(A.get('intexp'))
     m['int_cov'] = sdiv(ebit0, abs(ie)) if ie else None
-    m['nd_ebitda'] = sdiv((last(A.get('debt')) or 0) - (last(A.get('cash')) or 0), last(A.get('ebitda'))) if (last(A.get('ebitda')) or 0) > 0 else None
+    cash0 = last(A.get('cash_sti')) if last(A.get('cash_sti')) is not None else last(A.get('cash'))   # 現金＋短期投資；沒有時用現金及約當現金
+    m['nd_ebitda'] = sdiv((last(A.get('debt')) or 0) - (cash0 or 0), last(A.get('ebitda'))) if (last(A.get('ebitda')) or 0) > 0 else None
     m['asset_turn'] = sdiv(r0, avg2(A.get('ta')))
     cogs = last(A.get('cogs'))
     m['inv_turn'] = sdiv(cogs, avg2(A.get('inv'))) if cogs and (avg2(A.get('inv')) or 0) > 0 else None
@@ -362,7 +441,7 @@ def metrics(A, T, px, cap, sector):
     ni_t, rev_t, fcf_t, ebitda_t = T.get('ni'), T.get('rev'), T.get('fcf'), T.get('ebitda')
     m['pe'] = sdiv(cap, ni_t) if (ni_t or 0) > 0 else None
     m['ps'] = sdiv(cap, rev_t)
-    ev = cap + (last(A.get('debt')) or 0) - (last(A.get('cash')) or 0) if cap else None
+    ev = cap + (last(A.get('debt')) or 0) - (cash0 or 0) if cap else None
     m['ev_ebitda'] = sdiv(ev, ebitda_t) if (ebitda_t or 0) > 0 else None
     m['fcf_yield'] = sdiv(fcf_t, cap)
     m['pb'] = sdiv(cap, last(A.get('eq'))) if (last(A.get('eq')) or 0) > 0 else None
@@ -519,8 +598,11 @@ def main():
         return c, rec
 
     got = {}
-    with cf.ThreadPoolExecutor(4) as ex:
-        for c, rec in ex.map(one, codes):
+    t0 = time.time()
+    with cf.ThreadPoolExecutor(6) as ex:
+        for k, (c, rec) in enumerate(ex.map(one, codes), 1):
+            if k % 50 == 0:
+                log('進度', k, '/', len(codes), '已花 %.0f 秒' % (time.time() - t0))
             got[c] = rec
     log('財報取得', sum(1 for r in got.values() if r.get('A', {}).get('d')), '/', len(got), '；股價', sum(1 for r in got.values() if r.get('px')), '/', len(got))
     tw = tw_sources([c for c in codes if uni[c]['market'] == 'TW']) if any(uni[c]['market'] == 'TW' for c in codes) else {}
@@ -628,7 +710,7 @@ def main():
                'src': [{'t': '財報：Yahoo Finance（fundamentals-timeseries，年度、季度、近四季）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/financials'},
                        {'t': '股價：Yahoo Finance 近 1 年日線（還原權息）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/history'}]}
         if u['market'] == 'TW':
-            out['src'] += [{'t': '董監事持股、逾 10% 大股東、每月營收、前 10 大股東持股情形：臺灣證券交易所 OpenAPI', 'u': 'https://openapi.twse.com.tw/'},
+            out['src'] += [{'t': '董監事持股、逾 10% 大股東、每月營收、前 10 大股東持股情形、ESG 資訊揭露、股利分派、除權除息預告、股東會、公司治理、融資融券、重大訊息：臺灣證券交易所 OpenAPI', 'u': 'https://openapi.twse.com.tw/'},
                            {'t': '股權分散（千張大戶）：臺灣集中保管結算所 開放資料', 'u': 'https://opendata.tdcc.com.tw/'}]
         json.dump(out, open(os.path.join(OUT, c + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
         U.append([c, u['name'], u['market'], g, u['cap_bn'], S[c], {k: m.get(k) for k in ('share', 'rel_share', 'gm', 'om', 'roic_avg', 'rev_cagr3', 'pe', 'ret_1y')}])

@@ -14,7 +14,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: |
-          python3 probe/twlist.py
+          pip install -q pypdf cryptography
+          git fetch -q origin main && git checkout origin/main -- data/heatmap/latest.json data/fund data/lt
+          python3 scripts/fetch_company.py --codes NVDA,AAPL,MSFT,GOOGL,TSM,JPM,2330,2317,2881,2454,2308,2303,2412
+          mkdir -p out && cp -r data/company out/
       - run: |
           git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
           git checkout --orphan probe-out3 && git rm -rq --cached . && git add -f out && git commit -qm "probe output" && git push -qf origin probe-out3
