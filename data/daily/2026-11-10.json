@@ -1,664 +1,614 @@
 {
- "schema": "bnasdaq-daily/1",
- "date": "2026-11-10",
- "session": "2026-11-09",
- "generated": "2026-11-10T00:40:00Z",
- "headline": "油價崩、晶片股報復性反彈：那指 100 +3.40%、費半 +6.85%、標普 +2.35%（4 月來最佳單日）；Nvidia 因黃仁勳調查逆勢 −4.27%；今晚 10 月 CPI",
- "summary": "美股 11/9（週一）全面大漲，五大指數單日全部超過 +2%：那指 100 27,907.63（+3.40%）、費半 10,033.93（+6.85%）、標普 7,549.94（+2.35%，11 大類股全漲、4 月以來最佳單日）、道瓊 52,389.75（+2.15%、+1,104 點）、羅素 2000 2,840.81（+3.15%）；VIX 自 25.64 降至約 19.9（−22%）。主因：①川普週日接受 CNN 訪問稱若伊朗簽「非常強的協議」再度空襲「極不可能」，布蘭特油價 −5.85% 至 92.57、WTI −4.38% 至 86.85，緩解通膨疑慮；②上週 AI 崩跌後的超賣反彈與逢低承接（上漲家數 75%）；③AI 個股利多：AMD 獲 Oppenheimer 升評 +13.26%、博通 +8.78%，摩根士丹利與瑞銀認為資料中心極端監管風險低。唯一重挫的是 Nvidia：董事會因黃仁勳與被指為中國情報人員的 Alice Huang 關係啟動獨立調查，盤中一度跌近 9%、收 178.67（−4.27%），4 月以來低點；22V Research 警告可能加大出口管制壓力。債市：2 年期約 4.56%～4.58%（+5～6 bp）、10 年期約 4.86%～4.90%，3 年期標售需求疲弱（得標倍數 2.53）；美元指數 −0.63% 至 101.67。今晚（台北 11/10 21:30）公布 10 月 CPI：預期月增 0.3%、核心 0.2%；12 月升息機率逾 80%（CME FedWatch）。另有 CoreWeave 財報、台積電 10 月營收、俄烏美阿布達比會談（11/10–11）。",
- "indices": [
-  {
-   "key": "NDX",
-   "name": "那斯達克 100",
-   "close": 27907.63,
-   "chg": 3.4,
-   "prev_week": 26989.99,
-   "wk": 3.4,
-   "note": "+917.64 點（收盤÷11/6 收盤現算）；盤中高 28,025.77、低 27,227.53（Nasdaq 官網）；距 10/6 高點 31,224.47 仍 -10.62%；10/30 以來 -1.68%"
-  },
-  {
-   "key": "SOX",
-   "name": "費城半導體",
-   "close": 10033.93,
-   "chg": 6.85,
-   "prev_week": 9390.25,
-   "wk": 6.85,
-   "note": "+643.68 點；AMD +13.26%、博通 +8.78%、ARM／ASML 漲逾 6%、Intel 漲逾 5%；Nvidia −4.27% 是成分股中的明顯拖累"
-  },
-  {
-   "key": "SPX",
-   "name": "標普 500",
-   "close": 7549.94,
-   "chg": 2.35,
-   "prev_week": 7376.86,
-   "wk": 2.35,
-   "note": "+173.08 點；11 大類股全漲，工業 +3.78% 最強、能源 +0.41% 最弱；4/8 以來最佳單日；距 10/6 紀錄 7,818.93 約 -3.44%"
-  },
-  {
-   "key": "DJI",
-   "name": "道瓊工業",
-   "close": 52389.75,
-   "chg": 2.15,
-   "prev_week": 51285.73,
-   "wk": 2.15,
-   "note": "+1,104.02 點；高盛、開拓重工領漲，收回到期中選舉日水準"
-  },
-  {
-   "key": "RUT",
-   "name": "羅素 2000",
-   "close": 2840.81,
-   "chg": 3.15,
-   "prev_week": 2754.11,
-   "wk": 3.15,
-   "note": "+86.70 點；小型股領漲（航空股因油價下跌大漲）"
-  },
-  {
-   "key": "IXIC",
-   "name": "那斯達克綜合",
-   "close": 25253.14,
-   "chg": 2.74,
-   "prev_week": 24579.42,
-   "wk": 2.74,
-   "note": "+673.71 點；那斯達克上漲家數遠多於下跌"
-  }
- ],
- "week_path": {
-  "dates": [
-   "10/30",
-   "11/02",
-   "11/03",
-   "11/04",
-   "11/05",
-   "11/06",
-   "11/09"
+  "schema": "bnasdaq-daily/1",
+  "date": "2026-11-10",
+  "session": "2026-11-10",
+  "generated": "2026-11-10T22:51:00Z",
+  "headline": "10 月 CPI 高於預期、10 年期殖利率觸及 5%：那指 100 −0.60%、費半 −0.36%、標普 −0.38%；Nvidia 再跌 −5.47%、12 月升息機率升至 84%～90%",
+  "summary": "美股 11/10（週二）在強彈一天後回落，五大指數單日都在 ±1% 內：那指 100 27,740.80（−0.60%）、費半 9,998.33（−0.36%，跌回萬點下）、標普 7,520.93（−0.38%）、道瓊 52,231.89（−0.30%）、羅素 2000 2,821.38（−0.68%）；VIX 19.46（−2.3%）。主因：①10 月 CPI 月增 0.4%（預期 0.3%）、核心 0.3%（預期 0.2%，未四捨五入 0.297%），因去年政府關門無年增率；②殖利率急升：2 年期約 4.73%（+17～19 bp）、10 年期約 4.98%（+12～14 bp，盤中破 5%），10 年期標售 5.02%、得標倍數 2.46 偏弱；12 月升息 1 碼機率約 84%～90%、2 碼約 10%～15%，理事 Waller 稱核心 ≥0.3% 可考慮 2 碼，Logan 認為至少再升 2 次；③Nvidia 續跌 −5.47% 至 168.89（兩日 −9.5%），盤中市值一度跌破 4 兆，另遭股東集體訴訟；微軟 −2.20%（Anthropic 發表 Claude Sheets 等辦公工具）。撐盤：博通 +3.91%、台積電 ADR +2.02%、亞馬遜 +1.48%、Take-Two +8.31%（GTA VI 預購遠超預期）。美元指數 +0.58% 至 102.26、黃金 −2%～−2.7% 至約 4,030～4,038、WTI 86.36（−0.6%）。盤後 CoreWeave Q3 營收 36.6 億美元（+168%）、上調全年指引至 130～133 億。Anthropic IPO 定價區間 70～78 美元、最高募資 644 億、估值上限約 1.4 兆，預計 11/19 於 Nasdaq 掛牌（代號 ANT）。本週至今（vs 11/6 收盤）：那指 100 +2.78%、費半 +6.48%、標普 +1.95%。明日 11/11 退伍軍人節債市休市、股市照常；11/12 30 年期標售；11/13 PPI。",
+  "indices": [
+    {
+      "key": "NDX",
+      "name": "那斯達克 100",
+      "close": 27740.8,
+      "chg": -0.6,
+      "prev_week": 26989.99,
+      "wk": 2.78,
+      "note": "-166.83 點（收盤÷11/9 收盤 27,907.63 現算）；收盤值取自 investingLive 收盤快照（Nasdaq 官網截至產出時尚未更新 11/10），QQQ 同日 −0.68%（StockTitan）可交叉驗證；Nvidia −5.47% 為最大拖累"
+    },
+    {
+      "key": "SOX",
+      "name": "費城半導體",
+      "close": 9998.33,
+      "chg": -0.36,
+      "prev_week": 9390.25,
+      "wk": 6.48,
+      "note": "-35.60 點，守在萬點附近（鉅亨網）；Nvidia −5.47%、SK 海力士 ADR −3.51%、美光 −1.10% 拖累，博通 +3.91%、台積電 ADR +2.02%、AMD +1.30% 撐盤"
+    },
+    {
+      "key": "SPX",
+      "name": "標普 500",
+      "close": 7520.93,
+      "chg": -0.38,
+      "prev_week": 7376.86,
+      "wk": 1.95,
+      "note": "-29.01 點；科技 −1.2% 最弱，金融 +0.5%、能源 +0.4%、通訊 +0.4% 領漲；下跌家數約 61%"
+    },
+    {
+      "key": "DJI",
+      "name": "道瓊工業",
+      "close": 52231.89,
+      "chg": -0.3,
+      "prev_week": 51285.73,
+      "wk": 1.84,
+      "note": "-157.86 點；跌幅最小，金融股抗跌"
+    },
+    {
+      "key": "RUT",
+      "name": "羅素 2000",
+      "close": 2821.38,
+      "chg": -0.68,
+      "prev_week": 2754.11,
+      "wk": 2.44,
+      "note": "-19.43 點；2 年期殖利率 +17～19 bp 壓抑對利率敏感的小型股"
+    },
+    {
+      "key": "IXIC",
+      "name": "那斯達克綜合",
+      "close": 25065.88,
+      "chg": -0.74,
+      "prev_week": 24579.42,
+      "wk": 1.98,
+      "note": "-187.26 點；Nvidia、微軟（−2.20%，Anthropic 推辦公工具）拖累"
+    }
   ],
-  "note": "10/30 為基期（＝100），延伸到本週一 11/09，呈現「上週崩跌 → 本週一強彈」的完整一週。那指 100 與費半缺每日收盤公開來源，以週表呈現（那指 100 自 10/30 累計 -1.68%、費半 -6.13%）。四條線 10/30→11/09 累計（收盤÷10/30 收盤現算）：標普 -0.40%、道瓊 +1.20%、那斯達克綜合 -0.72%、羅素 +1.03%。",
-  "series": [
-   {
-    "name": "標普 500",
-    "chg": [
-     0,
-     -0.51,
-     0.36,
-     1.58,
-     -4.36,
-     0.31,
-     2.35
-    ]
-   },
-   {
-    "name": "道瓊",
-    "chg": [
-     0,
-     0.41,
-     -0.38,
-     3.03,
-     -3.44,
-     -0.46,
-     2.15
-    ]
-   },
-   {
-    "name": "那斯達克綜合",
-    "chg": [
-     0,
-     -1.07,
-     0.83,
-     1.44,
-     -5.52,
-     1.09,
-     2.74
-    ]
-   },
-   {
-    "name": "羅素 2000",
-    "chg": [
-     0,
-     -0.21,
-     0.23,
-     1.58,
-     -4.45,
-     0.89,
-     3.15
-    ]
-   }
-  ]
- },
- "big_move": {
-  "triggered": true,
-  "threshold": 2,
-  "intro": "11/9 五大指數全部單日漲逾 2%（那指 100 +3.40%、費半 +6.85%、標普 +2.35%、道瓊 +2.15%、羅素 +3.15%），連防禦性較強的道瓊都 +1,104 點，代表是「全面風險偏好回升」而非單一族群。以下機率為本站依新聞證據權重所作的主觀估計（合計 100%），不是統計推論。",
-  "causes": [
-   {
-    "p": 40,
-    "title": "超賣後的技術性反彈＋逢低承接",
-    "evidence": [
-     "上週那指 100 −4.91%、費半 −12.15%、標普連四週收黑，週日 CNN 恐懼貪婪指數 22（極度恐懼）、AAII 看空 48.4%——情緒極端時反彈機率高",
-     "收盤上漲 4,221 檔（75.3%）vs 下跌 1,240 檔（TheStreet），VIX 由 25.64 降至約 19.9（−22%），屬典型的空單回補＋恐慌退潮",
-     "Capital.com 的 Hathorn：反彈「較像風險偏好的試探性恢復」、投資人在「利用較低的估值」（TheStreet）",
-     "上週跌最深的晶片股漲最多：AMD +13.26%、博通 +8.78%、ARM 與 ASML 漲逾 6%"
+  "week_path": {
+    "dates": [
+      "10/30",
+      "11/02",
+      "11/03",
+      "11/04",
+      "11/05",
+      "11/06",
+      "11/09",
+      "11/10"
     ],
-    "counter": "技術面只能解釋「為什麼反彈」，無法解釋油價、航空股與道瓊工業股同步大漲，需要第二項的總經消息；且 10 年期殖利率不跌反升，代表資金並非因利率預期改善而湧入。"
-   },
-   {
-    "p": 35,
-    "title": "油價崩跌：川普淡化再度空襲伊朗，通膨疑慮緩解",
-    "evidence": [
-     "川普 11/8 接受 CNN 電話訪問：再度空襲「極不可能必要」，前提是伊朗簽「非常強的協議」（Iran International）",
-     "WTI 12 月合約收 86.85（−4.38%）、布蘭特 92.57（−5.85%）；上週布蘭特已 −13%（Investrade／鉅亨網）",
-     "航空股（AAL、DAL、UAL、LUV、JBLU）大漲；分析師 Ken Polcari：「油價下跌無疑進一步增強了市場漲勢」（聯合報）",
-     "伊朗外長 Araghchi 稱條件滿足後 2 天內可重開荷姆茲海峽（Iran International）"
+    "note": "10/30 為基期（＝100），延伸到 11/10，呈現「上週崩跌 → 週一強彈 → 週二 CPI 回落」。那指 100 與費半缺完整每日收盤公開來源，以週表呈現（以前一版 10/30→11/9 累計 −1.68%／−6.13% 再乘 11/10 漲跌現算：那指 100 -2.27%、費半 -6.46%）。四條線 10/30→11/10 累計（逐日漲跌累乘）：標普 500 −0.79%、道瓊 +0.88%、那斯達克綜合 −1.44%、羅素 2000 +0.34%。",
+    "series": [
+      {
+        "name": "標普 500",
+        "chg": [
+          0,
+          -0.51,
+          0.36,
+          1.58,
+          -4.36,
+          0.31,
+          2.35,
+          -0.38
+        ]
+      },
+      {
+        "name": "道瓊",
+        "chg": [
+          0,
+          0.41,
+          -0.38,
+          3.03,
+          -3.44,
+          -0.46,
+          2.15,
+          -0.3
+        ]
+      },
+      {
+        "name": "那斯達克綜合",
+        "chg": [
+          0,
+          -1.07,
+          0.83,
+          1.44,
+          -5.52,
+          1.09,
+          2.74,
+          -0.74
+        ]
+      },
+      {
+        "name": "羅素 2000",
+        "chg": [
+          0,
+          -0.21,
+          0.23,
+          1.58,
+          -4.45,
+          0.89,
+          3.15,
+          -0.68
+        ]
+      }
+    ]
+  },
+  "big_move": {
+    "triggered": false,
+    "threshold": 2,
+    "intro": "11/10 五大指數單日漲跌皆未超過 ±2%（最大為那指 100 −0.60%、羅素 −0.68%），本節不啟用。補充：當日唯一的大幅波動是個股 Nvidia −5.47%（兩日 −9.5%）與 2 年期公債殖利率 +17～19 bp，原因是 CPI 高於預期與黃仁勳調查／股東訴訟，詳見第 4、5 節。"
+  },
+  "weekly": {
+    "range": "2026-11-06 → 2026-11-10（本週一、二累計）",
+    "cols": [
+      "11/06",
+      "11/10"
     ],
-    "counter": "油價下跌並未壓低利率：2 年期 +5～6 bp、12 月升息機率仍逾 80%，且胡塞週末攻擊阿美辦公大樓與東西向輸油管、荷姆茲船隻遇襲持續，地緣風險並未解除。"
-   },
-   {
-    "p": 25,
-    "title": "AI 族群個別利多，資料中心監管恐慌再降溫",
-    "evidence": [
-     "AMD 獲 Oppenheimer 升評「優於大盤」、目標價 600 美元（預估 2027 資料中心營收 +135%），收 508.58（+13.26%）",
-     "摩根士丹利、瑞銀：即使民主黨掌控國會，資料中心極端監管風險仍低；Deutsche Bank 稱選後 DLR、EQIX 遭拋售過度",
-     "Alphabet 發表 TPU 8t（訓練）與 8i（推論）兩款新晶片，挑戰 Nvidia；Coherent 財報後大漲約 18%",
-     "Nvidia 調查讓資金由 NVDA 轉向 AMD／AVGO／ASIC 供應鏈，費半仍 +6.85%"
-    ],
-    "counter": "Nvidia 本身 −4.27%、盤中一度近 −9%，22V Research 與 Vital Knowledge 警告出口管制風險上升；AI 利多集中在個股，對道瓊與羅素的大漲解釋力有限。"
-   }
-  ]
- },
- "weekly": {
-  "range": "2026-11-06 → 2026-11-09（附上週 10/30→11/06 對照）",
-  "cols": [
-   "11/06",
-   "11/09"
+    "stock": {
+      "title": "股市：週一強彈、週二遇 CPI 回落，本週至今仍收復上週大半跌幅",
+      "rows": [
+        [
+          "那斯達克 100",
+          "26,989.99",
+          "27,740.80",
+          "+2.78%"
+        ],
+        [
+          "費城半導體",
+          "9,390.25",
+          "9,998.33",
+          "+6.48%"
+        ],
+        [
+          "標普 500",
+          "7,376.86",
+          "7,520.93",
+          "+1.95%"
+        ],
+        [
+          "道瓊工業",
+          "51,285.73",
+          "52,231.89",
+          "+1.84%"
+        ],
+        [
+          "羅素 2000",
+          "2,754.11",
+          "2,821.38",
+          "+2.44%"
+        ],
+        [
+          "VIX",
+          "25.64",
+          "19.46",
+          "−24.1%"
+        ]
+      ],
+      "text": "一週趨勢：上週 AI 崩跌（那指 100 −4.91%、費半 −12.15%），11/9 全面強彈（五大指數皆 >+2%），11/10 CPI 高於預期、殖利率衝 5% 後小幅回落。本週（11/6→11/10）那指 100 +2.78%、費半 +6.48%、標普 +1.95%、道瓊 +1.84%、羅素 +2.44%。那指 100 距 10/6 高點 31,224.47 仍 -11.16%，在修正區內。類股：週二科技 −1.2% 最弱、金融 +0.5% 最強；Nvidia 兩日 −9.5%、博通與 AMD 則連兩日上漲，AI 資金在晶片股內部輪動。關鍵：11/13 PPI、11/17 Nvidia 財報、11/19 Anthropic 掛牌。"
+    },
+    "fx": {
+      "title": "匯市：CPI 高於預期、美元全面走強，收回週一跌幅",
+      "rows": [
+        [
+          "美元指數 DXY",
+          "102.32",
+          "102.26",
+          "−0.06%（11/10 單日 +0.58%）"
+        ],
+        [
+          "EUR/USD",
+          "1.1143",
+          "1.1161",
+          "+0.16%（單日 −0.55%）"
+        ],
+        [
+          "USD/JPY",
+          "158.43",
+          "158.77",
+          "+0.21%（單日 +0.55%）"
+        ]
+      ],
+      "text": "一週趨勢：美元 11/9 因油價大跌回落至 101.67，11/10 CPI 公布後兌所有主要貨幣走強（DXY +0.58% 至 102.26，FNArena），幾乎回到上週五 102.28～102.32 水準。英鎊 −0.75%、澳幣 −0.91%；日圓 158.8 逼近干預警戒區。ECB 首席經濟學家 Lane 稱 12 月再升息屬審慎，抑制歐元跌幅。（EUR/USD、USD/JPY 取 investingLive 收盤快照。）"
+    },
+    "bond": {
+      "title": "債市：CPI 讓短端殖利率單日 +17～19 bp，10 年期盤中觸及 5%",
+      "rows": [
+        [
+          "2 年",
+          "4.51%",
+          "4.73%",
+          "+22 bp（11/10 單日 +17～19 bp）"
+        ],
+        [
+          "10 年",
+          "4.86%",
+          "4.98%～4.99%",
+          "+12～13 bp（盤中破 5%）"
+        ],
+        [
+          "30 年",
+          "5.26%",
+          "5.35%",
+          "+9 bp"
+        ]
+      ],
+      "text": "一週趨勢：上週避險買盤把 10 年期壓到 4.84%，週一資金由債轉股、3 年期標售疲弱，週二 CPI 高於預期引爆短端拋售，殖利率曲線熊平。10 年期 420 億美元標售得標 5.02%、尾差 1 bp、得標倍數 2.46（均值 2.60）。市場定價 12 月升息 1 碼約 84%～90%、2 碼約 10%～15%（Yahoo Finance、investingLive）。紐約聯準 Q3 家庭債務逾期比率約 5%、近十年最高。11/11 退伍軍人節債市休市；11/12 30 年期標售。（2 年期：investingLive 4.7335%、FNArena 4.73%；10 年期 4.9875%／4.98%。）"
+    },
+    "other": {
+      "title": "商品與加密：美元與殖利率齊升，黃金白銀重挫；油價續探 8 月來低點",
+      "rows": [
+        [
+          "黃金（12 月期貨）",
+          "4,074.90",
+          "約 4,037.60",
+          "−0.92%（單日約 −1.9%～−2.7%）"
+        ],
+        [
+          "布蘭特原油",
+          "98.32",
+          "91.95",
+          "−6.48%"
+        ],
+        [
+          "WTI 原油",
+          "90.83",
+          "86.36",
+          "−4.92%"
+        ],
+        [
+          "比特幣",
+          "約 75,943",
+          "約 73,848",
+          "約 −2.8%"
+        ]
+      ],
+      "text": "油價：川普暗示暫不再空襲伊朗後，WTI 盤中低見 83.88、創 8 月底以來低點，但伊朗 Rezaei 稱目前德黑蘭與華府「沒有談判」，跌幅收斂。黃金跌約 2%、白銀 −3.4%，主因美元與實質利率上升。比特幣跌破 74,000，Coinbase、Strategy 各約 −4%。"
+    }
+  },
+  "events": [
+    {
+      "cat": "貨幣政策與央行",
+      "items": [
+        "美國 10 月 CPI 月增 0.4%（預期 0.3%、前值 0.6%）；核心 0.3%（預期 0.2%、前值 0.3%，未四捨五入 0.297%）；能源 +0.7%、住房 +0.3%、食品 +0.5%；因 2025 年 10 月政府關門缺資料，BLS 未公布年增率（9 月年增 3.7%、核心 2.6%）（investingLive、StockTitan）",
+        "Fed 理事 Waller：支持 12 月至少升息 1 碼，若核心 CPI ≥0.3% 會考慮 2 碼；Logan：至少再升 2 次 1 碼後才可能暫停；Bowman：通膨壓力恐延續、就業轉強；Schmid：政策仍偏寬鬆",
+        "市場定價 12/9 FOMC 升息 1 碼約 84%～90%、2 碼約 10%～15%；Fed 目前利率 3.75%～4.00%",
+        "澳洲央行升息 1 碼至 4.85%（今年第 5 次）；加拿大央行會議紀要稱可能需要再升息；ECB Lane：12 月再升息屬審慎（FNArena、investingLive）",
+        "美國 10 年期公債標售 420 億美元、得標 5.02%、得標倍數 2.46 低於均值 2.60"
+      ]
+    },
+    {
+      "cat": "科技與那斯達克",
+      "items": [
+        "Nvidia 收 168.89（−5.47%），兩日 −9.5%，盤中市值一度跌破 4 兆美元、兩日蒸發逾 3,650 億；獨立董事聘前紐約南區代理檢察官 Joon Kim 調查黃仁勳是否遭外國情報行動鎖定；股東提集體訴訟；前瞻本益比為 2011 年 10 月以來最低；高盛稱半導體超賣、首選 NVDA／AVGO／AMD（鉅亨網、Yahoo Finance、FNArena）",
+        "Anthropic 發表 Claude Sheets 等辦公工具（試算表、視訊會議助理、資料儀表板），微軟盤中跌逾 3%、收 −2.20%（Bloomberg、TradingKey）",
+        "Anthropic IPO：發行 8.25 億股、每股 70～78 美元，最高募資約 644 億美元、估值上限約 1.4 兆，預計 11/19 於 Nasdaq 掛牌，代號 ANT",
+        "CoreWeave 盤後 Q3：營收 36.6 億美元（+168%、優於預期 35.4 億）、每股 −1.27 美元（優於 −1.55）、全年營收指引上調至 130～133 億、未完成訂單約 1,325 億、全年資本支出 370～390 億（24/7 Wall St.）",
+        "Take-Two +8.31%（GTA VI 預購「遠超預期」）；Paramount Skydance −7.6%（華納兄弟電影表現疲弱，獲利恐少 2 億美元）；Hims & Hers 盤中 −15%（Q4 營收指引不佳）"
+      ]
+    },
+    {
+      "cat": "國際情勢",
+      "items": [
+        "美俄烏三方會談 11/10 於阿布達比舉行約 4 小時，為 2 月以來首次；美方 Kushner、Witkoff 出席；聚焦大規模換俘、平民與兒童返還、安全保證；澤倫斯基稱「具建設性且相當實質」，盧比歐稱解決並非迫在眉睫；11/11 續談（PBS／AP）",
+        "俄方仍要求烏軍撤出四個被併吞州、放棄北約；烏方要求立即停火、拒絕割地；前一晚俄方發射 162 架無人機與 1 枚彈道飛彈",
+        "伊朗 Rezaei：德黑蘭與華府目前沒有談判；油價跌勢因此收斂（investingLive）"
+      ]
+    },
+    {
+      "cat": "美國政治",
+      "items": [
+        "眾院美中戰略競爭委員會主席要求 Nvidia 就黃仁勳事件說明，並已要求 11/18 閉門簡報；市場擔心晶片出口管制政治化（Yahoo Finance、FNArena）",
+        "紐約聯準：Q3 約 5% 的美國家庭債務逾期，近十年最高（FNArena）"
+      ]
+    },
+    {
+      "cat": "金融環境",
+      "items": [
+        "標普 500 下跌家數約 61%；VIX 19.46（−2.3%）恐慌未再升溫；美元指數 102.26（+0.58%）",
+        "黃金約 4,031～4,038（−1.9%～−2.7%）、白銀 51.5（−3.4%）；比特幣約 73,848（−1.4%），加密相關股普跌",
+        "GFL Environmental 拒絕 220 億美元私有化提案後 −9%；GE Vernova 盤中 −5.4%（軟銀 37 億美元認列）；AAON +19%～26%（財測上調）",
+        "歐股多數收高：DAX +0.31%、CAC +0.55%、FTSE 100 −0.29%"
+      ]
+    }
   ],
-  "stock": {
-   "title": "股市：上週 AI 崩跌後本週一全面強彈，那指 100 收復上週跌幅約 66%、標普約 85%",
-   "rows": [
-    [
-     "那斯達克 100",
-     "26,989.99",
-     "27,907.63",
-     "+3.40%（上週 −4.91%）"
-    ],
-    [
-     "費城半導體",
-     "9,390.25",
-     "10,033.93",
-     "+6.85%（上週 −12.15%）"
-    ],
-    [
-     "標普 500",
-     "7,376.86",
-     "7,549.94",
-     "+2.35%（上週 −2.68%）"
-    ],
-    [
-     "道瓊工業",
-     "51,285.73",
-     "52,389.75",
-     "+2.15%（上週 −0.94%）"
-    ],
-    [
-     "羅素 2000",
-     "2,754.11",
-     "2,840.81",
-     "+3.15%（上週 −2.05%）"
-    ],
-    [
-     "VIX",
-     "25.64",
-     "19.92",
-     "−22.3%（上週 +32.0%）"
+  "mega": {
+    "intro": "依市值排名。市值＝前一版（11/9 收盤）市值 × 11/10 收盤價 ÷ 11/9 收盤價現算；11/10 收盤價取自鉅亨網〈美股盤後〉（AAPL、NVDA、MSFT、GOOGL、AMZN、META、AVGO、TSM）。SPCX、TSLA、BRK.B、LLY、WMT 未取得 11/10 收盤公開來源，標註實際日期。沃爾瑪 11/6 市值 9,958 億，暫時低於 1 兆但仍列出供追蹤；沙烏地阿美以 10 月初市值列入。",
+    "wk_label": "11/10 單日",
+    "rows": [
+      {
+        "t": "AAPL",
+        "n": "Apple",
+        "cap": "5.06 兆",
+        "px": "348.51",
+        "wk": "−0.62%",
+        "news": "〔11/10 無重大新公司公告〕隨科技股小跌；記憶體價格上漲（美光、SK 海力士、Sandisk）仍是毛利壓力來源。",
+        "impact": "高利率環境下大型權值股評價受壓；記憶體成本為主線。",
+        "win": [
+          "MU",
+          "SKHY"
+        ],
+        "lose": [
+          "AAPL（毛利）"
+        ]
+      },
+      {
+        "t": "NVDA",
+        "n": "Nvidia",
+        "cap": "4.08 兆",
+        "px": "168.89",
+        "wk": "−5.47%",
+        "news": "兩日 −9.5%，盤中市值一度跌破 4 兆；董事會聘前檢察官 Joon Kim 獨立調查黃仁勳是否遭外國情報滲透；股東提起集體訴訟稱公司誤導投資人；眾院中國委員會要求說明。前瞻本益比降至 2011 年以來最低；高盛仍列為半導體首選。11/17 財報、11/18 國會閉門簡報。",
+        "impact": "關鍵人物＋出口管制政治化風險，估值折價擴大；資金轉向 ASIC 與其他 GPU，但超大規模資本支出需求未變，財報是止跌關鍵。",
+        "win": [
+          "AVGO（ASIC）",
+          "AMD（GPU）",
+          "GOOGL（TPU）"
+        ],
+        "lose": [
+          "NVDA",
+          "SMCI",
+          "DELL（NVDA 伺服器）"
+        ]
+      },
+      {
+        "t": "MSFT",
+        "n": "Microsoft",
+        "cap": "3.96 兆",
+        "px": "533.16",
+        "wk": "−2.20%",
+        "news": "Anthropic 發表 Claude Sheets、會議助理與資料儀表板等辦公工具，直接挑戰 Office／Excel，微軟盤中跌逾 3%；Anthropic 預計 11/19 IPO。",
+        "impact": "生成式 AI 新進者切入 Microsoft 365 核心營收，市場開始為 Office 訂閱定價權打折；但微軟同時是 AI 雲端基礎設施供應商。",
+        "win": [
+          "ANT（Anthropic，11/19 掛牌）",
+          "AMZN、GOOGL（Anthropic 雲端與股東）"
+        ],
+        "lose": [
+          "MSFT",
+          "ADBE",
+          "CRM（辦公／企業軟體）"
+        ]
+      },
+      {
+        "t": "GOOGL",
+        "n": "Alphabet",
+        "cap": "3.53 兆",
+        "px": "287.38",
+        "wk": "−0.27%",
+        "news": "〔11/10 無重大新公司公告〕前一日發表 TPU 8t／8i；Google Sheets 同樣面臨 Anthropic Claude Sheets 競爭；Alphabet 也是 Anthropic 股東。",
+        "impact": "TPU 對外銷售敘事與 Anthropic 股權價值（IPO）抵銷辦公軟體競爭。",
+        "win": [
+          "GOOGL（Anthropic 持股）",
+          "AVGO"
+        ],
+        "lose": [
+          "NVDA（推論份額）"
+        ]
+      },
+      {
+        "t": "AMZN",
+        "n": "Amazon",
+        "cap": "2.92 兆",
+        "px": "270.87",
+        "wk": "+1.48%",
+        "news": "〔11/10 無重大新公司公告〕逆勢上漲；為 Anthropic 最大外部股東之一，Anthropic IPO 定價最高約 1.4 兆美元估值，帶動持股重估期待。",
+        "impact": "Anthropic 上市可能帶來大額未實現評價利益；AWS 也是 Anthropic 主要算力供應者。",
+        "win": [
+          "AMZN",
+          "ANT"
+        ],
+        "lose": [
+          "MSFT（Office 競爭）"
+        ]
+      },
+      {
+        "t": "TSM",
+        "n": "台積電",
+        "cap": "2.06 兆",
+        "px": "396.48",
+        "wk": "+2.02%",
+        "news": "ADR 連兩日上漲；高盛稱半導體超賣；Nvidia 份額轉向 ASIC／AMD 不改變台積電代工地位。",
+        "impact": "AI 晶片不論 GPU 或 ASIC 皆由台積電代工，是 Nvidia 個別風險下的相對避風港。",
+        "win": [
+          "TSM",
+          "2330.TW",
+          "ASX（日月光 ADR +3.26%）"
+        ],
+        "lose": [
+          "—"
+        ]
+      },
+      {
+        "t": "SPCX",
+        "n": "SpaceX",
+        "cap": "1.93 兆",
+        "px": "約 140（11/10 早盤）",
+        "wk": "約 −1.45%（早盤）",
+        "news": "〔未取得 11/10 收盤〕早盤 140.01（−1.45%，TokenPost），前一日因 NASA 月球基地合約 +5.81%；仍高於 6 月 IPO 價 135。市值沿用 11/9。",
+        "impact": "月球基地合約提升營收能見度；Anthropic 上市可能分流太空／AI 題材資金。",
+        "win": [
+          "SPCX",
+          "RKLB"
+        ],
+        "lose": [
+          "BA（月球計畫競爭）"
+        ]
+      },
+      {
+        "t": "META",
+        "n": "Meta",
+        "cap": "1.64 兆",
+        "px": "641.39",
+        "wk": "+0.00%",
+        "news": "〔11/10 無重大新公司公告〕持平；前一日摩根大通將 Meta 納入焦點名單（取代 Alphabet）、+5.12%。",
+        "impact": "AI 資本支出回報敘事回溫，但升息預期壓抑成長股評價。",
+        "win": [
+          "META"
+        ],
+        "lose": [
+          "—"
+        ]
+      },
+      {
+        "t": "AVGO",
+        "n": "Broadcom",
+        "cap": "1.58 兆",
+        "px": "331.98",
+        "wk": "+3.91%",
+        "news": "連兩日大漲（11/9 +8.78%）；高盛列為半導體首選；Nvidia 治理風險讓客製 ASIC 需求敘事升溫（Google TPU 設計夥伴）。",
+        "impact": "超大規模業者自研晶片加速，博通是最直接受惠者。",
+        "win": [
+          "AVGO",
+          "MRVL",
+          "TSM"
+        ],
+        "lose": [
+          "NVDA"
+        ]
+      },
+      {
+        "t": "TSLA",
+        "n": "Tesla",
+        "cap": "1.50 兆（11/9）",
+        "px": "378.05（11/9）",
+        "wk": "+5.54%（11/9）",
+        "news": "〔未取得 11/10 收盤〕11/9 收 378.05（+5.54%）：Robotaxi 於聖安東尼奧上線、Cybertruck 2027 年中停產轉產 Cybercab；中國零售銷售降至 2022 年 7 月以來低點。市值依 11/9 價格現算。",
+        "impact": "Robotaxi 擴張與 SpaceX 合併題材支撐評價；中國銷售疲弱是風險。",
+        "win": [
+          "TSLA",
+          "SPCX（合併題材）"
+        ],
+        "lose": [
+          "UBER、LYFT（Robotaxi 競爭）"
+        ]
+      },
+      {
+        "t": "BRK.B",
+        "n": "波克夏",
+        "cap": "1.22 兆（11/6）",
+        "px": "570.89（11/6）",
+        "wk": "—",
+        "news": "〔11/10 無新公司公告；未取得 11/10 收盤公開來源，沿用 11/6〕金融類股 11/10 +0.5% 為最強類股，殖利率上升有利保險浮存金收益。",
+        "impact": "升息環境下保險與現金部位收益提高，相對抗跌。",
+        "win": [
+          "BRK.B",
+          "JPM（金融類股）"
+        ],
+        "lose": [
+          "—"
+        ]
+      },
+      {
+        "t": "LLY",
+        "n": "禮來",
+        "cap": "1.21 兆（11/6）",
+        "px": "1,354.00（11/6）",
+        "wk": "—",
+        "news": "〔11/10 無新公司公告；未取得 11/10 收盤公開來源，沿用 11/6〕合作通路 Hims & Hers 公布 Q4 指引不佳、盤中 −15%、毛利率降至 57%。",
+        "impact": "自費通路夥伴營運轉弱，可能影響 Zepbound 直送量能；GLP-1 視力副作用警語仍在。",
+        "win": [
+          "—"
+        ],
+        "lose": [
+          "HIMS",
+          "LLY（通路）"
+        ]
+      },
+      {
+        "t": "WMT",
+        "n": "沃爾瑪",
+        "cap": "9,958 億（11/6，略低於 1 兆）",
+        "px": "125.52（11/6）",
+        "wk": "—",
+        "news": "〔11/10 無新公司公告；未取得 11/10 收盤公開來源，沿用 11/6〕CPI 食品 +0.5%、能源 +0.7%，民生物價壓力延續；紐約聯準家庭債務逾期率近十年最高。",
+        "impact": "物價壓力下低價零售受惠於消費降級，但家庭債務惡化是需求風險。",
+        "win": [
+          "WMT",
+          "COST"
+        ],
+        "lose": [
+          "TGT（中價位零售）"
+        ]
+      },
+      {
+        "t": "2222.SR",
+        "n": "沙烏地阿美",
+        "cap": "約 1.6 兆（10/2）",
+        "px": "—",
+        "wk": "—",
+        "news": "布蘭特 11/10 再跌 −0.67% 至 91.95，兩日約 −6.5%；伊朗稱目前與美方沒有談判，跌勢收斂。",
+        "impact": "油價下跌壓縮營收；荷姆茲未重開前風險溢價仍在。",
+        "win": [
+          "DAL",
+          "UAL",
+          "LUV（燃油成本）"
+        ],
+        "lose": [
+          "2222.SR",
+          "XOM",
+          "CVX"
+        ]
+      }
     ]
-   ],
-   "text": "一週趨勢：10/30 → 11/05 選後 AI 崩跌（那指 100 單日 −6.36%、費半 −12.25%），11/06 部分反彈，11/09 全面強彈。以 10/30 為基準，那指 100 累計 -1.68%、標普 -0.40%、道瓊 +1.20%（已轉正）、羅素 +1.03%（已轉正）、費半 -6.13%。類股輪動：上週資金躲進必需消費、醫療、金融；週一工業（+3.78%）、非必需消費（+3.05%）、科技領漲，能源（+0.41%）落後。那指 100 距 10/6 高點仍 -10.62%，仍略深於 −10% 的修正區界線。關鍵：今晚 CPI、11/17 Nvidia 財報。"
   },
-  "fx": {
-   "title": "匯市：油價下跌、風險偏好回升，美元回吐週五漲幅",
-   "rows": [
-    [
-     "美元指數 DXY",
-     "102.32",
-     "101.67",
-     "−0.63%（上週 +0.39%）"
-    ],
-    [
-     "EUR/USD",
-     "1.1143",
-     "1.1226",
-     "+0.74%"
-    ],
-    [
-     "USD/JPY",
-     "158.43",
-     "157.92",
-     "−0.32%"
-    ]
-   ],
-   "text": "一週趨勢：美元選後跌到 101.26（一個月低），週五非農大超預期急彈至 102.32，週一又因油價大跌、避險需求退潮回落至 101.67，回到區間中段。12 月升息預期仍逾 80% 支撐美元下檔；日圓在 158 附近、仍接近干預警戒區。（EUR/USD、USD/JPY 收盤各來源有 ±0.005／±0.1 差異：Investrade 為 1.121／158.00。）"
-  },
-  "bond": {
-   "title": "債市：股市回暖＋3 年期標售疲弱，短端殖利率回升",
-   "rows": [
-    [
-     "2 年",
-     "4.51%",
-     "4.56%～4.58%",
-     "+5～6 bp（上週 −5.9 bp）"
-    ],
-    [
-     "10 年",
-     "4.86%",
-     "4.86%～4.90%",
-     "+0.5～3 bp（五週約 −40 bp）"
-    ],
-    [
-     "30 年",
-     "5.26%",
-     "5.27%～5.28%",
-     "+1～2 bp"
-    ]
-   ],
-   "text": "一週趨勢：上週避險買盤把 10 年期壓到 4.84%（9 月以來低），週五強非農讓短端反彈，週一資金由債轉股、殖利率續升。3 年期 580 億美元標售得標殖利率 4.627%、尾差 0.5 bp、得標倍數 2.53（2025 年 8 月以來最低）、間接投標 55.5%（15 個月最低），反映殖利率連跌 6 週後買盤變挑剔。紐約聯準銀行 10 月 1 年期通膨預期 3.9%、3 年期 3.3%。本週：11/10 10 年期標售、11/11 退伍軍人節債市休市、11/12 30 年期標售。（10 年期收盤 Yahoo 4.864%、Eurasia 4.88%、Trading Economics 4.90%，以區間呈現。）"
-  },
-  "other": {
-   "title": "商品與加密：油價續崩、黃金站穩 4,100",
-   "rows": [
-    [
-     "黃金（12 月期貨）",
-     "4,074.90",
-     "4,114.50",
-     "+0.97%"
-    ],
-    [
-     "布蘭特原油",
-     "98.32",
-     "92.57",
-     "−5.85%（上週 −13.3%）"
-    ],
-    [
-     "WTI 原油",
-     "90.83",
-     "86.85",
-     "−4.38%（上週 −12.8%）"
-    ],
-    [
-     "比特幣",
-     "約 75,943",
-     "約 75,184",
-     "約 −1.0%"
-    ]
-   ],
-   "text": "油價兩個交易日內再跌約 5%，美國汽油均價 4.01 美元（AAA），較 9 月底高點 4.48 下跌約 10%；OPEC 10 月產量 +138 萬桶／日至 2,287 萬桶（路透調查），供給增加也是壓力。黃金受美元走弱支撐；比特幣在 75,000 美元附近震盪，未跟上股市反彈。"
-  }
- },
- "events": [
-  {
-   "cat": "科技與那斯達克",
-   "items": [
-    "Nvidia 收 178.67（−4.27%），盤中一度跌近 9%、4 月以來低點，市值約蒸發 1,900 億美元；董事會由獨立董事＋外部律師調查黃仁勳是否遭外國情報滲透，稱目前無國安或機密外洩跡象、續挺 CEO；Wedbush Dan Ives 預期黃仁勳短期續任；川普：「我沒有和黃仁勳談過這件事」（鉅亨網、Yahoo Finance）",
-    "Alphabet 發表第八代 TPU：8t（訓練）與 8i（推論／AI 代理），直接挑戰 Nvidia（StreetInsider、Yahoo Finance）",
-    "AMD 獲 Oppenheimer 升評、目標價 600 美元，收 508.58（+13.26%）；博通 +8.78%、Marvell 約 +9%、Arista 約 +9%",
-    "Tesla：馬斯克稱 Cybertruck 約 8 個月後停產、部分訂金退還，並似確認動工 101 億美元德州太陽能電池廠；股價漲逾 5%（Yahoo Finance、21 經濟網）",
-    "SpaceX 獲 NASA 選為 8 家月球基地得標商之一（合計最高 100 億美元工作），收 142.07（+5.81%）",
-    "可轉債潮：Akamai 合計 22 億、Dropbox 10 億美元可轉債；monday.com 第四季營收指引不佳 −5.9%",
-    "今晚／本週財報：11/10 CoreWeave、Rigetti、D-Wave；11/12 Cisco、Applied Materials、Nebius；11/17 Nvidia"
-   ]
-  },
-  {
-   "cat": "國際情勢",
-   "items": [
-    "川普 11/8 接受 CNN 訪問：若伊朗簽「非常強的協議」，再度空襲「極不可能必要」；並稱已鎖定 38 座可在一小時內摧毀的橋樑（Iran International）",
-    "伊朗外長 Araghchi：條件滿足（含各戰線停火）2 天內重開荷姆茲；伊朗官員要求解除制裁、解凍資產與戰爭賠償，美方堅持先談核問題",
-    "胡塞除攻擊利雅德阿美大樓外，另擊中麥地那地區東西向輸油管引發火災、已撲滅、營運未受影響；伊拉克與美方達成默契，原油經阿曼附近航道出口（Korea Times／路透）",
-    "美方調停的俄烏美三方會談 11/10–11 於阿布達比舉行（investingLive）"
-   ]
-  },
-  {
-   "cat": "貨幣政策與央行",
-   "items": [
-    "今晚 8:30 ET（台北 21:30）美國 10 月 CPI：預期整體月增 0.3%（前值 0.6%）、核心 0.2%（前值 0.3%），為 12/9 FOMC 前最後一份 CPI；11/13 PPI",
-    "CME FedWatch：12 月升息 25 bp 機率逾 80%（聯合報）；Fed 9 月升息後 10 月按兵不動於 3.75%～4.00%",
-    "紐約聯準銀行 10 月消費者通膨預期：1 年 3.9%、3 年 3.3%（Investrade）",
-    "3 年期公債標售 4.627%、得標倍數 2.53 為 2025 年 8 月以來最低（Investing.com）"
-   ]
-  },
-  {
-   "cat": "美國政治",
-   "items": [
-    "22V Research 的 Michael Hirson：黃仁勳事件可能加大川普政府收緊晶片出口管制的壓力；Vital Knowledge 的 Crisafulli 持相同看法（聯合報、Eurasia Business News）",
-    "眾院共和黨委員會主席要求黃仁勳 11/18 出席閉門簡報；民主黨參議員 Coons 稱國會將調查",
-    "摩根士丹利、瑞銀：即使民主黨掌控國會，資料中心極端監管風險仍低"
-   ]
-  },
-  {
-   "cat": "金融環境",
-   "items": [
-    "標普 500 11 大類股全漲、創 4/8 以來最大單日漲幅；道瓊收復到期中選舉日水準（鉅亨網、新浪／新華社）",
-    "VIX 19.92（−22.3%）、恐慌明顯降溫；比特幣跌破 75,000 美元（Yahoo Finance）",
-    "台指期夜盤 +2.57%、台積電 ADR +3.51%；週一台股盤中曾 +4.94%（StockTitan）",
-    "Anthropic IPO 路演進行中，目標估值 1.25～1.75 兆美元、力拚感恩節前掛牌；AI 股修正讓定價承壓（Seeking Alpha 11/8 週報）"
-   ]
-  }
- ],
- "mega": {
-  "intro": "依市值排名。市值＝StockTitan 11/6 收盤市值 × 11/9 收盤價 ÷ 11/6 收盤價現算；11/9 收盤價取自鉅亨網（AAPL、NVDA、MSFT、GOOGL、AMZN、META、AVGO、TSM）與 Vista Global（SPCX）。TSLA、BRK.B、LLY、WMT 未取得 11/9 精確收盤公開來源，沿用 11/6 數據並註明。沃爾瑪 11/6 市值 9,958 億，暫時低於 1 兆但仍列出供追蹤。沙烏地阿美以 10 月初市值列入。",
-  "wk_label": "11/9 單日",
-  "rows": [
-   {
-    "t": "AAPL",
-    "n": "Apple",
-    "cap": "5.09 兆",
-    "px": "350.69",
-    "wk": "+2.43%",
-    "news": "〔11/9 無重大新公司公告〕隨大盤反彈 +2.43%；先前指引假期季毛利率 45%～46%（記憶體成本上升）。",
-    "impact": "風險偏好回升受惠；記憶體漲價壓毛利仍是主線。",
-    "win": [
-     "MU",
-     "SKHY（記憶體漲價）"
-    ],
-    "lose": [
-     "AAPL（毛利）"
-    ]
-   },
-   {
-    "t": "NVDA",
-    "n": "Nvidia",
-    "cap": "4.32 兆",
-    "px": "178.67",
-    "wk": "−4.27%",
-    "news": "董事會獨立調查黃仁勳與被指為中國情報人員的 Alice Huang 關係；盤中一度跌近 9%、收 4 月以來低點；分析師示警「關鍵人物風險」與出口管制加嚴風險；川普稱未與黃仁勳談過此事。11/17 財報、11/18 國會閉門簡報。",
-    "impact": "短線：治理＋出口管制政治化讓估值折價擴大，資金轉往替代供應；若調查發現外洩或 CEO 異動，將衝擊整個 AI 供應鏈。中期需求（超大規模資本支出）未變。",
-    "win": [
-     "AMD（替代 GPU）",
-     "AVGO（ASIC）",
-     "GOOGL（TPU）"
-    ],
-    "lose": [
-     "NVDA",
-     "SMCI",
-     "Megaspeed 相關通路"
-    ]
-   },
-   {
-    "t": "MSFT",
-    "n": "Microsoft",
-    "cap": "4.05 兆",
-    "px": "545.18",
-    "wk": "+2.75%",
-    "news": "〔11/9 無重大新公司公告〕隨科技股反彈；2026 資本支出約 1,700 億美元、逾 800 億第三方算力承諾。",
-    "impact": "資料中心監管疑慮降溫有利於其資本支出計畫推進。",
-    "win": [
-     "MSFT",
-     "ORCL"
-    ],
-    "lose": [
-     "IREN（Horizon 專案延後）"
-    ]
-   },
-   {
-    "t": "GOOGL",
-    "n": "Alphabet",
-    "cap": "3.54 兆",
-    "px": "288.15",
-    "wk": "+1.18%",
-    "news": "發表第八代 TPU：8t 訓練、8i 推論（AI 代理），直接挑戰 Nvidia；Q3 營收 +25% 至 1,276 億美元、Google Cloud 營收翻倍以上。",
-    "impact": "自研晶片降低對 Nvidia 依賴，並可對外出租；ASIC 設計夥伴同步受惠。",
-    "win": [
-     "GOOGL",
-     "AVGO（TPU 設計夥伴）",
-     "TSM（代工）"
-    ],
-    "lose": [
-     "NVDA（推論份額）"
-    ]
-   },
-   {
-    "t": "AMZN",
-    "n": "Amazon",
-    "cap": "2.88 兆",
-    "px": "266.93",
-    "wk": "+2.94%",
-    "news": "〔11/9 無重大新公司公告〕延續上週相對強勢（上週 +7.9%）；2026 資本支出約 2,200 億美元。",
-    "impact": "自建比例高、受監管衝擊相對小，是 AI 基建的相對贏家。",
-    "win": [
-     "AMZN",
-     "VRT"
-    ],
-    "lose": [
-     "—"
-    ]
-   },
-   {
-    "t": "TSM",
-    "n": "台積電",
-    "cap": "2.02 兆",
-    "px": "388.62",
-    "wk": "+3.51%",
-    "news": "今日（11/10）公布 10 月營收；ADR 隨晶片股反彈 +3.51%，台指期夜盤 +2.57%。",
-    "impact": "AI 晶片無論 GPU 或 ASIC 都由台積電代工，Nvidia 份額轉移對其中性；10 月營收是短線焦點。",
-    "win": [
-     "TSM",
-     "2330.TW"
-    ],
-    "lose": [
-     "—"
-    ]
-   },
-   {
-    "t": "SPCX",
-    "n": "SpaceX",
-    "cap": "1.93 兆",
-    "px": "142.07",
-    "wk": "+5.81%",
-    "news": "獲 NASA 選為 8 家月球基地得標商之一（合計最高 100 億美元）；馬斯克預估 2027 年 12 月年化經常性營收逾 5,000 億美元（分析師平均約 1,800 億）。",
-    "impact": "政府太空合約增加營收可見度；但馬斯克預測遠高於市場共識，需打折看待。",
-    "win": [
-     "SPCX",
-     "RKLB"
-    ],
-    "lose": [
-     "BA（月球計畫競爭）"
-    ]
-   },
-   {
-    "t": "META",
-    "n": "Meta",
-    "cap": "1.64 兆",
-    "px": "641.37",
-    "wk": "+5.12%",
-    "news": "〔11/9 無重大新公司公告〕七巨頭中漲幅最大之一（+5.12%），屬上週超跌反彈；2026 資本支出約 1,400 億美元。",
-    "impact": "AI 資本支出敘事回溫的直接受惠者。",
-    "win": [
-     "META",
-     "ARM"
-    ],
-    "lose": [
-     "—"
-    ]
-   },
-   {
-    "t": "AVGO",
-    "n": "Broadcom",
-    "cap": "1.52 兆",
-    "px": "319.48",
-    "wk": "+8.78%",
-    "news": "〔11/9 無重大新公司公告〕Nvidia 調查讓 ASIC 替代路線受青睞，Alphabet 新 TPU 亦由其協同設計；為 Anthropic 設備融資提供最高約 430 億美元擔保。",
-    "impact": "GPU 以外的 AI 算力路線獲資金青睞；Anthropic IPO 定價高低影響其擔保風險評價。",
-    "win": [
-     "AVGO",
-     "MRVL"
-    ],
-    "lose": [
-     "NVDA（份額）"
-    ]
-   },
-   {
-    "t": "TSLA",
-    "n": "Tesla",
-    "cap": "1.42 兆（11/6）",
-    "px": "358.22（11/6）",
-    "wk": "+5% 以上",
-    "news": "馬斯克稱 Cybertruck 約 8 個月後停產並退還部分訂金，產能轉給 Cybercab；似確認動工 101 億美元德州太陽能電池廠。21 經濟網：收漲超 5%（未取得精確收盤價，股價與市值沿用 11/6）。",
-    "impact": "停產 Cybertruck 成本低（Q3 其他車款僅 8,295 輛）；Robotaxi 與能源敘事延續。",
-    "win": [
-     "TSLA",
-     "FSLR 以外的太陽能設備商"
-    ],
-    "lose": [
-     "Cybertruck 零組件供應商"
-    ]
-   },
-   {
-    "t": "BRK.B",
-    "n": "波克夏",
-    "cap": "1.22 兆（11/6）",
-    "px": "570.89（11/6）",
-    "wk": "—",
-    "news": "〔11/9 無新公司公告；未取得 11/9 收盤公開來源〕Q3 營業利益 −5.8%、回購約 96 億美元（翻倍）、現金 3,523 億美元。",
-    "impact": "市場轉向風險資產時，防禦型權值股相對落後；回購提供下檔支撐。",
-    "win": [
-     "BRK.B"
-    ],
-    "lose": [
-     "—"
-    ]
-   },
-   {
-    "t": "LLY",
-    "n": "禮來",
-    "cap": "1.21 兆（11/6）",
-    "px": "1,354.00（11/6）",
-    "wk": "—",
-    "news": "FDA 要求禮來與諾和諾德在 GLP-1 藥物警示罕見視力副作用（Investrade）；11/6 宣布經 Hims & Hers 擴大 Zepbound、Foundayo 自費通路。未取得 11/9 收盤公開來源。",
-    "impact": "警語增加訴訟與處方保守風險；自費通路擴大有利量、壓縮單價。",
-    "win": [
-     "HIMS（通路）"
-    ],
-    "lose": [
-     "LLY",
-     "NVO（同類警語）"
-    ]
-   },
-   {
-    "t": "WMT",
-    "n": "沃爾瑪",
-    "cap": "9,958 億（11/6，略低於 1 兆）",
-    "px": "125.52（11/6）",
-    "wk": "—",
-    "news": "〔11/9 無新公司公告；未取得 11/9 收盤公開來源〕11/6 市值 9,958 億美元，暫時跌破 1 兆；週一必需消費為表現最弱類股之一。油價下跌有利消費者實質購買力。",
-    "impact": "資金由防禦股轉回科技／工業，短線相對落後；油價下跌是中期支撐。",
-    "win": [
-     "WMT",
-     "COST（消費力）"
-    ],
-    "lose": [
-     "—"
-    ]
-   },
-   {
-    "t": "2222.SR",
-    "n": "沙烏地阿美",
-    "cap": "約 1.6 兆（10/2）",
-    "px": "—",
-    "wk": "—",
-    "news": "胡塞 11/8 攻擊利雅德阿美大樓後，又擊中麥地那地區東西向輸油管、火勢已撲滅、營運未受影響；布蘭特週一 −5.85%；OPEC 10 月增產 138 萬桶／日。",
-    "impact": "油價下跌＋設施遭襲，營收與風險溢價雙重壓力；航空、運輸受惠於油價。",
-    "win": [
-     "DAL",
-     "UAL",
-     "LUV（燃油成本）"
-    ],
-    "lose": [
-     "2222.SR",
-     "XOM",
-     "CVX"
-    ]
-   }
+  "sources": [
+    {
+      "t": "鉅亨網：〈美股盤後〉美CPI超預期 12月升息兩碼機率升 四大指數盡墨 輝達再挫超5%（道瓊、標普、那斯達克、費半收盤與個股收盤）",
+      "u": "https://news.cnyes.com/news/id/6657862"
+    },
+    {
+      "t": "investingLive Americas FX wrap 10 Nov（那指 100 27,740.80、2／5／10／30 年期殖利率、FX、商品、CPI 細項、Fed 官員發言、10 年期標售）",
+      "u": "https://www.louisvelazquez.com/investinglive-americas-fx-news-wrap-10-nov-its-a-wrap-hot-us-cpi-puts-a-bigger-fed-hike-in-play/"
+    },
+    {
+      "t": "Yahoo Finance：Dow, S&P 500, Nasdaq slip as hot CPI fuels rate hike odds（羅素、VIX、黃金、比特幣、升息機率）",
+      "u": "https://finance.yahoo.com/markets/live/stock-market-today-tuesday-november-10-dow-sp-500-nasdaq-inflation-data-cpi-090627830.html"
+    },
+    {
+      "t": "TheStreet：Stock Market Today Nov. 10, 2026（羅素、10 年期、漲跌家數、個股）",
+      "u": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-nov-10-2026"
+    },
+    {
+      "t": "StockTitan：The Stock Market Today, November 10, 2026（QQQ −0.68%、CPI、Nvidia、微軟）",
+      "u": "https://www.stocktitan.net/articles/stock-market-today-live-november-10-2026"
+    },
+    {
+      "t": "FNArena：The Overnight Report: CPI Up, Markets Down（VIX、2／10 年期、美元指數、商品、RBA、家庭債務）",
+      "u": "https://fnarena.com/2026/11/11/the-overnight-report-cpi-up-markets-down/"
+    },
+    {
+      "t": "24/7 Wall St.：US stocks closed lower; Technology lags（類股表現）",
+      "u": "https://247wallst.com/cards/us-stocks-closed-lower-technology-lags-while-financials-and-communication-servic-spy-market-explainer-01m73qyjzbtvqd6e7bax73kfa0"
+    },
+    {
+      "t": "Le Private Banker：Dollar Rebounds on Hot CPI（上週五 DXY、ECB Lane）",
+      "u": "https://leprivatebanker.com/2026/11/10/dollar-rebounds-on-hot-cpi-as-euro-falls-below-1-12-and-sterling-drops-0-8-but-the-index-stays-under-fridays-close/"
+    },
+    {
+      "t": "24/7 Wall St.：CoreWeave Q3 2026（營收、指引、未完成訂單）",
+      "u": "https://247wallst.com/cards/coreweave-q3-2026-earnings-crwv-01m73msrkgrgan75a5t7tb9fmz"
+    },
+    {
+      "t": "TradingKey：Microsoft Shares Drop Over 3% as Anthropic Launches Office Tools",
+      "u": "https://www.tradingkey.com/analysis/stocks/us-stocks/262299276-microsoft-stock-drops-anthropic-claude-office-tools-microsoft-365-competition-tradingkey"
+    },
+    {
+      "t": "Bloomberg：Anthropic Unveils Office Tools Ahead of IPO",
+      "u": "https://www.bloomberg.com/news/articles/2026-11-10/anthropic-unveils-office-tools-ahead-of-ipo-taking-on-microsoft"
+    },
+    {
+      "t": "PBS NewsHour／AP：Russia and Ukraine hold nearly 4 hours of U.S.-mediated talks in Abu Dhabi",
+      "u": "https://www.pbs.org/newshour/world/russia-and-ukraine-hold-nearly-4-hours-of-u-s-mediated-talks-in-abu-dhabi"
+    },
+    {
+      "t": "Gotrade：Tesla Stock Rises 5.5% on San Antonio Robotaxi Launch（11/9 收盤）",
+      "u": "https://www.heygotrade.com/en/news/tesla-tsla-stock-news-november-10-2026/"
+    },
+    {
+      "t": "TokenPost：SpaceX Shares Fall 1.45%（11/10 早盤）",
+      "u": "https://www.tokenpost.com/news/investing/53164"
+    },
+    {
+      "t": "Nasdaq Global Indexes：NDX Overview（11/9 收盤 27,907.63 基準）",
+      "u": "https://indexes.nasdaqomx.com/Index/Overview/NDX"
+    },
+    {
+      "t": "前一版 data/daily/2026-11-10.json（11/6、11/9 收盤基準與 10/30 起逐日漲跌，來源見該版）",
+      "u": "https://github.com/WUYANLIN8866/bnasdaq/blob/0a75cc2f/data/daily/2026-11-10.json"
+    }
   ]
- },
- "sources": [
-  {
-   "t": "鉅亨網：〈美股盤後〉道瓊飆逾1100點 標普創4月來最佳日 輝達逆勢跌超4%（指數、個股收盤價、油價）",
-   "u": "https://news.cnyes.com/news/id/6654538"
-  },
-  {
-   "t": "聯合報：美股收盤／三大指數強彈逾2% 費半狂飆6.8%（分析師引述、FedWatch）",
-   "u": "https://udn.com/news/story/6811/9868074"
-  },
-  {
-   "t": "Nasdaq Global Indexes：NDX Overview（那指 100 收盤 27,907.63、日高低）",
-   "u": "https://indexes.nasdaqomx.com/Index/Overview/NDX"
-  },
-  {
-   "t": "TheStreet：Stock Market Today Nov. 9, 2026（那指 100 +3.40%、上漲家數、Hathorn 引述）",
-   "u": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-nov-09-202"
-  },
-  {
-   "t": "Yahoo Finance：Nasdaq surges despite Nvidia stock slide（羅素、VIX、10 年期、Tesla、SpaceX、Alphabet）",
-   "u": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-9-dow-sp-500-nasdaq-nvidia-090535419.html"
-  },
-  {
-   "t": "JournalArta：S&P 500 Up 2.35%, Nasdaq Up 2.74%（DXY、EUR/USD、USD/JPY）",
-   "u": "https://journalarta.com/en/2026/11/10/stock-market-today-sp-500-surges-2-35-to-7549-94-and-nasdaq-jumps-2-74-as-oil-falls-and-vix-drops/"
-  },
-  {
-   "t": "Investrade：Market Review November 09, 2026（羅素點數、商品、紐約聯準通膨預期、個股事件）",
-   "u": "https://investrade.com/market-review-november-09-2026/"
-  },
-  {
-   "t": "Eurasia Business News：Nvidia Slides Amid Alleged Chinese Spying（2／10／30 年期殖利率、Crisafulli）",
-   "u": "https://eurasiabusinessnews.com/2026/11/09/stock-market-today-nov-9-2026-nvidia-slides-amid-alleged-chinese-spying-as-dow-surges-over-1000-points/"
-  },
-  {
-   "t": "Trading Economics：US 2-Year Note Yield（11/9 2／10／30 年期）",
-   "u": "https://tradingeconomics.com/united-states/2-year-note-yield"
-  },
-  {
-   "t": "Investing.com：U.S. 3-year Treasury auction draws weak demand",
-   "u": "https://www.investing.com/news/economy-news/us-3year-treasury-auction-draws-weak-demand-amid-yield-decline-93CH-5013059"
-  },
-  {
-   "t": "Iran International：Oil prices fall as Trump signals fresh Iran strikes unlikely（川普 CNN 訪問、Araghchi）",
-   "u": "https://www.iranintl.com/en/202611092172"
-  },
-  {
-   "t": "Korea Times／Reuters：Oil falls almost 5% as Trump signals restraint on Iran（東西向輸油管、OPEC 產量）",
-   "u": "https://www.koreatimes.co.kr/world/20261110/oil-falls-almost-5-as-trump-signals-restraint-on-iran"
-  },
-  {
-   "t": "StockTitan：Nvidia Falls in the Stock Market Today Live, November 9, 2026",
-   "u": "https://www.stocktitan.net/articles/stock-market-today-live-november-9-2026"
-  },
-  {
-   "t": "StockTitan：Largest companies by market cap（11/6 收盤市值基準）",
-   "u": "https://www.stocktitan.net/rankings/companies-market-cap"
-  },
-  {
-   "t": "Vista Global：Dow Jumps 1,104 Points（羅素、SPCX 142.07、Alphabet TPU、SpaceX 營收預估）",
-   "u": "https://vistapglobal.com/stock-market-today-november-9-2026-dow-jumps-1104-points-nasdaq-rallies-as-oils-slide-fuels-breadth-amwl-ant-eprx-googl-modd-nvda-ser-spcx/"
-  },
-  {
-   "t": "21 經濟網：美股三大指數狂飆（七巨頭漲跌、Tesla 漲超 5%）",
-   "u": "https://www.21jingji.com/article/20261110/herald/e33b851a030bdd27f9cb0e311ce4e388.html"
-  },
-  {
-   "t": "新浪／新華社：紐約股市三大股指9日顯著上漲（類股漲幅）",
-   "u": "https://k.sina.cn/article_1699432410_654b47da02001xtoe.html"
-  },
-  {
-   "t": "知新聞：美股全收紅 輝達挫收4.27%（台積電 ADR、台指期夜盤）",
-   "u": "https://knews.com.tw/news/1E25825541D68CCA6413BCD323BE83F8"
-  },
-  {
-   "t": "StreetInsider：Alphabet launches two TPU chips for AI agent workloads",
-   "u": "https://www.streetinsider.com/Basic+Content/Alphabet+launches+two+TPU+chips+for+AI+agent+workloads/26347700.html"
-  },
-  {
-   "t": "investingLive：US to host second Ukraine-Russia trilateral talks in Abu Dhabi on November 10 to 11",
-   "u": "https://investinglive.com/commodities/us-to-host-second-ukraine-russia-trilateral-talks-in-abu-dhabi-on-november-10-to-11/"
-  },
-  {
-   "t": "本站 2026-11-09 報告（11/6 收盤、10/30 基準與 11/2–11/6 逐日漲跌）",
-   "u": "daily.html?d=2026-11-09"
-  }
- ]
 }
