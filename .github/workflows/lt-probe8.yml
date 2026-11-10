@@ -14,13 +14,21 @@ jobs:
         with: { python-version: '3.12' }
       - run: |
           mkdir -p data/lt/etf data/heatmap
-          for e in QQQ IVV SPY SOXQ; do curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/etf/$e.json" -o "data/lt/etf/$e.json"; done
+          for e in QQQ IVV SPY SOXQ 0050; do curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/etf/$e.json" -o "data/lt/etf/$e.json"; done
           curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/universe.json" -o data/lt/universe.json
-          python3 scripts/fetch_heatmap.py --force
+          curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/heatmap/latest.json" -o data/heatmap/latest.json
+          python3 scripts/fetch_heatmap.py
           python3 - <<'PY'
           import json
           d = json.load(open('data/heatmap/latest.json'))
-          s = d['sets']['sox']; print('SOX', s['n'], s['cap_total_bn'], [(t[0], t[1], t[3], t[4]) for t in s['tiles'][:8]])
-          print('SOX 估算', [t[0] for t in s['tiles'] if t[6]], '沒漲跌', [t[0] for t in s['tiles'] if t[4] is None])
+          print('SETS', list(d['sets']), 'US session', d['session'])
+          s = d['sets'].get('tw50')
+          if s:
+              print('TW50', s['session'], s['n'], s['cap_total_bn'], [(t[0], t[1], t[2], t[3], t[4], t[5]) for t in s['tiles'][:10]])
+              print('TW50 估算', [t[0] for t in s['tiles'] if t[6]], '沒漲跌', [t[0] for t in s['tiles'] if t[4] is None])
+              print('TW50 跌', sum(1 for t in s['tiles'] if (t[4] or 0) < 0), '漲', sum(1 for t in s['tiles'] if (t[4] or 0) > 0))
           PY
+          python3 scripts/fetch_treasury.py
+          python3 -c "import json;d=json.load(open('data/treasury_curve.json'));print('CURVE',len(d['rows']),d['rows'][0][0],d['rows'][-1])"
       - run: echo "HMJSON:$(base64 -w0 data/heatmap/latest.json)"
+      - run: echo "CURVEJSON:$(base64 -w0 data/treasury_curve.json)"
