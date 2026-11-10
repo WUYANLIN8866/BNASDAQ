@@ -70,15 +70,45 @@ def ysym(code, market):
 
 def timeseries(sym):
     types = ['annual' + t for t in ANNUAL] + ['quarterly' + t for t in QUARTER] + ['trailing' + t for t in TRAIL]
-    out = {}
+    out, curs = {}, {}
     for i in range(0, len(types), 24):   # 一次最多 24 個欄位，避免網址過長
         j = json.loads(get(f'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{sym}?symbol={sym}&type={",".join(types[i:i + 24])}'
                            f'&period1=1420070400&period2={int(time.time())}'))
         for r in (j.get('timeseries') or {}).get('result') or []:
             t = r['meta']['type'][0]
             out[t] = [(x['asOfDate'], x['reportedValue']['raw']) for x in (r.get(t) or []) if x and x.get('reportedValue') and x['reportedValue'].get('raw') is not None]
+            for x in (r.get(t) or []):
+                if x and x.get('currencyCode') and t.startswith('annualTotalRevenue'):
+                    curs[x['currencyCode']] = curs.get(x['currencyCode'], 0) + 1
         time.sleep(0.15)
-    return out
+    return out, (max(curs, key=curs.get) if curs else None)
+
+
+MONEY_SKIP = {'d', 'shs', 'shs_out'}   # 股數不是金額；EPS 也是報表幣別，一起換算
+
+
+def conv(t, fx):
+    """財報表（{d, 欄位:[...]} 或 {欄位: 值}）的金額欄位乘上匯率，換成上市幣別。"""
+    if not t or fx in (None, 1):
+        return t
+    o = {}
+    for k, v in t.items():
+        if k in MONEY_SKIP:
+            o[k] = v
+        elif isinstance(v, list):
+            o[k] = [x * fx if isinstance(x, (int, float)) else x for x in v]
+        elif isinstance(v, (int, float)):
+            o[k] = v * fx
+        else:
+            o[k] = v
+    return o
+
+
+def fx_rate(fin, lst):
+    """1 單位報表幣別 = ? 上市幣別（Yahoo 匯率最近收盤）。"""
+    j = json.loads(get(f'https://query2.finance.yahoo.com/v8/finance/chart/{fin}{lst}=X?range=5d&interval=1d'))
+    c = [x for x in j['chart']['result'][0]['indicators']['quote'][0]['close'] if x]
+    return c[-1] if c else None
 
 
 def table(ts, prefix, names, keep):
@@ -395,7 +425,7 @@ def main():
         sym = ysym(c, u['market'])
         rec = {'code': c}
         try:
-            ts = timeseries(sym)
+            ts, rec['fin_cur'] = timeseries(sym)
             rec['A'] = table(ts, 'annual', ANNUAL, 5)
             rec['Q'] = table(ts, 'quarterly', QUARTER, 5)
             rec['T'] = {KEY[n]: (ts.get('trailing' + n) or [(None, None)])[-1][1] for n in TRAIL}
@@ -416,19 +446,36 @@ def main():
             got[c] = rec
     log('財報取得', sum(1 for r in got.values() if r.get('A', {}).get('d')), '/', len(got), '；股價', sum(1 for r in got.values() if r.get('px')), '/', len(got))
     tw = tw_sources([c for c in codes if uni[c]['market'] == 'TW']) if any(uni[c]['market'] == 'TW' for c in codes) else {}
+    # 報表幣別 ≠ 上市幣別（例：TSM 美國 ADR 的財報是台幣）→ 換算成上市幣別再算估值與跨公司比較
+    LST = {'US': 'USD', 'TW': 'TWD'}
+    pairs = {(r.get('fin_cur'), LST[uni[c]['market']]) for c, r in got.items() if r.get('fin_cur') and r.get('fin_cur') != LST[uni[c]['market']]}
+    FX = {}
+    for fin, lst in pairs:
+        try:
+            FX[(fin, lst)] = fx_rate(fin, lst)
+        except Exception as e:  # noqa
+            log('匯率失敗', fin, lst, repr(e)[:100])
+    log('匯率', {f'{a}→{b}': v for (a, b), v in FX.items()})
+    for c, r in got.items():
+        lst = LST[uni[c]['market']]
+        r['fx'] = 1.0 if (not r.get('fin_cur') or r['fin_cur'] == lst) else FX.get((r['fin_cur'], lst))
 
     # 指標
     M = {}
     for c, r in got.items():
         u = uni[c]
         cap = (u['cap_bn'] or 0) * 1e9
-        M[c] = metrics(r.get('A') or {}, r.get('T') or {}, r.get('px') or {}, cap, u['sector'] + ' ' + u.get('industry', ''))
+        if r.get('fx') is None:   # 換不了匯率：只算與幣別無關的比率
+            M[c] = metrics(r.get('A') or {}, {}, r.get('px') or {}, None, u['sector'] + ' ' + u.get('industry', ''))
+        else:
+            M[c] = metrics(conv(r.get('A') or {}, r['fx']), conv(r.get('T') or {}, r['fx']), r.get('px') or {}, cap, u['sector'] + ' ' + u.get('industry', ''))
     # 產業市占（同一市場、同一產業；最新年度營收）
     groups = {}
     for c in got:
         u = uni[c]
         g = (u['market'], u.get('industry') or u['sector'])
         rv = last((got[c].get('A') or {}).get('rev'))
+        rv = rv * got[c]['fx'] if (rv and got[c].get('fx')) else None
         if rv and rv > 0:
             groups.setdefault(g, []).append((c, rv))
     for g, lst in groups.items():
@@ -464,7 +511,7 @@ def main():
         peers = same[:5]
         m = {k: (round(v, 6) if isinstance(v, float) else v) for k, v in M[c].items()}
         out = {'schema': 'bnasdaq-company/1', 'code': c, 'name': u['name'], 'market': u['market'], 'cur': 'TWD' if u['market'] == 'TW' else 'USD', 'sector': u['sector'], 'industry': u.get('industry') or '',
-               'updated': NOW.strftime('%Y-%m-%dT%H:%M:%SZ'), 'cap_bn': u['cap_bn'], 'A': r.get('A'), 'Q': r.get('Q'), 'T': r.get('T'), 'T_d': r.get('T_d'), 'm': m, 's': S[c], 'peers': peers,
+               'updated': NOW.strftime('%Y-%m-%dT%H:%M:%SZ'), 'cap_bn': u['cap_bn'], 'fin_cur': r.get('fin_cur'), 'fx': r.get('fx'), 'A': r.get('A'), 'Q': r.get('Q'), 'T': r.get('T'), 'T_d': r.get('T_d'), 'm': m, 's': S[c], 'peers': peers,
                'tw': tw.get(c) or None, 'err': {k: v for k, v in r.items() if k.startswith('err_')} or None,
                'src': [{'t': '財報：Yahoo Finance（fundamentals-timeseries，年度、季度、近四季）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/financials'},
                        {'t': '股價：Yahoo Finance 近 1 年日線（還原權息）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/history'}]}

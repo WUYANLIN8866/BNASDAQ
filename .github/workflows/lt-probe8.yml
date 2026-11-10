@@ -14,9 +14,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: |
-          pip install -q pypdf
+          pip install -q pypdf cryptography
+          python3 probe/pdf10.py
           git fetch -q origin main && git checkout origin/main -- data/heatmap/latest.json data/fund
-          python3 scripts/fetch_company.py --codes NVDA,AMD,AVGO,INTC,TSM,QCOM,MU,AAPL,MSFT,JPM,BRK-B,2330,2317,2454,2881,2308,2412
+          python3 scripts/fetch_company.py --codes NVDA,AMD,AVGO,INTC,TSM,QCOM,MU,ASML,ARM,AAPL,MSFT,JPM,2330,2317,2454,2308
           tar czf /tmp/co.tgz data/company
           ls -la data/company | head -30
           echo "COTGZ:$(base64 -w0 /tmp/co.tgz)"
