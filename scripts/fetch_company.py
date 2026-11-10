@@ -124,12 +124,25 @@ def table(ts, prefix, names, keep):
 
 
 def price_1y(sym):
+    """近 1 年日線：還原權息收盤（算報酬、波動、Beta）＋原始收盤（畫股價走勢、技術指標）。"""
     j = json.loads(get(f'https://query2.finance.yahoo.com/v8/finance/chart/{sym}?range=1y&interval=1d'))
     r = j['chart']['result'][0]
-    c = [x for x in (r['indicators'].get('adjclose') or [{}])[0].get('adjclose') or r['indicators']['quote'][0]['close']]
+    raw = r['indicators']['quote'][0]['close']
+    c = [x for x in (r['indicators'].get('adjclose') or [{}])[0].get('adjclose') or raw]
     ts = r.get('timestamp') or []
     pts = [(t, v) for t, v in zip(ts, c) if v is not None]
-    return pts, r.get('meta') or {}
+    daily = [(dt.datetime.fromtimestamp(t, dt.timezone.utc).strftime('%Y-%m-%d'), round(v, 4)) for t, v in zip(ts, raw) if v is not None]
+    return pts, r.get('meta') or {}, daily
+
+
+def price_5y(sym):
+    """近 5 年月線收盤（原始）＋現金股利紀錄（Yahoo chart events=div）。"""
+    j = json.loads(get(f'https://query2.finance.yahoo.com/v8/finance/chart/{sym}?range=5y&interval=1mo&events=div'))
+    r = j['chart']['result'][0]
+    ts, cl = r.get('timestamp') or [], r['indicators']['quote'][0]['close']
+    mon = [(dt.datetime.fromtimestamp(t, dt.timezone.utc).strftime('%Y-%m'), round(v, 4)) for t, v in zip(ts, cl) if v is not None]
+    dv = sorted((dt.datetime.fromtimestamp(int(d['date']), dt.timezone.utc).strftime('%Y-%m-%d'), round(d['amount'], 6)) for d in ((r.get('events') or {}).get('dividends') or {}).values())
+    return mon, dv
 
 
 # ------------------------------------------------------------------ 台股：證交所、集保
@@ -191,8 +204,40 @@ def tw_sources(codes):
     return out
 
 
+HDRW = {'股數', '持股比率', '持股比例', '持股', '比率', '比例', '名稱', '關係', '(%)', '股', '數', '名', '稱', '關', '係', '備', '註', '姓名', '姓', '備註', '%'}
+
+
+def _is_hdr(line):
+    toks = line.replace('\u3000', ' ').split()
+    return (toks and all(t in HDRW for t in toks)) or bool(re.search(r'持有股份|相互間|親屬|配偶|名義|單位|其名稱|姓名及關係|^\(?%\)?$|年\s*\d+\s*月\s*\d+\s*日', line))
+
+
+def parse_top10(text):
+    """「前十大股東相互間關係表」：名稱可能跨好幾行，數字（股數、持股比例%）在名稱之後；表頭與換頁表頭略過。"""
+    rows, buf = [], []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        m = re.match(r'^(.*?)\s*([\d,]{5,})\s+(\d+(?:\.\d+)?)\s*%', line)
+        if m:
+            name = re.sub(r'\s+', ' ', ''.join(buf) + m.group(1)).strip()
+            ok = len(re.findall(r'[\u4e00-\u9fffA-Za-z0-9()（）&.,\- ]', name)) >= 0.8 * max(1, len(name))   # 字型沒有對照表的 PDF 會解出亂碼：整列不要
+            if name and ok and re.search(r'[\u4e00-\u9fffA-Za-z]', name):
+                rows.append({'name': name, 'shares': num(m.group(2)), 'pct': num(m.group(3))})
+            buf = []
+            if len(rows) >= 10:
+                break
+            continue
+        if _is_hdr(line):
+            buf = []
+            continue
+        buf.append(line)
+    return rows
+
+
 def top10_pdf(u):
-    """證交所文件伺服器：先回一頁 HTML（內含真正 PDF 的連結），再下載 PDF 取表格文字。"""
+    """證交所文件伺服器：先回一頁 HTML（內含真正 PDF 的連結），再下載 PDF 取文字。掃描圖檔或字型沒有對照表的 PDF 取不到文字，就只留連結。"""
     html = get(u, timeout=90).decode('big5', 'replace')
     m = re.search(r"href='(/pdf/[^']+\.pdf)'", html)
     if not m:
@@ -200,15 +245,9 @@ def top10_pdf(u):
     pdf = get('https://doc.twse.com.tw' + m.group(1), timeout=120)
     from pypdf import PdfReader
     text = '\n'.join((p.extract_text() or '') for p in PdfReader(io.BytesIO(pdf)).pages)
-    rows = []
-    for line in text.splitlines():
-        line = line.strip()
-        mm = re.match(r'^(\d{1,2})?\s*(.+?)\s+([\d,]{4,})\s+([\d.]+)\s*%?', line)   # 名稱 股數 持股比例
-        if mm and len(rows) < 10:
-            nm = re.sub(r'\s+', ' ', mm.group(2)).strip()
-            if re.search(r'[一-鿿A-Za-z]', nm) and not re.search(r'姓名|名稱|合計|持股', nm):
-                rows.append({'name': nm, 'shares': num(mm.group(3)), 'pct': num(mm.group(4))})
-    return {'rows': rows, 'text': text[:4000]} if rows else {'rows': [], 'text': text[:4000]}
+    rows = parse_top10(text)
+    asof = re.search(r'(\d{2,3})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日', text)
+    return {'rows': rows, 'asof': f'{int(asof.group(1)) + 1911}-{int(asof.group(2)):02d}-{int(asof.group(3)):02d}' if asof else None, 'pdf': 'https://doc.twse.com.tw' + m.group(1)}
 
 
 # ------------------------------------------------------------------ 指標
@@ -338,7 +377,7 @@ def px_stats(pts, bench):
     out['pos52'] = (c[-1] - out['lo52']) / (out['hi52'] - out['lo52']) if out['hi52'] > out['lo52'] else None
     out['dd52'] = c[-1] / out['hi52'] - 1
     if bench:
-        bm = {dt.datetime.fromtimestamp(t, dt.timezone.utc).date(): v for t, v in bench}
+        bm = {dt.datetime.fromtimestamp(t, dt.timezone.utc).date(): v for t, v in bench[0]}
         pairs = [(bm.get(dt.datetime.fromtimestamp(t, dt.timezone.utc).date()), v) for t, v in pts]
         pairs = [(b, v) for b, v in pairs if b]
         if len(pairs) > 60:
@@ -416,7 +455,7 @@ def main():
     bench = {}
     for mk, sym in (('US', 'SPY'), ('TW', '0050.TW')):
         try:
-            bench[mk] = price_1y(sym)[0]
+            bench[mk] = price_1y(sym)
         except Exception as e:  # noqa
             log('基準價失敗', sym, repr(e)[:100])
 
@@ -433,11 +472,15 @@ def main():
         except Exception as e:  # noqa
             rec['err_fin'] = repr(e)[:120]
         try:
-            pts, meta = price_1y(sym)
+            pts, meta, rec['p1y'] = price_1y(sym)
             rec['px'] = px_stats(pts, bench.get(u['market']))
             rec['px_meta'] = {k: meta.get(k) for k in ('currency', 'longName', 'fiftyTwoWeekHigh', 'fiftyTwoWeekLow')}
         except Exception as e:  # noqa
             rec['err_px'] = repr(e)[:120]
+        try:
+            rec['p5y'], rec['divs'] = price_5y(sym)
+        except Exception as e:  # noqa
+            rec['err_p5y'] = repr(e)[:120]
         return c, rec
 
     got = {}
@@ -465,6 +508,10 @@ def main():
     for c, r in got.items():
         u = uni[c]
         cap = (u['cap_bn'] or 0) * 1e9
+        dv = r.get('divs') or []
+        if dv and (r.get('px') or {}).get('last_px'):
+            cut = (NOW - dt.timedelta(days=365)).strftime('%Y-%m-%d')
+            r.setdefault('px', {})['div_ttm'] = sum(a for d, a in dv if d > cut)
         if r.get('fx') is None:   # 換不了匯率：只算與幣別無關的比率
             M[c] = metrics(r.get('A') or {}, {}, r.get('px') or {}, None, u['sector'] + ' ' + u.get('industry', ''))
         else:
@@ -513,6 +560,7 @@ def main():
         out = {'schema': 'bnasdaq-company/1', 'code': c, 'name': u['name'], 'market': u['market'], 'cur': 'TWD' if u['market'] == 'TW' else 'USD', 'sector': u['sector'], 'industry': u.get('industry') or '',
                'updated': NOW.strftime('%Y-%m-%dT%H:%M:%SZ'), 'cap_bn': u['cap_bn'], 'fin_cur': r.get('fin_cur'), 'fx': r.get('fx'), 'A': r.get('A'), 'Q': r.get('Q'), 'T': r.get('T'), 'T_d': r.get('T_d'), 'm': m, 's': S[c], 'peers': peers,
                'tw': tw.get(c) or None, 'err': {k: v for k, v in r.items() if k.startswith('err_')} or None,
+               'p1y': r.get('p1y'), 'p5y': r.get('p5y'), 'divs': r.get('divs'), 'bench': 'SPY' if u['market'] == 'US' else '0050',
                'src': [{'t': '財報：Yahoo Finance（fundamentals-timeseries，年度、季度、近四季）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/financials'},
                        {'t': '股價：Yahoo Finance 近 1 年日線（還原權息）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/history'}]}
         if u['market'] == 'TW':
