@@ -160,7 +160,12 @@ def twse(path):
     return json.loads(get('https://openapi.twse.com.tw/v1' + path, timeout=120))
 
 
-def tw_sources(codes):
+TOP10_V = 1   # 前 10 大股東 PDF 解析方式的版本；改了解析方式就加 1，下次全部重抓
+
+
+def tw_sources(codes, prev=None):
+    """prev＝上一次的 tw 欄位（{代號: {...}}）：前 10 大股東 PDF 一年才更新一次，連結沒變就沿用上次結果，不重抓（文件伺服器很慢）。"""
+    prev = prev or {}
     out = {c: {} for c in codes}
     try:
         for r in twse('/opendata/t187ap11_L'):
@@ -302,16 +307,22 @@ def tw_sources(codes):
         log('金管會裁罰失敗', repr(e)[:120])
     try:
         links = {str(r.get('公司代號', '')).strip(): (r.get('前10大股東持股情形') or '').strip() for r in twse('/opendata/t187ap46_L_18')}
+        reused = 0
         for c in codes:
             u = links.get(c)
             if u:
                 out[c]['top10_src'] = u
+                old = prev.get(c) or {}
+                if old.get('top10_src') == u and old.get('top10') and old.get('top10_v', 1) == TOP10_V:
+                    out[c]['top10'], out[c]['top10_v'] = old['top10'], TOP10_V
+                    reused += 1
+                    continue
                 try:
-                    out[c]['top10'] = top10_pdf(u)
+                    out[c]['top10'], out[c]['top10_v'] = top10_pdf(u), TOP10_V
                 except Exception as e:  # noqa
                     log('前10大股東 PDF 失敗', c, repr(e)[:120])
                 time.sleep(0.3)
-        log('前10大股東 PDF：', sum(1 for c in codes if out[c].get('top10')), '/', len(codes))
+        log('前10大股東 PDF：', sum(1 for c in codes if out[c].get('top10')), '/', len(codes), '（沿用上次', reused, '家）')
     except Exception as e:  # noqa
         log('前10大股東清單失敗', repr(e)[:120])
     return out
@@ -605,7 +616,15 @@ def main():
                 log('進度', k, '/', len(codes), '已花 %.0f 秒' % (time.time() - t0))
             got[c] = rec
     log('財報取得', sum(1 for r in got.values() if r.get('A', {}).get('d')), '/', len(got), '；股價', sum(1 for r in got.values() if r.get('px')), '/', len(got))
-    tw = tw_sources([c for c in codes if uni[c]['market'] == 'TW']) if any(uni[c]['market'] == 'TW' for c in codes) else {}
+    prev_tw = {}
+    for c in codes:
+        f = os.path.join(OUT, c + '.json')
+        if uni[c]['market'] == 'TW' and os.path.isfile(f):
+            try:
+                prev_tw[c] = json.load(open(f, encoding='utf-8')).get('tw') or {}
+            except Exception:
+                pass
+    tw = tw_sources([c for c in codes if uni[c]['market'] == 'TW'], prev_tw) if any(uni[c]['market'] == 'TW' for c in codes) else {}
     # 報表幣別 ≠ 上市幣別（例：TSM 美國 ADR 的財報是台幣）→ 換算成上市幣別再算估值與跨公司比較
     LST = {'US': 'USD', 'TW': 'TWD'}
     pairs = {(r.get('fin_cur'), LST[uni[c]['market']]) for c, r in got.items() if r.get('fin_cur') and r.get('fin_cur') != LST[uni[c]['market']]}
