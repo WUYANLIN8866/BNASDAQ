@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""BNASDAQ｜10 個國際股市指數的月底收盤 → data/indices.json（首頁「報酬率走勢」用；公開資料，不含任何策略規則）。
+"""BNASDAQ｜10 個國際股市指數與全球股票指數（MSCI ACWI）的月底收盤 → data/indices.json（首頁「報酬率走勢」用；公開資料，不含任何策略規則）。
 
 指數為價格指數（不含息、當地幣別）；月份對齊 assets/data.js 的 SITE.window.months（例 2000-05～2026-09）。
 來源：Yahoo Finance chart API（沿用 fetch_stocks.fetch_yahoo）。任何一檔失敗只記錄，不影響其他檔。
@@ -15,6 +15,8 @@ INDICES = [
     ('^GSPC', 'S&P 500', '美國'), ('^DJI', '道瓊工業', '美國'), ('^IXIC', '那斯達克綜合', '美國'),
     ('^N225', '日經 225', '日本'), ('^HSI', '恒生', '香港'), ('^FTSE', '富時 100', '英國'),
     ('^GDAXI', 'DAX', '德國'), ('^FCHI', 'CAC 40', '法國'), ('^KS11', 'KOSPI', '韓國'), ('^TWII', '台灣加權', '台灣'),
+    # 全球股票指數（首頁比較基準：報酬率輸它的國際指數不列入）：MSCI ACWI 全球（已開發＋新興市場）價格指數，美元
+    ('^892400-USD-STRD', '全球股票指數 MSCI ACWI', '全球'),
 ]
 
 

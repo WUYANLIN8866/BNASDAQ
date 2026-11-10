@@ -4,7 +4,7 @@
 月份：2000-05 起至「最後一個完整月」（由 data/market.json 判斷：QQQ 已出現下一個月的交易日的月份），
       與首頁回測（assets/bt.js，每月初延伸到上個月底）同一個終點。
 序列：SPY、BRK-B（Yahoo 還原收盤，美元）；0050、2330（Yahoo 還原收盤，台幣，沿用 fetch_stocks.py 的台股資料錯誤修正）；
-      10 個國際指數（Yahoo 收盤，價格指數、當地幣別，清單同 fetch_indices.py）。
+      10 個國際指數與全球股票指數 MSCI ACWI（Yahoo 收盤，價格指數；ACWI 為美元、其他為當地幣別；清單同 fetch_indices.py）。
 月底值＝該月最後一個交易日；個股以第一個有效月＝1 正規化（首頁只看同一起點的相對變化）。
 任何一檔失敗只略過該檔；全部失敗、或終點比現有檔案舊時，保留原檔不覆蓋；內容沒變不重寫。
 用法：python3 scripts/fetch_home.py
