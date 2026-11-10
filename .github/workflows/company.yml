@@ -1,0 +1,34 @@
+name: Update company analysis data (weekly)
+on:
+  workflow_dispatch:
+    inputs:
+      codes:
+        description: '逗號分隔代號（留空＝熱力圖四個指數全部）'
+        required: false
+        default: ''
+  schedule:
+    - cron: '37 21 * * 6'   # 每週日 05:37 台北（基本面 04:00 更新之後）
+permissions:
+  contents: write
+  actions: write
+concurrency: { group: company, cancel-in-progress: false }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -q pypdf cryptography
+      - run: python3 scripts/fetch_company.py --codes "${{ github.event.inputs.codes }}"
+      - name: Commit and redeploy the site
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
+          git add data/company
+          if git diff --cached --quiet; then echo "company data unchanged"; exit 0; fi
+          git commit -m "data: company analysis"
+          git pull --rebase -X theirs origin main
+          git push origin HEAD:main
+          gh workflow run site.yml --ref main
