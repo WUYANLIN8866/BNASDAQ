@@ -7,28 +7,43 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
       - run: |
-          mkdir -p data/lt/etf data/heatmap
-          for e in QQQ IVV SPY SOXQ 0050; do curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/etf/$e.json" -o "data/lt/etf/$e.json"; done
-          curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/universe.json" -o data/lt/universe.json
-          curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/heatmap/latest.json" -o data/heatmap/latest.json
-          python3 scripts/fetch_heatmap.py
-          python3 - <<'PY'
-          import json
-          d = json.load(open('data/heatmap/latest.json'))
-          print('SETS', list(d['sets']), 'US session', d['session'])
-          s = d['sets'].get('tw50')
-          if s:
-              print('TW50', s['session'], s['n'], s['cap_total_bn'], [(t[0], t[1], t[2], t[3], t[4], t[5]) for t in s['tiles'][:10]])
-              print('TW50 估算', [t[0] for t in s['tiles'] if t[6]], '沒漲跌', [t[0] for t in s['tiles'] if t[4] is None])
-              print('TW50 跌', sum(1 for t in s['tiles'] if (t[4] or 0) < 0), '漲', sum(1 for t in s['tiles'] if (t[4] or 0) > 0))
-          PY
-          python3 scripts/fetch_treasury.py
-          python3 -c "import json;d=json.load(open('data/treasury_curve.json'));print('CURVE',len(d['rows']),d['rows'][0][0],d['rows'][-1])"
-      - run: echo "HMJSON:$(base64 -w0 data/heatmap/latest.json)"
-      - run: echo "CURVEJSON:$(base64 -w0 data/treasury_curve.json)"
+          B=https://wuyanlin8866.github.io/BNASDAQ
+          for i in $(seq 1 90); do   # 等第 2 批部署上線（最多 15 分鐘）
+            if curl -s "$B/data/heatmap/latest.json?t=$(date +%s)" | grep -q '"tw50"' && curl -s "$B/valuation.html?t=$(date +%s)" | grep -q 'id="detail"'; then echo "上線（第 $i 次檢查）"; break; fi; sleep 10; done
+          T=$(date +%s)
+          echo "CHK daily 分頁：$(curl -s "$B/daily.html?t=$T" | grep -o 'data-set="[a-z0-9]*"' | tr '\n' ' ')"
+          echo "CHK daily 圓餅圖/殖利率曲線程式：$(curl -s "$B/daily.html?t=$T" | grep -c 'function pieChart\|function bondPanel\|function ycChart')"
+          echo "CHK heatmap：$(curl -s "$B/data/heatmap/latest.json?t=$T" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d["session"],{k:(v["n"],v.get("session")) for k,v in d["sets"].items()})')"
+          echo "CHK 殖利率曲線：$(curl -s "$B/data/treasury_curve.json?t=$T" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(len(d["rows"]),d["rows"][-1])')"
+          echo "CHK valuation 詳細分析區塊：$(curl -s "$B/valuation.html?t=$T" | grep -c 'id="detail"')"
+          echo "CHK taiwan 26111 序列：$(curl -s "$B/taiwan.html?t=$T" | grep -c 'bt-sat.js')"
+          cat > live.js <<'JS'
+          const { chromium, devices } = require('playwright');
+          (async () => { const b = await chromium.launch(); const errs = []; const B = process.argv[2];
+            const p = await b.newPage({ viewport: { width: 1600, height: 1000 } }); p.on('pageerror', e => errs.push(e.message));
+            await p.goto(B + 'daily.html?t=' + Date.now(), { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+            console.log('CHK 線上分頁', await p.$$eval('.hm-tabs button', x => x.filter(b => !b.hidden).map(b => b.textContent).join('|')));
+            for (const k of ['sox', 'tw50']) { await p.click('.hm-tabs button[data-set="' + k + '"]'); await p.waitForTimeout(400);
+              console.log('CHK 線上', k, await p.$$eval('#hm-box .tl', x => x.length), '｜', await p.$eval('#hm-meta', e => e.textContent)); }
+            console.log('CHK 線上圓餅圖', await p.evaluate(() => { const w = document.querySelector('.pie-wrap'); return w ? w.querySelectorAll('svg path,svg circle').length + ' 塊｜' + w.querySelector('.pie-leg').innerText.replace(/\n/g, ' ') : '本日未觸發大漲大跌'; }));
+            console.log('CHK 線上殖利率曲線', await p.evaluate(() => { const y = document.querySelector('.yc'); return y ? y.querySelectorAll('polyline').length + ' 條｜' + (y.querySelector('.legend') || {}).innerText + '｜' + (y.querySelector('.shape') || {}).innerText : '沒有'; }));
+            await p.click('.hm-tabs button[data-set="sox"]'); await p.waitForTimeout(300);
+            const t = await p.$('#hm-box .tl[data-s="NVDA"]'); const bb = await t.boundingBox();
+            await Promise.all([p.waitForNavigation({ waitUntil: 'networkidle' }), p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2)]); await p.waitForTimeout(2500);
+            console.log('CHK 點 NVDA →', p.url().replace(B, ''), '｜', await p.$eval('#vOut .big', e => e.textContent).catch(() => '無結論'));
+            console.log('CHK 線上個股分析', JSON.stringify(await p.evaluate(() => ({ shown: !document.getElementById('detail').hidden, kpi: [...document.querySelectorAll('#dSum .kp div')].map(d => d.innerText.replace(/\n/g, ' ')), pos: (document.querySelector('#dPos p') || {}).innerText, peers: document.querySelectorAll('#dPeer tbody tr').length, grow: document.querySelectorAll('#dGrow svg rect').length, news: document.getElementById('dNews').innerText.slice(0, 120) }))));
+            await p.goto(B + 'taiwan.html?t=' + Date.now(), { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+            console.log('CHK 線上個股對比', await p.$eval('#lump-key', e => e.innerText), '｜列：', await p.$$eval('#t-lump tbody tr', x => x.map(r => r.innerText.replace(/\s+/g, ' ')).join(' / ')));
+            const m = await b.newPage(devices['iPhone 13']); m.on('pageerror', e => errs.push('m ' + e.message));
+            await m.goto(B + 'daily.html?t=' + Date.now(), { waitUntil: 'networkidle' }); await m.waitForTimeout(1200);
+            console.log('CHK 手機橫向溢出', await m.evaluate(() => document.documentElement.scrollWidth > innerWidth));
+            console.log('CHK 頁面錯誤', errs.length ? errs : '無'); await b.close(); })();
+          JS
+          node live.js $B/
