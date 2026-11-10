@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b0b0c">
 <title>個股對比｜BNASDAQ</title>
-<meta name="description" content="個股對比：BNASDAQ 與 0050、台積電的台幣含息比較（預設 2013 年底起、可自訂起點），可加入任何台股或美股代號，完整揭露台股報酬較高的年度。">
+<meta name="description" content="個股對比：BNASDAQ-26110、BNASDAQ-26111 與 0050、台積電的台幣含息比較（預設 2013 年底起、可自訂起點），可加入任何台股或美股代號，完整揭露台股報酬較高的年度。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css?v=49755ea2e7">
@@ -21,7 +21,7 @@
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html" aria-current=page>個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
-<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 個股對比</div><h1>個股對比：0050、台積電</h1><p class="lede">以新台幣計價、股息再投入，並列比較 BNASDAQ-26110 與 QQQ、QLD、0050、台積電及只存不投資六種做法：自 <span data-s0>2013-12-31</span> 各投入 100 萬元，持有至 2026-09-30。可自訂回測起點，或加入任何台股、美股代號一併比較；台股年度報酬高於本策略的年份，逐年完整揭露。</p></div></div>
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 個股對比</div><h1>個股對比：0050、台積電</h1><p class="lede">以新台幣計價、股息再投入，並列比較最新的兩個策略模型 BNASDAQ-26110、BNASDAQ-26111 與 QQQ、QLD、0050、台積電及只存不投資七種做法：自 <span data-s0>2013-12-31</span> 各投入 100 萬元，持有至 2026-09-30。可自訂回測起點，或加入任何台股、美股代號一併比較；台股年度報酬高於本策略的年份，逐年完整揭露。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols">
 <div>
   <div class="btpick" id="bt-pick"></div>
@@ -71,25 +71,44 @@
     <tr><td class=l>回測期間</td><td class=l>預設 2013-12-31 收盤至 2026-09-30 收盤（12.75 年）。自訂起點最早為 0050 與台積電皆有資料的第一個月底（<span data-min>2009-01</span>），最晚 2025-09；終點固定為 2026-09-30。加入標的的資料起點較晚時，全頁自動改從其第一個月底起算。</td></tr>
     <tr><td class=l>計價與股息</td><td class=l>全部換算為新台幣；股息再投入、分割還原（含息）。</td></tr>
     <tr><td class=l>預設起點：官方預算值</td><td class=l>0050、台積電採台灣證交所日／月資料（除息日以除息前收盤／參考價調整單位數；0050 於 2025-06-17 1 拆 4）；美元部位以 FRED EXTAUS 匯率換算，期初 29.95、期末 31.852；最大回撤與大跌期間以日收盤計。加入標的採其資料檔的預算值（Yahoo Finance 還原收盤，美股以 FRED 每日匯率換算新台幣）。</td></tr>
-    <tr><td class=l>自訂起點：即時計算</td><td class=l>BNASDAQ、QQQ、QLD 採本站回測序列（同一套引擎），以 FRED DEXTAUS 月底匯率換算新台幣；0050、台積電與加入標的採 Yahoo Finance 還原收盤（股息再投入、分割還原），美股同樣以月底匯率換算。單筆、逐年報酬與最大回撤皆以月底收盤計算，最大回撤通常比日資料淺。大跌期間仍以日收盤區間計，0050、台積電沿用證交所資料的官方預算值。</td></tr>
+    <tr><td class=l>自訂起點：即時計算</td><td class=l>BNASDAQ-26110、BNASDAQ-26111、QQQ、QLD 採本站回測序列（同一套引擎），以 FRED DEXTAUS 月底匯率換算新台幣；0050、台積電與加入標的採 Yahoo Finance 還原收盤（股息再投入、分割還原），美股同樣以月底匯率換算。單筆、逐年報酬與最大回撤皆以月底收盤計算，最大回撤通常比日資料淺。大跌期間仍以日收盤區間計，0050、台積電沿用證交所資料的官方預算值。</td></tr>
     <tr><td class=l>單筆投入與年化報酬率</td><td class=l>期末價值＝100 萬元 ×（期末淨值 ÷ 期初淨值）；年化報酬率（CAGR）＝（期末淨值 ÷ 期初淨值）^（1 ÷ 年數）− 1，年數＝日曆日數 ÷ 365.25。不扣期初買進成本；BNASDAQ 序列已含換倉交易成本（單邊 0.1%）。</td></tr>
     <tr><td class=l>逐年報酬</td><td class=l>前一年 12 月底至當年 12 月底。起點非 12 月底時，首年自起點起算並加註；2026 年計至 9 月底。完整年度統計不含首尾不完整的年度。</td></tr>
     <tr><td class=l>最大回撤</td><td class=l>期間內任一高點至其後最低點的最大跌幅；回本要漲＝1 ÷（1 − 最大回撤）。</td></tr>
-    <tr><td class=l>大跌期間</td><td class=l>QQQ 自起點後的前高下跌 20% 以上的區間（高點→低點，日收盤）。BNASDAQ、QQQ、QLD 以美元計；0050、台積電與加入標的以新台幣、含息計，取同一日曆區間。SHV 平均比重為 BNASDAQ 在該期間持有 SHV 的平均資金比例。起點落在事件期間內時，高點改以起點後的最高收盤認定，0050、台積電與加入標的沒有同區間資料，以「—」表示。</td></tr>
+    <tr><td class=l>大跌期間</td><td class=l>QQQ 自起點後的前高下跌 20% 以上的區間（高點→低點，日收盤）。BNASDAQ-26110、BNASDAQ-26111、QQQ、QLD 以美元計；0050、台積電與加入標的以新台幣、含息計，取同一日曆區間。SHV 平均比重為 BNASDAQ-26110 在該期間持有 SHV 的平均資金比例。BNASDAQ-26111 的數字與 26110 同一套回測引擎、同一算法（美元日收盤，高點→低點）。起點落在事件期間內時，高點改以起點後的最高收盤認定，0050、台積電與加入標的沒有同區間資料，以「—」表示。</td></tr>
     <tr><td class=l>更新頻率</td><td class=l>回測數字每月重算；加入標的資料每月自動更新；最新收盤於每個交易日收盤後更新。</td></tr>
   </tbody></table></div>
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#lump">單筆投入 100 萬元</a></li><li><a href="#annual">逐年報酬</a></li><li><a href="#mdd">最大回撤</a></li><li><a href="#crises">大跌期間表現</a></li><li><a href="#method">計算方法與資料口徑</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="dca.html#six">六種做法的定期定額比較</a></li><li><a href="research.html#crises">美股大幅修正期間（美元計）</a></li><li><a href="data.html">台股資料口徑</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=c8ab2ed622"></script><script src="assets/period.js?v=72e0d40d19"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=52553baf3c"></script>
+<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=c8ab2ed622"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/period.js?v=72e0d40d19"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=52553baf3c"></script>
 <script>
 (function(){
 'use strict';
 const S=window.SITE,f=BN.fmt,$=id=>document.getElementById(id),RB=BN.rebase,bt=BN.bt||null;
-const nm=S.six.names,col={save:'var(--s-save)',qqq:'var(--s-qqq)',tw:'var(--s-tw)',tsmc:'var(--s-tsmc)',qld:'var(--s-qld)',fund:'var(--s-fund)'};
-const SHORT={save:'只存不投資',qqq:'QQQ',tw:'0050',tsmc:'台積電',qld:'QLD',fund:'BNASDAQ'};
+const HAS_SAT=!!(bt&&bt.T&&bt.T.eq&&bt.T.eq.sat&&bt.T.daily&&bt.T.daily.sat);   // BNASDAQ-26111（專案規則 B.3）回測序列：assets/bt-sat.js
+const nm=Object.assign({},S.six.names,{fund:'BNASDAQ-26110',sat:'BNASDAQ-26111'}),col={save:'var(--s-save)',qqq:'var(--s-qqq)',tw:'var(--s-tw)',tsmc:'var(--s-tsmc)',qld:'var(--s-qld)',fund:'var(--s-fund)',sat:'var(--s-sat)'};
+const SHORT={save:'只存不投資',qqq:'QQQ',tw:'0050',tsmc:'台積電',qld:'QLD',fund:'BNASDAQ-26110',sat:'BNASDAQ-26111'};
+const ORDER=S.six.order.concat(HAS_SAT?['sat']:[]);
+const isStrat=k=>k==='fund'||k==='sat';
 const Y=S.tw.years,T=S.tw.results,W=S.six.window,CTW=S.six.crises_tw,WM=S.window.months,WIDX=new Map(WM.map((m,i)=>[m,i]));
 const DEF='2013-12',END=W[1],ENDM=+END.slice(5,7);
+const SIX=Object.assign({},S.six,{lump:Object.assign({},S.six.lump),cagr:Object.assign({},S.six.cagr),mdd13:Object.assign({},S.six.mdd13),need:Object.assign({},S.six.need)});
+let SAT_ANN=null,DIX=null;
+function satCr(p,t){ // 大跌期間（美元日收盤，高點→低點）：與 26110 官方大跌報酬同一算法
+  if(!HAS_SAT)return null;if(!DIX)DIX=new Map(bt.DD.map((d,i)=>[d,i]));const a=bt.T.daily.sat,i=DIX.get(p),j=DIX.get(t);
+  return (i==null||j==null||a[i]==null||a[j]==null)?null:a[j]/a[i]-1;}
+if(HAS_SAT){
+  const MI=new Map(bt.M.map((m,i)=>[m,i])),eq=bt.T.eq,usd=(k,a,b)=>eq[k][MI.get(b)]/eq[k][MI.get(a)];
+  // 單筆、年化：期末淨值 ÷ 期初淨值 × 匯率（期末 ÷ 期初），與 26110 官方數字同一匯率
+  SIX.lump.sat=1e6*usd('sat',DEF,END.slice(0,7))*S.six.fx.end/S.six.fx.start;
+  SIX.cagr.sat=Math.pow(SIX.lump.sat/1e6,1/S.six.years)-1;
+  // 最大回撤：美元日收盤、W[0]～W[1]
+  {const a=bt.T.daily.sat,D=bt.DD;let pk=null,pd=null,b={mdd:0,peak:null,trough:null};for(let j=0;j<D.length;j++){const d=D[j],v=a[j];if(d<W[0]||d>W[1]||v==null)continue;if(pk==null||v>pk){pk=v;pd=d;}const x=v/pk-1;if(x<b.mdd)b={mdd:x,peak:pd,trough:d};}
+   SIX.mdd13.sat=b;SIX.need.sat=1/(1+b.mdd);}
+  // 逐年（新台幣）：與 26110 官方逐年報酬共用同一年度匯率因子＝(1＋26110 官方年報酬) ÷ 26110 美元年報酬
+  SAT_ANN=Y.map((y,i)=>{const b=(y-1)+'-12',e=i===Y.length-1?END.slice(0,7):y+'-12',f=T.BNASDAQ.annual[i];if(f==null)return null;return (1+f)*usd('sat',b,e)/usd('fund',b,e)-1;});
+}
 const pct1=x=>(x*100).toFixed(1)+'%';
 const cell=v=>v==null?'<td>—</td>':'<td><span class="'+(v>=0?'pos':'neg')+'">'+f.pctS(v)+'</span></td>';
 const sw=c=>'<span class="sw" style="background:'+c+'"></span>';
@@ -108,7 +127,7 @@ const tag=a=>a.market==='US'?' <small class="muted">（美股，新台幣計）<
 function grid(){ // 本頁可選範圍（TWMIN～2026-09）的月份、月底交易日與美元月線
   if(GRID&&GRID.min===TWMIN)return GRID;
   const m=bt.monthly('fund',TWMIN);
-  GRID={min:TWMIN,months:m.months,dates:m.dates,idx:new Map(m.months.map((x,i)=>[x,i])),usd:{fund:m.values,qqq:bt.monthly('qqq',TWMIN).values,qld:bt.monthly('qld',TWMIN).values}};
+  GRID={min:TWMIN,months:m.months,dates:m.dates,idx:new Map(m.months.map((x,i)=>[x,i])),usd:{fund:m.values,qqq:bt.monthly('qqq',TWMIN).values,qld:bt.monthly('qld',TWMIN).values,sat:HAS_SAT?bt.monthly('sat',TWMIN).values:null}};
   return GRID;
 }
 function twdUSD(arr){const G=grid();return G.months.map((ym,i)=>{const v=arr[i],r=FX&&FX[ym];return (v==null||r==null)?null:v*r;});}
@@ -143,20 +162,20 @@ function met(s,i0,i1){ // 單筆、年化、逐年、最大回撤（月底資料
   return {lump:1e6*ratio,cagr:Math.pow(ratio,1/yrs)-1,annual,mdd:{mdd,peak:pk==null?null:D[pk],trough:tr==null?null:D[tr],need:1/(1+mdd)},note:j1<i1?'資料至 '+M[j1]:''};
 }
 function officialModel(){ // 預設起點：與原頁相同的官方預算值
-  const rows=S.six.order.map(k=>({key:k,name:nm[k],short:SHORT[k],color:col[k],lump:S.six.lump[k],cagr:S.six.cagr[k],mdd:{mdd:S.six.mdd13[k].mdd,peak:S.six.mdd13[k].peak,trough:S.six.mdd13[k].trough,need:S.six.need[k]}}));
+  const rows=ORDER.map(k=>({key:k,name:nm[k],short:SHORT[k],color:col[k],lump:SIX.lump[k],cagr:SIX.cagr[k],mdd:{mdd:SIX.mdd13[k].mdd,peak:SIX.mdd13[k].peak,trough:SIX.mdd13[k].trough,need:SIX.need[k]}}));
   ADDED.forEach(a=>{const d=a.data,m=d.mdd||{};rows.push({key:a.code,name:a.label+tag(a),short:a.label,color:a.color,lump:d.lump,cagr:d.cagr,note:noteOf(a),mdd:{mdd:m.mdd||0,peak:m.peak,trough:m.trough,need:m.need},added:a});});
-  const ann={fund:T.BNASDAQ.annual,qld:S.six.qld_annual_twd,tsmc:T['2330'].annual,tw:T['0050'].annual,qqq:T.QQQ.annual};
+  const ann={fund:T.BNASDAQ.annual,qld:S.six.qld_annual_twd,tsmc:T['2330'].annual,tw:T['0050'].annual,qqq:T.QQQ.annual};if(SAT_ANN)ann.sat=SAT_ANN;
   ADDED.forEach(a=>{ann[a.code]=Y.map(y=>{const v=(a.data.annual||{})[String(y)];return v==null?null:v;});});
-  const crises=S.crises.filter(c=>c.peak>=W[0]).map(c=>{const t=CTW[c.name]||{};return {name:c.name,peak:c.peak,trough:c.trough,days:c.days,fund:c.fund,qqq:c.qqq,qld:c.qld,shv:c.shv_share,tw:t.tw?t.tw.ret:null,tsmc:t.tsmc?t.tsmc.ret:null,add:ADDED.map(a=>{const v=(a.data.crises||{})[c.name];return v==null?null:v;})};});
+  const crises=S.crises.filter(c=>c.peak>=W[0]).map(c=>{const t=CTW[c.name]||{};return {name:c.name,peak:c.peak,trough:c.trough,days:c.days,fund:c.fund,sat:satCr(c.peak,c.trough),qqq:c.qqq,qld:c.qld,shv:c.shv_share,tw:t.tw?t.tw.ret:null,tsmc:t.tsmc?t.tsmc.ret:null,add:ADDED.map(a=>{const v=(a.data.crises||{})[c.name];return v==null?null:v;})};});
   return {official:true,E:DEF,start:W[0],years:S.six.years,rows,adds:ADDED.slice(),ann,crises,fxEnd:S.six.fx.end,
     yearsList:Y.map((y,i)=>({y,label:i===Y.length-1?y+'（至 '+ENDM+' 月底）':String(y),partial:i===Y.length-1}))};
 }
 function computedModel(E){ // 其他起點：月底資料即時計算
   const G=grid(),i0=G.idx.get(E),i1=G.months.length-1,D=G.dates;
   if(i0==null||i0>=i1)return null;
-  const base={fund:twdUSD(G.usd.fund),qqq:twdUSD(G.usd.qqq),qld:twdUSD(G.usd.qld),tw:BASEJ['0050']?seriesOf(BASEJ['0050'],false):null,tsmc:BASEJ['2330']?seriesOf(BASEJ['2330'],false):null,save:G.months.map(()=>1)};
+  const base={fund:twdUSD(G.usd.fund),sat:G.usd.sat?twdUSD(G.usd.sat):null,qqq:twdUSD(G.usd.qqq),qld:twdUSD(G.usd.qld),tw:BASEJ['0050']?seriesOf(BASEJ['0050'],false):null,tsmc:BASEJ['2330']?seriesOf(BASEJ['2330'],false):null,save:G.months.map(()=>1)};
   const rows=[],miss=[];
-  S.six.order.forEach(k=>{const s=base[k],m=s&&met(s,i0,i1);if(!m){miss.push(nm[k]);return;}rows.push({key:k,name:nm[k],short:SHORT[k],color:col[k],lump:m.lump,cagr:m.cagr,mdd:m.mdd,annual:m.annual,note:m.note});});
+  ORDER.forEach(k=>{const s=base[k],m=s&&met(s,i0,i1);if(!m){miss.push(nm[k]);return;}rows.push({key:k,name:nm[k],short:SHORT[k],color:col[k],lump:m.lump,cagr:m.cagr,mdd:m.mdd,annual:m.annual,note:m.note});});
   ADDED.forEach(a=>{const s=seriesOf(a.data,a.market==='US'),m=s&&met(s,i0,i1);if(!m){miss.push(a.label);return;}rows.push({key:a.code,name:a.label+tag(a),short:a.label,color:a.color,lump:m.lump,cagr:m.cagr,mdd:m.mdd,annual:m.annual,note:m.note,added:a});});
   const adds=rows.filter(r=>r.added).map(r=>r.added),ref=rows.find(r=>r.key==='fund')||rows[0];
   const yearsList=ref?ref.annual.map(x=>({y:x.y,label:x.label,partial:x.partial})):[];
@@ -165,7 +184,7 @@ function computedModel(E){ // 其他起點：月底資料即時計算
     const canon=S.crises.some(x=>x.name===c.name&&x.peak===c.peak&&x.trough===c.trough);
     // 同一事件的報酬與起點無關：0050、台積電沿用官方預算值（證交所日收盤、含息，與預設起點相同）；加入標的取其資料檔的 crises
     const t=canon?(CTW[c.name]||{}):{},tc=j=>{if(!canon||!j||!j.crises)return null;const v=j.crises[c.name];return v==null?null:v;};
-    return {name:c.name,peak:c.peak,trough:c.trough,days:c.days,fund:c.fund,qqq:c.qqq,qld:c.qld,shv:c.shv_share,tw:t.tw?t.tw.ret:null,tsmc:t.tsmc?t.tsmc.ret:null,add:adds.map(a=>tc(a.data))};});
+    return {name:c.name,peak:c.peak,trough:c.trough,days:c.days,fund:c.fund,sat:satCr(c.peak,c.trough),qqq:c.qqq,qld:c.qld,shv:c.shv_share,tw:t.tw?t.tw.ret:null,tsmc:t.tsmc?t.tsmc.ret:null,add:adds.map(a=>tc(a.data))};});
   return {official:false,E,start:D[i0],years:bt.yrs(D[i0],END),rows,miss,adds,ann,crises,yearsList,fx0:FX[E],fxEnd:FX[G.months[i1]]};
 }
 
@@ -182,12 +201,12 @@ function annKey(Md,cols){
   if(full.length){
     const y0=full[0].y,y1=full[full.length-1].y,parts=[],none=[];
     cs.forEach(c=>{const A=Md.ann[c[0]],ys=full.filter(o=>A[o.i]!=null&&F[o.i]!=null&&A[o.i]>F[o.i]).map(o=>o.y);if(ys.length)parts.push(sp(c[1])+'有 '+ys.length+' 年（'+zh(ys)+'）');else none.push(c[1]);});
-    s=full.length+' 個完整年度（'+(y0===y1?y0:y0+'～'+y1)+'）中，'+(parts.length?zh(parts)+'的年度報酬高於 BNASDAQ'+(none.length?'；'+sp(zh(none))+'則沒有任何一年高於 BNASDAQ':''):'各比較對象的年度報酬皆未高於 BNASDAQ')+'。';
+    s=full.length+' 個完整年度（'+(y0===y1?y0:y0+'～'+y1)+'）中，'+(parts.length?zh(parts)+'的年度報酬高於 BNASDAQ-26110'+(none.length?'；'+sp(zh(none))+'則沒有任何一年高於 BNASDAQ-26110':''):'各比較對象的年度報酬皆未高於 BNASDAQ-26110')+'。';
   }else s='所選期間沒有完整的日曆年度。';
   const li=YL.length-1,ly=YL[li];
   if(ly&&ly.partial&&YL.length>1&&F[li]!=null){
     const per=ly.y+' 年至 '+ENDM+' 月底',lead=cs.filter(c=>{const v=Md.ann[c[0]][li];return v!=null&&v>F[li];}).sort((p,q)=>Md.ann[q[0]][li]-Md.ann[p[0]][li]);
-    s+=lead.length?per+'，'+zh(lead.map(c=>c[1]+'（'+f.pctS(Md.ann[c[0]][li])+'）'))+'亦領先 BNASDAQ（'+f.pctS(F[li])+'）。':per+'，BNASDAQ（'+f.pctS(F[li])+'）的報酬高於其他比較對象。';
+    s+=lead.length?per+'，'+zh(lead.map(c=>c[1]+'（'+f.pctS(Md.ann[c[0]][li])+'）'))+'亦領先 BNASDAQ-26110（'+f.pctS(F[li])+'）。':per+'，BNASDAQ-26110（'+f.pctS(F[li])+'）的報酬高於其他比較對象。';
   }
   return s;
 }
@@ -214,7 +233,7 @@ function setAll(sel,txt){document.querySelectorAll(sel).forEach(e=>e.textContent
 function labelW(names){let w=0;names.forEach(n=>{let x=0;for(const ch of n)x+=/[\x00-\xff]/.test(ch)?7.2:12.6;w=Math.max(w,x);});return Math.round(Math.min(240,Math.max(110,w+16)));}
 function trend(Md){ // 走勢圖用：所有做法自起點起的新台幣月底序列（一律月底資料）
   const G=grid(),i0=G.idx.get(Md.E),i1=G.months.length-1;if(i0==null||i0>=i1)return null;
-  const base={fund:twdUSD(G.usd.fund),qqq:twdUSD(G.usd.qqq),qld:twdUSD(G.usd.qld),tw:BASEJ['0050']?seriesOf(BASEJ['0050'],false):null,tsmc:BASEJ['2330']?seriesOf(BASEJ['2330'],false):null,save:G.months.map(()=>1)};
+  const base={fund:twdUSD(G.usd.fund),sat:G.usd.sat?twdUSD(G.usd.sat):null,qqq:twdUSD(G.usd.qqq),qld:twdUSD(G.usd.qld),tw:BASEJ['0050']?seriesOf(BASEJ['0050'],false):null,tsmc:BASEJ['2330']?seriesOf(BASEJ['2330'],false):null,save:G.months.map(()=>1)};
   const M=G.months.slice(i0,i1+1),out=[];
   Md.rows.forEach(r=>{const a=r.added?seriesOf(r.added.data,r.added.market==='US'):base[r.key];if(!a)return;const b=a[i0];if(b==null)return;
     const v=M.map((_,j)=>{const x=a[i0+j];return x==null?null:x/b*1e6;});if(v.filter(x=>x!=null&&isFinite(x)).length<2)return;
@@ -237,12 +256,12 @@ function draw(Md,U,late){
   $('p-lump').textContent=off?'自 '+W[0]+' 收盤各投入新台幣 100 萬元，持有至 '+END+' 收盤；股息再投入、全數換算為新台幣，美元部位以匯率 '+S.six.fx.start+' 換匯買進、'+S.six.fx.end+' 換回新台幣。'
     :'自 '+s0+' 收盤各投入新台幣 100 萬元，持有至 '+END+' 收盤（'+Md.years.toFixed(1)+' 年）；股息再投入、全數換算為新台幣，美元部位以 FRED 月底匯率換算（期初 '+fxf(Md.fx0)+'、期末 '+fxf(Md.fxEnd)+'），全部採月底資料。';
   $('t-lump').innerHTML='<div class="tblwrap"><table class="tbl"><caption>單筆投入新台幣 100 萬元：'+s0+'～'+END+(off?'':'（月底資料）')+'</caption><thead><tr><th class=l>做法</th><th>期末價值（新台幣）</th><th>年化報酬率</th></tr></thead><tbody>'+
-    L.map(r=>'<tr'+(r.key==='fund'?' class="hl"':'')+'><td class=l>'+sw(r.color)+r.name+(r.note?' <small class="muted">（'+r.note+'）</small>':'')+'</td><td>'+f.big(r.lump)+'</td><td>'+pct1(r.cagr)+'</td></tr>').join('')+'</tbody></table></div>';
-  const items=L.map(r=>({name:plain(r.name),value:r.lump,color:r.color,hl:r.key==='fund'}));
+    L.map(r=>'<tr'+(isStrat(r.key)?' class="hl"':'')+'><td class=l>'+sw(r.color)+r.name+(r.note?' <small class="muted">（'+r.note+'）</small>':'')+'</td><td>'+f.big(r.lump)+'</td><td>'+pct1(r.cagr)+'</td></tr>').join('')+'</tbody></table></div>';
+  const items=L.map(r=>({name:plain(r.name),value:r.lump,color:r.color,hl:isStrat(r.key)}));
   const TR=trend(Md);$('c-lump').innerHTML='';
   if(TR){BN.charts.line($('c-lump'),{title:'新台幣 100 萬元的資產成長走勢（對數刻度）',sub:s0+' 至 '+END+'，每月月底；新台幣、含息'+(off?'；走勢圖一律以月底資料繪製，期末值可能與下表官方預算值略有差異':''),x:TR.M,xTicks:yTicks(TR.M),xLabel:ym=>ymLabel(ym),log:true,yfmt:cpt2,tipfmt:f.big,padR:78,series:TR.S.map(x=>({name:x.name,short:x.short,values:x.v,color:x.color,dash:x.key==='save'?'5 4':null}))});}
   // 逐年
-  const cols=[['fund','BNASDAQ',col.fund],['qld','QLD',col.qld],['tsmc','台積電',col.tsmc],['tw','0050',col.tw],['qqq','QQQ',col.qqq]].filter(c=>Md.ann[c[0]]);
+  const cols=[['fund','BNASDAQ-26110',col.fund],['sat','BNASDAQ-26111',col.sat],['qld','QLD',col.qld],['tsmc','台積電',col.tsmc],['tw','0050',col.tw],['qqq','QQQ',col.qqq]].filter(c=>Md.ann[c[0]]);
   AD.forEach(a=>{if(Md.ann[a.code])cols.push([a.code,a.label,a.color]);});
   const YL=Md.yearsList;
   $('ann-key').innerHTML=annKey(Md,cols);
@@ -253,32 +272,32 @@ function draw(Md,U,late){
     const fy=YL[0],ly=YL[YL.length-1];
     $('c-ann').innerHTML='';BN.charts.line($('c-ann'),{title:'逐年報酬走勢（新台幣、含息）',sub:(fy.label.indexOf('（自')>=0?'首年自 '+s0+' 起算；':'')+(ly.partial?ly.y+' 年僅計至 '+ENDM+' 月底；':'')+'0% 線以上為正報酬'+(off?'':'；月底資料'),x:YL.map(y=>String(y.y)),xTicks:YL.map((y,i)=>[i,String(y.y)]).filter((_,i)=>YL.length<=14||i%2===0),zero:true,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',padR:78,series:cols.map(c=>({name:c[1],values:Md.ann[c[0]],color:c[2]})),height:320});
   }else{$('t-ann').innerHTML='<p class="muted">所選期間不足以計算年度報酬。</p>';$('c-ann').innerHTML='';}
-  // 相對表現走勢：BNASDAQ ÷ 各做法（起點＝1；線往上代表 BNASDAQ 領先擴大）
+  // 相對表現走勢：BNASDAQ-26110 ÷ 各做法（起點＝1；線往上代表 BNASDAQ-26110 領先擴大）
   $('c-rel').innerHTML='';
   if(TR){const F=TR.S.find(x=>x.key==='fund');if(F){const oth=TR.S.filter(x=>x.key!=='fund'&&x.key!=='save');
-    BN.charts.line($('c-rel'),{title:'相對表現走勢：BNASDAQ ÷ 各做法（起點＝1，對數刻度）',sub:s0+' 起，每月月底、新台幣；高於 1 代表 BNASDAQ 累積報酬較高，線往下的期間代表該做法表現較好',x:TR.M,xTicks:yTicks(TR.M),xLabel:ym=>ymLabel(ym),log:true,yfmt:v=>v>=10?v.toFixed(0)+' 倍':v.toFixed(1)+' 倍',tipfmt:v=>v.toFixed(2)+' 倍',padR:78,series:oth.map(x=>({name:'對 '+x.name,short:x.short,values:F.v.map((v,j)=>(v==null||x.v[j]==null)?null:v/x.v[j]),color:x.color}))});}}
+    BN.charts.line($('c-rel'),{title:'相對表現走勢：BNASDAQ-26110 ÷ 各做法（起點＝1，對數刻度）',sub:s0+' 起，每月月底、新台幣；高於 1 代表 BNASDAQ-26110 累積報酬較高，線往下的期間代表該做法表現較好',x:TR.M,xTicks:yTicks(TR.M),xLabel:ym=>ymLabel(ym),log:true,yfmt:v=>v>=10?v.toFixed(0)+' 倍':v.toFixed(1)+' 倍',tipfmt:v=>v.toFixed(2)+' 倍',padR:78,series:oth.map(x=>({name:'對 '+x.name,short:x.short,values:F.v.map((v,j)=>(v==null||x.v[j]==null)?null:v/x.v[j]),color:x.color}))});}}
   // 最大回撤
   const M=rows.slice().sort((x,y)=>x.mdd.mdd-y.mdd.mdd);
   $('mdd-key').innerHTML=mddKey(Md);
   $('t-mdd').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+s0+' 起的最大回撤（'+(off?'日收盤':'月底收盤')+'、含息）</caption><thead><tr><th class=l>做法</th><th>最大回撤</th><th class=l>高點 → 低點</th><th>回本要漲</th></tr></thead><tbody>'+
-    M.map(r=>'<tr'+(r.key==='fund'?' class="hl"':'')+'><td class=l>'+sw(r.color)+r.name+(r.note?' <small class="muted">（'+r.note+'）</small>':'')+'</td><td>'+mddTxt(r.mdd.mdd)+'</td><td class=l>'+(r.mdd.peak||'—')+' → '+(r.mdd.trough||'—')+'</td><td>'+(r.mdd.need!=null?r.mdd.need.toFixed(2):'1.00')+' 倍</td></tr>').join('')+'</tbody>'+
+    M.map(r=>'<tr'+(isStrat(r.key)?' class="hl"':'')+'><td class=l>'+sw(r.color)+r.name+(r.note?' <small class="muted">（'+r.note+'）</small>':'')+'</td><td>'+mddTxt(r.mdd.mdd)+'</td><td class=l>'+(r.mdd.peak||'—')+' → '+(r.mdd.trough||'—')+'</td><td>'+(r.mdd.need!=null?r.mdd.need.toFixed(2):'1.00')+' 倍</td></tr>').join('')+'</tbody>'+
     (off?'':'<tfoot><tr><td colspan="4">月底資料算出的回撤通常比日資料淺；預設起點（'+W[0]+'）的官方數字以日收盤計。</td></tr></tfoot>')+'</table></div>';
   $('c-dd13').innerHTML='';
   if(TR){const dd=TR.S.filter(x=>x.key!=='save').map(x=>{let pk=null;return {name:x.name,color:x.color,values:x.v.map(v=>{if(v==null)return null;if(pk==null||v>pk)pk=v;return v/pk-1;})};});
     BN.charts.line($('c-dd13'),{title:'回撤水位走勢：距離前高還差多少（新台幣）',sub:s0+' 起，每月月底；0% 代表創新高，愈低代表跌得愈深'+(off?'；以月底資料繪製，通常比上表的日收盤口徑略淺':''),x:TR.M,xTicks:yTicks(TR.M),xLabel:ym=>ymLabel(ym),zero:true,yMax:0.02,yfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%',series:dd,noEndLabels:true});}
   // 大跌
-  const C=Md.crises,nc=8+AD.length;
+  const C=Md.crises,nc=9+AD.length;
   setAll('[data-crh]',off?'後 '+C.length+' 次大跌中的 0050 與台積電':(C.length?'起點後 '+C.length+' 次大跌中的 0050 與台積電':'起點後未出現 QQQ 下跌 20% 以上的大跌'));
   $('cr-key').innerHTML=crKey(Md);
-  let c='<div class="tblwrap"><table class="tbl"><caption>'+(off?'後 '+C.length+' 次大跌':s0+' 起的大跌')+'期間報酬（QQQ 高點→低點，同一日曆區間）</caption><thead><tr><th class=l>大跌</th><th class=l>區間（QQQ 高點→低點）</th><th>BNASDAQ</th><th>QQQ</th><th>QLD</th><th>0050</th><th>台積電</th>'+AD.map(a=>'<th>'+a.label+'</th>').join('')+'<th>SHV 平均比重</th></tr></thead><tbody>';
-  C.forEach(cr=>{c+='<tr><td class=l>'+cr.name+'</td><td class=l>'+cr.peak+'→'+cr.trough+' <br><small class="muted">'+cr.days+' 個交易日</small></td>'+cell(cr.fund)+cell(cr.qqq)+cell(cr.qld)+cell(cr.tw)+cell(cr.tsmc)+cr.add.map(cell).join('')+'<td>'+Math.round(cr.shv*100)+'%</td></tr>';});
+  let c='<div class="tblwrap"><table class="tbl"><caption>'+(off?'後 '+C.length+' 次大跌':s0+' 起的大跌')+'期間報酬（QQQ 高點→低點，同一日曆區間）</caption><thead><tr><th class=l>大跌</th><th class=l>區間（QQQ 高點→低點）</th><th>BNASDAQ-26110</th><th>BNASDAQ-26111</th><th>QQQ</th><th>QLD</th><th>0050</th><th>台積電</th>'+AD.map(a=>'<th>'+a.label+'</th>').join('')+'<th>SHV 平均比重</th></tr></thead><tbody>';
+  C.forEach(cr=>{c+='<tr><td class=l>'+cr.name+'</td><td class=l>'+cr.peak+'→'+cr.trough+' <br><small class="muted">'+cr.days+' 個交易日</small></td>'+cell(cr.fund)+cell(cr.sat)+cell(cr.qqq)+cell(cr.qld)+cell(cr.tw)+cell(cr.tsmc)+cr.add.map(cell).join('')+'<td>'+Math.round(cr.shv*100)+'%</td></tr>';});
   if(!C.length)c+='<tr><td class=l colspan="'+nc+'">所選起點之後，QQQ 未出現自前高下跌 20% 以上的期間。</td></tr>';
-  c+='</tbody><tfoot><tr><td colspan="'+nc+'">BNASDAQ、QQQ、QLD 以美元日收盤計；0050、台積電以新台幣、含息計，採證交所資料'+(AD.length?'；加入標的以新台幣、含息計，採 Yahoo Finance 還原收盤':'')+'。同一事件的報酬不隨回測起點改變。SHV 平均比重為 BNASDAQ 在該期間持有 SHV 的平均資金比例。</td></tr></tfoot></table></div>';
+  c+='</tbody><tfoot><tr><td colspan="'+nc+'">BNASDAQ-26110、BNASDAQ-26111、QQQ、QLD 以美元日收盤計；0050、台積電以新台幣、含息計，採證交所資料'+(AD.length?'；加入標的以新台幣、含息計，採 Yahoo Finance 還原收盤':'')+'。同一事件的報酬不隨回測起點改變。SHV 平均比重為 BNASDAQ-26110 在該期間持有 SHV 的平均資金比例。BNASDAQ-26111 的數字與 26110 同一套回測引擎、同一算法（美元日收盤，高點→低點）。</td></tr></tfoot></table></div>';
   $('t-cr').innerHTML=c;
   // 資料來源、標題
   const adl=zh(AD.map(a=>a.label));
   $('twsrc').textContent=off?(AD.length?'加入標的（'+adl+'）：Yahoo Finance 還原收盤（股息再投入、分割還原），美股以 FRED 每日匯率換算新台幣；資料至 '+AD.map(a=>a.data.end_used).sort().pop()+'，每月自動更新。0050 與台積電兩列採證交所資料。':'')
-    :'資料來源：BNASDAQ、QQQ、QLD 為本站回測序列（美元、含息），以 FRED 月底匯率換算新台幣；0050、台積電'+(AD.length?'與加入標的（'+adl+'）':'')+'採 Yahoo Finance 還原收盤（股息再投入、分割還原），美股以 FRED 月底匯率換算新台幣；全部以月底資料計算，每月自動更新。';
+    :'資料來源：BNASDAQ-26110、BNASDAQ-26111、QQQ、QLD 為本站回測序列（美元、含息），以 FRED 月底匯率換算新台幣；0050、台積電'+(AD.length?'與加入標的（'+adl+'）':'')+'採 Yahoo Finance 還原收盤（股息再投入、分割還原），美股以 FRED 月底匯率換算新台幣；全部以月底資料計算，每月自動更新。';
   document.querySelector('.pagehead h1').textContent='個股對比：0050、台積電'+(AD.length?'、'+AD.map(a=>a.market==='US'?a.code:(a.name||a.code)).join('、'):'');
 }
 function waiting(msg){

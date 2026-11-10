@@ -32,6 +32,21 @@
 .pie-leg i{width:14px;height:14px;border-radius:2px;display:block}
 .pie-leg b{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
 .cause .bar{height:6px;background:var(--band);border:1px solid var(--line-2);margin:8px 0 10px}
+.yc{position:relative;margin:4px 0 14px}
+.yc .fsub{font-size:14px;color:var(--ink-2);margin:0 0 6px}
+.yc svg{display:block;width:100%;height:auto;max-width:960px}
+.yc .band{fill:var(--band)}
+.yc .bl{font-size:12.5px;font-weight:700;fill:var(--ink-2)}
+.yc .bs{font-size:11px;fill:var(--muted)}
+.yc .hit{fill:transparent;cursor:crosshair}
+.yc .cx{stroke:var(--ink-2);stroke-width:1;stroke-dasharray:3 3}
+.yc .ln.ref{stroke-dasharray:5 4;stroke-width:1.8}
+.yc .lab{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;fill:var(--ink)}
+.yc-tip{position:absolute;z-index:5;pointer-events:none;background:var(--paper);border:1px solid var(--line-2);box-shadow:0 6px 18px rgba(0,0,0,.18);padding:8px 10px;font-size:13px;line-height:1.6;min-width:170px}
+.yc-tip i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+.yc-tip b{font-variant-numeric:tabular-nums}
+.yc .shape{font-size:14px;margin:8px 0 0}
+.yc table td,.yc table th{white-space:nowrap}
 .cause .bar i{display:block;height:100%;background:var(--gold-hi)}
 .cause ul{margin:0 0 8px 18px;padding:0;font-size:14.5px}
 .cause ul li{margin:2px 0}
@@ -107,7 +122,7 @@
 <main id="main">
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 每日市場分析</div><h1>每日市場分析</h1><p class="lede">每個美股交易日收盤後更新：五大指數、單日漲跌逾 2% 的主因分析、股匯債一週趨勢、24 小時內與投資相關的國際大事，以及市值逾一兆美元企業的新聞與影響。所有數字附來源，可逐項查證。</p></div></div>
 <section class="hm" id="heatmap" aria-labelledby="hm-h"><div class="wrap">
-  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
+  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button><button type="button" role="tab" aria-selected="false" data-set="tw50">台灣 50</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
   <div class="hm-box" id="hm-box" role="img" aria-label="市值熱力圖"></div>
   <div class="hm-foot"><div class="hm-legend" aria-hidden="true"><span>單日漲跌</span><div><div class="bar" id="hm-bar"></div><div class="ticks"><span>−3%</span><span>−2%</span><span>−1%</span><span>0</span><span>+1%</span><span>+2%</span><span>+3%</span></div></div></div><p class="hm-src" id="hm-src"></p></div>
   <details><summary>看列表（依市值排序）</summary><div class="tblwrap"><table class="tbl" id="hm-tbl"></table></div></details>
@@ -184,6 +199,74 @@ function lineChart(wp){ // cumulative path from 10/30 base
   s+='<div class="legend">'+wp.series.map((se,k)=>`<span><i style="background:${SERIES[k%SERIES.length]}"></i>${esc(se.name)}</span>`).join('')+'</div>';
   return s;
 }
+const YC_T=['1m','2m','3m','4m','6m','1y','2y','3y','5y','7y','10y','20y','30y'];
+const YC_L={'1m':'1月','2m':'2月','3m':'3月','4m':'4月','6m':'6月','1y':'1年','2y':'2年','3y':'3年','5y':'5年','7y':'7年','10y':'10年','20y':'20年','30y':'30年'};
+const YC_BANDS=[['短期','1 個月～1 年',0,5],['中期','2～7 年',6,9],['長期','10～30 年',10,12]];
+function ycPick(TC,session){ // 報告的美股交易日 → 最新／前一交易日／約一個月前 三條曲線
+  const rows=(TC.rows||[]).filter(r=>r[0]<=session); if(rows.length<2) return null;
+  const at=k=>{const r=rows[k];const o={};TC.tenors.forEach((t,i)=>{o[t]=r[i+1];});return {d:r[0],v:o};};
+  const L=rows.length-1, ld=new Date(rows[L][0]+'T00:00:00Z'); ld.setUTCMonth(ld.getUTCMonth()-1);
+  const m1=ld.toISOString().slice(0,10); let k=L; while(k>0&&rows[k][0]>m1) k--;
+  return [at(L),at(L-1),rows[k][0]<=m1?at(k):null].filter(Boolean);
+}
+function ycChart(P){ // P: [{d,v}]，第 0 條＝最新
+  const W=760,H=300,pl=46,pr=58,pt=34,pb=34,n=YC_T.length;
+  const vals=P.flatMap(p=>YC_T.map(t=>p.v[t]).filter(v=>v!=null));
+  const lo=Math.floor((Math.min(...vals)-0.05)*4)/4, hi=Math.ceil((Math.max(...vals)+0.05)*4)/4;
+  const X=i=>pl+(W-pl-pr)*i/(n-1), Y=v=>pt+(H-pt-pb)*(hi-v)/(hi-lo);
+  const COL=[SERIES[0],SERIES[1],'var(--s-shv)'], md=x=>x.slice(5).replace('-','/');
+  let s=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="美國公債各天期殖利率曲線：${esc(P.map(p=>md(p.d)+' '+YC_T.map(t=>YC_L[t]+' '+(p.v[t]!=null?p.v[t].toFixed(2)+'%':'—')).join('、')).join('；'))}">`;
+  YC_BANDS.forEach(([nm,sub,a,b],k)=>{const x0=k?(X(a-1)+X(a))/2:pl-10,x1=k<2?(X(b)+X(b+1))/2:W-pr+10;
+    if(k===1)s+=`<rect class="band" x="${x0}" y="${pt-26}" width="${x1-x0}" height="${H-pb-pt+26}"/>`;
+    s+=`<text class="bl" x="${(x0+x1)/2}" y="${pt-14}" text-anchor="middle">${nm}</text><text class="bs" x="${(x0+x1)/2}" y="${pt-2}" text-anchor="middle">${sub}</text>`;});
+  for(let g=lo;g<=hi+1e-9;g+=0.25){const y=Y(g);s+=`<line class="gl" x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}"/><text class="viz-lbl" x="${pl-6}" y="${y+4}" text-anchor="end">${g.toFixed(2)}%</text>`;}
+  YC_T.forEach((t,i)=>{s+=`<text class="viz-lbl" x="${X(i)}" y="${H-12}" text-anchor="middle">${YC_L[t]}</text>`;});
+  P.slice().reverse().forEach(p=>{const k=P.indexOf(p);const pts=YC_T.map((t,i)=>p.v[t]==null?null:`${X(i).toFixed(1)},${Y(p.v[t]).toFixed(1)}`).filter(Boolean).join(' ');
+    s+=`<polyline class="ln${k===2?' ref':''}" style="stroke:${COL[k]}${k===0?';stroke-width:2.8':''}" points="${pts}"/>`;
+    if(k<2)YC_T.forEach((t,i)=>{if(p.v[t]!=null)s+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(p.v[t]).toFixed(1)}" r="${k?3:4}" style="fill:${COL[k]};stroke:var(--paper);stroke-width:1.5"/>`;});});
+  const v30=P[0].v['30y'];if(v30!=null)s+=`<text class="lab" x="${X(n-1)+8}" y="${Y(v30)+4}">${v30.toFixed(2)}%</text>`;
+  s+=`<line class="cx" id="yc-cx" x1="0" x2="0" y1="${pt}" y2="${H-pb}" visibility="hidden"/>`;
+  YC_T.forEach((t,i)=>{const w=(W-pl-pr)/(n-1);s+=`<rect class="hit" data-i="${i}" x="${X(i)-w/2}" y="${pt-26}" width="${w}" height="${H-pb-pt+26}"/>`;});
+  s+='</svg>';
+  s+='<div class="legend">'+P.map((p,k)=>`<span><i style="background:${COL[k]}"></i>${['最新','前一交易日','約一個月前'][k]}（${md(p.d)}）</span>`).join('')+'</div>';
+  const bp=(a,b)=>a==null||b==null?'—':((a-b)*100>0?'+':(a-b)*100<0?'−':'')+Math.abs(Math.round((a-b)*100))+' bp';
+  const L=P[0].v, sp=(a,b)=>L[a]==null||L[b]==null?null:Math.round((L[a]-L[b])*100);
+  const s102=sp('10y','2y'), s103=sp('10y','3m');
+  s+=`<p class="shape">曲線形狀（${md(P[0].d)}）：10 年－2 年利差 <b>${s102==null?'—':(s102>0?'+':'')+s102+' bp'}</b>${s102!=null?(s102>0?'（正斜率）':s102<0?'（倒掛）':'（持平）'):''}、10 年－3 個月利差 <b>${s103==null?'—':(s103>0?'+':'')+s103+' bp'}</b>${s103!=null?(s103>0?'（正斜率）':s103<0?'（倒掛）':'（持平）'):''}。</p>`;
+  s+='<div class="tblwrap"><table class="tbl" style="font-size:13px"><thead><tr><th class="l">天期</th>'+YC_T.map(t=>`<th>${YC_L[t]}</th>`).join('')+'</tr></thead><tbody>'+
+    P.map((p,k)=>`<tr><td class="l">${['最新','前一交易日','約一個月前'][k]} ${md(p.d)}</td>`+YC_T.map(t=>`<td>${p.v[t]==null?'—':p.v[t].toFixed(2)+'%'}</td>`).join('')+'</tr>').join('')+
+    `<tr><td class="l">單日變化</td>`+YC_T.map(t=>{const x=bp(L[t],P[1]&&P[1].v[t]);return `<td class="${/^\+/.test(x)?'pos':/^−/.test(x)?'neg':''}">${x}</td>`;}).join('')+'</tr>'+
+    (P[2]?`<tr><td class="l">一個月變化</td>`+YC_T.map(t=>{const x=bp(L[t],P[2].v[t]);return `<td class="${/^\+/.test(x)?'pos':/^−/.test(x)?'neg':''}">${x}</td>`;}).join('')+'</tr>':'')+
+    '</tbody></table></div>';
+  return s;
+}
+function ycWire(root,P){ // 滑過／點某個天期：十字線＋三條曲線的數值與變化
+  const svg=root.querySelector('svg'),cx=root.querySelector('#yc-cx');let tip=null;
+  const COL=[SERIES[0],SERIES[1],'var(--s-shv)'],md=x=>x.slice(5).replace('-','/');
+  const bp=(a,b)=>a==null||b==null?'':'（'+((a-b)>0?'+':(a-b)<0?'−':'±')+Math.abs(Math.round((a-b)*100))+' bp）';
+  svg.querySelectorAll('.hit').forEach(r=>r.addEventListener('mouseenter',()=>{const i=+r.dataset.i,t=YC_T[i];
+    const x=+r.getAttribute('x')+(+r.getAttribute('width'))/2;cx.setAttribute('x1',x);cx.setAttribute('x2',x);cx.setAttribute('visibility','visible');
+    if(!tip){tip=document.createElement('div');tip.className='yc-tip';root.appendChild(tip);}
+    tip.innerHTML='<b>'+YC_L[t].replace('月',' 個月').replace('年',' 年')+'期</b><br>'+P.map((p,k)=>'<i style="background:'+COL[k]+'"></i>'+md(p.d)+' <b>'+(p.v[t]==null?'—':p.v[t].toFixed(2)+'%')+'</b>'+(k?bp(P[0].v[t],p.v[t]).replace('（','（最新比此日 '):'')).join('<br>');
+    const sr=svg.getBoundingClientRect(),rr=root.getBoundingClientRect(),px=sr.left-rr.left+x*sr.width/760;
+    tip.style.left=Math.max(0,Math.min(px+12,rr.width-tip.offsetWidth-4))+'px';tip.style.top=(sr.top-rr.top+30)+'px';tip.hidden=false;}));
+  svg.addEventListener('mouseleave',()=>{cx.setAttribute('visibility','hidden');if(tip)tip.hidden=true;});
+}
+function bondPanel(sec,heads,session){ // 債市：標題 → 各天期殖利率曲線（財政部官方）→ 週表 → 說明
+  return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="yc" data-session="${esc(session)}"><p class="small" style="color:var(--muted)">殖利率曲線載入中…</p></div><div class="tblwrap"><table class="tbl"><thead><tr>${heads.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
+    sec.rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===3&&/^[−-]/.test(c)?'neg':i===3&&/^\+/.test(c)?'pos':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+
+    `</tbody></table></div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
+}
+function ycLoad(){
+  const box=document.querySelector('.yc[data-session]'); if(!box) return;
+  fetch('data/treasury_curve.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json();}).then(TC=>{
+    const P=ycPick(TC,box.dataset.session);
+    if(!P){box.innerHTML='<p class="small" style="color:var(--muted)">這一天沒有財政部殖利率曲線資料。</p>';return;}
+    box.innerHTML='<div class="fsub">美國公債各天期殖利率曲線（財政部每日公布，'+esc(P[0].d)+'；短期 1 個月～1 年／中期 2～7 年／長期 10～30 年）</div>'+ycChart(P)+
+      '<p class="small" style="color:var(--muted);margin-top:6px">來源：<a href="'+esc(TC.u)+'" target="_blank" rel="noopener">'+esc(TC.source)+'</a>（par yield，年化）。下表週表為報告當時多來源收盤區間，與財政部官方值可能差 1～3 bp。</p>';
+    ycWire(box,P);
+  }).catch(()=>{box.innerHTML='<p class="small" style="color:var(--muted)">殖利率曲線暫時無法載入。</p>';});
+}
 function wkTable(sec,heads){
   return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="tblwrap"><table class="tbl"><thead><tr>${heads.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
     sec.rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===3&&/^[−-]/.test(c)?'neg':i===3&&/^\+/.test(c)?'pos':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+
@@ -226,7 +309,7 @@ function render(d){
   const WC=d.weekly.cols||['10/30','11/05'];
   h+=wkTable(d.weekly.stock,['指數',WC[0],WC[1],'一週']);
   h+=wkTable(d.weekly.fx,['匯率',WC[0],WC[1],'一週']);
-  h+=wkTable(d.weekly.bond,['期限',WC[0],WC[1],'變化']);
+  h+=bondPanel(d.weekly.bond,['期限',WC[0],WC[1],'變化'],d.session);
   h+=wkTable(d.weekly.other,['商品',WC[0],WC[1],'一週']);
   // 4. events
   h+=`<h2 id="events">4. 最近 24 小時國際大事</h2><div class="evt">`;
@@ -242,6 +325,7 @@ function render(d){
   // sources
   h+=`<h2 id="src">資料來源</h2><ol class="src">${d.sources.map(s=>`<li><a href="${esc(s.u)}" rel="noopener" target="_blank">${esc(s.t)}</a></li>`).join('')}</ol>`;
   el.innerHTML=h;
+  ycLoad();
 }
 function pickDate(){const q=new URLSearchParams(location.search).get('d');return q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?q:null;}
 fetch('data/daily/index.json',{cache:'no-store'}).then(r=>r.json()).then(idx=>{
@@ -261,7 +345,7 @@ const NEU=[65,69,84], POS=[31,143,74], NEG=[214,58,58];   // 中性 #414554、+3
 const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
 const col=c=>{if(c==null)return 'rgb(91,95,104)';const t=Math.max(-1,Math.min(1,c/3));return 'rgb('+(t>=0?mix(NEU,POS,t):mix(NEU,NEG,-t)).join(',')+')';};
 const pct=c=>c==null?'—':(c>0?'+':c<0?'−':'')+Math.abs(c).toFixed(2)+'%';
-const cap=b=>b>=1000?(b/1000).toFixed(2)+' 兆美元':Math.round(b*10).toLocaleString('en-US')+' 億美元';
+const cap=(b,S)=>{const u=S&&S.cur==='TWD'?'台幣':'美元';return b>=1000?(b/1000).toFixed(2)+' 兆'+u:Math.round(b*10).toLocaleString('en-US')+' 億'+u;};
 $('hm-bar').innerHTML=[-3,-2,-1,0,1,2,3].map(v=>'<span style="background:'+col(v)+'"></span>').join('');
 // 擠壓式樹狀圖（squarified treemap）：面積＝數值，盡量接近正方形
 function squarify(items,x,y,w,h){
@@ -285,19 +369,22 @@ function draw(){
     const head=(r.w>70&&r.h>48)?17:0;
     html+='<div class="sec" style="left:'+r.x.toFixed(1)+'px;top:'+r.y.toFixed(1)+'px;width:'+r.w.toFixed(1)+'px;height:'+r.h.toFixed(1)+'px">'+(head?'<b>'+esc(r.i.name)+'</b>':'')+'</div>';
     squarify(r.i.ts.map(t=>({v:t[3],t})),r.x,r.y+head,r.w,r.h-head).forEach(q=>{const t=q.i.t, a=Math.sqrt(q.w*q.h), fs=Math.max(9,Math.min(26,a/4.6));
-      const lab=(q.w>26&&q.h>14)?'<i style="font-size:'+fs.toFixed(1)+'px">'+esc(t[0])+'</i>'+((q.h>fs*2.3&&q.w>38)?'<u style="font-size:'+(fs*0.78).toFixed(1)+'px">'+pct(t[4])+'</u>':''):'';
+      const tw=S.market==='TW', nm=tw?t[1]:t[0], f1=tw?Math.min(fs,(q.w-8)/nm.length):fs, lab=((tw?f1>=9:q.w>26)&&q.h>14)?'<i style="font-size:'+f1.toFixed(1)+'px">'+esc(nm)+'</i>'+((q.h>f1*2.3&&q.w>38)?'<u style="font-size:'+(Math.min(fs*0.78,Math.max(9,f1))).toFixed(1)+'px">'+pct(t[4])+'</u>':''):'';
       html+='<div class="tl" data-s="'+esc(t[0])+'" style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;width:'+q.w.toFixed(1)+'px;height:'+q.h.toFixed(1)+'px;background:'+col(t[4])+'">'+lab+'</div>';});
   });
   box.innerHTML=html; tip=null;
   const up=S.tiles.filter(t=>t[4]>0).length, dn=S.tiles.filter(t=>t[4]<0).length;
-  $('hm-meta').textContent='美股 '+D.session+' 收盤｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+'｜方塊大小＝市值、顏色＝單日漲跌';
-  box.setAttribute('aria-label',S.name+'市值熱力圖，美股 '+D.session+' 收盤：上漲 '+up+' 檔、下跌 '+dn+' 檔');
+  const mk=(S.market==='TW'?'台股 ':'美股 ')+(S.session||D.session)+' 收盤';
+  $('hm-meta').textContent=mk+'｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+'）、顏色＝單日漲跌';
+  box.setAttribute('aria-label',S.name+'市值熱力圖，'+mk+'：上漲 '+up+' 檔、下跌 '+dn+' 檔');
+  $('hm-src').innerHTML='資料：'+(S.sources||D.sources).map(s=>'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.t)+'</a>').join('；')+'。'+
+    (S.market==='TW'?'台股漲跌相對證交所除權息參考價；方塊顯示公司簡稱，點方塊看個股分析。':'市值依該日收盤換算；同一家公司多種股別合併為一格（例如 GOOGL＝Alphabet A＋C）。');
   $('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th><th>收盤</th><th>單日漲跌</th></tr></thead><tbody>'+S.tiles.map(t=>'<tr><td class="l"><a href="valuation.html#code='+encodeURIComponent(t[0])+'"><b>'+esc(t[0])+'</b></a></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3])+(t[6]?'（估）':'')+'</td><td>'+(t[5]==null?'—':t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td></tr>').join('')+'</tbody>';
 }
 function show(el,ev){
   if(!D) return; const t=D.sets[cur].tiles.find(x=>x[0]===el.dataset.s); if(!t) return;
   if(!tip){tip=document.createElement('div');tip.className='hm-tip';box.appendChild(tip);}
-  tip.innerHTML='<b>'+esc(t[0])+'</b> '+esc(t[1])+'<br>'+esc(t[2])+'｜市值 '+cap(t[3])+(t[6]?'（估算）':'')+'<br>收盤 '+(t[5]==null?'—':t[5].toFixed(2))+'｜<span class="'+(t[4]>0?'up':t[4]<0?'dn':'')+'">'+pct(t[4])+'</span><br><span class="hint">'+(lastPT==='mouse'?'點一下':'再點一下')+'看個股分析與目標價試算 ›</span>';
+  tip.innerHTML='<b>'+esc(t[0])+'</b> '+esc(t[1])+'<br>'+esc(t[2])+'｜市值 '+cap(t[3],D.sets[cur])+(t[6]?'（估算）':'')+'<br>收盤 '+(t[5]==null?'—':t[5].toFixed(2))+'｜<span class="'+(t[4]>0?'up':t[4]<0?'dn':'')+'">'+pct(t[4])+'</span><br><span class="hint">'+(lastPT==='mouse'?'點一下':'再點一下')+'看個股分析與目標價試算 ›</span>';
   const r=box.getBoundingClientRect(), x=(ev?ev.clientX:el.getBoundingClientRect().left+10)-r.left, y=(ev?ev.clientY:el.getBoundingClientRect().top+10)-r.top;
   tip.style.left=Math.min(x+14, r.width-tip.offsetWidth-6)+'px'; tip.style.top=Math.min(y+14, r.height-tip.offsetHeight-6)+'px'; tip.hidden=false;
   box.querySelectorAll('.tl.on').forEach(e=>e.classList.remove('on')); el.classList.add('on');
@@ -312,7 +399,7 @@ box.addEventListener('click',e=>{const el=e.target.closest('.tl');if(!el)return;
 document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();}));
 let rt=0; if('ResizeObserver' in window) new ResizeObserver(()=>{clearTimeout(rt);rt=setTimeout(draw,120);}).observe(box); else window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
 fetch('data/heatmap/latest.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(d=>{D=d;
-  $('hm-src').innerHTML='資料：'+d.sources.map(s=>'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.t)+'</a>').join('；')+'。市值依該日收盤換算；同一家公司多種股別合併為一格（例如 GOOGL＝Alphabet A＋C）。';
+  document.querySelectorAll('.hm-tabs button').forEach(b=>{if(!d.sets[b.dataset.set])b.hidden=true;});
   draw();}).catch(()=>{$('hm-meta').textContent='熱力圖資料暫時無法載入';box.style.height='120px';});
 })();
 </script>

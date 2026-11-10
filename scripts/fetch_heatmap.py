@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """BNASDAQ｜市值熱力圖資料 data/heatmap/latest.json（公開市場資料，不含任何策略規則）。
 
-成分股與產業：data/lt/etf/QQQ.json（Invesco QQQ 每日持股＝那斯達克 100）、data/lt/etf/SPY.json（SSGA SPY 每日持股＝標普 500）
+成分股與產業：data/lt/etf/QQQ.json（Invesco QQQ 每日持股＝那斯達克 100）、IVV.json（iShares IVV＝標普 500）、SOXQ.json（Invesco SOXQ＝費城半導體）、
+            0050.json（元大台灣50＝台灣 50；台股另用證交所資料，見下）
             （投資組合透視每天抓的同一份檔；同一家公司的多種股別已合併成一個代號，例如 GOOGL＝Alphabet A＋C）
 市值：Nasdaq 股票篩選器 marketCap（api.nasdaq.com）；同一家公司多種股別時依篩選器數值判斷是公司層級還是個別股別再合併
 漲跌：Yahoo Finance 日線，最新「已收盤」交易日收盤 ÷ 前一交易日收盤 − 1（未收盤的當天不算）
-同一個交易日已經有完整檔案就不重抓；抓失敗或覆蓋率不足 90% 時保留舊檔、結束碼 1。
+台灣 50：收盤與漲跌用證交所 STOCK_DAY_ALL（漲跌＝相對除權息參考價），市值＝證交所「上市公司基本資料」已發行普通股數 × 收盤（台幣）；
+         台股有自己的交易日（sets.tw50.session），與美股分開判斷是否要重抓；台股抓失敗時保留舊的台灣 50 分頁。
+同一個交易日已經有完整檔案就不重抓；美股抓失敗或覆蓋率不足 90% 時保留舊檔、結束碼 1。
 """
 import concurrent.futures as cf, datetime as dt, json, os, re, sys, time, urllib.error, urllib.request
 from zoneinfo import ZoneInfo
@@ -14,6 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'heatmap', 'latest.json')
 UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
 SETS = [('ndx', '那斯達克 100', ['QQQ']), ('spx', '標普 500', ['IVV', 'SPY']), ('sox', '費城半導體', ['SOXQ'])]   # 標普 500 用 iShares IVV（產業齊全）；費半用 Invesco SOXQ（追蹤 PHLX 費城半導體指數）
+TW = ('tw50', '台灣 50', '0050')   # 元大台灣50 持股＝臺灣 50 指數成分股
 
 
 def log(*a):
@@ -124,6 +128,105 @@ def stem(name):
     return re.sub(r'[^a-z0-9]+', ' ', n.lower()).strip()
 
 
+def roc_iso(s):
+    """民國 1151109 / 115/11/09 → 2026-11-09；西元 20261109 → 2026-11-09"""
+    s = str(s or '').strip().replace('/', '')
+    if len(s) == 7 and s.isdigit():
+        return f'{int(s[:3]) + 1911}-{s[3:5]}-{s[5:7]}'
+    if len(s) == 8 and s.isdigit():
+        return f'{s[:4]}-{s[4:6]}-{s[6:8]}'
+    return s
+
+
+def twse_day_all():
+    """證交所全部上市證券的最近一個交易日收盤與漲跌 → (日期, {代號: (收盤, 漲跌)}, 來源)。先 rwd（含日期），失敗再 OpenAPI。"""
+    try:
+        j = json.loads(get('https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY_ALL?response=json', timeout=60, tries=3))
+        idx = {f: i for i, f in enumerate(j.get('fields') or [])}
+        ci, pi, di = idx.get('證券代號', 0), idx.get('收盤價', 7), idx.get('漲跌價差', 8)
+        out = {}
+        for r in j.get('data') or []:
+            c, close, chg = str(r[ci]).strip(), num(r[pi]), num(r[di])
+            if c and close:
+                out[c] = (close, chg)
+        neg = sum(1 for v in out.values() if v[1] is not None and v[1] < 0)
+        if len(out) > 500 and neg > 0:
+            return roc_iso(j.get('date')), out, 'rwd'
+        log('TWSE rwd 不可用：列數', len(out), '下跌家數', neg, 'stat', j.get('stat'))
+    except Exception as e:  # noqa
+        log('TWSE rwd 失敗', repr(e)[:160])
+    j = json.loads(get('https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL', timeout=60, tries=3))
+    date = ''
+    try:   # OpenAPI 沒有日期：用 FMTQIK（每日市場成交資訊）最後一天
+        fm = json.loads(get('https://openapi.twse.com.tw/v1/exchangeReport/FMTQIK', timeout=60, tries=3))
+        ds = [roc_iso(r.get('Date')) for r in fm if r.get('Date')]
+        date = max(ds) if ds else ''
+    except Exception as e:  # noqa
+        log('TWSE FMTQIK 失敗', repr(e)[:160])
+    out = {}
+    for r in j:
+        c, close, chg = str(r.get('Code', '')).strip(), num(r.get('ClosingPrice')), num(r.get('Change'))
+        if c and close:
+            out[c] = (close, chg)
+    return date, out, 'openapi'
+
+
+def twse_shares():
+    """證交所上市公司基本資料 → {代號: 已發行普通股數}；沒有該欄時用 實收資本額 ÷ 普通股每股面額。"""
+    j = json.loads(get('https://openapi.twse.com.tw/v1/opendata/t187ap03_L', timeout=90, tries=3))
+    if j:
+        log('TWSE 基本資料欄位', [k for k in j[0].keys() if re.search('股|資本|面額', k)])
+    out, via = {}, {'已發行': 0, '資本額÷面額': 0}
+    for r in j:
+        c = str(r.get('公司代號', '')).strip()
+        sh = next((num(v) for k, v in r.items() if '已發行普通股數' in k), None)
+        if sh:
+            via['已發行'] += 1
+        else:
+            cap = num(r.get('實收資本額'))
+            par = num(re.sub(r'[^0-9.]', '', str(r.get('普通股每股面額') or '')) or None)
+            if cap and par:
+                sh = cap / par; via['資本額÷面額'] += 1
+        if c and sh:
+            out[c] = sh
+    log('TWSE 股數', len(out), via)
+    return out
+
+
+def build_tw(day=None):
+    """台灣 50 分頁；任何一步失敗回傳 None（呼叫端保留舊分頁）。"""
+    key, label, etf = TW
+    try:
+        j = json.load(open(os.path.join(ROOT, 'data', 'lt', 'etf', etf + '.json'), encoding='utf-8'))
+        hs = [(str(h[0]).strip(), float(h[1]), str(h[2]).strip(), h[3] or '') for h in j['h'] if h[0] and float(h[1]) > 0]
+        date, px, src = day or twse_day_all()
+        sh = twse_shares()
+    except Exception as e:  # noqa
+        log('台灣 50 失敗', repr(e)[:200]); return None
+    ratio = sorted(sh[c] * px[c][0] / w for c, w, *_ in hs if c in sh and c in px)
+    mid = ratio[len(ratio) // 2] if ratio else None
+    tiles, est, have = [], 0, 0
+    for c, w, name, sec in hs:
+        close, chg = px.get(c, (None, None))
+        cap, e = (sh[c] * close, 0) if (c in sh and close) else ((w * mid, 1) if mid else (None, 1))
+        est += e
+        pct = None
+        if close and chg is not None and close - chg > 0:
+            pct = round(chg / (close - chg) * 100, 2); have += 1
+        tiles.append([c, name, sec or '其他', round(cap / 1e9, 2) if cap else 0, pct, close, e])
+    cover = have / len(hs) if hs else 0
+    log(label, '交易日', date, '來源', src, '方塊', len(tiles), '有漲跌', have, '市值估算', est, '覆蓋率 %.1f%%' % (cover * 100))
+    if cover < 0.9 or not date:
+        log(label, '覆蓋率不足 90% 或沒有日期，保留舊分頁'); return None
+    tiles.sort(key=lambda t: -t[3])
+    return dict(name=label, etf=etf, holdings_asof=j.get('asof'), n=len(tiles), cap_total_bn=round(sum(t[3] for t in tiles), 1), tiles=tiles,
+                session=date, market='TW', cur='TWD', cap_unit='十億台幣',
+                sources=[dict(t='成分股與產業：元大台灣50（0050）持股', u='https://www.yuantaetfs.com/product/detail/0050/ratio'),
+                         dict(t='收盤與漲跌：臺灣證券交易所（漲跌相對除權息參考價）', u='https://www.twse.com.tw/zh/trading/historical/stock-day-all.html'),
+                         dict(t='市值：證交所上市公司基本資料（已發行普通股數）× 收盤', u='https://openapi.twse.com.tw/')])
+
+
+
 def main():
     sess_bars = yahoo_bars('SPY')
     if len(sess_bars) < 2:
@@ -139,8 +242,26 @@ def main():
             old = json.load(open(OUT, encoding='utf-8'))
         except Exception:
             old = None
-    if old and old.get('session') == session and all(k in (old.get('sets') or {}) for k, _, _ in SETS) and '--force' not in sys.argv:
-        log('已是最新交易日', session, '不重抓'); return 0
+    force = '--force' in sys.argv
+    try:
+        tw_day = twse_day_all()
+    except Exception as e:  # noqa
+        log('TWSE 收盤失敗', repr(e)[:160]); tw_day = None
+    osets = (old or {}).get('sets') or {}
+    us_fresh = bool(old) and old.get('session') == session and all(k in osets for k, _, _ in SETS) and not force
+    tw_fresh = bool(old) and TW[0] in osets and (tw_day is None or osets[TW[0]].get('session') == tw_day[0]) and not force
+    if us_fresh and tw_fresh:
+        log('已是最新交易日', session, '台股', osets[TW[0]].get('session'), '不重抓'); return 0
+    if us_fresh:                                  # 只有台股換日：美股分頁沿用舊檔
+        tw = build_tw(tw_day)
+        if not tw:
+            return 1
+        old['sets'][TW[0]] = tw
+        old['updated'] = dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        tmp = OUT + '.tmp'
+        json.dump(old, open(tmp, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+        os.replace(tmp, OUT)
+        log('只更新台灣 50', tw['session']); return 0
     log('交易日', session)
 
     # 成分股（投資組合透視每日持股檔）
@@ -256,11 +377,17 @@ def main():
         if cover < 0.9:
             log(label, '覆蓋率不足 90%，保留舊檔'); return 1
         tiles.sort(key=lambda t: -t[3])
-        sets[key] = dict(name=label, etf=etf, holdings_asof=asof, n=len(tiles), cap_total_bn=round(sum(t[3] for t in tiles), 1), tiles=tiles)
+        sets[key] = dict(name=label, etf=etf, holdings_asof=asof, n=len(tiles), cap_total_bn=round(sum(t[3] for t in tiles), 1), tiles=tiles,
+                         session=session, market='US', cur='USD', cap_unit='十億美元')
+    tw = build_tw(tw_day) if tw_day else None
+    if tw:
+        sets[TW[0]] = tw
+    elif TW[0] in osets:
+        sets[TW[0]] = osets[TW[0]]; log('台灣 50 沿用舊分頁', osets[TW[0]].get('session'))
 
     out = dict(schema='bnasdaq-heatmap/1', session=session, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               cols=['代號', '名稱', '產業', '市值（十億美元）', '單日漲跌%', '收盤', '市值為估算'],
-               method='方塊面積＝市值（Nasdaq 篩選器市值依該交易日收盤換算）；顏色＝該交易日收盤相對前一交易日收盤的漲跌。',
+               cols=['代號', '名稱', '產業', '市值（十億，幣別見各分頁 cur）', '單日漲跌%', '收盤', '市值為估算'],
+               method='方塊面積＝市值（美股：Nasdaq 篩選器市值依該交易日收盤換算；台股：已發行普通股數×收盤）；顏色＝該交易日收盤相對前一交易日收盤（台股為除權息參考價）的漲跌。',
                sources=[dict(t='成分股與產業：Invesco QQQ、iShares IVV、Invesco SOXQ（費城半導體）每日持股', u='https://www.ishares.com/us/products/239726/ishares-core-sp-500-etf'),
                         dict(t='市值：Nasdaq 股票篩選器', u='https://www.nasdaq.com/market-activity/stocks/screener'),
                         dict(t='收盤價：Yahoo Finance', u='https://finance.yahoo.com/')],

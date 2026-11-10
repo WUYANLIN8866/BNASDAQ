@@ -62,7 +62,7 @@ jobs:
         run: |
           git config user.name "bnasdaq-bot"
           git config user.email "bnasdaq-bot@users.noreply.github.com"
-          for f in data/market.json data/treasury.json data/market_daily.json data/tb3ms.json data/home.json data/qqq_fhs.json data/heatmap/latest.json; do if [ -f "$f" ]; then git add "$f"; fi; done
+          for f in data/market.json data/treasury.json data/market_daily.json data/tb3ms.json data/home.json data/qqq_fhs.json data/heatmap/latest.json data/treasury_curve.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           if git diff --cached --quiet; then
             echo "market data unchanged"
           else
