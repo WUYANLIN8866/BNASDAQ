@@ -71,8 +71,8 @@ def ysym(code, market):
 def timeseries(sym):
     types = ['annual' + t for t in ANNUAL] + ['quarterly' + t for t in QUARTER] + ['trailing' + t for t in TRAIL]
     out, curs = {}, {}
-    for i in range(0, len(types), 24):   # 一次最多 24 個欄位，避免網址過長
-        j = json.loads(get(f'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{sym}?symbol={sym}&type={",".join(types[i:i + 24])}'
+    for i in range(0, len(types), 60):   # 46 個欄位一次抓完（網址約 1,500 字元）
+        j = json.loads(get(f'https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{sym}?symbol={sym}&type={",".join(types[i:i + 60])}'
                            f'&period1=1420070400&period2={int(time.time())}'))
         for r in (j.get('timeseries') or {}).get('result') or []:
             t = r['meta']['type'][0]
@@ -187,6 +187,32 @@ def tw_sources(codes):
         log('證交所月營收 OK')
     except Exception as e:  # noqa
         log('證交所月營收失敗', repr(e)[:120])
+    try:
+        for r in twse('/opendata/t187ap03_L'):
+            c = str(r.get('公司代號', '')).strip()
+            if c in out:
+                out[c]['profile'] = {'full': (r.get('公司名稱') or '').strip(), 'chair': (r.get('董事長') or '').strip(), 'ceo': (r.get('總經理') or '').strip(), 'spokes': (r.get('發言人') or '').strip(),
+                                     'est': (r.get('成立日期') or '').strip(), 'listed': (r.get('上市日期') or '').strip(), 'capital': num(r.get('實收資本額')), 'url': (r.get('網址') or '').strip(),
+                                     'addr': (r.get('住址') or '').strip(), 'auditor': (r.get('簽證會計師事務所') or '').strip(), 'en': (r.get('英文簡稱') or '').strip()}
+        log('證交所公司基本資料 OK')
+    except Exception as e:  # noqa
+        log('證交所公司基本資料失敗', repr(e)[:120])
+    try:
+        for r in twse('/exchangeReport/MI_MARGN'):
+            c = str(r.get('股票代號', '')).strip()
+            if c in out:
+                out[c]['margin'] = {'fin': num(r.get('融資今日餘額')), 'fin_prev': num(r.get('融資前日餘額')), 'fin_lim': num(r.get('融資限額')), 'short': num(r.get('融券今日餘額')), 'short_prev': num(r.get('融券前日餘額'))}
+        log('證交所融資融券 OK')
+    except Exception as e:  # noqa
+        log('證交所融資融券失敗', repr(e)[:120])
+    try:
+        for r in twse('/opendata/t187ap04_L'):
+            c = str(r.get('公司代號', '')).strip()
+            if c in out:
+                out[c].setdefault('ann', []).append({'d': (r.get('發言日期') or '').strip(), 't': (r.get('主旨 ') or r.get('主旨') or '').strip(), 'body': (r.get('說明') or '').strip()[:600]})
+        log('證交所重大訊息 OK')
+    except Exception as e:  # noqa
+        log('證交所重大訊息失敗', repr(e)[:120])
     try:
         rows = get('https://opendata.tdcc.com.tw/getOD.ashx?id=1-5', timeout=180).decode('utf-8-sig', 'replace').splitlines()
         for l in rows[1:]:
@@ -493,8 +519,11 @@ def main():
         return c, rec
 
     got = {}
-    with cf.ThreadPoolExecutor(4) as ex:
-        for c, rec in ex.map(one, codes):
+    t0 = time.time()
+    with cf.ThreadPoolExecutor(6) as ex:
+        for k, (c, rec) in enumerate(ex.map(one, codes), 1):
+            if k % 50 == 0:
+                log('進度', k, '/', len(codes), '已花 %.0f 秒' % (time.time() - t0))
             got[c] = rec
     log('財報取得', sum(1 for r in got.values() if r.get('A', {}).get('d')), '/', len(got), '；股價', sum(1 for r in got.values() if r.get('px')), '/', len(got))
     tw = tw_sources([c for c in codes if uni[c]['market'] == 'TW']) if any(uni[c]['market'] == 'TW' for c in codes) else {}
@@ -512,6 +541,34 @@ def main():
         lst = LST[uni[c]['market']]
         r['fx'] = 1.0 if (not r.get('fin_cur') or r['fin_cur'] == lst) else FX.get((r['fin_cur'], lst))
 
+    # 持有本股的 ETF（投資組合透視每日持股檔反查；台積電 ADR 在美國 ETF 持股檔記為 2330）
+    etf_by = {}
+    try:
+        alias = json.load(open(os.path.join(ROOT, 'data', 'lt', 'universe.json'), encoding='utf-8')).get('alias') or {}
+    except Exception:
+        alias = {}
+    tw2adr = {v: k for k, v in alias.items() if re.fullmatch(r'\d{4,6}', v) and re.fullmatch(r'[A-Z]{1,5}', k)}
+    for f in sorted(os.listdir(os.path.join(ROOT, 'data', 'lt', 'etf'))):
+        if not f.endswith('.json'):
+            continue
+        try:
+            j = json.load(open(os.path.join(ROOT, 'data', 'lt', 'etf', f), encoding='utf-8'))
+        except Exception:
+            continue
+        ecode = j.get('code') or f[:-5]
+        emk = 'TW' if re.match(r'^\d', ecode) else 'US'
+        for h in j.get('h') or []:
+            try:
+                hc = re.sub(r'^X:[^:]+:', '', str(h[0] or '')).replace(' ', '-').upper(); w = float(h[1])
+            except Exception:
+                continue
+            if emk == 'US':
+                hc = tw2adr.get(hc, hc)
+            if hc in got and uni[hc]['market'] == emk and w > 0:
+                etf_by.setdefault(hc, []).append([ecode, j.get('name') or '', round(w, 4), j.get('asof')])
+    for c in etf_by:
+        etf_by[c].sort(key=lambda x: -x[2])
+    log('ETF 反查：', sum(1 for c in got if c in etf_by), '家公司有 ETF 持有')
     # 指標
     M = {}
     for c, r in got.items():
@@ -570,6 +627,7 @@ def main():
                'updated': NOW.strftime('%Y-%m-%dT%H:%M:%SZ'), 'cap_bn': u['cap_bn'], 'fin_cur': r.get('fin_cur'), 'fx': r.get('fx'), 'A': r.get('A'), 'Q': r.get('Q'), 'T': r.get('T'), 'T_d': r.get('T_d'), 'm': m, 's': S[c], 'peers': peers,
                'tw': tw.get(c) or None, 'err': {k: v for k, v in r.items() if k.startswith('err_')} or None,
                'p1y': r.get('p1y'), 'p5y': r.get('p5y'), 'divs': r.get('divs'), 'bench': 'SPY' if u['market'] == 'US' else '0050',
+               'etfs': (etf_by.get(c) or [])[:15], 'etf_n': len(etf_by.get(c) or []),
                'src': [{'t': '財報：Yahoo Finance（fundamentals-timeseries，年度、季度、近四季）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/financials'},
                        {'t': '股價：Yahoo Finance 近 1 年日線（還原權息）', 'u': f'https://finance.yahoo.com/quote/{ysym(c, u["market"])}/history'}]}
         if u['market'] == 'TW':

@@ -121,8 +121,29 @@
     const D = await getJ('data/company/' + encodeURIComponent(code) + '.json');
     if (!D) { host.innerHTML = '<p class="small">' + esc(code) + ' 尚未納入公司分析資料（每週更新熱力圖四個指數的成分股）。</p>'; return; }
     const P = (await Promise.all((D.peers || []).map(c => getJ('data/company/' + encodeURIComponent(c) + '.json')))).filter(Boolean);
-    const cur = D.cur, m = D.m || {}, S = D.s || {}, nm = D.name, A = D.A || {}, fxNote = D.fin_cur && D.fin_cur !== D.cur ? '（原始財報幣別 ' + D.fin_cur + '，以匯率 ' + (D.fx ? D.fx.toPrecision(4) : '—') + ' 換算 ' + D.cur + '）' : '';
+    const cur = D.cur, m = D.m || {}, S = D.s || {}, nm = D.name, A = D.A || {}, ds = A.d || [], fxNote = D.fin_cur && D.fin_cur !== D.cur ? '（原始財報幣別 ' + D.fin_cur + '，以匯率 ' + (D.fx ? D.fx.toPrecision(4) : '—') + ' 換算 ' + D.cur + '）' : '';
     let h = '';
+    // ---- 公司資料 ----
+    {
+      const pf = (D.tw || {}).profile, rocD = x => String(x || '').replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3');
+      const rowsP = [['市場／幣別', (D.market === 'TW' ? '台灣上市' : '美國上市') + '，股價 ' + D.cur + (D.fin_cur && D.fin_cur !== D.cur ? '、財報 ' + D.fin_cur : '')], ['產業', (D.sector || '—') + (D.industry ? '／' + D.industry : '')], ['市值', money((D.cap_bn || 0) * 1e9, D.cur)], ['最新財報年度', yr(last(ds) || '')]];
+      if (pf) rowsP.unshift(['公司全名', pf.full + (pf.en ? '（' + pf.en + '）' : '')]), rowsP.push(['董事長／總經理', pf.chair + '／' + pf.ceo], ['發言人', pf.spokes], ['成立／上市', rocD(pf.est) + '／' + rocD(pf.listed)], ['實收資本額', money(pf.capital, 'TWD')], ['簽證會計師', pf.auditor], ['地址', pf.addr], ['網站', pf.url ? '<a href="' + esc(/^https?:/.test(pf.url) ? pf.url : 'https://' + pf.url) + '" target="_blank" rel="noopener">' + esc(pf.url) + '</a>' : '—']);
+      h += '<h3 id="co-prof">公司資料</h3><div class="tblwrap"><table class="tbl"><tbody>' + rowsP.map(r => '<tr><td class="l" style="width:140px">' + esc(r[0]) + '</td><td class="l">' + (String(r[1]).startsWith('<a ') ? r[1] : esc(r[1])) + '</td></tr>').join('') + '</tbody></table></div>' +
+        (pf ? '<p class="small">來源：證交所上市公司基本資料。</p>' : '');
+    }
+    // ---- 優勢與風險（自動清單：同市場百分位前 25%／後 25% 的面向＋關鍵指標門檻）----
+    {
+      const pros = [], cons = [], add = (arr, t) => { if (arr.length < 6) arr.push(t); };
+      Object.keys(DN).map(d => [d, S[d]]).filter(x => x[1] != null).sort((a, b) => b[1] - a[1]).forEach(([d, v]) => { if (v >= 75) add(pros, DN[d] + '在同市場前 ' + Math.max(1, Math.round(100 - v)) + '%（' + Math.round(v) + ' 分）'); });
+      Object.keys(DN).map(d => [d, S[d]]).filter(x => x[1] != null).sort((a, b) => a[1] - b[1]).forEach(([d, v]) => { if (v <= 25) add(cons, DN[d] + '在同市場後 ' + Math.max(1, Math.round(v)) + '%（' + Math.round(v) + ' 分）'); });
+      if (m.f_score != null) (m.f_score >= 7 ? pros : m.f_score <= 3 ? cons : []).push('Piotroski F 分數 ' + m.f_score + '／9');
+      if (m.altman_z != null) (m.altman_z > 2.99 ? pros : m.altman_z < 1.81 ? cons : []).push('Altman Z ' + m.altman_z.toFixed(2) + (m.altman_z > 2.99 ? '（安全區）' : m.altman_z < 1.81 ? '（危險區）' : ''));
+      if (m.de != null && m.de > 2) cons.push('負債權益比 ' + m.de.toFixed(2) + ' 倍偏高');
+      if (m.shs_chg != null && m.shs_chg > 0.03) cons.push('股數一年增加 ' + (m.shs_chg * 100).toFixed(1) + '%（稀釋）');
+      if (m.shs_chg != null && m.shs_chg < -0.01) pros.push('股數一年減少 ' + (-m.shs_chg * 100).toFixed(1) + '%（買回）');
+      h += '<h3 id="co-pc">優勢與風險（自動清單）</h3><div class="pc"><div class="pc-p"><b>優勢</b><ul>' + (pros.length ? pros.map(t => '<li>' + esc(t) + '</li>').join('') : '<li>沒有特別突出的面向</li>') + '</ul></div><div class="pc-c"><b>風險</b><ul>' + (cons.length ? cons.map(t => '<li>' + esc(t) + '</li>').join('') : '<li>沒有特別落後的面向</li>') + '</ul></div></div>' +
+        '<p class="small">規則：14 個面向中分數 ≥ 75（同市場前 25%）列為優勢、≤ 25（後 25%）列為風險，再加上 Piotroski、Altman Z、負債、股數變化等門檻；全部由資料自動產生，不含主觀判斷。</p>';
+    }
     // ---- 雷達圖：與主要對手比較 ----
     const ser = [D].concat(P.slice(0, 4)).map((x, k) => ({ name: x.code + (x.market === 'TW' ? ' ' + x.name : ''), code: x.code, v: RADAR.map(d => (x.s || {})[d] == null ? null : x.s[d]), c: COL[k] }));
     h += '<h3 id="co-radar">與主要競爭對手比較（雷達圖）</h3><p>' + esc(nm) + ' 與同產業市值最大的 ' + P.length + ' 家公司（' + esc(P.map(x => x.code).join('、')) + '），在 ' + RADAR.length + ' 個面向的分數。分數＝在' + (D.market === 'TW' ? '台灣 50 成分股' : '美股（那斯達克 100、標普 500、費城半導體成分股）') + '中的百分位，越外圈越好。</p>';
@@ -147,6 +168,11 @@
           ['距 50／200 日線', a50 ? ((lv / a50 - 1) * 100).toFixed(1) + '%' : '—', a200 ? '200 日線 ' + ((lv / a200 - 1) * 100).toFixed(1) + '%' : '200 日線資料不足'],
           ['波動與 Beta', fmtM('vol_1y', m.vol_1y), 'Beta ' + fmtM('beta_1y', m.beta_1y) + '（對 ' + esc(D.bench || '') + '）']].map(k => '<div><small>' + k[0] + '</small><b>' + esc(k[1]) + '</b><span>' + esc(k[2]) + '</span></div>').join('') + '</div>' +
         '<p class="small">技術指標以近 1 年原始日收盤在瀏覽器計算；只描述目前狀態，不是買賣訊號。</p>';
+      const ret = a => { const mm = new Map(); for (let i = 1; i < a.length; i++) if (a[i][1] && a[i - 1][1]) mm.set(a[i][0], Math.log(a[i][1] / a[i - 1][1])); return mm; };
+      const R0 = ret(p1), corr = (A1, B1) => { const ks = [...A1.keys()].filter(k => B1.has(k)); if (ks.length < 60) return null; const xa = ks.map(k => A1.get(k)), xb = ks.map(k => B1.get(k)), ma = xa.reduce((t, v) => t + v, 0) / xa.length, mb = xb.reduce((t, v) => t + v, 0) / xb.length;
+        let sab = 0, saa = 0, sbb = 0; for (let i = 0; i < xa.length; i++) { sab += (xa[i] - ma) * (xb[i] - mb); saa += (xa[i] - ma) ** 2; sbb += (xb[i] - mb) ** 2; } return sab / Math.sqrt(saa * sbb); };
+      const cs = P.map(x => ({ c: x.code, r: corr(R0, ret((x.p1y || []).filter(y => y[1] != null))) })).filter(x => x.r != null);
+      if (cs.length) h += '<p>與對手的股價相關係數（近 1 年日報酬）：' + cs.map(x => esc(x.c) + ' <b>' + x.r.toFixed(2) + '</b>').join('、') + '。越接近 1 代表走勢越同步，分散效果越小。</p>';
     }
     // ---- 股東結構 ----
     h += '<h3 id="co-hold">股東結構：前 10 大持有股東</h3>';
@@ -168,9 +194,18 @@
     } else {
       h += '<div class="note"><p><b>美股前 10 大持有股東：資料來源待開通。</b>權威來源是美國證管會（SEC）的 13F 申報；SEC 規定程式抓資料必須附聯絡 email，開通後每季自動更新。其他提供此資料的網站都設有防機器人驗證，本站不繞過這類驗證。</p></div>';
     }
+    // ---- 融資融券（台股）----
+    if (D.market === 'TW' && (D.tw || {}).margin) { const g = D.tw.margin, out2 = last(A.shs_out);
+      h += '<p><b>融資融券（證交所，單位：張）</b>：融資餘額 ' + (g.fin == null ? '—' : Math.round(g.fin).toLocaleString('en-US')) + ' 張（前一日 ' + (g.fin_prev == null ? '—' : Math.round(g.fin_prev).toLocaleString('en-US')) + '）' + (out2 && g.fin != null ? '，占流通股數 ' + (g.fin * 1000 / out2 * 100).toFixed(3) + '%' : '') +
+        '；融券餘額 ' + (g.short == null ? '—' : Math.round(g.short).toLocaleString('en-US')) + ' 張（前一日 ' + (g.short_prev == null ? '—' : Math.round(g.short_prev).toLocaleString('en-US')) + '）；券資比 ' + (g.fin ? (g.short / g.fin * 100).toFixed(2) + '%' : '—') + '。</p>'; }
+    // ---- 持有本股的 ETF ----
+    if ((D.etfs || []).length) {
+      h += '<div class="tblwrap"><table class="tbl"><caption>持有 ' + esc(D.code) + ' 的 ETF：本站追蹤的 ' + D.etf_n + ' 檔中，權重最高的 ' + D.etfs.length + ' 檔（各 ETF 每日持股檔）</caption><thead><tr><th class="l">ETF</th><th class="l">名稱</th><th>' + esc(D.code) + ' 占該 ETF</th><th>持股日</th></tr></thead><tbody>' +
+        D.etfs.map(e => '<tr><td class="l"><a href="lookthrough.html">' + esc(e[0]) + '</a></td><td class="l">' + esc(e[1]) + '</td><td>' + e[2].toFixed(2) + '%</td><td>' + esc(e[3] || '—') + '</td></tr>').join('') + '</tbody></table></div>';
+    }
     // ---- 營收結構 ----
     h += '<h3 id="co-rev">營收結構：營收占比與營收來源</h3>';
-    const rv = A.rev || [], ds = A.d || [];
+    const rv = A.rev || [];
     if (rv.filter(v => v != null).length) {
       const yoy = i => i > 0 && rv[i] && rv[i - 1] ? (rv[i] / rv[i - 1] - 1) : null;
       h += '<div class="fig"><p class="ftitle">年度營收（' + esc(D.fin_cur || cur) + '）與年增率</p>' + vbars(ds.map(yr), rv, { fmt: v => money(v, D.fin_cur || cur), axis: axM, lab: i => (yoy(i) == null ? '' : (yoy(i) >= 0 ? '+' : '') + (yoy(i) * 100).toFixed(0) + '%'), title: '年度營收' }) + '</div>';
@@ -204,6 +239,19 @@
     const moatCls = m.roic_avg == null ? null : (m.roic_avg >= 0.15 && (m.om_std == null || m.om_std < 0.08)) ? '寬護城河' : m.roic_avg >= 0.08 ? '窄護城河' : '沒有明顯護城河';
     h += '<p><b>護城河分數 ' + sc(S.moat) + '</b>（' + lvl(S.moat) + '）' + (moatCls ? '；依本站量化規則屬於 <b>' + moatCls + '</b>' : '') + '：投入資本報酬率近年平均 ' + fmtM('roic_avg', m.roic_avg) + '（最新 ' + fmtM('roic', m.roic) + '）、營業利益率 ' + fmtM('om', m.om) + '（標準差 ' + fmtM('om_std', m.om_std) + '）。</p>' +
       '<p class="small">量化規則：ROIC 近年平均 ≥ 15% 且營業利益率標準差 < 8 個百分點＝寬護城河；ROIC 平均 ≥ 8%＝窄護城河；其餘＝沒有明顯護城河。長期賺到明顯高於資金成本的報酬、而且獲利不大起大落，是護城河存在的財務證據；品牌、專利、網路效應、轉換成本等來源會反映在這些數字上。</p>';
+    // ---- 杜邦分析與營運週轉 ----
+    {
+      const at = i => { const a = A.ta || []; return a[i] != null && a[i - 1] != null ? (a[i] + a[i - 1]) / 2 : a[i]; };
+      const eqA = i => { const a = A.eq || []; return a[i] != null && a[i - 1] != null ? (a[i] + a[i - 1]) / 2 : a[i]; };
+      const rowsD = ds.map((d, i) => { const r = (A.rev || [])[i], n = (A.ni || [])[i], ta = at(i), e = eqA(i); if (!r || n == null || !ta || !e || e <= 0) return null;
+        return { y: yr(d), nm: n / r, atn: r / ta, em: ta / e, roe: n / e }; }).filter(Boolean);
+      if (rowsD.length) {
+        h += '<h3 id="co-dupont">杜邦分析與營運週轉</h3><p>股東權益報酬率（ROE）＝淨利率 × 資產周轉率 × 權益乘數。拆開看，可以知道 ROE 是靠「賺得多」、「轉得快」還是「借得多」。</p><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">年度</th><th>淨利率</th><th>資產周轉率</th><th>權益乘數</th><th>ROE</th></tr></thead><tbody>' +
+          rowsD.map(r => '<tr><td class="l">' + esc(r.y) + '</td><td>' + (r.nm * 100).toFixed(1) + '%</td><td>' + r.atn.toFixed(2) + ' 倍</td><td>' + r.em.toFixed(2) + ' 倍</td><td><b>' + (r.roe * 100).toFixed(1) + '%</b></td></tr>').join('') + '</tbody></table></div>';
+        const dso = m.dso, dio = m.inv_turn ? 365 / m.inv_turn : null;
+        h += '<p>營運週轉：應收帳款約 <b>' + (dso == null ? '—' : Math.round(dso) + ' 天') + '</b>收回、存貨約 <b>' + (dio == null ? '—' : Math.round(dio) + ' 天') + '</b>賣出（最新年度；天數越短，資金卡在營運的時間越少）。</p>';
+      }
+    }
     // ---- 歷年估值 ----
     const p5 = new Map((D.p5y || []).map(x => [x[0], x[1]]));
     if ((!D.fin_cur || D.fin_cur === D.cur) && (A.eps || []).some(v => v != null) && p5.size) {
@@ -211,6 +259,9 @@
       if (pts.filter(x => x.pe != null).length >= 2) {
         h += '<h3 id="co-val">歷年估值：財報年度結束時的本益比</h3><div class="fig"><p class="ftitle">本益比＝該月收盤 ÷ 該年度 EPS；最右邊是目前（近四季）</p>' +
           vbars(pts.map(x => x.y).concat(['目前']), pts.map(x => x.pe).concat([m.pe]), { fmt: v => v == null ? '—' : v.toFixed(1) + ' 倍', axis: v => v.toFixed(0) + '倍', title: '歷年本益比' }) + '</div>';
+        const pbs = ds.map((d, i) => { const px = p5.get(String(d).slice(0, 7)), e = (A.eq || [])[i], sh = (A.shs_out || A.shs || [])[i]; return px && e > 0 && sh ? px / (e / sh) : null; });
+        if (pbs.filter(v => v != null).length >= 2) h += '<div class="fig"><p class="ftitle">股價淨值比＝該月收盤 ÷（股東權益 ÷ 流通股數）；最右邊是目前</p>' +
+          vbars(ds.map(yr).concat(['目前']), pbs.concat([m.pb]), { fmt: v => v == null ? '—' : v.toFixed(1) + ' 倍', axis: v => v.toFixed(0) + '倍', title: '歷年股價淨值比' }) + '</div>';
         const pv = pts.map(x => x.pe).filter(v => v != null), avg = pv.reduce((t, v) => t + v, 0) / pv.length;
         h += '<p>過去 ' + pv.length + ' 個年度結束時的本益比平均 <b>' + avg.toFixed(1) + ' 倍</b>（' + Math.min(...pv).toFixed(1) + '～' + Math.max(...pv).toFixed(1) + '）；目前 <b>' + fmtM('pe', m.pe) + '</b>，' + (m.pe == null ? '' : m.pe > avg ? '高於' : '低於') + '自己的歷史平均。</p>';
       }
@@ -240,17 +291,29 @@
       ['股東回饋率', fmtM('sh_yield', m.sh_yield), '（買回＋股利）÷ 市值；占淨利 ' + fmtM('payout', m.payout)]];
     h += '<div class="kp kp5">' + K.map(k => '<div><small>' + k[0] + '</small><b>' + esc(k[1]) + '</b><span>' + esc(k[2]) + '</span></div>').join('') + '</div>';
     if ((m.f_items || []).length) h += '<details><summary class="small">Piotroski F 分數 9 項檢查明細</summary><ul class="fchk">' + m.f_items.map(([t, ok]) => '<li class="' + (ok ? 'ok' : 'no') + '">' + (ok ? '✓' : '✗') + ' ' + esc(t) + '</li>').join('') + '</ul><p class="small">用最近兩個年度財報比較；滿分 9 分，7 分以上通常代表財務體質在改善。</p></details>';
+    // ---- 證交所重大訊息（台股）----
+    if (D.market === 'TW' && ((D.tw || {}).ann || []).length) {
+      h += '<h3 id="co-ann">最新重大訊息（證交所）</h3><ul class="news">' + D.tw.ann.slice(0, 6).map(a => '<li><b>' + esc(a.t) + '</b><small>' + esc(String(a.d).replace(/^(\d{3})(\d{2})(\d{2})$/, (_, y, mo, dd) => (+y + 1911) + '-' + mo + '-' + dd)) + '</small><details><summary class="small">說明</summary><p class="small" style="white-space:pre-line">' + esc(a.body) + '</p></details></li>').join('') + '</ul>';
+    }
     // ---- 財務摘要 ----
     const rows = [['營收', 'rev'], ['毛利', 'gp'], ['營業利益', 'opi'], ['淨利', 'ni'], ['EPS（稀釋）', 'eps'], ['營業現金流', 'ocf'], ['資本支出', 'capex'], ['自由現金流', 'fcf'], ['研發費用', 'rnd'], ['股票買回', 'buyback'], ['現金股利', 'div'], ['總資產', 'ta'], ['股東權益', 'eq'], ['總負債（借款）', 'debt'], ['現金', 'cash']];
     h += '<h3 id="co-fin">財務摘要（年度）</h3><div class="tblwrap"><table class="tbl"><caption>' + esc(D.fin_cur || cur) + '，' + esc(fxNote ? '原始財報幣別' : '') + '資料：Yahoo Finance</caption><thead><tr><th class="l">項目</th>' + ds.map(d => '<th>' + esc(yr(d)) + '</th>').join('') + '</tr></thead><tbody>' +
       rows.filter(r => (A[r[1]] || []).some(v => v != null)).map(r => '<tr><td class="l">' + r[0] + '</td>' + ds.map((_, i) => { const v = (A[r[1]] || [])[i]; return '<td>' + (v == null ? '—' : r[1] === 'eps' ? v.toFixed(2) : money(v, D.fin_cur || cur).replace(/(美元|台幣|[A-Z]{3})$/, '')) + '</td>'; }).join('') + '</tr>').join('') +
       '<tr><td class="l">毛利率</td>' + ds.map((_, i) => '<td>' + (gms[i] == null ? '—' : (gms[i] * 100).toFixed(1) + '%') + '</td>').join('') + '</tr>' +
-      '<tr><td class="l">營業利益率</td>' + ds.map((_, i) => { const v = A.opi && A.rev && A.opi[i] != null && A.rev[i] ? A.opi[i] / A.rev[i] : null; return '<td>' + (v == null ? '—' : (v * 100).toFixed(1) + '%') + '</td>'; }).join('') + '</tr></tbody></table></div>';
+      '<tr><td class="l">營業利益率</td>' + ds.map((_, i) => { const v = A.opi && A.rev && A.opi[i] != null && A.rev[i] ? A.opi[i] / A.rev[i] : null; return '<td>' + (v == null ? '—' : (v * 100).toFixed(1) + '%') + '</td>'; }).join('') + '</tr></tbody></table></div>' +
+      '<p class="small"><a href="#" class="csvdl" data-kind="fin">下載年度財報 CSV</a>　<a href="#" class="csvdl" data-kind="px">下載近 1 年日收盤 CSV</a>　<a href="#" class="csvdl" data-kind="score">下載 14 面向分數 CSV</a></p>';
     // ---- 資料來源與算法（放在整個分析的最後：#dCoSrc）----
     let src = '<h3 id="co-src">資料來源與算法</h3><ul class="small">' + (D.src || []).map(s => '<li><a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.t) + '</a></li>').join('') +
       '<li>分數：每個面向由 1～4 個指標組成；每個指標先在同一市場的所有公司中排百分位（方向相反的指標先取負號），再取平均。資料更新：' + esc(String(D.updated).slice(0, 10)) + fxNote + '。</li></ul>';
     host.innerHTML = h;
     const sh = document.getElementById('dCoSrc'); if (sh) sh.innerHTML = src;
+    // CSV 下載（在瀏覽器產生，不經伺服器）
+    host.querySelectorAll('.csvdl').forEach(a => a.addEventListener('click', e => { e.preventDefault(); const k = a.dataset.kind; let rowsC = [];
+      if (k === 'fin') { const keys = Object.keys(A).filter(x => x !== 'd'); rowsC = [['項目（' + (D.fin_cur || cur) + '）'].concat(ds)].concat(keys.map(x => [x].concat(ds.map((_, i) => (A[x] || [])[i] ?? '')))); }
+      else if (k === 'px') rowsC = [['日期', '收盤（' + cur + '）']].concat((D.p1y || []).map(x => [x[0], x[1]]));
+      else rowsC = [['面向'].concat(ser.map(se => se.code))].concat(Object.keys(DN).map(d => [DN[d]].concat(ser.map((se, kk) => { const x = kk ? P[kk - 1] : D; return (x.s || {})[d] ?? ''; }))));
+      const csv = '\ufeff' + rowsC.map(r => r.map(v => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : v).join(',')).join('\n');
+      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })), dl = document.createElement('a'); dl.href = url; dl.download = 'BNASDAQ-' + D.code + '-' + k + '.csv'; document.body.appendChild(dl); dl.click(); dl.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }));
     // 雷達圖勾選
     host.querySelectorAll('.rleg input[data-k]').forEach(cb => cb.addEventListener('change', () => { const k = cb.dataset.k; host.querySelectorAll('.radar [data-k="' + k + '"]').forEach(el => { el.style.display = cb.checked ? '' : 'none'; }); }));
     if (ctx && ctx.toc) ctx.toc();
