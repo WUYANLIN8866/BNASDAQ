@@ -3,22 +3,33 @@ on:
   push:
     branches: [lookthrough-probe8]
 permissions:
-  contents: write
+  contents: read
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
       - run: |
-          pip install -q pypdf cryptography
-          timeout 300 python3 probe/pdf10.py || true
-          git fetch -q origin main && git checkout origin/main -- data/heatmap/latest.json data/fund
-          python3 scripts/fetch_company.py --codes NVDA,AMD,AVGO,INTC,TSM,QCOM,MU,ASML,ARM,AAPL,MSFT,JPM,2330,2317,2454,2308
-          mkdir -p out && cp -r data/company out/
-      - run: |
-          git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
-          git checkout --orphan probe-out && git rm -rq --cached . && git add -f out && git commit -qm "probe output" && git push -qf origin probe-out
+          B=https://wuyanlin8866.github.io/BNASDAQ
+          echo "CHK company 檔案：$(curl -s "$B/data/company/_universe.json?t=$(date +%s)" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(len(d["list"]),d["updated"])')"
+          cat > live.js <<'JS'
+          const { chromium, devices } = require('playwright');
+          (async () => { const b = await chromium.launch(); const errs = []; const B = process.argv[2];
+            const p = await b.newPage({ viewport: { width: 1600, height: 1000 } }); p.on('pageerror', e => errs.push(e.message));
+            await p.goto(B + 'daily.html?t=' + Date.now(), { waitUntil: 'networkidle' }); await p.waitForTimeout(1200);
+            const t = await p.$('#hm-box .tl[data-s="NVDA"]'); const bb = await t.boundingBox();
+            await Promise.all([p.waitForNavigation({ waitUntil: 'networkidle' }), p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2)]); await p.waitForTimeout(3000);
+            for (const c of ['NVDA', '2317', '2330', 'JPM']) {
+              if (c !== 'NVDA') { await p.goto(B + 'valuation.html?t=' + Date.now() + '#code=' + c, { waitUntil: 'networkidle' }); await p.waitForTimeout(3000); }
+              const r = await p.evaluate(() => ({ url: location.hash, am: document.body.classList.contains('am'), param: getComputedStyle(document.querySelector('#vf').closest('.panel')).display, verdict: (document.querySelector('#vOut .big') || {}).textContent,
+                h3: document.querySelectorAll('#detail h3').length, radar: document.querySelectorAll('#dCo .radar polygon.rp').length, scoreRows: document.querySelectorAll('#dCo .sct tbody tr').length,
+                hold: (document.getElementById('co-hold') && document.getElementById('co-hold').nextElementSibling || {}).innerText, share: (document.querySelector('#co-share + p') || {}).innerText }));
+              console.log('CHK 線上', c, JSON.stringify(r).slice(0, 700));
+            }
+            console.log('CHK 頁面錯誤', errs.length ? errs : '無'); await b.close(); })();
+          JS
+          node live.js $B/
