@@ -7,7 +7,13 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - run: python3 probe/gidx.py
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
+      - run: |
+          B=https://wuyanlin8866.github.io/BNASDAQ
+          echo "CHK home.json 全球指數：$(curl -s "$B/data/home.json?t=$(date +%s)" | grep -c '892400-USD-STRD')"
+          node probe/live_home.js $B/
