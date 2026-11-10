@@ -67,23 +67,23 @@
     const o = opt || {}, W = 760, H = 250, pl = 56, pr = 18, pt = 14, pb = 30, n = xs.length;
     const all = series.flatMap(se => se.v.filter(v => v != null && isFinite(v)));
     if (!all.length || n < 2) return '';
-    let lo = Math.min(0, ...all), hi = Math.max(...all); if (hi === lo) hi = lo + 1;
-    const pad = (hi - lo) * 0.08; lo = lo < 0 ? lo - pad : lo; hi += pad;
+    let lo = o.nozero ? Math.min(...all) : Math.min(0, ...all), hi = Math.max(...all); if (hi === lo) hi = lo + 1;
+    const pad = (hi - lo) * 0.08; lo = (lo < 0 || o.nozero) ? lo - pad : lo; hi += pad;
     const X = i => pl + (W - pl - pr) * i / (n - 1), Y = v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
-    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + series.map(se => se.name + ' ' + se.v.map(v => o.fmt(v)).join('、')).join('；')) + '">';
+    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + series.map(se => se.name + ' ' + se.v.filter(v => v != null && isFinite(v)).map(v => o.fmt(v)).join('、')).join('；')) + '">';
     for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11.5">' + esc(o.fmt(v)) + '</text>'; }
     if (lo < 0 && hi > 0) s += '<line class="ax" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(0).toFixed(1) + '" y2="' + Y(0).toFixed(1) + '"/>';
     xs.forEach((x, i) => { s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="11.5">' + esc(x) + '</text>'; });
     series.slice().reverse().forEach(se => { const pts = se.v.map((v, i) => v == null || !isFinite(v) ? null : X(i).toFixed(1) + ',' + Y(v).toFixed(1)).filter(Boolean);
       if (pts.length > 1) s += '<polyline fill="none" stroke-linejoin="round" stroke-linecap="round" style="stroke:' + se.c + ';stroke-width:' + (se.me ? 3 : 1.8) + '" points="' + pts.join(' ') + '"/>';
-      se.v.forEach((v, i) => { if (v != null && isFinite(v)) s += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="' + (se.me ? 3.6 : 2.6) + '" style="fill:' + se.c + '"><title>' + esc(se.name + '｜' + xs[i] + '｜' + o.fmt(v)) + '</title></circle>'; }); });
+      if (!o.nodots) se.v.forEach((v, i) => { if (v != null && isFinite(v)) s += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="' + (se.me ? 3.6 : 2.6) + '" style="fill:' + se.c + '"><title>' + esc(se.name + '｜' + xs[i] + '｜' + o.fmt(v)) + '</title></circle>'; }); });
     s += '</svg><div class="legend">' + series.map(se => '<span><i style="background:' + se.c + '"></i>' + esc(se.name) + '</span>').join('') + '</div>';
     return s;
   }
   function vbars(xs, vals, opt) { // 直條（營收、季營收）
     const o = opt || {}, W = 760, H = 230, pl = 74, pr = 12, pt = 18, pb = 30, n = xs.length, mx = Math.max(...vals.filter(v => v != null), 1e-9), bw = (W - pl - pr) / n * 0.62;
     const X = i => pl + (W - pl - pr) * (i + 0.5) / n, Y = v => pt + (H - pt - pb) * (1 - v / mx);
-    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + xs.map((x, i) => x + ' ' + o.fmt(vals[i])).join('、')) + '">';
+    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + xs.map((x, i) => x + ' ' + (vals[i] == null ? '—' : o.fmt(vals[i]))).join('、')) + '">';
     for (let k = 0; k <= 4; k++) { const v = mx * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11">' + esc(o.axis(v)) + '</text>'; }
     xs.forEach((x, i) => { const v = vals[i]; if (v != null && v > 0) s += '<rect x="' + (X(i) - bw / 2).toFixed(1) + '" y="' + Y(v).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (H - pb - Y(v)).toFixed(1) + '" rx="3" style="fill:' + (i === n - 1 ? 'var(--s-fund)' : 'var(--s-shv)') + '"><title>' + esc(x + '｜' + o.fmt(v)) + '</title></rect><text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (Y(v) - 5).toFixed(1) + '" text-anchor="middle" font-size="11.5">' + esc(o.lab ? o.lab(i) : o.fmt(v)) + '</text>';
       s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="11.5">' + esc(x) + '</text>'; });
@@ -173,6 +173,11 @@
         let sab = 0, saa = 0, sbb = 0; for (let i = 0; i < xa.length; i++) { sab += (xa[i] - ma) * (xb[i] - mb); saa += (xa[i] - ma) ** 2; sbb += (xb[i] - mb) ** 2; } return sab / Math.sqrt(saa * sbb); };
       const cs = P.map(x => ({ c: x.code, r: corr(R0, ret((x.p1y || []).filter(y => y[1] != null))) })).filter(x => x.r != null);
       if (cs.length) h += '<p>與對手的股價相關係數（近 1 年日報酬）：' + cs.map(x => esc(x.c) + ' <b>' + x.r.toFixed(2) + '</b>').join('、') + '。越接近 1 代表走勢越同步，分散效果越小。</p>';
+      // 與對手的相對走勢：每週取一點，起點＝100
+      const wk = days.filter((_, i) => i % 5 === 0 || i === days.length - 1), base = new Map(p1);
+      const relS = [{ name: D.code, m: base, c: COL[0], me: true }].concat(P.slice(0, 4).map((x, k) => ({ name: x.code, m: new Map((x.p1y || []).filter(y => y[1] != null)), c: COL[k + 1] })));
+      const relV = relS.map(se => { let b0 = null; return { name: se.name, c: se.c, me: se.me, v: wk.map(d => { const v = se.m.get(d); if (v == null) return null; if (b0 == null) b0 = v; return v / b0 * 100; }) }; });
+      if (relV.filter(x => x.v.filter(v => v != null).length > 10).length >= 2) h += '<div class="fig"><p class="ftitle">近 1 年相對走勢（起點＝100，原始收盤、未含股利）</p>' + lines(wk.map(d => d.slice(2, 7).replace('-', '/')).map((x, i, a) => (i % Math.ceil(a.length / 6) === 0 || i === a.length - 1) ? x : ''), relV, { fmt: v => v.toFixed(0), title: '近 1 年相對走勢', nozero: true, nodots: true }) + '</div>';
     }
     // ---- 股東結構 ----
     h += '<h3 id="co-hold">股東結構：前 10 大持有股東</h3>';
@@ -210,6 +215,7 @@
       const yoy = i => i > 0 && rv[i] && rv[i - 1] ? (rv[i] / rv[i - 1] - 1) : null;
       h += '<div class="fig"><p class="ftitle">年度營收（' + esc(D.fin_cur || cur) + '）與年增率</p>' + vbars(ds.map(yr), rv, { fmt: v => money(v, D.fin_cur || cur), axis: axM, lab: i => (yoy(i) == null ? '' : (yoy(i) >= 0 ? '+' : '') + (yoy(i) * 100).toFixed(0) + '%'), title: '年度營收' }) + '</div>';
       const Q = D.Q || {}; if ((Q.rev || []).filter(v => v != null).length >= 3) h += '<div class="fig"><p class="ftitle">最近 ' + Q.rev.length + ' 季營收（' + esc(D.fin_cur || cur) + '）</p>' + vbars((Q.d || []).map(d => d.slice(0, 7)), Q.rev, { fmt: v => money(v, D.fin_cur || cur), axis: axM, title: '季營收' }) + '</div>';
+      if ((Q.eps || []).filter(v => v != null).length >= 3 && Q.eps.every(v => v == null || v > 0)) h += '<div class="fig"><p class="ftitle">最近 ' + Q.eps.length + ' 季每股盈餘（EPS，' + esc(D.fin_cur || cur) + '）</p>' + vbars((Q.d || []).map(d => d.slice(0, 7)), Q.eps, { fmt: v => v.toFixed(2), axis: v => v.toFixed(v < 10 ? 1 : 0), title: '季 EPS' }) + '</div>';
     }
     if (D.market === 'TW' && tw.monthly) { const mo = tw.monthly, ym = String(mo.ym || '').replace(/^(\d{3})(\d{2})$/, (_, y, x) => (+y + 1911) + ' 年 ' + (+x) + ' 月');
       h += '<p><b>最新月營收（' + esc(ym) + '）</b>：' + money(mo.rev * 1000, 'TWD') + '，月增 ' + (mo.mom >= 0 ? '+' : '') + (mo.mom || 0).toFixed(1) + '%、年增 ' + (mo.yoy >= 0 ? '+' : '') + (mo.yoy || 0).toFixed(1) + '%；今年累計年增 ' + (mo.ytd_yoy >= 0 ? '+' : '') + (mo.ytd_yoy || 0).toFixed(1) + '%。' + (mo.note && mo.note !== '-' ? '公司說明：「' + esc(mo.note) + '」' : '') + '（證交所每月營收彙總）</p>'; }
