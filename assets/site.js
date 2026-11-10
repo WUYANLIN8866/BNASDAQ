@@ -37,6 +37,11 @@
     const b = $('.nav .burger'), uls = $$('.nav ul');
     if (b && uls.length) b.addEventListener('click', () => { const o = !uls[0].classList.contains('open'); uls.forEach(u => u.classList.toggle('open', o)); b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
     const here = location.pathname.split('/').pop() || 'index.html';
+    // 登入後：在「關於 BNASDAQ」前加入「會員專區」
+    try {
+      const ss = JSON.parse(sessionStorage.getItem('bn-session') || 'null'), ab = $('#mainmenu a[href="about.html"]');
+      if (ss && ss.user && ab && !$('#mainmenu a.mlink')) { const li = document.createElement('li'); li.innerHTML = '<a class="mlink" href="member.html">會員專區</a>'; ab.parentNode.parentNode.insertBefore(li, ab.parentNode); }
+    } catch (e) { }
     $$('.nav a').forEach(a => { const h = a.getAttribute('href'); if (h === here || (here === '' && h === 'index.html')) a.setAttribute('aria-current', 'page'); });
     // theme label
     const osDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
