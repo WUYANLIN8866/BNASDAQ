@@ -172,6 +172,7 @@
     const D = await getJ('data/company/' + encodeURIComponent(code) + '.json');
     if (!D) { host.innerHTML = '<p class="small">' + esc(code) + ' 尚未納入公司分析資料（每週更新熱力圖四個指數的成分股）。</p>'; return; }
     const P = (await Promise.all((D.peers || []).map(c => getJ('data/company/' + encodeURIComponent(c) + '.json')))).filter(Boolean);
+    const INS = D.market === 'TW' ? await getJ('data/company/_tw_insider.json') : null;   // 台股內部人轉讓申報（本站每日累積）
     const cur = D.cur, m = D.m || {}, S = D.s || {}, nm = D.name, A = D.A || {}, ds = A.d || [], fxNote = D.fin_cur && D.fin_cur !== D.cur ? '（原始財報幣別 ' + D.fin_cur + '，以匯率 ' + (D.fx ? D.fx.toPrecision(4) : '—') + ' 換算 ' + D.cur + '）' : '';
     let h = '';
     // ---- 公司資料 ----
@@ -280,6 +281,10 @@
       if (dirs.length) h += '<div class="tblwrap"><table class="tbl"><caption>董事、監察人與大股東持股（證交所 ' + esc(String(dirs[0].ym || '').replace(/^(\d{3})(\d{2})$/, (_, y, mo) => (+y + 1911) + '-' + mo)) + '）</caption><thead><tr><th class="l">職稱</th><th class="l">姓名</th><th>目前持股（股）</th><th>占已發行股數</th><th>設質比例</th></tr></thead><tbody>' +
         dirs.map(x => '<tr><td class="l">' + esc(x.title) + '</td><td class="l">' + esc(x.name) + '</td><td>' + Math.round(x.shares).toLocaleString('en-US') + '</td><td>' + (out ? (x.shares / out * 100).toFixed(2) + '%' : '—') + '</td><td>' + esc(x.pledge_pct || '—') + '</td></tr>').join('') + '</tbody></table></div>';
       if ((tw.major10 || []).length) h += '<p>持股逾 10% 的大股東：<b>' + esc(tw.major10.join('、')) + '</b>（證交所）。</p>';
+      if (INS) { const ir = (INS.rows || []).filter(r => r.c === D.code).slice(0, 10), since = roc(INS.since);
+        h += ir.length ? '<div class="tblwrap"><table class="tbl"><caption>內部人持股轉讓申報（證交所每日公布；本站自 ' + esc(since) + ' 起累積，最近 ' + ir.length + ' 筆）</caption><thead><tr><th class="l">申報日</th><th class="l">身分</th><th class="l">姓名</th><th class="l">類別</th><th>股數</th><th class="l">方式／理由</th><th class="l">有效期間</th></tr></thead><tbody>' +
+          ir.map(r => '<tr><td class="l">' + esc(roc(r.d)) + '</td><td class="l">' + esc(r.who) + '</td><td class="l">' + esc(r.name) + '</td><td class="l">' + (r.kind === '轉讓' ? '預定轉讓' : '申報後未轉讓') + '</td><td>' + Math.round(r.sh || 0).toLocaleString('en-US') + '</td><td class="l">' + esc(r.kind === '轉讓' ? (r.how || '—') + (r.to ? ' → ' + r.to : '') : (r.why || '—')) + '</td><td class="l">' + esc(r.period ? r.period.split('~').map(roc).join('～') : '—') + '</td></tr>').join('') + '</tbody></table></div>'
+          : '<p class="small">內部人持股轉讓申報：證交所每天只公布當天的申報，本站自 ' + esc(since) + ' 起每日累積，目前沒有 ' + esc(D.code) + ' 的紀錄。</p>'; }
       if (tw.qfii && tw.qfii.pct != null) h += '<p>外資及陸資持股 <b>' + tw.qfii.pct.toFixed(2) + '%</b>（集中市場外資持股比率前 20 名中第 ' + tw.qfii.rank + ' 名；投資上限 ' + (tw.qfii.limit == null ? '—' : tw.qfii.limit + '%') + '，證交所）。</p>';
       if (tw.dist && tw.dist.lv) { const L = tw.dist.lv, g = ks => ks.reduce((t, k) => t + ((L[k] || [])[2] || 0), 0), cnt = ks => ks.reduce((t, k) => t + ((L[k] || [])[0] || 0), 0);
         const grp = [['散戶（50 張以下）', ['1', '2', '3', '4', '5', '6', '7', '8']], ['中實戶（50～400 張）', ['9', '10', '11']], ['大戶（400～1,000 張）', ['12', '13', '14']], ['千張大戶（1,000 張以上）', ['15']]];
