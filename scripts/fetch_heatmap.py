@@ -168,7 +168,7 @@ def main():
         s, c = norm(r.get('symbol')), num(r.get('marketCap'))
         nm = r.get('name') or ''
         if s and c and c > 0:
-            scr[s] = (c, nm, SECT.get((r.get('sector') or '').strip().lower(), ''))
+            scr[s] = (c, nm, SECT.get((r.get('sector') or '').strip().lower(), ''), num(r.get('lastsale')))
             if not re.search(r'Preferred|Depositary|Notes|Warrant|Rights?\b|Units?\b|Debentures', nm, re.I):   # 特別股、票據不算股別
                 groups.setdefault(stem(nm), []).append(s)
     log('Nasdaq 篩選器', len(rows), '列，有市值', len(scr))
@@ -176,7 +176,7 @@ def main():
     def cap_of(sym):
         if sym not in scr:
             return None, ''
-        c, name, _ = scr[sym]
+        c, name, _, _ = scr[sym]
         sib = [x for x in groups.get(stem(name), []) if x != sym]
         if not sib:
             return c, ''
@@ -236,6 +236,8 @@ def main():
                 c, e = w * mid, 1; est += 1
             if note:
                 notes.add(s + '：' + note)
+            if s in px and s in scr and scr[s][3] and not e:
+                c = c * px[s][0] / scr[s][3]          # 篩選器市值是它當下價格算的 → 換算成該交易日收盤的市值
             if s in px:
                 close, prev = px[s]
                 chg = round((close / prev - 1) * 100, 2); have += 1
@@ -251,7 +253,7 @@ def main():
 
     out = dict(schema='bnasdaq-heatmap/1', session=session, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
                cols=['代號', '名稱', '產業', '市值（十億美元）', '單日漲跌%', '收盤', '市值為估算'],
-               method='方塊面積＝市值；顏色＝該交易日收盤相對前一交易日收盤的漲跌。',
+               method='方塊面積＝市值（Nasdaq 篩選器市值依該交易日收盤換算）；顏色＝該交易日收盤相對前一交易日收盤的漲跌。',
                sources=[dict(t='成分股與產業：Invesco QQQ、SSGA SPY 每日持股', u='https://www.invesco.com/qqq-etf/en/home.html'),
                         dict(t='市值：Nasdaq 股票篩選器', u='https://www.nasdaq.com/market-activity/stocks/screener'),
                         dict(t='收盤價：Yahoo Finance', u='https://finance.yahoo.com/')],
