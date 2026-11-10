@@ -29,6 +29,6 @@ jobs:
           git add data/company
           if git diff --cached --quiet; then echo "company data unchanged"; exit 0; fi
           git commit -m "data: company analysis"
-          git pull --rebase -X theirs origin main
-          git push origin HEAD:main
+          ok=0; for i in 1 2 3 4 5; do if git pull --rebase -X theirs origin main && git push origin HEAD:main; then ok=1; break; fi; sleep $((i*7)); done   # 其他工作流程同時推送時重試
+          [ "$ok" = 1 ]
           gh workflow run site.yml --ref main
