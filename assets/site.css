@@ -54,6 +54,8 @@
   /* 圖表（已驗證的色盲安全配色，維持不變） */
   --s-fund: #2a78d6; --s-qqq: #eb6834; --s-qld: #1baf7a; --s-tw: #eda100; --s-tsmc: #e87ba4; --s-save: #008300; --s-shv: #6f7f93; --s-sat: #e34948;
   --grid: #ebe9e3; --axis: #c3c0b8;
+  /* 資產全貌 3D 圓餅（投資組合透視）：股票藍 6 階、債券綠、現金金黃、反向紫、ETF 內現金灰、商品橘、未拆解淺灰、其他洋紅；依切片順序驗證相鄰色差（淺色＝白底、深色＝#15171a） */
+  --p3-s1: #02376f; --p3-s2: #3e7fcf; --p3-s3: #064d95; --p3-s4: #5799eb; --p3-s5: #2365b3; --p3-so: #7cb4fc; --p3-b1: #2e9e52; --p3-b2: #015e28; --p3-m1: #f5af20; --p3-m2: #af7b11; --p3-i: #6250d6; --p3-e: #898781; --p3-c1: #f3743f; --p3-c2: #9d3900; --p3-u: #c3c2b7; --p3-x: #e87ba4;
   --serif: "BN Serif", "Noto Serif TC", "Songti TC", "PMingLiU", Georgia, serif;
   --sans: "BN Sans", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Helvetica Neue", Arial, system-ui, sans-serif;
   --maxw: 1800px; --gutter: 16px; /* 2026-11-10 加寬（1200→1600→1800）：寬螢幕不再擠壓（文章段落仍由 p 的 74ch 控制行長） */
@@ -69,6 +71,7 @@
     --good: #5fcf7f; --bad: #ff8a80; --warn: #e3b341;
     --s-fund: #3987e5; --s-qqq: #d95926; --s-qld: #199e70; --s-tw: #c98500; --s-tsmc: #d55181; --s-save: #008300; --s-shv: #93a3b7; --s-sat: #e66767;
     --grid: #26292e; --axis: #4a4e55;
+    --p3-s1: #c0dafc; --p3-s2: #5b92d8; --p3-s3: #93c2ff; --p3-s4: #447bbe; --p3-s5: #72aaf1; --p3-so: #2e64a6; --p3-b1: #6fd087; --p3-b2: #2a904b; --p3-m1: #f2b036; --p3-m2: #b7810f; --p3-i: #9085e9; --p3-e: #898781; --p3-c1: #fd8453; --p3-c2: #b44200; --p3-u: #5f5e5a; --p3-x: #d55181;
   }
 }
 :root[data-theme="dark"] {
@@ -80,6 +83,7 @@
   --good: #5fcf7f; --bad: #ff8a80; --warn: #e3b341;
   --s-fund: #3987e5; --s-qqq: #d95926; --s-qld: #199e70; --s-tw: #c98500; --s-tsmc: #d55181; --s-save: #008300; --s-shv: #93a3b7; --s-sat: #e66767;
   --grid: #26292e; --axis: #4a4e55;
+  --p3-s1: #c0dafc; --p3-s2: #5b92d8; --p3-s3: #93c2ff; --p3-s4: #447bbe; --p3-s5: #72aaf1; --p3-so: #2e64a6; --p3-b1: #6fd087; --p3-b2: #2a904b; --p3-m1: #f2b036; --p3-m2: #b7810f; --p3-i: #9085e9; --p3-e: #898781; --p3-c1: #fd8453; --p3-c2: #b44200; --p3-u: #5f5e5a; --p3-x: #d55181;
 }
 
 /* ---------- base ---------- */
@@ -502,3 +506,13 @@ ul.ind { max-width: none; }
   .tbl.cmp .mth .sw { width: 8px; height: 8px; margin-right: 4px; }
   .tbl.cmp td small { white-space: normal; font-size: 10.5px; overflow-wrap: anywhere; }
 }
+
+/* ---------- 3D 圓餅（資產全貌） ---------- */
+.pie3d .p3-wrap { display: grid; grid-template-columns: minmax(280px, 1.15fr) minmax(260px, 1fr); gap: 18px; align-items: center; }
+.pie3d .p3-svg svg { width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto; overflow: visible; }
+.pie3d .p3-svg path[tabindex]:focus { outline: none; stroke: var(--ink); stroke-width: 2; }
+.pie3d .p3-tbl { margin: 0; }
+.pie3d .p3-tbl td, .pie3d .p3-tbl th { padding-top: 6px; padding-bottom: 6px; }
+.pie3d .p3-tbl tr.on td { background: var(--gold-tint); }
+.pie3d .p3-tbl small { display: block; margin-top: 1px; }
+@media (max-width: 760px) { .pie3d .p3-wrap { grid-template-columns: 1fr; } }
