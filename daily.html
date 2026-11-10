@@ -22,6 +22,15 @@
 .cause .p{font-family:var(--serif);font-size:30px;font-weight:600;line-height:1.1;color:var(--ink)}
 .cause .p small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--muted);letter-spacing:.08em;font-weight:400}
 .cause h3{margin:0 0 6px;font-size:18px}
+.cause h3 .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:8px;vertical-align:1px}
+.pie-wrap{display:flex;flex-wrap:wrap;gap:18px 36px;align-items:center;margin:6px 0 20px;padding:18px 20px;background:var(--paper);border:1px solid var(--line)}
+.pie-wrap svg{width:230px;height:230px;flex:none;display:block}
+.pie-wrap svg path{stroke:var(--paper);stroke-width:2.5}
+.pie-wrap svg .pl{font-size:14px;font-weight:700;fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.25);stroke-width:2px}
+.pie-leg{list-style:none;margin:0;padding:0;display:grid;gap:12px;max-width:none;flex:1;min-width:240px}
+.pie-leg li{display:grid;grid-template-columns:14px 64px 1fr;gap:10px;align-items:center;font-size:15px;margin:0}
+.pie-leg i{width:14px;height:14px;border-radius:2px;display:block}
+.pie-leg b{font-family:var(--serif);font-size:24px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
 .cause .bar{height:6px;background:var(--band);border:1px solid var(--line-2);margin:8px 0 10px}
 .cause .bar i{display:block;height:100%;background:var(--gold-hi)}
 .cause ul{margin:0 0 8px 18px;padding:0;font-size:14.5px}
@@ -66,8 +75,9 @@
 .hm-box{position:relative;width:100%;background:#262931;border-radius:2px;overflow:hidden;touch-action:manipulation}
 .hm-box .sec{position:absolute;box-sizing:border-box;border:1px solid #262931}
 .hm-box .sec>b{position:absolute;left:0;right:0;top:0;height:17px;padding:1px 6px;font-size:11.5px;font-weight:600;letter-spacing:.06em;color:#e9e6de;background:#1b1d22;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.hm-box .tl{position:absolute;box-sizing:border-box;border:1px solid #262931;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;line-height:1.15;cursor:default;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+.hm-box .tl{position:absolute;box-sizing:border-box;border:1px solid #262931;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;line-height:1.15;cursor:pointer;text-shadow:0 1px 1px rgba(0,0,0,.35)}
 .hm-box .tl:hover,.hm-box .tl.on{outline:2px solid #f4e3b8;outline-offset:-2px;z-index:2}
+.hm-tip .hint{color:#e3c68f;font-size:12px}
 .hm-box .tl i{font-style:normal;font-weight:700;letter-spacing:.02em;white-space:nowrap}
 .hm-box .tl u{text-decoration:none;font-variant-numeric:tabular-nums;opacity:.95;white-space:nowrap}
 .hm-tip{position:absolute;z-index:20;pointer-events:none;background:#121314;color:#f2efe8;border:1px solid #3a3d44;border-radius:2px;padding:8px 10px;font-size:13px;line-height:1.55;box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:260px}
@@ -97,7 +107,7 @@
 <main id="main">
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 每日市場分析</div><h1>每日市場分析</h1><p class="lede">每個美股交易日收盤後更新：五大指數、單日漲跌逾 2% 的主因分析、股匯債一週趨勢、24 小時內與投資相關的國際大事，以及市值逾一兆美元企業的新聞與影響。所有數字附來源，可逐項查證。</p></div></div>
 <section class="hm" id="heatmap" aria-labelledby="hm-h"><div class="wrap">
-  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
+  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
   <div class="hm-box" id="hm-box" role="img" aria-label="市值熱力圖"></div>
   <div class="hm-foot"><div class="hm-legend" aria-hidden="true"><span>單日漲跌</span><div><div class="bar" id="hm-bar"></div><div class="ticks"><span>−3%</span><span>−2%</span><span>−1%</span><span>0</span><span>+1%</span><span>+2%</span><span>+3%</span></div></div></div><p class="hm-src" id="hm-src"></p></div>
   <details><summary>看列表（依市值排序）</summary><div class="tblwrap"><table class="tbl" id="hm-tbl"></table></div></details>
@@ -179,6 +189,17 @@ function wkTable(sec,heads){
     sec.rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===3&&/^[−-]/.test(c)?'neg':i===3&&/^\+/.test(c)?'pos':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+
     `</tbody></table></div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
 }
+function pieChart(items){ // items: [{p, t}]（p 為百分比，合計 100）→ 圓餅圖＋圖例（圖例同時是各主因的說明）
+  const R=100,C=115,tot=items.reduce((t,i)=>t+i.p,0)||1;let a0=-Math.PI/2,svg='';
+  items.forEach((it,k)=>{const f=it.p/tot,a1=a0+f*2*Math.PI,col=SERIES[k%SERIES.length];
+    if(f>=0.9999){svg+=`<circle cx="${C}" cy="${C}" r="${R}" style="fill:${col}"><title>${esc(it.t)}：${it.p}%</title></circle>`;}
+    else{const x0=C+R*Math.cos(a0),y0=C+R*Math.sin(a0),x1=C+R*Math.cos(a1),y1=C+R*Math.sin(a1);
+      svg+=`<path d="M${C},${C} L${x0.toFixed(2)},${y0.toFixed(2)} A${R},${R} 0 ${f>.5?1:0},1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" style="fill:${col}"><title>${esc(it.t)}：${it.p}%</title></path>`;}
+    const am=(a0+a1)/2;if(f>=.07)svg+=`<text class="pl" x="${(C+R*.62*Math.cos(am)).toFixed(1)}" y="${(C+R*.62*Math.sin(am)+5).toFixed(1)}" text-anchor="middle">${it.p}%</text>`;
+    a0=a1;});
+  return `<div class="pie-wrap"><svg viewBox="0 0 ${2*C} ${2*C}" role="img" aria-label="主因可能性圓餅圖：${esc(items.map(i=>i.t+' '+i.p+'%').join('、'))}">${svg}</svg>`+
+    `<ol class="pie-leg">${items.map((it,k)=>`<li><i style="background:${SERIES[k%SERIES.length]}"></i><b>${it.p}%</b><span>${k+1}. ${esc(it.t)}</span></li>`).join('')}</ol></div>`;
+}
 function render(d){
   const el=document.getElementById('report');
   let h='';
@@ -196,7 +217,8 @@ function render(d){
   h+=`<h2 id="why">2. 大漲大跌主因（單日 ±${d.big_move.threshold}% 以上才啟用）</h2>`;
   if(d.big_move.triggered){
     h+=`<p class="lead">${esc(d.big_move.intro)}</p>`;
-    d.big_move.causes.forEach((c,i)=>{h+=`<div class="cause"><div class="ph"><div class="p">${c.p}%<small>可能性</small></div><div><h3>${i+1}. ${esc(c.title)}</h3><div class="bar"><i style="width:${c.p}%"></i></div><ul>${c.evidence.map(e=>`<li>${esc(e)}</li>`).join('')}</ul><p class="ct">為何不給更高：${esc(c.counter)}</p></div></div></div>`;});
+    h+=pieChart(d.big_move.causes.map(c=>({p:+c.p,t:c.title})));
+    d.big_move.causes.forEach((c,i)=>{h+=`<div class="cause"><div class="ph"><div class="p">${c.p}%<small>可能性</small></div><div><h3><i class="sw" style="background:${SERIES[i%SERIES.length]}"></i>${i+1}. ${esc(c.title)}</h3><ul>${c.evidence.map(e=>`<li>${esc(e)}</li>`).join('')}</ul><p class="ct">為何不給更高：${esc(c.counter)}</p></div></div></div>`;});
   } else { h+=`<p class="lead">${esc(d.big_move.intro||'當日五大指數漲跌皆未超過 2%，本節不啟用。')}</p>`; }
   // 3. weekly
   h+=`<h2 id="week">3. 美國股市、匯市、債市近一週趨勢（${esc(d.weekly.range)}）</h2>`;
@@ -251,7 +273,7 @@ function squarify(items,x,y,w,h){
   if(row.length) flush();
   return out;
 }
-let D=null, cur='ndx', tip=null;
+let D=null, cur='ndx', tip=null, lastPT='mouse', armed=null;
 function draw(){
   if(!D) return; const S=D.sets[cur]; if(!S) return;
   const W=box.clientWidth, H=Math.round(W<640?Math.max(420,W*1.25):Math.min(720,Math.max(380,W*0.5)));
@@ -270,19 +292,23 @@ function draw(){
   const up=S.tiles.filter(t=>t[4]>0).length, dn=S.tiles.filter(t=>t[4]<0).length;
   $('hm-meta').textContent='美股 '+D.session+' 收盤｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+'｜方塊大小＝市值、顏色＝單日漲跌';
   box.setAttribute('aria-label',S.name+'市值熱力圖，美股 '+D.session+' 收盤：上漲 '+up+' 檔、下跌 '+dn+' 檔');
-  $('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th><th>收盤</th><th>單日漲跌</th></tr></thead><tbody>'+S.tiles.map(t=>'<tr><td class="l"><b>'+esc(t[0])+'</b></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3])+(t[6]?'（估）':'')+'</td><td>'+(t[5]==null?'—':t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td></tr>').join('')+'</tbody>';
+  $('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th><th>收盤</th><th>單日漲跌</th></tr></thead><tbody>'+S.tiles.map(t=>'<tr><td class="l"><a href="valuation.html#code='+encodeURIComponent(t[0])+'"><b>'+esc(t[0])+'</b></a></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3])+(t[6]?'（估）':'')+'</td><td>'+(t[5]==null?'—':t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td></tr>').join('')+'</tbody>';
 }
 function show(el,ev){
   if(!D) return; const t=D.sets[cur].tiles.find(x=>x[0]===el.dataset.s); if(!t) return;
   if(!tip){tip=document.createElement('div');tip.className='hm-tip';box.appendChild(tip);}
-  tip.innerHTML='<b>'+esc(t[0])+'</b> '+esc(t[1])+'<br>'+esc(t[2])+'｜市值 '+cap(t[3])+(t[6]?'（估算）':'')+'<br>收盤 '+(t[5]==null?'—':t[5].toFixed(2))+'｜<span class="'+(t[4]>0?'up':t[4]<0?'dn':'')+'">'+pct(t[4])+'</span>';
+  tip.innerHTML='<b>'+esc(t[0])+'</b> '+esc(t[1])+'<br>'+esc(t[2])+'｜市值 '+cap(t[3])+(t[6]?'（估算）':'')+'<br>收盤 '+(t[5]==null?'—':t[5].toFixed(2))+'｜<span class="'+(t[4]>0?'up':t[4]<0?'dn':'')+'">'+pct(t[4])+'</span><br><span class="hint">'+(lastPT==='mouse'?'點一下':'再點一下')+'看個股分析與目標價試算 ›</span>';
   const r=box.getBoundingClientRect(), x=(ev?ev.clientX:el.getBoundingClientRect().left+10)-r.left, y=(ev?ev.clientY:el.getBoundingClientRect().top+10)-r.top;
   tip.style.left=Math.min(x+14, r.width-tip.offsetWidth-6)+'px'; tip.style.top=Math.min(y+14, r.height-tip.offsetHeight-6)+'px'; tip.hidden=false;
   box.querySelectorAll('.tl.on').forEach(e=>e.classList.remove('on')); el.classList.add('on');
 }
 box.addEventListener('mousemove',e=>{const el=e.target.closest('.tl');if(el)show(el,e);else if(tip)tip.hidden=true;});
 box.addEventListener('mouseleave',()=>{if(tip)tip.hidden=true;box.querySelectorAll('.tl.on').forEach(e=>e.classList.remove('on'));});
-box.addEventListener('click',e=>{const el=e.target.closest('.tl');if(el)show(el,e);});
+const go=sym=>{location.href='valuation.html#code='+encodeURIComponent(sym);};
+box.addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';},{passive:true});
+box.addEventListener('click',e=>{const el=e.target.closest('.tl');if(!el)return;   // 滑鼠：點一下就開個股分析；觸控：第一下看提示、同一格再點一下才開
+  if(lastPT==='mouse'||armed===el){go(el.dataset.s);return;}
+  armed=el;show(el,e);});
 document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();}));
 let rt=0; if('ResizeObserver' in window) new ResizeObserver(()=>{clearTimeout(rt);rt=setTimeout(draw,120);}).observe(box); else window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
 fetch('data/heatmap/latest.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(d=>{D=d;

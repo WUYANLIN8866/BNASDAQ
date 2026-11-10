@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'heatmap', 'latest.json')
 UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
-SETS = [('ndx', '那斯達克 100', ['QQQ']), ('spx', '標普 500', ['IVV', 'SPY'])]   # 標普 500 用 iShares IVV（產業齊全），沒有才用 SPY
+SETS = [('ndx', '那斯達克 100', ['QQQ']), ('spx', '標普 500', ['IVV', 'SPY']), ('sox', '費城半導體', ['SOXQ'])]   # 標普 500 用 iShares IVV（產業齊全）；費半用 Invesco SOXQ（追蹤 PHLX 費城半導體指數）
 
 
 def log(*a):
@@ -144,6 +144,12 @@ def main():
     log('交易日', session)
 
     # 成分股（投資組合透視每日持股檔）
+    # 台股代號 → 美國 ADR（持股檔把台積電 ADR 記成 2330；熱力圖要用美股代號 TSM 抓收盤與市值）
+    try:
+        alias = json.load(open(os.path.join(ROOT, 'data', 'lt', 'universe.json'), encoding='utf-8')).get('alias') or {}
+    except Exception:
+        alias = {}
+    adr = {v: k for k, v in alias.items() if re.fullmatch(r'\d{4,6}', v) and re.fullmatch(r'[A-Z]{1,5}', k)}
     hold = {}
     for key, _, etfs in SETS:
         for etf in etfs:
@@ -154,6 +160,7 @@ def main():
         hs = []
         for h in j['h']:
             code = re.sub(r'^X:[^:]+:', '', h[0] or '').replace(' ', '-')   # iShares／SSGA 的「X:United States:BRK B」「X:Intl:LIN」→ BRK-B、LIN
+            code = adr.get(code, code)
             if code and float(h[1]) > 0:
                 hs.append((norm(code), float(h[1]), clean(h[2]), h[3] or ''))
         hold[key] = (j.get('asof'), etf, hs)
@@ -254,7 +261,7 @@ def main():
     out = dict(schema='bnasdaq-heatmap/1', session=session, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
                cols=['代號', '名稱', '產業', '市值（十億美元）', '單日漲跌%', '收盤', '市值為估算'],
                method='方塊面積＝市值（Nasdaq 篩選器市值依該交易日收盤換算）；顏色＝該交易日收盤相對前一交易日收盤的漲跌。',
-               sources=[dict(t='成分股與產業：Invesco QQQ、iShares IVV 每日持股', u='https://www.ishares.com/us/products/239726/ishares-core-sp-500-etf'),
+               sources=[dict(t='成分股與產業：Invesco QQQ、iShares IVV、Invesco SOXQ（費城半導體）每日持股', u='https://www.ishares.com/us/products/239726/ishares-core-sp-500-etf'),
                         dict(t='市值：Nasdaq 股票篩選器', u='https://www.nasdaq.com/market-activity/stocks/screener'),
                         dict(t='收盤價：Yahoo Finance', u='https://finance.yahoo.com/')],
                notes=sorted(notes), sets=sets)
