@@ -21,8 +21,8 @@ jobs:
           (async () => { const b = await chromium.launch(); const errs = []; const B = process.argv[2];
             const p = await b.newPage({ viewport: { width: 1600, height: 1000 } }); p.on('pageerror', e => errs.push(e.message));
             await p.goto(B + 'daily.html?t=' + Date.now(), { waitUntil: 'networkidle' }); await p.waitForTimeout(1200);
-            const t = await p.$('#hm-box .tl[data-s="NVDA"]'); const bb = await t.boundingBox();
-            await Promise.all([p.waitForNavigation({ waitUntil: 'networkidle' }), p.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2)]); await p.waitForTimeout(3000);
+            const t = await p.$('#hm-box .tl[data-s="NVDA"]'); await t.scrollIntoViewIfNeeded(); await p.waitForTimeout(300);
+            await Promise.all([p.waitForNavigation({ waitUntil: 'networkidle' }), t.click()]); await p.waitForTimeout(3000);
             for (const c of ['NVDA', '2317', '2330', 'JPM']) {
               if (c !== 'NVDA') { await p.goto(B + 'valuation.html?t=' + Date.now() + '#code=' + c, { waitUntil: 'networkidle' }); await p.waitForTimeout(3000); }
               const r = await p.evaluate(() => ({ url: location.hash, am: document.body.classList.contains('am'), param: getComputedStyle(document.querySelector('#vf').closest('.panel')).display, verdict: (document.querySelector('#vOut .big') || {}).textContent,
