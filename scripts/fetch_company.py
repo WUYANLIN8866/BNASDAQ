@@ -281,6 +281,23 @@ def tw_sources(codes, prev=None):
         log('證交所公司治理 OK')
     except Exception as e:  # noqa
         log('證交所公司治理失敗', repr(e)[:120])
+    try:   # 官方數字核對：證交所公布的本益比、殖利率、股價淨值比（每日）與營益分析（最新一季，已申報的公司才有）
+        for r in twse('/exchangeReport/BWIBBU_ALL'):
+            c = str(r.get('Code', '')).strip()
+            if c in out:
+                out[c]['twse_val'] = {'d': (r.get('Date') or '').strip(), 'pe': num(r.get('PEratio')), 'dy': num(r.get('DividendYield')), 'pb': num(r.get('PBratio'))}
+        log('證交所本益比／殖利率／股價淨值比 OK')
+    except Exception as e:  # noqa
+        log('證交所本益比失敗', repr(e)[:120])
+    try:
+        for r in twse('/opendata/t187ap17_L'):
+            c = str(r.get('公司代號', '')).strip()
+            if c in out:
+                g = lambda frag: next((num(v) for k, v in r.items() if frag in str(k)), None)
+                out[c]['twse_margin'] = {'y': (r.get('年度') or '').strip(), 'q': (r.get('季別') or '').strip(), 'rev_m': g('營業收入'), 'gm': g('毛利率'), 'om': g('營業利益率'), 'ptm': g('稅前純益率'), 'nm': g('稅後純益率')}
+        log('證交所營益分析 OK')
+    except Exception as e:  # noqa
+        log('證交所營益分析失敗', repr(e)[:120])
     try:
         for r in twse('/fund/MI_QFIIS_sort_20'):
             c = str(r.get('Code', '')).strip()

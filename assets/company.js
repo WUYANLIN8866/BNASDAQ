@@ -39,6 +39,28 @@
   const getJ = u => fetch(u, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   const last = a => { const v = (a || []).filter(x => x != null); return v.length ? v[v.length - 1] : null; };
   const yr = d => String(d || '').slice(0, 4) + (String(d || '').slice(5, 7) !== '12' ? '/' + String(d || '').slice(5, 7) : '');
+  const GLOS = [
+    ['同業', '同一市場（美股／台股）、同一產業中市值最大的 5 家；不足 5 家時用同一大類補足。'],
+    ['市占率、相對市占、HHI', '市占率＝最新年度營收 ÷ 本站涵蓋同產業公司營收合計；相對市占＝本公司營收 ÷ 同產業另一家最大公司的營收；HHI＝各公司營收占比（%）平方和（0～10,000，> 1,800 為高度集中，美國司法部與聯邦貿易委員會 2023 年合併指引）。'],
+    ['毛利率、營業利益率、淨利率', '毛利、營業利益、淨利各自 ÷ 營收；超過 ±150% 視為資料異常不畫。'],
+    ['ROE、ROA', '淨利 ÷ 最近兩個年度平均股東權益（ROA 用平均總資產）。'],
+    ['ROIC', 'EBIT ×（1 − 有效稅率）÷ 投入資本；有效稅率＝所得稅 ÷ 稅前淨利，限制在 0～35%，算不出時用 21%。'],
+    ['營收 3 年年化成長', '（最新年度營收 ÷ 3 年前營收）^(1/3) − 1。'],
+    ['自由現金流率、現金轉換、應計比率', '自由現金流 ÷ 營收；營業現金流 ÷ 淨利；（淨利 − 營業現金流）÷ 平均總資產。'],
+    ['負債權益比、流動比、利息保障', '借款 ÷ 股東權益；流動資產 ÷ 流動負債；EBIT ÷ 利息費用。'],
+    ['淨負債 ÷ EBITDA', '（借款 − 現金及短期投資）÷ EBITDA；財報沒有短期投資合計時用現金及約當現金。'],
+    ['Altman Z', '1.2 × 營運資金 ÷ 總資產 ＋ 1.4 × 保留盈餘 ÷ 總資產 ＋ 3.3 × EBIT ÷ 總資產 ＋ 0.6 × 市值 ÷ 總負債 ＋ 1.0 × 營收 ÷ 總資產；金融業不適用。> 2.99 安全區、< 1.81 危險區。'],
+    ['Piotroski F', '9 項各 1 分：ROA 為正、營業現金流為正、ROA 提升、現金流大於淨利、負債比下降、流動比提升、沒有增發股數（增加 ≤ 0.5%）、毛利率提升、資產周轉提升；用最近兩個年度比較。'],
+    ['本益比、股價營收比、股價淨值比', '市值 ÷ 近四季淨利；市值 ÷ 近四季營收；市值 ÷ 最新股東權益。'],
+    ['EV/EBITDA、FCF 殖利率', '（市值 ＋ 借款 − 現金及短期投資）÷ 近四季 EBITDA；近四季自由現金流 ÷ 市值。'],
+    ['股東回饋率', '（最新年度股票買回 ＋ 現金股利）÷ 市值；占淨利＝同一金額 ÷ 淨利。'],
+    ['報酬、波動、Beta', '近 1 年報酬用還原權息收盤；年化波動＝日對數報酬標準差 × √252；Beta＝個股與基準（美股 SPY、台股 0050）日報酬的共變異數 ÷ 基準變異數。'],
+    ['技術指標', '50／200 日均線為原始收盤簡單平均；RSI(14) 用 Wilder 平滑；MACD＝12 日 EMA − 26 日 EMA，訊號線＝MACD 的 9 日 EMA。'],
+    ['本益比河流圖', '月收盤 ÷ 當時已公布 EPS：年度 EPS 在會計年度結束 3 個月後、近四季 EPS 在季度結束 2 個月後才採用；倍數取月本益比第 10、30、50、70、90 百分位。'],
+    ['護城河分類', 'ROIC 近年平均 ≥ 15% 且營業利益率標準差 < 8 個百分點＝寬護城河；ROIC 平均 ≥ 8%＝窄護城河；其餘＝沒有明顯護城河。'],
+    ['14 面向分數', '每個指標在同一市場所有公司中排百分位（越低越好的指標先取負號），面向分數＝所屬指標百分位的平均，0～100。'],
+    ['幣別', '財報幣別與股價幣別不同時（例：TSM 財報為台幣），估值與跨公司比較先用最新匯率換成股價幣別；財報表格保留原始幣別。']
+  ];
   const roc = x => String(x || '').trim().replace(/^(\d{3})(\d{2})(\d{2})$/, (_, y, m, d) => (+y + 1911) + '-' + m + '-' + d);
   const nz = x => { const v = parseFloat(String(x == null ? '' : x).replace(/[,%+\s]/g, '')); return isFinite(v) ? v : null; };
 
@@ -466,6 +488,19 @@
       ['股東回饋率', fmtM('sh_yield', m.sh_yield), '（買回＋股利）÷ 市值；占淨利 ' + fmtM('payout', m.payout)]];
     h += '<div class="kp kp5">' + K.map(k => '<div><small>' + k[0] + '</small><b>' + esc(k[1]) + '</b><span>' + esc(k[2]) + '</span></div>').join('') + '</div>';
     if ((m.f_items || []).length) h += '<details><summary class="small">Piotroski F 分數 9 項檢查明細</summary><ul class="fchk">' + m.f_items.map(([t, ok]) => '<li class="' + (ok ? 'ok' : 'no') + '">' + (ok ? '✓' : '✗') + ' ' + esc(t) + '</li>').join('') + '</ul><p class="small">用最近兩個年度財報比較；滿分 9 分，7 分以上通常代表財務體質在改善。</p></details>';
+    // ---- 官方數字核對（台股：證交所公布值 vs 本站計算值）----
+    if (D.market === 'TW' && ((D.tw || {}).twse_val || (D.tw || {}).twse_margin)) {
+      const tv = D.tw.twse_val || {}, tm = D.tw.twse_margin, Q = D.Q || {}, qn = (Q.d || []).length - 1;
+      const qr = k => qn >= 0 && Q[k] && Q.rev && Q[k][qn] != null && Q.rev[qn] ? Q[k][qn] / Q.rev[qn] * 100 : null;
+      const dyUs = m.div_ttm && m.last_px ? m.div_ttm / m.last_px * 100 : null, rowsV = [];
+      if (tv.pe != null || m.pe != null) rowsV.push(['本益比', tv.pe == null ? '—（虧損或未公布）' : tv.pe.toFixed(2) + ' 倍', fmtM('pe', m.pe), '證交所用已申報財報的近四季 EPS；本站用近四季淨利，可能已含剛公布、尚未申報的最新一季']);
+      if (tv.dy != null || dyUs != null) rowsV.push(['殖利率', tv.dy == null ? '—' : tv.dy.toFixed(2) + '%', dyUs == null ? '—' : dyUs.toFixed(2) + '%', '證交所依公司公告的股利計算；本站＝近 12 個月已除息現金股利 ÷ 收盤']);
+      if (tv.pb != null || m.pb != null) rowsV.push(['股價淨值比', tv.pb == null ? '—' : tv.pb.toFixed(2) + ' 倍', fmtM('pb', m.pb), '證交所用最新一季淨值；本站用最新年度股東權益']);
+      if (tm && tm.y) { const lab = (+tm.y + 1911) + ' 年第 ' + tm.q + ' 季', qd = String((Q.d || [])[qn] || '').slice(0, 7);
+        [['毛利率', 'gm', 'gp'], ['營業利益率', 'om', 'opi'], ['稅後純益率', 'nm', 'ni']].forEach(([n, k1, k2]) => { if (tm[k1] != null) rowsV.push([n + '（' + lab + '）', tm[k1].toFixed(2) + '%', qr(k2) == null ? '—' : qr(k2).toFixed(2) + '%（' + qd + ' 季）', '證交所營益分析（公司已申報才有）；本站為 Yahoo 季報數字，季別不同時不能直接比']); }); }
+      if (rowsV.length) h += '<div class="tblwrap"><table class="tbl"><caption>官方數字核對：證交所公布值 vs 本站計算值' + (tv.d ? '（證交所 ' + esc(roc(tv.d)) + '）' : '') + '</caption><thead><tr><th class="l">項目</th><th>證交所</th><th>本站</th><th class="l">差異原因</th></tr></thead><tbody>' +
+        rowsV.map(r => '<tr><td class="l">' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td><td>' + esc(r[2]) + '</td><td class="l small">' + esc(r[3]) + '</td></tr>').join('') + '</tbody></table></div>';
+    }
     // ---- 證交所重大訊息（台股）----
     if (D.market === 'TW' && ((D.tw || {}).ann || []).length) {
       h += '<h3 id="co-ann">最新重大訊息（證交所）</h3><ul class="news">' + D.tw.ann.slice(0, 6).map(a => '<li><b>' + esc(a.t) + '</b><small>' + esc(String(a.d).replace(/^(\d{3})(\d{2})(\d{2})$/, (_, y, mo, dd) => (+y + 1911) + '-' + mo + '-' + dd)) + '</small><details><summary class="small">說明</summary><p class="small" style="white-space:pre-line">' + esc(a.body) + '</p></details></li>').join('') + '</ul>';
@@ -481,7 +516,8 @@
       .map(k => '<a href="#" class="csvdl btn ghost" data-kind="' + k[0] + '">' + k[1] + '</a>').join('') + '</p><p class="small">檔案在你的瀏覽器裡產生（UTF-8，Excel 可直接開啟），數字與本頁相同，可自行驗算；財報金額為原始報表幣別（' + esc(D.fin_cur || cur) + '），股價為 ' + esc(cur) + '。</p>';
     // ---- 資料來源與算法（放在整個分析的最後：#dCoSrc）----
     let src = '<h3 id="co-src">資料來源與算法</h3><ul class="small">' + (D.src || []).map(s => '<li><a href="' + esc(s.u) + '" target="_blank" rel="noopener">' + esc(s.t) + '</a></li>').join('') +
-      '<li>分數：每個面向由 1～4 個指標組成；每個指標先在同一市場的所有公司中排百分位（方向相反的指標先取負號），再取平均。資料更新：' + esc(String(D.updated).slice(0, 10)) + fxNote + '。</li></ul>';
+      '<li>分數：每個面向由 1～4 個指標組成；每個指標先在同一市場的所有公司中排百分位（方向相反的指標先取負號），再取平均。資料更新：' + esc(String(D.updated).slice(0, 10)) + fxNote + '。</li></ul>' +
+      '<details class="glos"><summary>算法總表：本頁每個指標怎麼算</summary><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">指標</th><th class="l">公式與規則</th></tr></thead><tbody>' + GLOS.map(g => '<tr><td class="l"><b>' + esc(g[0]) + '</b></td><td class="l">' + esc(g[1]) + '</td></tr>').join('') + '</tbody></table></div></details>';
     host.innerHTML = h;
     if (pxDraw) { pxDraw('1y'); host.querySelectorAll('.pxsel button').forEach(b => b.addEventListener('click', () => pxDraw(b.dataset.p))); }
     const sh = document.getElementById('dCoSrc'); if (sh) sh.innerHTML = src;
