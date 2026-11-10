@@ -269,7 +269,8 @@
     // ---- 股利與股東回饋 ----
     const dv = D.divs || [];
     h += '<h3 id="co-div">股利與股東回饋</h3>';
-    if (dv.length) {
+    if (D.divs === undefined) h += '<p class="small">股利紀錄將在下一次資料更新後顯示。</p>';
+    else if (dv.length) {
       const byY = {}; dv.forEach(([d, a]) => { byY[d.slice(0, 4)] = (byY[d.slice(0, 4)] || 0) + a; });
       const ys = Object.keys(byY).sort().slice(-6), yNow = String(new Date().getFullYear());
       const yld = m.div_ttm && m.last_px ? m.div_ttm / m.last_px : null;
