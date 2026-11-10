@@ -7,7 +7,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,5 +15,6 @@ jobs:
       - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
       - run: |
           B=https://wuyanlin8866.github.io/BNASDAQ
-          echo "CHK home.json 全球指數：$(curl -s "$B/data/home.json?t=$(date +%s)" | grep -c '892400-USD-STRD')"
-          node probe/live_home.js $B/
+          echo "CHK sat-nb：$(curl -s "$B/assets/sat-nb.js?t=$(date +%s)" | grep -o '"p5":[0-9.]*' | head -2 | tr '\n' ' ')"
+          echo "CHK research 引用：$(curl -s "$B/research.html?t=$(date +%s)" | grep -o 'sat-nb.js?v=[0-9a-f]*\|bt-sat.js?v=[0-9a-f]*' | tr '\n' ' ')"
+          node probe/live_sweep.js $B/ | sed 's/^/CHK /'
