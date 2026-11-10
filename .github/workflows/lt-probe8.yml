@@ -14,8 +14,8 @@ jobs:
         with: { python-version: '3.12' }
       - run: |
           mkdir -p data/lt/etf data/heatmap
-          for e in QQQ SPY; do curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/etf/$e.json" -o "data/lt/etf/$e.json"; done
-          time python3 scripts/fetch_heatmap.py --force
+          for e in QQQ IVV SPY; do curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/etf/$e.json" -o "data/lt/etf/$e.json"; done
+          time python3 scripts/fetch_heatmap.py --force --debug
           python3 - <<'PY'
           import json
           d = json.load(open('data/heatmap/latest.json'))

@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'heatmap', 'latest.json')
 UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
-SETS = [('ndx', '那斯達克 100', 'QQQ'), ('spx', '標普 500', 'SPY')]
+SETS = [('ndx', '那斯達克 100', ['QQQ']), ('spx', '標普 500', ['IVV', 'SPY'])]   # 標普 500 用 iShares IVV（產業齊全），沒有才用 SPY
 
 
 def log(*a):
@@ -96,6 +96,18 @@ def norm(sym):
     return (sym or '').strip().upper().replace('/', '-').replace('.', '-').replace('^', '-')
 
 
+def clean(name):
+    """名稱去掉股別、上市地等尾巴：Accenture plc Class A Ordinary Shares (Ireland) → Accenture plc"""
+    n = re.sub(r'\s*\((?:Ireland|Jersey|Bermuda|Netherlands|Switzerland|United Kingdom|Canada)\)\s*$', '', name or '')
+    n = re.sub(r'\s+(?:Class [A-Z]\b.*|Common Stock.*|Ordinary Shares.*|Registered Shares.*|Capital Stock.*)$', '', n)
+    return n.strip()
+
+
+SECT = {'technology': '資訊科技', 'telecommunications': '通訊服務', 'health care': '醫療保健', 'finance': '金融', 'real estate': '房地產',
+        'consumer discretionary': '非必需消費', 'consumer staples': '必需消費', 'industrials': '工業', 'basic materials': '原物料',
+        'energy': '能源', 'utilities': '公用事業'}
+
+
 def stem(name):
     """公司名稱主幹（去掉股別字樣），用來找同一家公司的多種股別。"""
     n = re.split(r'\s+(?:Class|Series)\s+[A-Z]\b|\s+Common Stock|\s+Capital Stock|\s+Ordinary Shares|\s+American Depositary', name or '')[0]
@@ -107,6 +119,10 @@ def main():
     if len(sess_bars) < 2:
         log('SPY 日線不足'); return 1
     session = sess_bars[-1][0]
+    if '--debug' in sys.argv:
+        j = json.loads(get('https://query2.finance.yahoo.com/v8/finance/chart/SPY?range=10d&interval=1d', ua=YUA)); r = j['chart']['result'][0]
+        log('DEBUG now ET', dt.datetime.now(ET).isoformat(), 'ts', [(t, dt.datetime.fromtimestamp(t, ET).isoformat()) for t in r.get('timestamp', [])][-3:],
+            'close', r['indicators']['quote'][0].get('close', [])[-3:], 'meta', {k: r['meta'].get(k) for k in ('regularMarketTime', 'regularMarketPrice', 'currentTradingPeriod')})
     old = None
     if os.path.isfile(OUT):
         try:
@@ -119,11 +135,19 @@ def main():
 
     # 成分股（投資組合透視每日持股檔）
     hold = {}
-    for key, _, etf in SETS:
-        f = os.path.join(ROOT, 'data', 'lt', 'etf', etf + '.json')
+    for key, _, etfs in SETS:
+        for etf in etfs:
+            f = os.path.join(ROOT, 'data', 'lt', 'etf', etf + '.json')
+            if os.path.isfile(f):
+                break
         j = json.load(open(f, encoding='utf-8'))
-        hold[key] = (j.get('asof'), [(norm(h[0]), float(h[1]), h[2], h[3] or '其他') for h in j['h'] if h[0] and float(h[1]) > 0])
-        log(etf, '成分股', len(hold[key][1]), '持股日', j.get('asof'))
+        hs = []
+        for h in j['h']:
+            code = re.sub(r'^X:[^:]+:', '', h[0] or '').replace(' ', '-')   # iShares／SSGA 的「X:United States:BRK B」「X:Intl:LIN」→ BRK-B、LIN
+            if code and float(h[1]) > 0:
+                hs.append((norm(code), float(h[1]), clean(h[2]), h[3] or ''))
+        hold[key] = (j.get('asof'), etf, hs)
+        log(etf, '成分股', len(hs), '持股日', j.get('asof'), '沒有產業', sum(1 for x in hs if not x[3]))
 
     # 市值（Nasdaq 篩選器）
     hdr = {'Origin': 'https://www.nasdaq.com', 'Referer': 'https://www.nasdaq.com/'}
@@ -132,15 +156,17 @@ def main():
     groups = {}
     for r in rows:
         s, c = norm(r.get('symbol')), num(r.get('marketCap'))
+        nm = r.get('name') or ''
         if s and c and c > 0:
-            scr[s] = (c, r.get('name') or '')
-            groups.setdefault(stem(r.get('name')), []).append(s)
+            scr[s] = (c, nm, SECT.get((r.get('sector') or '').strip().lower(), ''))
+            if not re.search(r'Preferred|Depositary|Notes|Warrant|Rights?\b|Units?\b|Debentures', nm, re.I):   # 特別股、票據不算股別
+                groups.setdefault(stem(nm), []).append(s)
     log('Nasdaq 篩選器', len(rows), '列，有市值', len(scr))
 
     def cap_of(sym):
         if sym not in scr:
             return None, ''
-        c, name = scr[sym]
+        c, name, _ = scr[sym]
         sib = [x for x in groups.get(stem(name), []) if x != sym]
         if not sib:
             return c, ''
@@ -150,7 +176,7 @@ def main():
         return c + sum(caps), '股別合計（' + '、'.join([sym] + sib) + '）'
 
     # 漲跌（Yahoo 日線）
-    syms = sorted({s for k in hold for s, *_ in hold[k][1]})
+    syms = sorted({s for k in hold for s, *_ in hold[k][2]})
     px, fail = {}, []
 
     def pick(b):
@@ -184,13 +210,16 @@ def main():
     log('Yahoo 日線', len(px), '/', len(syms), '失敗', len(fail), fail[:8])
 
     sets, notes = {}, set()
-    for key, label, etf in SETS:
-        asof, hs = hold[key]
+    for key, label, _ in SETS:
+        asof, etf, hs = hold[key]
         ratio = [cap_of(s)[0] / w for s, w, *_ in hs if cap_of(s)[0]]
         ratio.sort()
         mid = ratio[len(ratio) // 2] if ratio else None
         tiles, est, have = [], 0, 0
         for s, w, name, sec in hs:
+            if not sec and s in scr:
+                sec = scr[s][2]
+            sec = sec or '其他'
             c, note = cap_of(s)
             e = 0
             if not c and mid:
