@@ -3,18 +3,18 @@ on:
   push:
     branches: [lookthrough-probe8]
 permissions:
-  contents: write
+  contents: read
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
       - run: |
-          mkdir -p out && python3 probe/tw2.py | tee out/tw2.txt
-      - run: |
-          git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
-          git checkout --orphan probe-out3 && git rm -rq --cached . && git add -f out && git commit -qm "probe output" && git push -qf origin probe-out3
+          B=https://wuyanlin8866.github.io/BNASDAQ
+          echo "CHK 2330 資料：$(curl -s "$B/data/company/2330.json?t=$(date +%s)" | python3 -c 'import json,sys;d=json.load(sys.stdin);t=d.get("tw") or {};print(d["updated"], "esg" in t, t.get("twse_val"), (t.get("twse_margin") or {}).get("q"))')"
+          echo "CHK 內部人累積：$(curl -s "$B/data/company/_tw_insider.json?t=$(date +%s)" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d["since"], d["updated"], len(d["rows"]))')"
+          node probe/live2.js $B/
