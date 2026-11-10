@@ -8,7 +8,7 @@
 <meta name="description" content="輸入持有的 ETF、股票與現金（比例或股數），逐層拆解至成分股，看見每一家公司占總資產的實際比重。台股、美股都能輸入；免登入，資料不上傳。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=736dd971b2">
+<link rel="stylesheet" href="assets/site.css?v=f72728b251">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
@@ -68,6 +68,8 @@ td.neg,.neg{color:var(--bad)}
     <h2 id="sum">拆解結果</h2>
     <div id="ltKv"></div>
     <div class="lt-acts"><button type="button" class="btn line" id="ltCsv">下載明細（CSV）</button><button type="button" class="btn line" id="ltShare">複製分享連結</button></div>
+    <h2 id="mix">資產全貌（含現金與債券）</h2>
+    <div id="fMix"></div>
     <h2 id="top">前 15 大公司與產業分布</h2>
     <div id="fTop"></div>
     <div id="fSec"></div>
@@ -87,6 +89,7 @@ td.neg,.neg{color:var(--bad)}
     <li>同一家公司的不同代號會合併，例如 GOOGL＋GOOG＝Alphabet、TSM（美國存託憑證）＋2330＝台積電。</li>
     <li>槓桿與反向 ETF：以追蹤指數的成分股 × 倍數計算曝險（例如 QLD＝2 倍那斯達克 100），總和可能超過 100%，反向 ETF 為負值。</li>
     <li>ETF 重疊度：兩檔 ETF 對同一家公司的權重取較小者，全部加總。</li>
+    <li>資產全貌（3D 圓餅）：以「投入的資金」計算，合計 100%。股票型 ETF 依成分股權重拆到公司（槓桿 ETF 不放大，多出的曝險另外說明）；債券、商品型 ETF 與你輸入的現金各自成一片；股票型 ETF 中不屬於任何公司的部分列為「ETF 內現金等非股票」；反向 ETF 與成分股資料暫缺的 ETF 整檔列出。</li>
   </ul></div>
   <ul class="small">
     <li>成分股每月更新一次（發行商公布的最新持股；Vanguard 為月底資料），價格與匯率每個交易日更新；每檔的資料日期列在「資料日期與來源」。</li>
@@ -97,12 +100,12 @@ td.neg,.neg{color:var(--bad)}
   </ul>
 </div>
 <aside>
-  <div class="side toc"><h3>本頁內容</h3><ul><li><a href="#sum">拆解結果</a></li><li><a href="#top">前 15 大公司</a></li><li><a href="#detail">完整明細</a></li><li><a href="#ov">ETF 重疊度</a></li><li><a href="#src">資料日期與來源</a></li><li><a href="#how">計算方式與限制</a></li></ul></div>
+  <div class="side toc"><h3>本頁內容</h3><ul><li><a href="#sum">拆解結果</a></li><li><a href="#mix">資產全貌（3D 圓餅）</a></li><li><a href="#top">前 15 大公司</a></li><li><a href="#detail">完整明細</a></li><li><a href="#ov">ETF 重疊度</a></li><li><a href="#src">資料日期與來源</a></li><li><a href="#how">計算方式與限制</a></li></ul></div>
   <div class="side"><h3>資料來源（官方）</h3><ul><li>美股 ETF 成分股：State Street SPDR、iShares、Vanguard、Invesco、VanEck、ARK、J.P. Morgan（JEPI、JEPQ）官網持股檔</li><li>台股 ETF 成分股：元大、永豐、復華、群益、統一投信官網；國泰投信以其公布的標的指數權重近似</li><li>價格：證交所、櫃買中心收盤價；美股為 Nasdaq 篩選器快照價；匯率：Yahoo TWD=X</li></ul></div>
   <div class="side"><h3>相關頁面</h3><ul><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div>
 </aside>
 </div></div></div>
-<script src="assets/site.js?v=62df238a20"></script><script src="assets/charts.js?v=43696f0c67"></script><script src="assets/lt-engine.js?v=34b95b48b0"></script><script src="assets/lt-ui.js?v=dc2d853195"></script>
+<script src="assets/site.js?v=62df238a20"></script><script src="assets/charts.js?v=43696f0c67"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/pie3d.js?v=3fc3428fa6"></script><script src="assets/lt-ui.js?v=52e3fb566d"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">

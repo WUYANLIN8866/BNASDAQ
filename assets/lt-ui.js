@@ -138,6 +138,7 @@
     if (S.undec > 0) k += tile('未拆解資產', pct(S.undec, 1), '成分股資料暫缺的 ETF，以整檔列出');
     if (r.total) k += tile('總金額（台幣）', money(r.total), st.mode === 'shares' ? '股數 × 價格' + (S.cash > 1e-12 ? '＋現金' : '') + (FX ? '（美元 × ' + nf(FX, 3) + '）' : '') : '依輸入的總金額');
     $('ltKv').innerHTML = k + '</div>';
+    mix(r);
     const top = r.cos.filter(c => c.w > 0).slice(0, 15);
     $('fTop').innerHTML = ''; $('fSec').innerHTML = '';
     const W = Math.max(340, Math.min(820, ($('fTop').clientWidth || 820) - 34)), narrow = W < 560;
@@ -145,6 +146,28 @@
     const secs = r.sectors.filter(s => s[1] > 0).slice(0, 12);
     if (secs.length) BN.charts.hbars($('fSec'), { title: '產業分布（占總資產）', sub: '依各公司所屬產業加總；非股票資產不列入', items: secs.map(s => ({ name: s[0], value: s[1] * 100, color: 'var(--s-qld)' })), fmt: v => v.toFixed(1) + '%', labelW: narrow ? 80 : 110, padR: narrow ? 56 : 120, rowH: narrow ? 30 : 34, W });
     table(r); overlap(r); sources(r);
+  }
+  // ---------- 資產全貌（3D 圓餅）：股票依公司、債券、現金、商品、ETF 內現金等，全部以投入資金計（合計 100%） ----------
+  // 顏色：股票＝藍色 6 階（前 5 大公司依序深淺交錯，其他股票最淺／最深），債券、現金、商品各 2 階交替，其餘各 1 色；相鄰切片已用色盲模擬驗證（深淺色各一組，在 site.css）
+  const MIXC = { stock: ['--p3-s1', '--p3-s2', '--p3-s3', '--p3-s4', '--p3-s5'], stockO: '--p3-so', bond: ['--p3-b1', '--p3-b2'], cash: ['--p3-m1', '--p3-m2'], commodity: ['--p3-c1', '--p3-c2'], inverse: ['--p3-i'], etfcash: ['--p3-e'], undec: ['--p3-u'], other: ['--p3-x'] };
+  const MIXT = { stock: '股票', bond: '債券', commodity: '商品、期貨', cash: '現金（自行輸入）', etfcash: '股票型 ETF 中不屬於任何公司的部分', inverse: '反向 ETF（以投入資金計）', other: '其他不持有股票的 ETF', undec: '成分股資料暫缺，以整檔列出' };
+  function mix(r) {
+    const host = $('fMix'); if (!host || !BN.charts.pie3d) return;
+    const M = LT.mix(r, { top: 5, min: 0.02 }), used = {};
+    const slices = M.slices.map(x => {
+      let v;
+      if (x.key === '_stock') v = MIXC.stockO;
+      else { const arr = MIXC[x.cls] || MIXC.undec, k = used[x.cls] = (used[x.cls] || 0) + 1; v = arr[(k - 1) % arr.length]; }
+      const nm = x.codes ? x.name + '（' + x.codes.slice(0, 4).join('、') + (x.codes.length > 4 ? '…' : '') + '）'
+        : x.cls === 'stock' && x.key !== '_stock' ? short(x.name, 18) + '（' + x.key + '）'
+        : x.key.charAt(0) === '_' || x.cls === 'cash' ? x.name : x.key + ' ' + short(String(x.name || '').replace(/^(iShares Trust|iShares, Inc\.|SPDR Series Trust|SPDR Index Shares Funds|Select Sector SPDR Trust|Invesco Exchange-Traded Fund Trust( II)?|Vanguard [A-Za-z ]+ Funds?|ProShares Trust( II)?)\s+/i, ''), 26);
+      return { key: x.key, name: nm, w: x.w, color: 'var(' + v + ')', tag: x.cls === 'bond' && x.short ? '短天期公債' : MIXT[x.cls] };
+    });
+    const C = M.cls, parts = [['股票', C.stock], ['債券', C.bond], ['現金', C.cash], ['商品、期貨', C.commodity], ['ETF 內現金等', C.etfcash], ['反向 ETF', C.inverse], ['其他', C.other + C.undec]].filter(x => x[1] > 1e-9);
+    const note = '依類別：' + parts.map(x => x[0] + ' ' + pct(x[1], 1)).join('、') + '。'
+      + (Math.abs(M.levExtra) > 1e-9 ? '槓桿 ETF 以投入的資金計，不放大；槓桿多出的股票曝險 ' + pct(M.levExtra, 1) + '（反向 ETF 為負）不在圓餅內，見上方「股票曝險合計」。' : '')
+      + (C.etfcash > 1e-9 ? '「ETF 內現金等非股票」是股票型 ETF 中不屬於任何公司的部分。' : '');
+    BN.charts.pie3d(host, { title: '資產全貌：股票、債券、現金與其他（占總資產）', sub: '以投入的資金計；股票依公司拆解，前 5 大公司（占 2% 以上）個別列出，其餘合併為「其他股票」', note, slices, value: r.total ? (w => money(w * r.total)) : null });
   }
   const SUF = /[,\s]+(Inc\.?|Incorporated|Corporation|Corp\.?|Co\.?|Company|Ltd\.?|Limited|plc|PLC|N\.?V\.?|S\.?A\.?|AG|SE|Holdings?|Group|Class [A-C]|Cl [A-C]|CL [A-C]|ADR|The)$/i;
   const short = (s, n) => { s = String(s || '').trim(); let t; do { t = s; s = s.replace(SUF, '').trim(); } while (s !== t && s.length > 3); n = n || 22; return s.length > n ? s.slice(0, n - 1) + '…' : s; };

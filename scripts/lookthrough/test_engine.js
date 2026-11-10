@@ -69,4 +69,26 @@ r = LT.compute([{ code: '現金', v: 100 }], { mode: 'pct', U, E, fx: 32, alias,
 assert(r.cos.length === 0 && LT.summary(r).n === 0 && LT.csv(r).includes('現金（台幣）（自行輸入）') && LT.csv(r).includes('500000'), '只有現金');
 // 16) 美元現金沒有匯率 → 提示
 r = LT.compute([{ code: '美元現金', v: 100 }], { mode: 'shares', U, E, fx: 0, alias }); assert(r.errors[0].msg.includes('匯率'), '缺匯率');
-console.log('計算核心：16 組測試全部通過');
+// 17) 資產全貌（3D 圓餅）：投入資金計、槓桿不放大、合計 100%
+const msum = m => m.slices.reduce((t, x) => t + x.w, 0);
+const mget = (m, k) => (m.slices.find(x => x.key === k) || { w: 0 }).w;
+let m = LT.mix(LT.compute([{ code: 'QQQ', v: 100 }], { mode: 'pct', U, E, fx: 32, alias }));
+near(msum(m), 1, '全貌合計（QQQ）'); near(mget(m, 'AAPL'), 0.10, '全貌 AAPL'); near(mget(m, '_etfcash'), 0.752, 'ETF 內非股票'); near(m.cls.stock, 0.248, '股票類');
+m = LT.mix(LT.compute([{ code: 'QLD', v: 100 }], { mode: 'pct', U, E, fx: 32, alias }));
+near(msum(m), 1, '全貌合計（QLD）'); near(mget(m, 'AAPL'), 0.10, 'QLD 以投入資金計不放大'); near(m.levExtra, 0.248, '槓桿額外曝險另列');
+m = LT.mix(LT.compute([{ code: 'PSQ', v: 50 }, { code: 'QQQ', v: 50 }], { mode: 'pct', U, E, fx: 32, alias }));
+near(msum(m), 1, '全貌合計（反向）'); near(mget(m, '_inverse'), 0.5, '反向 ETF 整檔'); assert(m.slices.find(x => x.key === '_inverse').codes[0] === 'PSQ', '反向 ETF 代號'); near(mget(m, 'AAPL'), 0.05, '反向不扣公司投入資金'); assert(m.slices.every(x => x.w > 0), '切片皆為正');
+// 18) 債券、商品、現金、未拆解分類（台股 B 尾碼＝債券、依名稱判定的商品）
+U.set('00679B', { n: '元大美債20年', m: 'TW', k: 'E', p: 28 }); E.set('00679B', { h: [], eq: 0, src: '債券型 ETF（依名稱或代號判定）：不持有股票' });
+U.set('GLD', { n: 'SPDR Gold Shares', m: 'US', k: 'E', p: 380 }); E.set('GLD', { h: [], eq: 0, src: '商品、期貨或加密資產型 ETF（依名稱或代號判定）：不持有股票' });
+r = LT.compute([{ code: 'SHV', v: 20 }, { code: '00679B', v: 20 }, { code: 'GLD', v: 10 }, { code: '現金', v: 15 }, { code: '美元現金', v: 5 }, { code: 'XYZ', v: 10 }, { code: 'AAPL', v: 20 }], { mode: 'pct', U, E, fx: 32, alias });
+m = LT.mix(r);
+near(msum(m), 1, '全貌合計（混合）'); near(m.cls.bond, 0.40, '債券類'); near(m.cls.commodity, 0.10, '商品類'); near(m.cls.cash, 0.20, '現金類'); near(m.cls.undec, 0.10, '未拆解'); near(m.cls.stock, 0.20, '股票類');
+assert(m.slices.find(x => x.key === 'SHV').short === true && m.slices.find(x => x.key === '00679B').short === false, '短天期公債標記');
+assert(m.slices.map(x => x.cls).join(',') === 'stock,bond,bond,cash,cash,commodity,undec', '切片順序：股票→債券→現金→商品→未拆解');
+assert(LT.kindOf({ code: 'TLT', name: 'iShares 20+ Year Treasury Bond ETF', src: 'iShares 每日持股（無股票持股：債券、商品或現金型）' }) === 'bond', '發行商字串不誤判為商品');
+assert(LT.kindOf({ code: '00635U', name: '期元大S&P黃金', src: '' }) === 'commodity' && LT.kindOf({ code: 'VIXY', name: 'ProShares VIX Short-Term Futures', src: '' }) === 'other', '期貨與其他');
+// 19) 小額合併：占比低於門檻的公司併入「其他股票」，合計仍 100%
+m = LT.mix(LT.compute([{ code: 'SPY', v: 100 }], { mode: 'pct', U, E, fx: 32, alias }), { top: 1, min: 0.02 });
+near(msum(m), 1, '全貌合計（合併）'); assert(m.slices.filter(x => x.cls === 'stock').length === 2, '前 1 大＋其他股票');
+console.log('計算核心：19 組測試全部通過');
