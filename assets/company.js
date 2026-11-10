@@ -498,7 +498,7 @@
       const tv = D.tw.twse_val || {}, tm = D.tw.twse_margin, Q = D.Q || {}, qn = (Q.d || []).length - 1;
       const qr = k => qn >= 0 && Q[k] && Q.rev && Q[k][qn] != null && Q.rev[qn] ? Q[k][qn] / Q.rev[qn] * 100 : null;
       const dyUs = m.div_ttm && m.last_px ? m.div_ttm / m.last_px * 100 : null, rowsV = [];
-      if (tv.pe != null || m.pe != null) rowsV.push(['本益比', tv.pe == null ? '—（虧損或未公布）' : tv.pe.toFixed(2) + ' 倍', fmtM('pe', m.pe), '證交所用已申報財報的近四季 EPS；本站用近四季淨利，可能已含剛公布、尚未申報的最新一季']);
+      if (tv.pe != null || m.pe != null) rowsV.push(['本益比', tv.pe == null ? '—（虧損或未公布）' : tv.pe.toFixed(2) + ' 倍', fmtM('pe', m.pe), '證交所＝收盤 ÷ 已申報財報的近四季 EPS；本站＝市值 ÷ Yahoo 近四季淨利' + (D.T_d ? '（截至 ' + D.T_d + '）' : '') + '；兩邊採用的季度或淨利口徑不同就會有差異']);
       if (tv.dy != null || dyUs != null) rowsV.push(['殖利率', tv.dy == null ? '—' : tv.dy.toFixed(2) + '%', dyUs == null ? '—' : dyUs.toFixed(2) + '%', '證交所依公司公告的股利計算；本站＝近 12 個月已除息現金股利 ÷ 收盤']);
       if (tv.pb != null || m.pb != null) rowsV.push(['股價淨值比', tv.pb == null ? '—' : tv.pb.toFixed(2) + ' 倍', fmtM('pb', m.pb), '證交所用最新一季淨值；本站用最新年度股東權益']);
       if (tm && tm.y) { const lab = (+tm.y + 1911) + ' 年第 ' + tm.q + ' 季', qd = String((Q.d || [])[qn] || '').slice(0, 7);
