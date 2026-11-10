@@ -3,7 +3,7 @@ on:
   push:
     branches: [lookthrough-probe8]
 permissions:
-  contents: read
+  contents: write
 jobs:
   probe:
     runs-on: ubuntu-latest
@@ -15,9 +15,10 @@ jobs:
         with: { python-version: '3.12' }
       - run: |
           pip install -q pypdf cryptography
-          python3 probe/pdf10.py
+          timeout 300 python3 probe/pdf10.py || true
           git fetch -q origin main && git checkout origin/main -- data/heatmap/latest.json data/fund
           python3 scripts/fetch_company.py --codes NVDA,AMD,AVGO,INTC,TSM,QCOM,MU,ASML,ARM,AAPL,MSFT,JPM,2330,2317,2454,2308
-          tar czf /tmp/co.tgz data/company
-          ls -la data/company | head -30
-          echo "COTGZ:$(base64 -w0 /tmp/co.tgz)"
+          mkdir -p out && cp -r data/company out/
+      - run: |
+          git config user.name "bnasdaq-bot"; git config user.email "bnasdaq-bot@users.noreply.github.com"
+          git checkout --orphan probe-out && git rm -rq --cached . && git add -f out && git commit -qm "probe output" && git push -qf origin probe-out
