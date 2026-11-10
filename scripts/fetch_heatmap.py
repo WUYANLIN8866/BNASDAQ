@@ -8,6 +8,7 @@
 同一個交易日已經有完整檔案就不重抓；抓失敗或覆蓋率不足 90% 時保留舊檔、結束碼 1。
 """
 import concurrent.futures as cf, datetime as dt, json, os, re, sys, time, urllib.error, urllib.request
+from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'data', 'heatmap', 'latest.json')
@@ -19,8 +20,8 @@ def log(*a):
     print('[heatmap]', *a, flush=True)
 
 
-def get(url, headers=None, timeout=40, tries=3):
-    h = {'User-Agent': UA, 'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'en-US,en;q=0.9'}
+def get(url, headers=None, timeout=40, tries=4, ua=None):
+    h = {'User-Agent': ua or UA, 'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'en-US,en;q=0.9'}
     h.update(headers or {})
     err = None
     for k in range(tries):
@@ -31,26 +32,56 @@ def get(url, headers=None, timeout=40, tries=3):
             err = e
             if e.code in (400, 401, 403, 404):
                 break
+            time.sleep((4 if e.code == 429 else 1.5) * (2 ** k))   # 429 太多請求：等久一點再試
+            continue
         except Exception as e:  # noqa
             err = e
         time.sleep(1.5 * (k + 1))
     raise err
 
 
-def yahoo_bars(sym):
-    """回傳 [(日期, 收盤)]，只含已收盤的交易日（美東日期）。"""
-    j = json.loads(get(f'https://query1.finance.yahoo.com/v8/finance/chart/{sym}?range=10d&interval=1d&includePrePost=false'))
-    r = j['chart']['result'][0]
-    meta, ts = r['meta'], r.get('timestamp') or []
-    closes = r['indicators']['quote'][0].get('close') or []
-    off = meta.get('gmtoffset', -18000)
-    bars = [(dt.datetime.fromtimestamp(t + off, dt.timezone.utc).date().isoformat(), c) for t, c in zip(ts, closes) if c is not None]
-    now = time.time()
-    today = dt.datetime.fromtimestamp(now + off, dt.timezone.utc).date().isoformat()
-    end = ((meta.get('currentTradingPeriod') or {}).get('regular') or {}).get('end') or 0
-    if bars and bars[-1][0] == today and now < end + 15 * 60:   # 今天還沒收盤（或剛收盤 15 分鐘內）→ 不用
+YUA = 'Mozilla/5.0 (BNASDAQ heatmap fetch)'   # 與 fetch_market.py 相同風格；瀏覽器 UA 會被 Yahoo 回 429
+ET = ZoneInfo('America/New_York')
+
+
+def _bars(ts, closes):
+    """[(美東日期, 收盤)]，去掉還沒收盤的今天（美東 16:15 前）。"""
+    bars = [(dt.datetime.fromtimestamp(t, ET).date().isoformat(), c) for t, c in zip(ts or [], closes or []) if c is not None]
+    now = dt.datetime.now(ET)
+    if bars and bars[-1][0] == now.date().isoformat() and (now.hour, now.minute) < (16, 15):
         bars = bars[:-1]
     return bars
+
+
+def yahoo_bars(sym):
+    j = json.loads(get(f'https://query2.finance.yahoo.com/v8/finance/chart/{sym}?range=10d&interval=1d', ua=YUA))
+    r = j['chart']['result'][0]
+    return _bars(r.get('timestamp'), r['indicators']['quote'][0].get('close'))
+
+
+def yahoo_spark(batch):
+    """一次抓多檔（每批 ≤20）；兩種回應格式都處理，失敗回傳空 dict 讓呼叫端改用單檔。"""
+    for url in (f'https://query2.finance.yahoo.com/v7/finance/spark?symbols={",".join(batch)}&range=10d&interval=1d',
+                f'https://query2.finance.yahoo.com/v8/finance/spark?symbols={",".join(batch)}&range=10d&interval=1d'):
+        try:
+            j = json.loads(get(url, ua=YUA, tries=2))
+        except Exception:
+            continue
+        out = {}
+        if isinstance(j, dict) and 'spark' in j:
+            for r in ((j.get('spark') or {}).get('result') or []):
+                try:
+                    resp = r['response'][0]
+                    out[norm(r['symbol'])] = _bars(resp.get('timestamp'), resp['indicators']['quote'][0].get('close'))
+                except Exception:
+                    pass
+        elif isinstance(j, dict):
+            for k, v in j.items():
+                if isinstance(v, dict) and v.get('timestamp') and v.get('close') and (v.get('dataGranularity') in (None, 86400, '1d')):
+                    out[norm(k)] = _bars(v['timestamp'], v['close'])
+        if out:
+            return out
+    return {}
 
 
 def num(s):
@@ -122,19 +153,30 @@ def main():
     syms = sorted({s for k in hold for s, *_ in hold[k][1]})
     px, fail = {}, []
 
+    def pick(b):
+        ds = [d for d, _ in b]
+        if session in ds and ds.index(session) >= 1:
+            i = ds.index(session); return (b[i][1], b[i - 1][1])
+        return None
+
+    for i in range(0, len(syms), 20):                      # 先用 spark 一次 20 檔
+        got = yahoo_spark(syms[i:i + 20])
+        for s, b in got.items():
+            v = pick(b)
+            if v:
+                px[s] = v
+        time.sleep(0.4)
+    log('spark 取得', len(px), '/', len(syms))
+
     def one(s):
         try:
-            b = yahoo_bars(s)
-            m = {d: c for d, c in b}
-            ds = [d for d, _ in b]
-            if session in m and ds.index(session) >= 1:
-                return s, (m[session], b[ds.index(session) - 1][1])
-            return s, None
+            return s, pick(yahoo_bars(s))
         except Exception as e:  # noqa
             return s, ('ERR', repr(e)[:80])
 
-    with cf.ThreadPoolExecutor(8) as ex:
-        for s, v in ex.map(one, syms):
+    rest = [s for s in syms if s not in px]
+    with cf.ThreadPoolExecutor(3) as ex:                   # 剩下的單檔補抓（慢慢來，避免 429）
+        for s, v in ex.map(one, rest):
             if v is None or v[0] == 'ERR':
                 fail.append((s, v[1] if v else '沒有該交易日'))
             else:
