@@ -9,9 +9,5 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - run: |
-          B=https://wuyanlin8866.github.io/BNASDAQ
-          V=$(curl -s "$B/valuation.html?t=$(date +%s)" | grep -o 'company.js?v=[0-9a-f]*')
-          echo "CHK 線上 valuation.html 引用：$V"
-          echo "CHK company.js 含新字串：$(curl -s "$B/assets/$V" | grep -c 'Yahoo 近四季淨利')"
-          echo "CHK 內部人累積：$(curl -s "$B/data/company/_tw_insider.json?t=$(date +%s)" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d["since"], len(d["rows"]))')"
+      - uses: actions/checkout@v4
+      - run: python3 probe/gidx.py
