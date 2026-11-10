@@ -10,21 +10,29 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm i --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
       - run: |
-          mkdir -p data/lt/etf data/heatmap
-          for e in QQQ IVV SPY; do curl -sL "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/lt/etf/$e.json" -o "data/lt/etf/$e.json"; done
-          time python3 scripts/fetch_heatmap.py --force
-          python3 - <<'PY'
-          import json
-          d = json.load(open('data/heatmap/latest.json'))
-          print('session', d['session'], 'notes', d['notes'][:10])
-          for k, s in d['sets'].items():
-              t = s['tiles']; print(k, s['name'], 'n', s['n'], 'cap_total_bn', s['cap_total_bn'], 'holdings', s['holdings_asof'])
-              print('  估算市值', [x[0] for x in t if x[6]][:20], '| 沒漲跌', [x[0] for x in t if x[4] is None][:20])
-              for sym in ['NVDA', 'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'AVGO', 'TSLA', 'BRK-B', 'FOXA', 'NWSA']:
-                  r = [x for x in t if x[0] == sym]
-                  if r: print('  ', r[0])
-          PY
-      - run: echo "HMJSON:$(base64 -w0 data/heatmap/latest.json)"
+          B=https://wuyanlin8866.github.io/BNASDAQ
+          T=$(date +%s)
+          echo "CHK site.css 最大寬度：$(curl -s "$B/assets/site.css?t=$T" | grep -o -- '--maxw: [0-9]*px' | head -1)"
+          echo "CHK daily.html 熱力圖區塊：$(curl -s "$B/daily.html?t=$T" | grep -c 'id=\"hm-box\"')"
+          echo "CHK 選單順序（daily）：$(curl -s "$B/daily.html?t=$T" | grep -o '<ul id="mainmenu">.*</ul>' | sed 's/<[^>]*>/|/g' | tr -s '|' | cut -c1-220)"
+          echo "CHK member.html 我的持有資產：$(curl -s "$B/member.html?t=$T" | grep -c 'id=\"mh\"')"
+          echo "CHK heatmap 資料：$(curl -s "$B/data/heatmap/latest.json?t=$T" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d["session"],{k:v["n"] for k,v in d["sets"].items()})')"
+          echo "CHK 會員規則：$(curl -s "$B/data/rules.enc.json?t=$T" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d.get("schema"),d.get("b_ver"),d.get("strategies"))')"
+          echo "CHK 同步狀態：$(curl -s "$B/data/rules-status.json?t=$T" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d.get("state"),d.get("b_ver"))')"
+          cat > live.js <<'JS'
+          const { chromium } = require('playwright');
+          (async () => { const b = await chromium.launch(); const errs = [];
+            const p = await b.newPage({ viewport: { width: 1920, height: 1080 } }); p.on('pageerror', e => errs.push(e.message));
+            await p.goto(process.argv[2] + 'daily.html?t=' + Date.now(), { waitUntil: 'networkidle' }); await p.waitForTimeout(1500);
+            const r = await p.evaluate(() => ({ tiles: document.querySelectorAll('#hm-box .tl').length, meta: (document.getElementById('hm-meta') || {}).textContent, wrap: Math.round(document.querySelector('.main .wrap').getBoundingClientRect().width), nav: [...document.querySelectorAll('#mainmenu a')].map(a => a.textContent.trim()).join('|') }));
+            console.log('CHK 線上熱力圖方塊', r.tiles, '｜', r.meta, '｜內容寬', r.wrap);
+            await p.addInitScript(() => sessionStorage.setItem('bn-session', JSON.stringify({ user: 'probe', role: 'member', ck: 'AAAA' })));
+            await p.goto(process.argv[2] + 'about.html?t=' + Date.now(), { waitUntil: 'networkidle' });
+            console.log('CHK 登入後選單', await p.evaluate(() => [...document.querySelectorAll('#mainmenu a')].map(a => a.textContent.trim()).join('|')));
+            console.log('CHK 頁面錯誤', errs.length ? errs : '無'); await b.close(); })();
+          JS
+          node live.js $B/
