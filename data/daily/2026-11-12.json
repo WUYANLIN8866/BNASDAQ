@@ -1,0 +1,660 @@
+{
+ "schema": "bnasdaq-daily/1",
+ "date": "2026-11-12",
+ "session": "2026-11-11",
+ "generated": "2026-11-11T22:53:21Z",
+ "headline": "CoreWeave 財報點燃 AI 買盤：那指 100 +2.28%、費半 +5.66%（30 檔全漲）、標普 +1.31%；Nvidia 止跌 +2.87%、蘋果創高；債市休市、美元指數升至 102.93",
+ "summary": "美股 11/11（週三，退伍軍人節債市休市、股市照常）在 CPI 回落一天後大幅反彈：那指 100 28,374.25（+2.28%）、費半 10,564.11（+5.66%，30 檔成分股全數上漲）、標普 7,619.38（+1.31%）、道瓊 52,486.49（+0.49%）、羅素 2000 2,846.26（+0.88%）；VIX 17.49（−10.1%）。那指 100 與費半單日漲幅超過 2%，啟用第 2 節主因分析。主因：①CoreWeave Q3 營收 36.6 億美元（+168%）、上調全年指引至 130～133 億，股價 +24.7%，稱需求約為 2027 年前剩餘算力的 10 倍，帶動記憶體（美光 +11.9%、SanDisk +13.3%）、ARM +12.1%、AMD +7.3%、Intel +7.5% 與資料中心電力股（Bloom Energy +12.5%）；②上週崩跌後的超賣回補：Nvidia 兩日 −9.5% 後反彈 +2.87% 至 173.73（盤後再 −2.9%，同時段 Axios 報導商務部長 Lutnick 多次拖延打擊 Nvidia 晶片轉運中國）；③Anthropic IPO 認購達可售股數數倍。弱勢：微軟 −2.26%、Meta −1.97%、亞馬遜 −1.74%，資金由「付 AI 資本支出」的雲端巨頭轉向「收錢」的晶片供應鏈（市場解讀，非單一新聞）。蘋果 +2.04% 至 355.63 創新高、市值約 5.16 兆。利率面：Fed 官員續鷹（Logan 支持再升 2 碼、Bowman 稱通膨擴散且 AI 約占超額核心通膨四分之一），FedWatch 12 月升息約 90%、1 月再升息機率逾 64%；美元指數 +0.66% 至 102.93（19 個月高）、USD/JPY 159.84 逼近 160；黃金跌破 4,000（約 3,984～3,994）。本週至今（vs 11/6 收盤）：那指 100 +5.13%、費半 +12.50%、標普 +3.29%，已收復上週大部分跌幅。明日 11/12：30 年期公債標售、多位 Fed 官員談話；11/13 PPI、SpaceX 星艦第 15 次試飛；11/17 Nvidia 財報；11/19 Anthropic 掛牌。",
+ "indices": [
+  {
+   "key": "NDX",
+   "name": "那斯達克 100",
+   "close": 28374.25,
+   "chg": 2.28,
+   "prev_week": 26989.99,
+   "wk": 5.13,
+   "note": "+633.45 點（收盤÷11/10 收盤 27,740.80 現算 +2.28%，與 Nasdaq 官網標示 +2.28% 一致；官網漲點欄 +630.09 與收盤差額不符，以收盤價現算為準）；漲幅大於那斯達克綜合 +1.60%，代表上漲集中在大型晶片股"
+  },
+  {
+   "key": "SOX",
+   "name": "費城半導體",
+   "close": 10564.11,
+   "chg": 5.66,
+   "prev_week": 9390.25,
+   "wk": 12.5,
+   "note": "+565.78 點，重回萬點之上（自由財經、FX168）；30 檔成分股全數上漲：ARM +12.05%、美光 +11.89%、Intel +7.46%、AMD +7.32%、科林研發 +6.07%、應材 +6.05%、台積電 ADR +4.25%、博通 +3.99%、Nvidia +2.87%"
+  },
+  {
+   "key": "SPX",
+   "name": "標普 500",
+   "close": 7619.38,
+   "chg": 1.31,
+   "prev_week": 7376.86,
+   "wk": 3.29,
+   "note": "+98.45 點；開盤後科技 +3.0%、能源 +1.6% 領漲，醫療 −0.7%、必需消費 −0.5% 落後（24/7 Wall St. 10:30 數據）；漲幅集中在少數 AI 相關股"
+  },
+  {
+   "key": "DJI",
+   "name": "道瓊工業",
+   "close": 52486.49,
+   "chg": 0.49,
+   "prev_week": 51285.73,
+   "wk": 2.34,
+   "note": "+254.60 點；微軟、亞馬遜下跌抵銷部分漲幅"
+  },
+  {
+   "key": "RUT",
+   "name": "羅素 2000",
+   "close": 2846.26,
+   "chg": 0.88,
+   "prev_week": 2754.11,
+   "wk": 3.35,
+   "note": "+24.88 點（TheStreet；Yahoo +24.89）；債市休市、殖利率停在 11/10 高位，小型股漲幅落後大型科技"
+  },
+  {
+   "key": "IXIC",
+   "name": "那斯達克綜合",
+   "close": 25466.19,
+   "chg": 1.6,
+   "prev_week": 24579.42,
+   "wk": 3.61,
+   "note": "+400.31 點；CoreWeave +24.71%、Bloom Energy +12.5%、Dell +11.9%、ARM +11.9% 領漲"
+  }
+ ],
+ "week_path": {
+  "dates": [
+   "10/30",
+   "11/02",
+   "11/03",
+   "11/04",
+   "11/05",
+   "11/06",
+   "11/09",
+   "11/10",
+   "11/11"
+  ],
+  "note": "10/30 為基期（＝100），延伸到 11/11，呈現「上週崩跌 → 週一強彈 → 週二 CPI 回落 → 週三 AI 再反彈」。那指 100 與費半缺完整每日收盤公開來源，以週表呈現（以前一版 10/30→11/10 累計 −2.27%／−6.46% 再乘 11/11 漲跌現算：那指 100 −0.04%、費半 −1.17%，幾乎回到 10/30 水準）。四條線 10/30→11/11 累計（逐日漲跌累乘）：標普 500 +0.51%、道瓊 +1.38%、那斯達克綜合 +0.13%、羅素 2000 +1.22%。",
+  "series": [
+   {
+    "name": "標普 500",
+    "chg": [
+     0,
+     -0.51,
+     0.36,
+     1.58,
+     -4.36,
+     0.31,
+     2.35,
+     -0.38,
+     1.31
+    ]
+   },
+   {
+    "name": "道瓊",
+    "chg": [
+     0,
+     0.41,
+     -0.38,
+     3.03,
+     -3.44,
+     -0.46,
+     2.15,
+     -0.3,
+     0.49
+    ]
+   },
+   {
+    "name": "那斯達克綜合",
+    "chg": [
+     0,
+     -1.07,
+     0.83,
+     1.44,
+     -5.52,
+     1.09,
+     2.74,
+     -0.74,
+     1.6
+    ]
+   },
+   {
+    "name": "羅素 2000",
+    "chg": [
+     0,
+     -0.21,
+     0.23,
+     1.58,
+     -4.45,
+     0.89,
+     3.15,
+     -0.68,
+     0.88
+    ]
+   }
+  ]
+ },
+ "big_move": {
+  "triggered": true,
+  "threshold": 2,
+  "intro": "11/11 那指 100 +2.28%、費半 +5.66% 超過 ±2% 門檻；但道瓊僅 +0.49%、羅素 +0.88%，微軟／Meta／亞馬遜下跌，代表是「AI 硬體供應鏈集中上攻」而非全面風險偏好。以下機率為本站依新聞證據權重所作的主觀估計（合計 100%），不是統計推論。",
+  "causes": [
+   {
+    "p": 50,
+    "title": "CoreWeave 財報「優於預期＋上調指引」，AI 算力需求疑慮降溫",
+    "evidence": [
+     "CoreWeave Q3 營收 36.61 億美元（+168%，預期約 35.4 億）、全年營收指引上調至 130～133 億、調整後營業利益指引 12.75～13.75 億（FX168）；股價 +24.71% 至 60.77",
+     "公司稱需求約為 2027 年前剩餘算力的 10 倍，上季兩度調漲租金、舊款晶片租價季增 30%～50%，未來三個月預計收 90 億美元客戶預付款（FNArena、Yahoo Finance）",
+     "受惠族群與 CoreWeave 供應鏈高度重疊：記憶體（美光 +11.89%、SanDisk +13.3%、SK 海力士 >+10%）、電力（Bloom Energy +12.5%）、伺服器（Dell +11.9%）",
+     "上週 11/5 微軟縮減新雲（neocloud）合作的報導曾讓 CoreWeave 單日 −12.29%，本次財報直接回應該疑慮"
+    ],
+    "counter": "CoreWeave 當季仍淨虧損 7.09 億美元；同屬 AI 的微軟、Meta、亞馬遜當天反而下跌，顯示市場只買「收錢的供應商」、仍擔心「付錢的雲端巨頭」資本支出回報。"
+   },
+   {
+    "p": 30,
+    "title": "上週崩跌後的超賣回補＋Nvidia 止跌",
+    "evidence": [
+     "11/6 當週費半 −12.15%、那指 100 −4.91%；本週至今費半已 +12.50%、那指 100 +5.13%，屬典型的空單回補",
+     "Nvidia 兩日 −9.5% 後反彈 +2.87% 至 173.73（Motley Fool），終止連二跌；前瞻本益比降至 2011 年來最低（前一版）",
+     "高盛稱半導體超賣、首選 NVDA／AVGO／AMD；AMD +7.32%、博通 +3.99%",
+     "VIX 由 19.46 降至 17.49（−10.1%），恐慌持續退潮"
+    ],
+    "counter": "Baird 同日將 Nvidia 降評至中立、目標價 500→200，摩根士丹利移出首選；Nvidia 盤後再 −2.90% 至 168.70，基本面利空未解，反彈持續性存疑。"
+   },
+   {
+    "p": 20,
+    "title": "Anthropic IPO 熱度＋中東緩和預期，風險胃納回升",
+    "evidence": [
+     "Anthropic IPO 認購達可售股數數倍、交易規模最高約 904 億美元、完全稀釋估值上限約 1.4 兆（彭博，經 FX168）；Vanda 估首日散戶買盤約 2.5 億美元創紀錄（vs SpaceX 1.18 億）",
+     "AMD 名列 Anthropic 招股書主要投資人，帶動 AI 供應鏈評價（Motley Fool）",
+     "WSJ：副總統 Vance 考慮與伊朗最高安全官員面對面會談；伊朗議長 Ghalibaf 稱若華府接受條件、和平為優先（investingLive）",
+     "歐股同步收高：DAX +1.20%、FTSE 100 +0.78%（FNArena）"
+    ],
+    "counter": "IPO 題材也可能分流資金（微軟、Meta 下跌）；伊朗同日仍宣示不放棄濃縮鈾，油價持平（WTI 86.36），地緣消息對指數的直接貢獻有限。"
+   }
+  ]
+ },
+ "weekly": {
+  "range": "2026-11-06 → 2026-11-11（本週一～三累計）",
+  "cols": [
+   "11/06",
+   "11/11"
+  ],
+  "stock": {
+   "title": "股市：AI 硬體股領軍，本週至今已收復上週大部分跌幅",
+   "rows": [
+    [
+     "那斯達克 100",
+     "26,989.99",
+     "28,374.25",
+     "+5.13%"
+    ],
+    [
+     "費城半導體",
+     "9,390.25",
+     "10,564.11",
+     "+12.50%"
+    ],
+    [
+     "標普 500",
+     "7,376.86",
+     "7,619.38",
+     "+3.29%"
+    ],
+    [
+     "道瓊工業",
+     "51,285.73",
+     "52,486.49",
+     "+2.34%"
+    ],
+    [
+     "羅素 2000",
+     "2,754.11",
+     "2,846.26",
+     "+3.35%"
+    ],
+    [
+     "VIX",
+     "25.64",
+     "17.49",
+     "−31.8%"
+    ]
+   ],
+   "text": "一週趨勢：上週 AI 崩跌（那指 100 −4.91%、費半 −12.15%）後，本週 11/9 全面強彈、11/10 CPI 高於預期小跌、11/11 CoreWeave 財報再推升。本週（11/6→11/11）那指 100 +5.13%、費半 +12.50%、標普 +3.29%、道瓊 +2.34%、羅素 +3.35%，VIX −31.8%。那指 100 距 10/6 高點 31,224.47 仍 −9.13%，脫離 −10% 修正區。結構：晶片股（AMD 自 11/6 起約 +37%）大漲，雲端巨頭（微軟、Meta、亞馬遜）週三走弱，資金在 AI 供應鏈與 AI 買方之間輪動。關鍵：11/13 PPI、11/17 Nvidia 財報、11/19 Anthropic 掛牌。"
+  },
+  "fx": {
+   "title": "匯市：升息預期推升美元至 19 個月高點，日圓逼近 160",
+   "rows": [
+    [
+     "美元指數 DXY",
+     "102.32",
+     "102.93",
+     "+0.60%（11/11 單日 +0.66%）"
+    ],
+    [
+     "EUR/USD",
+     "1.1143",
+     "1.1093",
+     "−0.45%（單日約 −0.6%）"
+    ],
+    [
+     "USD/JPY",
+     "158.43",
+     "159.84",
+     "+0.89%（單日 +0.70%）"
+    ]
+   ],
+   "text": "一週趨勢：美元 11/9 隨油價回落，11/10 CPI 後轉強，11/11 再升 0.66% 至 102.93、創 19 個月高（FNArena），市場押注 Fed 12 月與 1 月連續升息。USD/JPY 159.84 逼近 160 干預警戒區；英鎊兌美元 1.3279、瑞郎 0.8328（美元 +0.93%）。英國央行 Greene 稱應主動緊縮以防工資風險、ECB 多位官員暗示 12 月升息 1 碼，限制非美貨幣跌幅。（EUR/USD、USD/JPY 取 investingLive 近收盤報價。）"
+  },
+  "bond": {
+   "title": "債市：11/11 退伍軍人節現貨休市，殖利率停在 CPI 後高位",
+   "rows": [
+    [
+     "2 年",
+     "4.51%",
+     "4.73%（11/10）",
+     "+22 bp"
+    ],
+    [
+     "10 年",
+     "4.86%",
+     "4.98%～5.00%",
+     "+12～14 bp"
+    ],
+    [
+     "30 年",
+     "5.26%",
+     "5.35%（11/10）",
+     "+9 bp"
+    ]
+   ],
+   "text": "一週趨勢：上週避險買盤壓低殖利率，本週 CPI 高於預期引發短端拋售、曲線熊平，2 年期一週 +22 bp。11/11 美國公債現貨市場休市（investingLive），FNArena 列 10 年期 5.00%、ANZ 列 4.99% 持平。FedWatch：12/8～9 升息機率約 90%（2 碼約 11.5%～15%），1 月再升息機率逾 64%、較週一約增三倍（BNN Bloomberg）。MBA 30 年期房貸利率 7.30%，創一個多月來最大單日升幅。11/12 30 年期公債標售為下一個考驗。"
+  },
+  "other": {
+   "title": "商品與加密：黃金跌破 4,000、油價持穩於 8 月來低檔",
+   "rows": [
+    [
+     "黃金",
+     "4,074.90",
+     "約 3,984～3,994",
+     "−2.0%～−2.2%（單日約 −0.9%～−1.15%）"
+    ],
+    [
+     "布蘭特原油",
+     "98.32",
+     "92.51",
+     "−5.91%"
+    ],
+    [
+     "WTI 原油",
+     "90.83",
+     "86.36",
+     "−4.92%"
+    ],
+    [
+     "比特幣",
+     "約 75,943",
+     "約 74,345～74,482",
+     "約 −2%"
+    ]
+   ],
+   "text": "黃金在美元與實質利率上升下跌破 4,000 美元（FNArena 3,984.23、Yahoo 3,994.00），白銀小漲至約 51.7～51.9。油價：WTI 盤中高見 88.74 後回落持平於 86.3～86.5，俄烏和談進展與美伊接觸消息壓抑風險溢價。比特幣約 74,300～74,500（+1%），未收復 75,000。"
+  }
+ },
+ "events": [
+  {
+   "cat": "貨幣政策與央行",
+   "items": [
+    "Fed 理事 Bowman：價格壓力「可能正在擴散」，估 AI 相關價格壓力約占過去 12 個月超額核心 PCE 的四分之一（與關稅、能源相當），10 月核心 PCE 年增可能升至 3.3%；警告 AI 相關債務 2026 年將超過 8,000 億美元、出現「循環融資」跡象（24/7 Wall St.）",
+    "達拉斯 Fed 總裁 Logan：支持再升息 2 次各 1 碼，冬季可能更快行動；費城 Fed 總裁 Paulson：基礎通膨未下降、支持漸進升息；主席 Warsh 未表態（BNN Bloomberg）",
+    "CME FedWatch：12/8～9 升息機率約 90%，1 月再升息機率逾 64%；FOMC 10 月以 10 比 2 維持 3.75%～4.00%，兩名反對者主張升息（FNArena）",
+    "英國央行 Greene：主動緊縮以防工資風險是適當的；ECB 多位官員暗示 12 月升息 1 碼（investingLive、FNArena）",
+    "美國公債現貨市場 11/11 退伍軍人節休市；美元指數 102.93 創 19 個月高、USD/JPY 159.84"
+   ]
+  },
+  {
+   "cat": "科技與那斯達克",
+   "items": [
+    "CoreWeave +24.71%：Q3 營收 36.61 億美元（+168%）、上調全年營收指引至 130～133 億，需求約為剩餘算力 10 倍；但淨虧損 7.09 億美元（FX168、FNArena）",
+    "Nvidia 收 173.73（+2.87%），終止連二跌；Baird 降評至中立、目標價 500→200（理由：黃仁勳不確定性、對中出口限制、2027 雲端資本支出放緩）；摩根士丹利移出首選、維持加碼與 300 目標價；盤後 −2.90% 至 168.70（Yahoo Finance、Motley Fool、TheStreet）",
+    "Axios：商務部長 Lutnick 多次拖延川普打擊 Nvidia 晶片轉運中國的行動；川普今年第三度授權取締，財長 Bessent 在白宮戰情室會議質疑 Lutnick（GV Wire／Reuters）",
+    "Anthropic IPO 認購達數倍、估值上限約 1.4 兆美元，預計 11/19 於 Nasdaq 掛牌（代號 ANT）；Vanda 估首日散戶買盤約 2.5 億美元創紀錄",
+    "蘋果收 355.63（+2.0%）創歷史新高，市值約 5.16 兆（TheStreet）；AMD +7.32%（高盛列為首選之一、EPYC 將支援 Google 雲端 TPU 服務）",
+    "SpaceX 收 139.75（−2.33%），11/13 星艦第 15 次試飛前觀望；12/8 內部人士禁售期到期（Motley Fool）"
+   ]
+  },
+  {
+   "cat": "國際情勢",
+   "items": [
+    "Axios：美方在阿布達比俄烏會談中要求俄羅斯提出新的歐洲安全協議方案，會談重拾動能（investingLive、Axios）",
+    "WSJ：副總統 Vance 考慮與伊朗最高安全官員面對面會談；伊朗議長 Ghalibaf 稱若華府接受伊朗條件、和平為優先；但伊朗同時宣示不放棄濃縮核材料（investingLive、TheStreet）",
+    "美國司法部起訴 3 名伊朗支持的行動人員；報導稱財長 Bessent 因伊朗威脅被移往軍事基地（TheStreet）",
+    "易捷航空股東以 97% 通過以 57 億英鎊出售予美國 Apollo（民視財經）"
+   ]
+  },
+  {
+   "cat": "美國政治",
+   "items": [
+    "Lutnick 與 Bessent 就晶片出口管制執行出現路線衝突（Axios），Nvidia 對中業務政治風險持續；眾院中國委員會 11/18 閉門簡報（前一版）",
+    "美國 10 月零售銷售成長為 2025 年 11 月以來最慢（TheStreet）"
+   ]
+  },
+  {
+   "cat": "金融環境",
+   "items": [
+    "VIX 17.49（−10.1%）；漲幅集中在 AI 硬體：成長股大勝價值股（那斯達克 +1.60% vs 道瓊 +0.49%，24/7 Wall St.）",
+    "MBA 30 年期房貸利率 7.30%（單日升幅一個多月來最大）、房貸申請週增 6.2%（FNArena）",
+    "黃金約 3,984～3,994（−0.9%～−1.15%）跌破 4,000；比特幣約 74,345（+1.0%）",
+    "歐股收高：DAX +1.20%、FTSE 100 +0.78%、Euro Stoxx 50 +1.0%（FNArena）；台指期夜盤 +470 點（民視財經）",
+    "明日 11/12：美國初領失業金、成屋銷售、30 年期公債標售，Fed Hammack、Barr、Goolsbee、Daly、Schmid 談話（investingLive）"
+   ]
+  }
+ ],
+ "mega": {
+  "intro": "依市值排名。市值＝前一版（11/10 收盤）市值 × 11/11 收盤價 ÷ 11/10 收盤價現算；11/11 收盤價：AAPL、NVDA、MSFT、GOOG、AMZN、META、TSLA、SPCX 取 Motley Fool 收盤報價，AVGO 取 Motley Fool 內文，TSM 取自由財經。GOOG 為 C 股（前一版為 GOOGL），市值以 3.53 兆 ×（1＋2.0%）估算；TSLA 以 11/9 市值與價格現算。波克夏、禮來、沃爾瑪取 Motley Fool 市值排行頁 11/11 報價（未確認為收盤）；沙烏地阿美以 Motley Fool 11/4 市值列入。",
+  "wk_label": "11/11 單日",
+  "rows": [
+   {
+    "t": "AAPL",
+    "n": "Apple",
+    "cap": "5.16 兆",
+    "px": "355.63",
+    "wk": "+2.04%",
+    "news": "盤中突破 355.42 創歷史新高，今年以來 +31.1%（TheStreet）；無重大新公司公告。",
+    "impact": "在 AI 資本支出爭議中，蘋果被視為「不需要大舉付算力錢」的避風港；記憶體漲價仍是毛利壓力。",
+    "win": [
+     "AAPL"
+    ],
+    "lose": [
+     "—"
+    ]
+   },
+   {
+    "t": "NVDA",
+    "n": "Nvidia",
+    "cap": "4.20 兆",
+    "px": "173.73",
+    "wk": "+2.87%",
+    "news": "兩日 −9.5% 後止跌反彈；Baird 降評中立、目標價 500→200；摩根士丹利移出首選但維持加碼；盤後 −2.90%（168.70），同時段 Axios 報導 Lutnick 拖延打擊晶片轉運中國。11/17 財報、11/18 國會閉門簡報。",
+    "impact": "CoreWeave 證實算力需求強，但黃仁勳事件與出口管制政治化使估值折價；資金偏好 AMD／ASIC。",
+    "win": [
+     "CRWV",
+     "AMD",
+     "AVGO"
+    ],
+    "lose": [
+     "NVDA",
+     "SMCI"
+    ]
+   },
+   {
+    "t": "MSFT",
+    "n": "Microsoft",
+    "cap": "3.87 兆",
+    "px": "521.13",
+    "wk": "−2.26%",
+    "news": "連兩日下跌；上週微軟縮減新雲合作的報導與前一日 Anthropic 推出辦公工具仍在發酵；Bowman 示警 AI 債務與循環融資。11/11 無單一明確利空新聞。",
+    "impact": "市場對「付 AI 資本支出」的一方評價打折（Q1 資本支出 452 億），同時 Office 面臨 Anthropic 競爭。",
+    "win": [
+     "ANT（11/19 掛牌）",
+     "CRWV（算力出租）"
+    ],
+    "lose": [
+     "MSFT",
+     "ADBE",
+     "CRM"
+    ]
+   },
+   {
+    "t": "GOOG",
+    "n": "Alphabet",
+    "cap": "約 3.60 兆",
+    "px": "290.63",
+    "wk": "+2.0%",
+    "news": "AMD EPYC 將支援 Google 雲端 TPU 服務；Alphabet 為 Anthropic 股東，IPO 熱度帶動持股價值重估。",
+    "impact": "TPU 對外銷售＋Anthropic 持股是雙重支撐，與微軟走勢分歧。",
+    "win": [
+     "GOOG",
+     "AVGO（TPU 設計夥伴）",
+     "AMD"
+    ],
+    "lose": [
+     "NVDA（推論份額）"
+    ]
+   },
+   {
+    "t": "AMZN",
+    "n": "Amazon",
+    "cap": "2.87 兆",
+    "px": "266.17",
+    "wk": "−1.74%",
+    "news": "〔11/11 無重大新公司公告〕隨雲端巨頭回落；仍為 Anthropic 主要股東與算力供應者。",
+    "impact": "Anthropic 上市帶來評價利益，但 AWS 資本支出與 AI 債務疑慮壓抑股價。",
+    "win": [
+     "ANT"
+    ],
+    "lose": [
+     "AMZN（資本支出）"
+    ]
+   },
+   {
+    "t": "TSM",
+    "n": "台積電",
+    "cap": "2.15 兆",
+    "px": "413.35",
+    "wk": "+4.25%",
+    "news": "ADR 連三日上漲；費半 30 檔全漲，日月光 ADR +6.60%、聯電 ADR +6.91%（民視財經）；台指期夜盤 +470 點。",
+    "impact": "不論 GPU 或 ASIC 都由台積電代工，CoreWeave 需求數據直接強化先進製程與 CoWoS 能見度。",
+    "win": [
+     "TSM",
+     "2330.TW",
+     "ASX",
+     "UMC"
+    ],
+    "lose": [
+     "—"
+    ]
+   },
+   {
+    "t": "SPCX",
+    "n": "SpaceX",
+    "cap": "1.94 兆",
+    "px": "139.75",
+    "wk": "−2.33%",
+    "news": "FCC 800 MHz 頻譜決定帶來的早盤漲幅消失，市場觀望 11/13 星艦第 15 次試飛；12/8 內部人士禁售期到期（Motley Fool）。",
+    "impact": "試飛成敗與禁售期解禁是短期兩大變數；Anthropic IPO 可能分流題材資金。",
+    "win": [
+     "RKLB（若星艦延誤）"
+    ],
+    "lose": [
+     "SPCX"
+    ]
+   },
+   {
+    "t": "META",
+    "n": "Meta",
+    "cap": "1.61 兆",
+    "px": "628.77",
+    "wk": "−1.97%",
+    "news": "〔11/11 無重大新公司公告〕隨雲端／AI 買方族群回落；週一曾因摩根大通納入焦點名單 +5.12%。",
+    "impact": "AI 資本支出回報與 AI 債務疑慮（Bowman）壓抑評價。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "META"
+    ]
+   },
+   {
+    "t": "AVGO",
+    "n": "Broadcom",
+    "cap": "1.64 兆",
+    "px": "345.22",
+    "wk": "+3.99%",
+    "news": "連三日上漲；高盛半導體首選；客製 ASIC 需求敘事延續。",
+    "impact": "超大規模業者自研晶片加速，博通是直接受惠者。",
+    "win": [
+     "AVGO",
+     "MRVL",
+     "TSM"
+    ],
+    "lose": [
+     "NVDA"
+    ]
+   },
+   {
+    "t": "TSLA",
+    "n": "Tesla",
+    "cap": "1.55 兆",
+    "px": "390.84",
+    "wk": "+2.9%",
+    "news": "〔11/11 無重大新公司公告〕隨科技股上漲；Musk 的 Terafab 晶片計畫資本需求受關注（24/7 Wall St.）。",
+    "impact": "Robotaxi 擴張支撐評價，晶片自製計畫的龐大資本支出是風險。",
+    "win": [
+     "TSLA"
+    ],
+    "lose": [
+     "UBER、LYFT（Robotaxi 競爭）"
+    ]
+   },
+   {
+    "t": "LLY",
+    "n": "禮來",
+    "cap": "約 1.3 兆（Motley Fool 11/11 報價）",
+    "px": "約 1,426",
+    "wk": "—",
+    "news": "〔11/11 無新公司公告〕醫療類股開盤 −0.7% 為最弱類股之一（24/7 Wall St.）。",
+    "impact": "資金由防禦類股轉向科技，短期相對落後。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "LLY（類股輪動）"
+    ]
+   },
+   {
+    "t": "BRK.B",
+    "n": "波克夏",
+    "cap": "約 1.2 兆（Motley Fool 11/11 報價）",
+    "px": "A 股約 871,000",
+    "wk": "—",
+    "news": "〔11/11 無新公司公告〕金融類股落後大盤（24/7 Wall St.）；殖利率維持高位有利保險浮存金收益。",
+    "impact": "升息環境下現金部位收益提高，但科技反彈日相對落後。",
+    "win": [
+     "BRK.B"
+    ],
+    "lose": [
+     "—"
+    ]
+   },
+   {
+    "t": "WMT",
+    "n": "沃爾瑪",
+    "cap": "約 9,961 億（Motley Fool 11/11 報價，略低於 1 兆）",
+    "px": "約 124.55",
+    "wk": "—",
+    "news": "〔11/11 無新公司公告〕10 月零售銷售成長為 2025 年 11 月以來最慢（TheStreet）；必需消費開盤 −0.5%。",
+    "impact": "消費放緩下低價零售具防禦性，但資金轉向科技使必需消費落後。",
+    "win": [
+     "WMT",
+     "COST"
+    ],
+    "lose": [
+     "TGT（中價位零售）"
+    ]
+   },
+   {
+    "t": "2222.SR",
+    "n": "沙烏地阿美",
+    "cap": "約 1.69 兆（11/4）",
+    "px": "—",
+    "wk": "—",
+    "news": "布蘭特 11/11 收 92.51（+0.61%），一週 −5.91%；美伊可能面對面接觸、俄烏和談進展壓抑油價風險溢價。",
+    "impact": "油價自 100 美元以上回落壓縮營收；荷姆茲風險溢價隨和談消退。",
+    "win": [
+     "DAL",
+     "UAL",
+     "LUV（燃油成本）"
+    ],
+    "lose": [
+     "2222.SR",
+     "XOM",
+     "CVX"
+    ]
+   }
+  ]
+ },
+ "sources": [
+  {
+   "t": "Nasdaq Global Indexes：NDX Overview（11/11 收盤 28,374.25、+2.28%）",
+   "u": "https://indexes.nasdaqomx.com/Index/History/NDX"
+  },
+  {
+   "t": "自由財經：美股收盤》輝達止跌！費半狂飆近6％ 台積電ADR漲逾4％（四大指數、費半、台積電 ADR 413.35）",
+   "u": "https://ec.ltn.com.tw/article/breakingnews/5637726"
+  },
+  {
+   "t": "TheStreet：Stock Market Today Nov. 11, 2026（道瓊、標普、那斯達克、羅素收盤；蘋果新高；Baird／大摩對 Nvidia）",
+   "u": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-nov-11-2026"
+  },
+  {
+   "t": "Yahoo Finance：Dow, S&P 500, Nasdaq rise as chip stock rally rekindles AI trade（VIX、黃金、原油、比特幣、Nvidia 收盤與盤後）",
+   "u": "https://finance.yahoo.com/markets/live/stock-market-today-wednesday-november-11-dow-sp-500-nasdaq-nvidia-treasurys-veterans-day-140638547.html"
+  },
+  {
+   "t": "FNArena：The Overnight Report: AI Trade Roars Back（VIX、10 年期、美元指數、商品、Fed、FedWatch）",
+   "u": "https://fnarena.com/2026/11/12/the-overnight-report-ai-trade-roars-back/"
+  },
+  {
+   "t": "investingLive Americas FX news wrap 11 Nov（FX、那指 100 近收盤、歐股、新聞、11/12 行事曆）",
+   "u": "https://www.louisvelazquez.com/investinglive-americas-fx-news-wrap-11-nov-its-a-wrap-dollar-climbs-as-stocks-rise-and-oil-fades/"
+  },
+  {
+   "t": "FX168：纳指续升1.6%，费半升超5%（費半成分股、CoreWeave 財報、Anthropic IPO）",
+   "u": "https://www.fx168news.com/article/1114909"
+  },
+  {
+   "t": "Motley Fool：Nvidia Rebounds as CoreWeave Earnings Reignite the AI Trade（NVDA、AMD、AVGO 與大型股收盤）",
+   "u": "https://www.fool.com/coverage/stock-market-today/2026/11/11/stock-market-today-nov-11-nvidia-rebounds-as-coreweave-earnings-reignite-the-ai-trade/"
+  },
+  {
+   "t": "Motley Fool：AMD Jumps -- and Not Only Because of CoreWeave's Results",
+   "u": "https://www.fool.com/coverage/stock-market-today/2026/11/11/stock-market-today-nov-11-advanced-micro-devices-jumps-and-not-only-because-of-coreweave-s-results/"
+  },
+  {
+   "t": "Motley Fool：SpaceX Shares Slip Amid Upcoming Starship Test Flight Jitters",
+   "u": "https://www.fool.com/coverage/stock-market-today/2026/11/11/stock-market-today-nov-11-spacex-shares-slip-amid-upcoming-starship-test-flight-jitters/"
+  },
+  {
+   "t": "Motley Fool：The Largest Companies by Market Cap（LLY、BRK、WMT 11/11 報價；阿美 11/4 市值）",
+   "u": "https://www.fool.com/research/largest-companies-by-market-cap/"
+  },
+  {
+   "t": "24/7 Wall St.：S&P 500 Closes Up 1.3% as Tech Pulls the Market Higher（類股、漲跌幅榜）",
+   "u": "https://247wallst.com/cards/tech-did-the-heavy-lifting-again-the-nasdaq-s-1-55-close-m-gspc-market-bell-01m766s5wqxj8egm37q8ks13gp"
+  },
+  {
+   "t": "24/7 Wall St.：Fed's Bowman Says AI Now Drives About a Quarter of America's Excess Inflation",
+   "u": "https://247wallst.com/investing/2026/11/11/feds-bowman-says-ai-now-drives-about-a-quarter-of-americas-excess-inflation/"
+  },
+  {
+   "t": "BNN Bloomberg／AP：As higher prices seep into broader economy, Fed officials consider faster hikes",
+   "u": "https://www.bnnbloomberg.ca/business/international/2026/11/11/as-higher-prices-seep-into-broader-economy-us-fed-officials-consider-faster-hikes/"
+  },
+  {
+   "t": "GV Wire／Reuters：Lutnick stalled Trump crackdown on diversion of Nvidia chips to China, Axios reports",
+   "u": "https://gvwire.com/2026/11/11/lutnick-stalled-trump-crackdown-on-diversion-of-nvidia-chips-to-china-axios-reports/"
+  },
+  {
+   "t": "Axios：U.S. asks Russia to propose new security agreement with Europe",
+   "u": "https://www.axios.com/2026/11/11/russia-ukraine-europe-war-security-agreement"
+  },
+  {
+   "t": "民視財經：CoreWeave強勁財報消弭AI疑慮！美股全面收漲（日月光、聯電 ADR、易捷航空、台指期夜盤）",
+   "u": "https://finance.ftvnews.com.tw/news/detail/2026B12W0069"
+  },
+  {
+   "t": "前一版 data/daily/2026-11-11.json（11/6、11/10 收盤基準與 10/30 起逐日漲跌，來源見該版）",
+   "u": "https://github.com/WUYANLIN8866/bnasdaq/blob/main/data/daily/2026-11-11.json"
+  }
+ ]
+}
