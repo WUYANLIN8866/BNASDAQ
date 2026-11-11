@@ -377,7 +377,7 @@ function draw(){
   box.innerHTML=html; tip=null;
   const up=S.tiles.filter(t=>t[4]>0).length, dn=S.tiles.filter(t=>t[4]<0).length;
   const mk=(S.market==='TW'?'台股 ':'美股 ')+(S.session||D.session)+' 收盤';
-  const capNote=S.cap_rolled?'；'+(S.cap_rolled>=S.n?'':S.cap_rolled+' 檔')+'依 '+S.cap_asof+' 市值按收盤換算':'';   // Nasdaq 篩選器取不到市值時（fetch_heatmap.py）
+  const capNote=S.cap_rolled?'；'+(S.cap_rolled>=S.n?'':S.cap_rolled+' 檔')+'股數依 '+S.cap_asof+' 篩選器，市值隨每日收盤更新':'';   // Nasdaq 篩選器取不到市值時（fetch_heatmap.py）
   $('hm-meta').textContent=mk+'｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+capNote+'）、顏色＝單日漲跌';
   box.setAttribute('aria-label',S.name+'市值熱力圖，'+mk+'：上漲 '+up+' 檔、下跌 '+dn+' 檔');
   $('hm-src').innerHTML='資料：'+(S.sources||D.sources).map(s=>'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.t)+'</a>').join('；')+'。'+
