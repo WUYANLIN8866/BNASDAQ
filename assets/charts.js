@@ -30,7 +30,12 @@
     const body = wrapFig(host, o);
     const W = o.W || 820, H = o.height || 360, pad = { l: o.padL || 64, r: o.padR || 16, t: 14, b: 34 };
     const svg = frame(body, W, H);
-    const n = o.x.length; const xOf = i => pad.l + (W - pad.l - pad.r) * (n > 1 ? i / (n - 1) : 0);
+    const n = o.x.length;
+    // X 位置：預設一點一格（月線、日線本來就等距）。給 o.xPos（每點的數值位置，例如時間毫秒）就依實際間距排，
+    // 資料時密時疏或中斷（例如運算暫停兩天）也不會把不同日期擠在一起；刻度改用 o.xTicksAt＝[[位置, 標籤], …]。
+    const P = o.xPos && o.xPos.length === n && o.xPos.every(isFinite) ? o.xPos : null, p0 = P ? P[0] : 0, p1 = P ? P[n - 1] : 0;
+    const xAt = v => pad.l + (W - pad.l - pad.r) * (p1 > p0 ? (v - p0) / (p1 - p0) : 0);
+    const xOf = P ? i => xAt(P[i]) : i => pad.l + (W - pad.l - pad.r) * (n > 1 ? i / (n - 1) : 0);
     let lo = Infinity, hi = -Infinity;
     o.series.forEach(s => s.values.forEach(v => { if (v != null && isFinite(v) && (!o.log || v > 0)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }));
     if (o.yMin != null) lo = o.yMin; if (o.yMax != null) hi = o.yMax;
@@ -43,7 +48,17 @@
     const xt = o.xTicks || (() => { const out = []; let last = null; o.x.forEach((s, i) => { const y = String(s).slice(0, 4); if (y !== last) { out.push([i, y]); last = y; } }); const every = Math.ceil(out.length / 13); return out.filter((_, k) => k % every === 0); })();
     const ax = el('g', { class: 'viz-axis' }, svg);
     el('line', { x1: pad.l, x2: W - pad.r, y1: H - pad.b, y2: H - pad.b }, ax);
-    xt.forEach(([i, lbl]) => { text(svg, xOf(i), H - pad.b + 18, lbl, { 'text-anchor': 'middle', class: 'viz-lbl' }); });
+    // 刻度標籤不重疊：量實際字寬（圖表還沒顯示量不到時，用字級估計：數字與英文 0.6 字寬、中文 1 字寬），
+    // 和前一個保留的標籤重疊（間距不到 4）就拿掉這個標籤
+    const tk = P && o.xTicksAt ? o.xTicksAt.filter(([v]) => v >= p0 && v <= p1).map(([v, l]) => [xAt(v), l]) : xt.map(([i, l]) => [xOf(i), l]);
+    let lastR = -Infinity;
+    tk.forEach(([x, lbl]) => {
+      const t = text(svg, x, H - pad.b + 18, lbl, { 'text-anchor': 'middle', class: 'viz-lbl' });
+      let w = 0; try { w = t.getComputedTextLength(); } catch (e) { /* 量不到就估計 */ }
+      if (!(w > 0)) { const fs = parseFloat(getComputedStyle(t).fontSize) || 13; w = [...String(lbl)].reduce((s, c) => s + (/[⺀-￿]/.test(c) ? 1 : 0.6), 0) * fs; }
+      if (x - w / 2 < lastR + 4) { t.remove(); return; }
+      lastR = x + w / 2;
+    });
     if (o.yTitle) text(svg, 10, pad.t + 2, o.yTitle, { class: 'viz-lbl' });
     // bands (e.g., shaded ranges)
     (o.bands || []).forEach(b => { el('rect', { x: xOf(b.from), y: pad.t, width: Math.max(1, xOf(b.to) - xOf(b.from)), height: H - pad.t - pad.b, fill: b.color || 'rgba(183,121,31,.12)' }, svg); });

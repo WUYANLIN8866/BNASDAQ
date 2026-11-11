@@ -25,6 +25,21 @@
   const ageMin = iso => (Date.now() - Date.parse(iso)) / 60000;
   let DATA = null, lastKey = '';
 
+  // 時間刻度（台北時間；台灣沒有夏令時間，固定 UTC+8）：每天 00:00 一個「月/日」；起點離第一個 00:00 超過半天時，起點也標日期；
+  // 不到兩個刻度（資料不滿一天）改成每 6 小時；最多約 8 個標籤。charts.js 另有防重疊。
+  const HOUR = 36e5, DAY = 24 * HOUR, TZ = 8 * HOUR, GAP_MS = 2 * HOUR;
+  const p2 = v => String(v).padStart(2, '0');
+  function timeTicks(t0, t1) {
+    if (!(t1 > t0)) return [];
+    const lab = (t, hm) => { const z = new Date(t + TZ), md = p2(z.getUTCMonth() + 1) + '/' + p2(z.getUTCDate()); return hm ? md + ' ' + p2(z.getUTCHours()) + ':00' : md; };
+    let out = [];
+    for (let t = Math.ceil((t0 + TZ) / DAY) * DAY - TZ; t <= t1; t += DAY) out.push([t, lab(t)]);
+    if (out.length && out[0][0] - t0 >= DAY / 2) out.unshift([t0, lab(t0)]);
+    if (out.length < 2) { out = []; for (let t = Math.ceil((t0 + TZ) / (6 * HOUR)) * 6 * HOUR - TZ; t <= t1; t += 6 * HOUR) out.push([t, lab(t, true)]); }
+    const every = Math.max(1, Math.ceil(out.length / 8));
+    return out.filter((_, k) => k % every === 0);
+  }
+
   // GitHub API first (fresh within ~1 minute; the browser revalidates with ETag, and unchanged 304 replies do not
   // use up the 60-per-hour anonymous quota), then raw.githubusercontent.com (CDN copy, up to 5 minutes old),
   // then the copy deployed with the site.
@@ -102,14 +117,17 @@
     // charts
     const H = d.history || [];
     const x = H.map(h => h[0]);
-    const days = []; let last = null; x.forEach((s, i) => { const k = s.slice(5, 10); if (k !== last) { days.push([i, k.replace('-', '/')]); last = k; } });
-    const every = Math.max(1, Math.ceil(days.length / 8));
-    const xTicks = days.filter((_, k) => k % every === 0);
+    // X 軸依實際時間（2026-11-11：運算暫停 57 小時後恢復，一點一格的軸把 11/09、11/11 擠在一起）
+    const xPos = H.map(h => Date.parse(h[0]));
+    const xTicksAt = timeTicks(xPos[0], xPos[xPos.length - 1]);
+    const bands = [];          // 超過 2 小時沒有進度回報的區段（暫停或關機）標成灰色
+    for (let i = 1; i < H.length; i++) if (xPos[i] - xPos[i - 1] > GAP_MS) bands.push({ from: i - 1, to: i, color: 'rgba(128,128,128,.14)' });
+    const gapNote = bands.length ? '灰色區塊＝超過 2 小時沒有進度回報（運算暫停或機器關閉）' : '';
     const xLabel = s => tpe(s);
     $('c-best').innerHTML = ''; $('c-tested').innerHTML = '';
     if (H.length > 1 && window.BN && BN.charts) {
       BN.charts.line($('c-best'), {
-        title: '目前最佳候選的年化報酬率', sub: '每次發現更好的組合就上升；虛線為新策略必須超過的門檻', x, xTicks, xLabel, height: 300,
+        title: '目前最佳候選的年化報酬率', sub: '每次發現更好的組合就上升；虛線為新策略必須超過的門檻' + (gapNote ? '；' + gapNote : ''), x, xPos, xTicksAt, bands, xLabel, height: 300,
         yfmt: v => v.toFixed(1) + '%', tipfmt: v => v.toFixed(2) + '%',
         series: [
           { name: '目前最佳候選', short: '最佳候選', values: H.map(h => h[2] == null ? null : h[2] * 100), color: 'var(--s-fund)', width: 2.5 },
@@ -118,7 +136,7 @@
         ],
       });
       BN.charts.line($('c-tested'), {   // plain numbers on the axis and in the tooltip (user request 2026-11-07)
-        title: '累計已回測的參數組數', x, xTicks, xLabel, height: 240, zero: true, padL: 124,
+        title: '累計已回測的參數組數', sub: gapNote || null, x, xPos, xTicksAt, bands, xLabel, height: 240, zero: true, padL: 124,
         yfmt: v => nf.format(Math.round(v)), tipfmt: v => nf.format(Math.round(v)),
         series: [{ name: '累計已回測', values: H.map(h => h[1]), color: 'var(--s-qld)', fill: true }],
       });
