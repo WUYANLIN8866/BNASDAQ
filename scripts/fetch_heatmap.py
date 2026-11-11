@@ -5,6 +5,8 @@
             0050.json（元大台灣50＝台灣 50；台股另用證交所資料，見下）
             （投資組合透視每天抓的同一份檔；同一家公司的多種股別已合併成一個代號，例如 GOOGL＝Alphabet A＋C）
 市值：Nasdaq 股票篩選器 marketCap（api.nasdaq.com）；同一家公司多種股別時依篩選器數值判斷是公司層級還是個別股別再合併
+      篩選器擋掉雲端主機（2026-11-10 曾回 HTTP 403）或缺某檔時，該檔改用上一份熱力圖的市值 ×（本次收盤 ÷ 上次收盤）換算
+      （股數一天內幾乎不變；分頁記 cap_rolled 檔數與 cap_asof 篩選器市值基準日，頁面標示），熱力圖照樣每天更新
 漲跌：Yahoo Finance 日線，最新「已收盤」交易日收盤 ÷ 前一交易日收盤 − 1（未收盤的當天不算）
 台灣 50：收盤與漲跌用證交所 STOCK_DAY_ALL（漲跌＝相對除權息參考價），市值＝證交所「上市公司基本資料」已發行普通股數 × 收盤（台幣）；
          台股有自己的交易日（sets.tw50.session），與美股分開判斷是否要重抓；台股抓失敗時保留舊的台灣 50 分頁。
@@ -227,6 +229,42 @@ def build_tw(day=None):
 
 
 
+SCREENER = 'https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=25&download=true'
+
+
+def screener_rows():
+    """Nasdaq 篩選器全部股票。403（擋雲端主機）等失敗時隔幾秒再試；3 次都失敗回傳 []（呼叫端改用上一份市值換算）。"""
+    hdr = {'Origin': 'https://www.nasdaq.com', 'Referer': 'https://www.nasdaq.com/'}
+    for k, wait in enumerate((8, 20, 0)):
+        try:
+            rows = (json.loads(get(SCREENER, hdr, timeout=90, tries=2)).get('data') or {}).get('rows') or []
+            if rows:
+                return rows
+            log('Nasdaq 篩選器回傳 0 列（第', k + 1, '次）')
+        except Exception as e:  # noqa
+            log('Nasdaq 篩選器失敗（第', k + 1, '次）', repr(e)[:120])
+        time.sleep(wait)
+    return []
+
+
+def rolled_caps(old):
+    """上一份熱力圖美股分頁 → ({代號: (市值美元, 名稱, 產業, 上次收盤)}, 篩選器市值基準日)。
+    估算的市值、沒有收盤的方塊不用；同一代號出現在多個分頁時取第一個（市值相同）；基準日取各分頁最舊的。"""
+    out, basis = {}, None
+    sets = (old or {}).get('sets') or {}
+    for key, _, _ in SETS:
+        S = sets.get(key) or {}
+        if S.get('market', 'US') != 'US' or not S.get('tiles'):
+            continue
+        b = S.get('cap_asof') or S.get('session') or (old or {}).get('session')
+        basis = min(basis, b) if (basis and b) else (basis or b)
+        for t in S['tiles']:
+            s, name, sec, cap, _, close, est = (list(t) + [None] * 7)[:7]
+            if s and cap and close and not est and s not in out:
+                out[s] = (cap * 1e9, name, '' if sec == '其他' else (sec or ''), close)
+    return out, basis
+
+
 def main():
     sess_bars = yahoo_bars('SPY')
     if len(sess_bars) < 2:
@@ -287,9 +325,8 @@ def main():
         hold[key] = (j.get('asof'), etf, hs)
         log(etf, '成分股', len(hs), '持股日', j.get('asof'), '沒有產業', sum(1 for x in hs if not x[3]))
 
-    # 市值（Nasdaq 篩選器）
-    hdr = {'Origin': 'https://www.nasdaq.com', 'Referer': 'https://www.nasdaq.com/'}
-    rows = ((json.loads(get('https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=25&download=true', hdr, timeout=90)).get('data') or {}).get('rows') or [])
+    # 市值（Nasdaq 篩選器；失敗時 rows＝[]，下面改用上一份熱力圖的市值換算）
+    rows = screener_rows()
     scr = {}
     groups = {}
     for r in rows:
@@ -300,6 +337,17 @@ def main():
             if not re.search(r'Preferred|Depositary|Notes|Warrant|Rights?\b|Units?\b|Debentures', nm, re.I):   # 特別股、票據不算股別
                 groups.setdefault(stem(nm), []).append(s)
     log('Nasdaq 篩選器', len(rows), '列，有市值', len(scr))
+
+    # 篩選器沒有的代號：用上一份熱力圖（美股分頁、非估算、有收盤）的市值，下面再依本次收盤 ÷ 上次收盤換算
+    roll, basis = rolled_caps(old)
+    rolled = set()
+    for s in sorted({s for k in hold for s, *_ in hold[k][2]}):
+        if s not in scr and s in roll:
+            scr[s] = roll[s]; rolled.add(s)
+    if rolled:
+        log('篩選器缺', len(rolled), '檔，改用上一份熱力圖市值換算（基準日', basis, '）')
+    if not scr:
+        log('篩選器與上一份熱力圖都沒有市值，保留舊檔'); return 1
 
     def cap_of(sym):
         if sym not in scr:
@@ -354,6 +402,7 @@ def main():
         ratio.sort()
         mid = ratio[len(ratio) // 2] if ratio else None
         tiles, est, have = [], 0, 0
+        nroll = sum(1 for s, *_ in hs if s in rolled)
         for s, w, name, sec in hs:
             if not sec and s in scr:
                 sec = scr[s][2]
@@ -373,21 +422,24 @@ def main():
             else:
                 tiles.append([s, name, sec, round(c / 1e9, 2), None, None, e])
         cover = have / len(hs) if hs else 0
-        log(label, '方塊', len(tiles), '有漲跌', have, '市值估算', est, '覆蓋率 %.1f%%' % (cover * 100))
+        log(label, '方塊', len(tiles), '有漲跌', have, '市值估算', est, '市值換算', nroll, '覆蓋率 %.1f%%' % (cover * 100))
         if cover < 0.9:
             log(label, '覆蓋率不足 90%，保留舊檔'); return 1
         tiles.sort(key=lambda t: -t[3])
         sets[key] = dict(name=label, etf=etf, holdings_asof=asof, n=len(tiles), cap_total_bn=round(sum(t[3] for t in tiles), 1), tiles=tiles,
-                         session=session, market='US', cur='USD', cap_unit='十億美元')
+                         session=session, market='US', cur='USD', cap_unit='十億美元',
+                         cap_asof=basis if nroll else session, cap_rolled=nroll)
     tw = build_tw(tw_day) if tw_day else None
     if tw:
         sets[TW[0]] = tw
     elif TW[0] in osets:
         sets[TW[0]] = osets[TW[0]]; log('台灣 50 沿用舊分頁', osets[TW[0]].get('session'))
 
+    if rolled:
+        notes.add(f'市值：Nasdaq 篩選器這次沒有 {len(rolled)} 檔的市值，改用 {basis} 的市值依收盤變動換算')
     out = dict(schema='bnasdaq-heatmap/1', session=session, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
                cols=['代號', '名稱', '產業', '市值（十億，幣別見各分頁 cur）', '單日漲跌%', '收盤', '市值為估算'],
-               method='方塊面積＝市值（美股：Nasdaq 篩選器市值依該交易日收盤換算；台股：已發行普通股數×收盤）；顏色＝該交易日收盤相對前一交易日收盤（台股為除權息參考價）的漲跌。',
+               method='方塊面積＝市值（美股：Nasdaq 篩選器市值依該交易日收盤換算；篩選器取不到時用上一份熱力圖的市值依收盤變動換算，分頁 cap_asof＝篩選器市值基準日；台股：已發行普通股數×收盤）；顏色＝該交易日收盤相對前一交易日收盤（台股為除權息參考價）的漲跌。',
                sources=[dict(t='成分股與產業：Invesco QQQ、iShares IVV、Invesco SOXQ（費城半導體）每日持股', u='https://www.ishares.com/us/products/239726/ishares-core-sp-500-etf'),
                         dict(t='市值：Nasdaq 股票篩選器', u='https://www.nasdaq.com/market-activity/stocks/screener'),
                         dict(t='收盤價：Yahoo Finance', u='https://finance.yahoo.com/')],

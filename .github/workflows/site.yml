@@ -32,6 +32,10 @@ jobs:
       - name: Check strategy codes on public pages (generic or outdated names block the deploy)
         run: python3 scripts/strategy_names.py --check
 
+      - name: Check daily market report dates (Taipei date, no overwrite; reported, never blocks the deploy)
+        continue-on-error: true
+        run: python3 scripts/check_daily.py
+
       - name: Install optional data libraries
         run: pip install --quiet yfinance || true
 

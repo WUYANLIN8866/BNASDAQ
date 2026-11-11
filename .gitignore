@@ -1,0 +1,3 @@
+# Python 執行時的暫存檔（排程提交前會檢查 git status，不能多出這些檔）
+__pycache__/
+*.pyc

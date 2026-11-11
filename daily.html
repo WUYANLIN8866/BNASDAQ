@@ -283,10 +283,12 @@ function pieChart(items){ // items: [{p, t}]（p 為百分比，合計 100）→
   return `<div class="pie-wrap"><svg viewBox="0 0 ${2*C} ${2*C}" role="img" aria-label="主因可能性圓餅圖：${esc(items.map(i=>i.t+' '+i.p+'%').join('、'))}">${svg}</svg>`+
     `<ol class="pie-leg">${items.map((it,k)=>`<li><i style="background:${SERIES[k%SERIES.length]}"></i><b>${it.p}%</b><span>${k+1}. ${esc(it.t)}</span></li>`).join('')}</ol></div>`;
 }
+// generated 是 UTC；畫面一律顯示台北時間（固定 UTC+8，台灣沒有夏令時間）
+const tpeTime=g=>{const t=new Date(g);return isNaN(t)?String(g||''):new Date(t.getTime()+8*36e5).toISOString().slice(0,16).replace('T',' ');};
 function render(d){
   const el=document.getElementById('report');
   let h='';
-  h+=`<div class="dl-head"><span class="date">${esc(d.date)}</span><span class="tag">美股 ${esc(d.session)} 收盤</span><span class="tag">台北 ${esc(d.generated.replace('T',' ').slice(0,16))} UTC 產出</span><span id="pick"></span></div>`;
+  h+=`<div class="dl-head"><span class="date">${esc(d.date)}</span><span class="tag">美股 ${esc(d.session)} 收盤</span><span class="tag">台北 ${esc(tpeTime(d.generated))} 產出</span><span id="pick"></span></div>`;
   h+=`<h2 style="margin-top:.4em">${esc(d.headline)}</h2><p class="dl-sum">${esc(d.summary)}</p>`;
   // 1. indices
   h+=`<h2 id="idx">1. 美股主要指數</h2><div class="kv">`;
@@ -375,7 +377,8 @@ function draw(){
   box.innerHTML=html; tip=null;
   const up=S.tiles.filter(t=>t[4]>0).length, dn=S.tiles.filter(t=>t[4]<0).length;
   const mk=(S.market==='TW'?'台股 ':'美股 ')+(S.session||D.session)+' 收盤';
-  $('hm-meta').textContent=mk+'｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+'）、顏色＝單日漲跌';
+  const capNote=S.cap_rolled?'；'+(S.cap_rolled>=S.n?'':S.cap_rolled+' 檔')+'依 '+S.cap_asof+' 市值按收盤換算':'';   // Nasdaq 篩選器取不到市值時（fetch_heatmap.py）
+  $('hm-meta').textContent=mk+'｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+capNote+'）、顏色＝單日漲跌';
   box.setAttribute('aria-label',S.name+'市值熱力圖，'+mk+'：上漲 '+up+' 檔、下跌 '+dn+' 檔');
   $('hm-src').innerHTML='資料：'+(S.sources||D.sources).map(s=>'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.t)+'</a>').join('；')+'。'+
     (S.market==='TW'?'台股漲跌相對證交所除權息參考價；方塊顯示公司簡稱，點方塊看個股分析。':'市值依該日收盤換算；同一家公司多種股別合併為一格（例如 GOOGL＝Alphabet A＋C）。');
