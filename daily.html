@@ -330,9 +330,10 @@ function render(d){
   ycLoad();
 }
 function pickDate(){const q=new URLSearchParams(location.search).get('d');return q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?q:null;}
-fetch('data/daily/index.json',{cache:'no-store'}).then(r=>r.json()).then(idx=>{
+const nc='?t='+Date.now();   // 加時間參數：GitHub Pages 的 CDN 快取最多 10 分鐘，報告一上線就要看得到
+fetch('data/daily/index.json'+nc,{cache:'no-store'}).then(r=>r.json()).then(idx=>{
   const want=pickDate()||idx.latest;
-  return fetch('data/daily/'+want+'.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('no report');return r.json();}).then(d=>{render(d);
+  return fetch('data/daily/'+want+'.json'+nc,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('no report');return r.json();}).then(d=>{render(d);
     if(idx.items&&idx.items.length>1){const sel=document.createElement('select');sel.setAttribute('aria-label','選擇日期');idx.items.forEach(it=>{const o=document.createElement('option');o.value=it.date;o.textContent=it.date+'（美股 '+it.session+'）';if(it.date===want)o.selected=true;sel.appendChild(o);});sel.onchange=()=>{location.search='?d='+sel.value;};document.getElementById('pick').appendChild(sel);}
   });
 }).catch(()=>{document.getElementById('report').innerHTML='<p class="note warn">目前沒有可顯示的市場分析，請稍後再試。</p>';});
