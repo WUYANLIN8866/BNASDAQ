@@ -1,13 +1,14 @@
-/* BNASDAQ｜會員持有資產共用核心：會員專區（assets/mh.js）與每日市場分析「你的資產變化」（assets/mychange.js）共用同一套。
-   加密：每個帳號的金鑰＝SHA-256('bnasdaq-holdings-v1|' + 帳號 + '|' + 會員主金鑰)，AES-GCM；只存在這個瀏覽器（localStorage 'bn-mh-v1:' + 帳號），不上傳。
+/* BNASDAQ｜持有資產共用核心：會員專區（assets/mh.js）、每日市場分析「你的資產變化」（assets/mychange.js）、
+   公開的投資組合透視（assets/lt-ui.js，只用價格部分）共用同一套。
+   加密（只有會員頁用，需要 assets/auth.js）：每個帳號的金鑰＝SHA-256('bnasdaq-holdings-v1|' + 帳號 + '|' + 會員主金鑰)，AES-GCM；只存在這個瀏覽器（localStorage 'bn-mh-v1:' + 帳號），不上傳。
    價格：每一檔取「日期最新」的來源，並記下同一來源的前一個交易日收盤（算每日變化用）——
-     data/lt/px.json（投資組合透視每日價格，只有最新價；Nasdaq 擋線時美股會停在舊日期）
+     data/lt/px.json（投資組合透視每日價格，只有最新價；Nasdaq 擋線時美股會停在舊日期，例如 11/11 起停在 11/06）
      data/tw/latest.json（台股官方收盤，證交所延遲時 Yahoo 補位；美股 Yahoo；只收已收盤的交易日；附漲跌）
      data/heatmap/latest.json（指數成分股收盤＋漲跌%）、data/market.json（QQQ 本月每日收盤）
    「不列入計算」的列（row.off）在 rows() 會換成空白列：引擎略過它，列號不變。計算交給 assets/lt-engine.js（股數模式）。 */
 (function () {
   'use strict';
-  if (!window.BN || !BN.auth || !BN.lt) return;
+  if (!window.BN || !BN.lt) return;   // BN.auth 只有加密函式用到（會員頁才載入）
   const LT = BN.lt, C = {}, enc = new TextEncoder(), dec = new TextDecoder();
   C.store = user => 'bn-mh-v1:' + user;
   C.ukey = async sess => {
@@ -32,7 +33,8 @@
     if (!UNI) throw new Error('證券總表讀取失敗');
     const U = new Map(), A = (P && P.asof) || {}, PX = (P && P.px) || {};
     UNI.list.forEach(x => U.set(x[0], { code: x[0], n: x[1], m: x[2], k: x[3], s: x[4], lt: x[5], p: PX[x[0]] || null,
-      d: x[2] === 'US' ? (x[3] === 'E' ? String(A.USETF || A.US || '').slice(0, 10) : (A.US || '')) : (A[x[2]] || ''), pp: null, src: '投資組合透視價格檔', pr: 0 }));
+      d: x[2] === 'US' ? (x[3] === 'E' ? String(A.USETF || A.US || '').slice(0, 10) : (A.US || '')) : (A[x[2]] || ''), pp: null,
+      src: x[2] === 'US' ? 'Nasdaq 篩選器快照價' : '證交所／櫃買中心收盤', pr: 0 }));
     // 日期較新才換；同一天時換成可信度較高的來源（熱力圖、QQQ 檔是收盤後才抓的正式收盤 > 最新收盤檔 > 價格檔）
     const take = (code, d, p, pp, src, pr) => {
       const u = U.get(code); if (!u || !(p > 0) || !d) return;
@@ -47,7 +49,7 @@
     const fp = (P && P.fx) || {}, fl = (L && L.fx) || {};
     const FX = (fl.date || '') >= (fp.date || '') && fl.rate ? { rate: fl.rate, date: fl.date, prev: fl.chg != null ? fl.rate - fl.chg : null, src: fl.source || 'Yahoo' }
       : { rate: fp.USDTWD, date: fp.date, prev: null, src: fp.source || '' };
-    D = { U, ALIAS: UNI.alias || {}, FX, E: new Map(), VER: (P && P.updated) || '' };
+    D = { U, ALIAS: UNI.alias || {}, FX, E: new Map(), VER: (P && P.updated) || '', UNI, PX: P || {} };
     return D;
   };
   C.etf = async function etf(code, depth) {

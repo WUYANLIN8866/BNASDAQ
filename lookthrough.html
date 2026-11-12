@@ -95,17 +95,17 @@ td.neg,.neg{color:var(--bad)}
     <li>成分股每月更新一次（發行商公布的最新持股；Vanguard 為月底資料），價格與匯率每個交易日更新；每檔的資料日期列在「資料日期與來源」。</li>
     <li>只用發行商與交易所的官方公開資料；抓不到成分股的 ETF 會標「暫不支援拆解」並以整檔列出，不會用猜的。</li>
     <li>只把股票（含不動產投資信託、存託憑證）算成公司持股；現金、債券、期貨、選擇權、股票連結票據（例如 JEPI 的 ELN）都計入「非股票資產」。ETF 內的指數期貨多單屬指數曝險，未拆成個股，會在「資料日期與來源」註明比例。</li><li>發行商沒有提供持股檔的債券型、商品型 ETF，依名稱或代號（台股代號結尾 B、U）判定為不持有股票。</li>
-    <li>股數模式的價格：台股用證交所／櫃買中心最近一次收盤價；美股用 Nasdaq 篩選器的快照價（接近收盤，不一定是正式收盤價）。都不是即時價，可在「價格」欄手動修改。</li>
+    <li>股數模式的價格：每一檔取日期最新的收盤——台股用證交所／櫃買中心收盤價；美股用 Yahoo 收盤（美股收盤後才收），沒有的才用 Nasdaq 篩選器的快照價（接近收盤，不一定是正式收盤價）。每一檔旁邊會標價格日期；都不是即時價，可在「價格」欄手動修改。</li>
     <li>本工具僅供了解持股組成，不構成投資建議。</li>
   </ul>
 </div>
 <aside>
   <div class="side toc"><h3>本頁內容</h3><ul><li><a href="#sum">拆解結果</a></li><li><a href="#mix">資產全貌（3D 圓餅）</a></li><li><a href="#top">主要公司與產業</a></li><li><a href="#detail">完整明細</a></li><li><a href="#ov">ETF 重疊度</a></li><li><a href="#src">資料日期與來源</a></li><li><a href="#how">計算方式與限制</a></li></ul></div>
-  <div class="side"><h3>資料來源（官方）</h3><ul><li>美股 ETF 成分股：State Street SPDR、iShares、Vanguard、Invesco、VanEck、ARK、J.P. Morgan（JEPI、JEPQ）官網持股檔</li><li>台股 ETF 成分股：元大、永豐、復華、群益、統一投信官網；國泰投信以其公布的標的指數權重近似</li><li>價格：證交所、櫃買中心收盤價；美股為 Nasdaq 篩選器快照價；匯率：Yahoo TWD=X</li></ul></div>
+  <div class="side"><h3>資料來源（官方）</h3><ul><li>美股 ETF 成分股：State Street SPDR、iShares、Vanguard、Invesco、VanEck、ARK、J.P. Morgan（JEPI、JEPQ）官網持股檔</li><li>台股 ETF 成分股：元大、永豐、復華、群益、統一投信官網；國泰投信以其公布的標的指數權重近似</li><li>價格：證交所、櫃買中心收盤價；美股為 Yahoo 收盤，沒有時用 Nasdaq 篩選器快照價；匯率：Yahoo TWD=X</li></ul></div>
   <div class="side"><h3>相關頁面</h3><ul><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div>
 </aside>
 </div></div></div>
-<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/charts.js?v=43696f0c67"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/pie3d.js?v=430f9034ae"></script><script src="assets/lt-ui.js?v=8e5db181a4"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/charts.js?v=43696f0c67"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/mh-core.js?v=eda481698d"></script><script src="assets/pie3d.js?v=430f9034ae"></script><script src="assets/lt-ui.js?v=45b5673433"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">

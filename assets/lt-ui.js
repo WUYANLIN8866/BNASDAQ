@@ -26,13 +26,19 @@
   // ---------------- 資料 ----------------
   async function loadUniverse() {
     if (U) return;
-    const r = await fetch('data/lt/universe.json', { cache: 'no-cache' });
-    if (!r.ok) throw new Error('證券總表讀取失敗（' + r.status + '）');
-    UNI = await r.json();
-    const q = await fetch('data/lt/px.json', { cache: 'no-cache' }); const P = q.ok ? await q.json() : { px: {} };
-    VER = P.updated || ''; UNI.asof = P.asof || {}; UNI.fx = P.fx || {};
-    U = new Map(); ALIAS = UNI.alias || {}; FX = UNI.fx && UNI.fx.USDTWD;
-    UNI.list.forEach(x => U.set(x[0], { n: x[1], m: x[2], k: x[3], s: x[4], lt: x[5], p: (P.px || {})[x[0]] || null }));
+    if (BN.mh) {   // 價格：每一檔取「日期最新」的來源（和會員專區、每日市場分析同一套，見 assets/mh-core.js）；Nasdaq 擋線時美股不會停在舊日期
+      const D = await BN.mh.data();
+      UNI = D.UNI; VER = D.VER; UNI.asof = D.PX.asof || {}; UNI.fx = { USDTWD: D.FX.rate, date: D.FX.date, source: D.FX.src };
+      U = D.U; ALIAS = D.ALIAS; FX = D.FX.rate; UNI.merged = true;
+    } else {
+      const r = await fetch('data/lt/universe.json', { cache: 'no-cache' });
+      if (!r.ok) throw new Error('證券總表讀取失敗（' + r.status + '）');
+      UNI = await r.json();
+      const q = await fetch('data/lt/px.json', { cache: 'no-cache' }); const P = q.ok ? await q.json() : { px: {} };
+      VER = P.updated || ''; UNI.asof = P.asof || {}; UNI.fx = P.fx || {};
+      U = new Map(); ALIAS = UNI.alias || {}; FX = UNI.fx && UNI.fx.USDTWD;
+      UNI.list.forEach(x => U.set(x[0], { n: x[1], m: x[2], k: x[3], s: x[4], lt: x[5], p: (P.px || {})[x[0]] || null }));
+    }
     try { const m = await fetch('data/lt/meta.json?d=' + encodeURIComponent(VER)); if (m.ok) META = await m.json(); } catch (e) { META = null; }
   }
   async function loadETF(code, depth) {
@@ -106,7 +112,7 @@
       cell.innerHTML = '<b>' + esc(u.n) + '</b> <small>' + esc(how) + '</small> <span class="lt-tag ok">現金</span>'; return;
     }
     const tag = u.k === 'E' ? (u.lt ? '<span class="lt-tag ok">可拆解</span>' : '<span class="lt-tag">暫不支援拆解</span>') : '<span class="lt-tag">個股</span>';
-    const px = u.p ? (u.m === 'US' ? '快照價 ' : '收盤 ') + nf(u.p, u.p < 10 ? 3 : 2) + (u.m === 'US' ? ' 美元' : ' 元') : '無價格';
+    const px = u.p ? (u.m === 'US' && !u.pr ? '快照價 ' : '收盤 ') + nf(u.p, u.p < 10 ? 3 : 2) + (u.m === 'US' ? ' 美元' : ' 元') + (u.d ? '（' + u.d + '）' : '') : '無價格';
     cell.innerHTML = '<b>' + esc(u.n) + '</b> <small>' + esc((MK[u.m] || u.m) + (u.k === 'E' ? ' ETF' : '') + '｜' + px) + '</small> ' + tag;
   }
 
@@ -207,9 +213,14 @@
   }
   function sources(r) {
     const how = a => a.status === 'cash' ? '現金（不拆解）' : a.status === 'stock' ? '個股本身' : a.status === 'none' ? '暫不支援拆解（以整檔列出）' : a.status === 'nonEq' ? '非股票（債券／現金）' : a.base ? '以 ' + a.base + ' 成分股 × ' + a.lev + ' 推算' : '發行商公布的成分股';
-    const etfs = r.assets.map(a => { const d = E.get(a.code); return '<tr><td class="l">' + esc(a.code) + '</td><td class="l">' + esc(a.name) + '</td><td>' + pct(a.w, 2) + '</td><td class="l">' + esc(how(a)) + '</td><td class="l">' + esc(a.asof || (d && d.asof) || '—') + '</td><td class="l small">' + esc((d && (d.note || d.src)) || (a.status === 'cash' ? '自行輸入' + (a.fx && a.fx !== 1 ? '；美元 × ' + nf(a.fx, 3) + ' 換算成台幣' : '') : a.status === 'stock' ? (a.market === 'US' ? 'Nasdaq 篩選器快照價' : '證交所／櫃買中心收盤價') : '—')) + '</td></tr>'; }).join('');
+    const etfs = r.assets.map(a => { const d = E.get(a.code); return '<tr><td class="l">' + esc(a.code) + '</td><td class="l">' + esc(a.name) + '</td><td>' + pct(a.w, 2) + '</td><td class="l">' + esc(how(a)) + '</td><td class="l">' + esc(a.asof || (d && d.asof) || '—') + '</td><td class="l small">' + esc((d && (d.note || d.src)) || (a.status === 'cash' ? '自行輸入' + (a.fx && a.fx !== 1 ? '；美元 × ' + nf(a.fx, 3) + ' 換算成台幣' : '') : a.status === 'stock' ? ((U.get(a.code) || {}).src || (a.market === 'US' ? 'Nasdaq 篩選器快照價' : '證交所／櫃買中心收盤價')) : '—')) + '</td></tr>'; }).join('');
+    // 這次用到的價格日期（每一檔取日期最新的來源，同一市場可能不只一個日期）
+    const used = {}; r.assets.forEach(a => { const u = U.get(a.code); if (!u || u.k === 'C' || !u.d || !u.p) return; const m = MK[u.m] || u.m; (used[m] = used[m] || new Set()).add(u.d); });
+    const usedTxt = Object.entries(used).map(([m, set]) => m + ' ' + [...set].sort().reverse().join('／')).join('、');
     $('ltSrc').innerHTML = '<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">名稱</th><th>資產占比</th><th class="l">拆解方式</th><th class="l">成分股資料日</th><th class="l">來源</th></tr></thead><tbody>' + etfs + '</tbody></table></div>' +
-      '<p class="small">價格日期：台股上市 ' + esc((UNI.asof || {}).TW || '—') + '、上櫃 ' + esc((UNI.asof || {}).TWO || '—') + '（證交所／櫃買中心收盤價）；美股 ' + esc((UNI.asof || {}).US || '—') + '（Nasdaq 篩選器快照價' + ((UNI.asof || {}).USETF ? '，ETF 為美東時間 ' + esc(UNI.asof.USETF) : '') + '；接近收盤，不一定是正式收盤價）；美元兌台幣 ' + (FX ? nf(FX, 3) : '—') + '（' + esc((UNI.fx || {}).date || '') + '）。資料更新：' + esc(VER) + '。</p>';
+      (UNI.merged ? '<p class="small">價格：每一檔取日期最新的收盤（台股：證交所／櫃買中心；美股：Yahoo 收盤，沒有時用 Nasdaq 篩選器快照價）' + (usedTxt ? '；這次用到的價格日期：' + esc(usedTxt) : '') +
+        '；美元兌台幣 ' + (FX ? nf(FX, 3) : '—') + '（' + esc((UNI.fx || {}).date || '') + '）。資料更新：' + esc(VER) + '。</p>' :
+      '<p class="small">價格日期：台股上市 ' + esc((UNI.asof || {}).TW || '—') + '、上櫃 ' + esc((UNI.asof || {}).TWO || '—') + '（證交所／櫃買中心收盤價）；美股 ' + esc((UNI.asof || {}).US || '—') + '（Nasdaq 篩選器快照價' + ((UNI.asof || {}).USETF ? '，ETF 為美東時間 ' + esc(UNI.asof.USETF) : '') + '；接近收盤，不一定是正式收盤價）；美元兌台幣 ' + (FX ? nf(FX, 3) : '—') + '（' + esc((UNI.fx || {}).date || '') + '）。資料更新：' + esc(VER) + '。</p>');
   }
   function csv() {
     if (!last) return;
