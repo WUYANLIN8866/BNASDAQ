@@ -85,11 +85,14 @@
     return fig;
   }
   // 分類圓餅：前 max 名個別列出、其餘併成「其他」，顏色依上方規則自動配
+  const SLOTS = n => n === 7 ? [1, 2, 3, 4, 5, 7, 8] : Array.from({ length: n }, (_, i) => i + 1);
+  const pick = (items, max) => { const all = (items || []).filter(x => x.w > 0), main = all.filter(x => !x.other).sort((p, q) => q.w - p.w);
+    return { keep: main.slice(0, max), rest: main.slice(max).concat(all.filter(x => x.other)) }; };
+  // 同一組 items 在 cat() 裡會拿到的顏色（代號 → 顏色）：別張圖要讓同一家公司同色時用
+  pie3d.colorsFor = (items, max) => { const { keep } = pick(items, max || 8), s = SLOTS(keep.length); return new Map(keep.map((x, i) => [x.key, 'var(--pc-' + s[i] + ')'])); };
   function cat(host, o) {
-    const max = o.max || 8, items = (o.items || []).filter(x => x.w > 0);
-    const main = items.filter(x => !x.other).sort((p, q) => q.w - p.w);
-    const keep = main.slice(0, max), rest = main.slice(max).concat(items.filter(x => x.other));
-    const n = keep.length, slots = n === 7 ? [1, 2, 3, 4, 5, 7, 8] : keep.map((_, i) => i + 1);
+    const max = o.max || 8, { keep, rest } = pick(o.items, max);
+    const slots = SLOTS(keep.length);
     const slices = keep.map((x, i) => ({ key: x.key, name: x.name, w: x.w, d: x.d || {}, tag: x.tag, color: 'var(--pc-' + slots[i] + ')' }));
     if (rest.length) {
       const d = {};

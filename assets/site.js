@@ -37,10 +37,10 @@
     const b = $('.nav .burger'), uls = $$('.nav ul');
     if (b && uls.length) b.addEventListener('click', () => { const o = !uls[0].classList.contains('open'); uls.forEach(u => u.classList.toggle('open', o)); b.setAttribute('aria-expanded', o ? 'true' : 'false'); });
     const here = location.pathname.split('/').pop() || 'index.html';
-    // 登入後：在「關於 BNASDAQ」前加入「會員專區」
+    // 登入後：「會員專區」放在頁首 BNASDAQ 字樣旁（頁首中間那一欄；2026-11-12 從導覽列移過來）
     try {
-      const ss = JSON.parse(sessionStorage.getItem('bn-session') || 'null'), ab = $('#mainmenu a[href="about.html"]');
-      if (ss && ss.user && ab && !$('#mainmenu a.mlink')) { const li = document.createElement('li'); li.innerHTML = '<a class="mlink" href="member.html">會員專區</a>'; ab.parentNode.parentNode.insertBefore(li, ab.parentNode); }
+      const ss = JSON.parse(sessionStorage.getItem('bn-session') || 'null'), slot = $('.brand .wrap > .mark + div');
+      if (ss && ss.user && slot && !slot.querySelector('.mlink')) slot.innerHTML = '<a class="mlink" href="member.html"' + (here === 'member.html' ? ' aria-current="page"' : '') + '>會員專區</a>';
     } catch (e) { }
     $$('.nav a').forEach(a => { const h = a.getAttribute('href'); if (h === here || (here === '' && h === 'index.html')) a.setAttribute('aria-current', 'page'); });
     // theme label

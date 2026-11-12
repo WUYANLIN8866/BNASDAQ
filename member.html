@@ -8,7 +8,7 @@
 <meta name="description" content="BNASDAQ 會員專區。">
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=2112a8e937">
+<link rel="stylesheet" href="assets/site.css?v=456c56d75e">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 .pbar{display:flex;height:22px;border:1px solid var(--line);margin:8px 0 6px;overflow:hidden;background:var(--band-1,transparent)}
@@ -22,6 +22,16 @@
 .mh-in .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.mh-in .actions .btn{padding:7px 14px;font-size:13.5px}
 .mh-kv{margin-top:6px}
 .mh-two{display:grid;grid-template-columns:1fr 1fr;gap:12px 36px}
+.mh-fold>summary{border:1px solid var(--line);background:var(--band);margin:0 0 12px;padding:12px 16px}
+.mh-fold>summary:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px}
+.mh-in .tog{position:relative;display:inline-flex;align-items:center;cursor:pointer}
+.mh-in .tog input{position:absolute;opacity:0;width:1px;height:1px}
+.mh-in .tog .tr{position:relative;width:38px;height:22px;border-radius:11px;background:var(--line);border:1px solid var(--line-2);transition:background .15s}
+.mh-in .tog .tr::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--paper);box-shadow:0 0 0 1px var(--line);transition:transform .15s}
+.mh-in .tog input:checked+.tr{background:var(--gold-hi);border-color:var(--gold-hi)}
+.mh-in .tog input:checked+.tr::after{transform:translateX(16px)}
+.mh-in .tog input:focus-visible+.tr{outline:2px solid var(--gold-hi);outline-offset:2px}
+.mh-in tr.off td:not(.c){opacity:.45}
 @media (max-width:760px){.mh-two{grid-template-columns:1fr}.mh-in .tbl td.info{min-width:140px}}
 
 </style>
@@ -41,26 +51,25 @@
 <div>
   <div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>歡迎，<b id="who">—</b></div><div class="actions"><a class="btn line" id="adminlink" href="admin.html" hidden>管理後台</a><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div><p class="small" id="status" style="margin:10px 0 0">載入市場資料…</p></div>
   <p class="msg err" id="stale" hidden></p>
-  <h2 id="hold" style="margin-top:0">目前持有</h2>
-  <div class="tblwrap"><table class="tbl" id="nowtbl"><thead><tr><th class="l">策略</th><th class="l" id="nowhd">本月持有</th><th class="l" id="prevhd">上月持有</th><th class="l">本月動作</th></tr></thead><tbody id="nowbody"><tr><td colspan="4">解密規則並計算中…</td></tr></tbody></table></div>
-  <h2 id="prob">下個月持有哪些資產？機率多少</h2>
-  <p class="small" id="prob-head">計算中…</p>
-  <div class="strat" id="cards"></div>
-  <h2 id="mine">我的持有資產</h2>
+  <h2 id="mine" style="margin-top:0">會員持有資產</h2>
+  <details class="mh-fold" id="mh-fold" open><summary><span><b>持有輸入表</b><span class="small" id="mh-sum"></span> <span class="small muted mh-hint">（點這裡收起／展開）</span></span></summary>
   <p class="small">輸入你目前持有的台美股、ETF 與現金，下方會即時做客製化分析。資料只存在這個瀏覽器，用你的會員金鑰加密，不會上傳；換手機或電腦請用「匯出備份／匯入備份」。</p>
   <div class="panel mh-in" id="mh">
-    <div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">股數（現金填金額）</th><th class="l">平均成本（選填）</th><th class="l">名稱與價格</th><th></th></tr></thead><tbody id="mh-rows"></tbody></table></div>
+    <div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">股數（現金填金額）</th><th class="l">平均成本（選填）</th><th class="l">名稱與價格</th><th class="c">不列入計算</th><th></th></tr></thead><tbody id="mh-rows"></tbody></table></div>
     <datalist id="mh-list"></datalist>
     <div class="actions"><button type="button" class="btn line" id="mh-add">新增一列</button><button type="button" class="btn line" id="mh-export">匯出備份</button><label class="btn line" for="mh-import">匯入備份</label><input type="file" id="mh-import" accept=".json,application/json" hidden><button type="button" class="btn line" id="mh-clear">清空</button></div>
     <p class="small" id="mh-saved" style="margin:8px 0 0"></p>
   </div>
+  </details>
   <div id="mh-out"></div>
-  <h2 id="sched">判斷與執行時程</h2>
-  <ul id="sched-list" class="small"></ul>
-  <div class="note"><p>持有資產依專案規則，由 AI 模型找出的交易規則計算；本頁僅顯示結果，不顯示規則。歷史回測並非保證報酬，請自行評估風險。</p></div>
+  <h2 id="hold">當前策略持有狀態</h2>
+  <div class="tblwrap"><table class="tbl" id="nowtbl"><thead><tr><th class="l">策略</th><th class="l" id="nowhd">本月持有</th><th class="l" id="prevhd">上月持有</th><th class="l">本月動作</th></tr></thead><tbody id="nowbody"><tr><td colspan="4">解密規則並計算中…</td></tr></tbody></table></div>
+  <h2 id="prob">下月持有資產＆機率</h2>
+  <p class="small" id="prob-head">計算中…</p>
+  <div class="strat" id="cards"></div>
 </div>
 </div></div></div>
-<script src="assets/site.js?v=62df238a20"></script><script src="assets/auth.js?v=d4c04c5c73"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=d4c04c5c73"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
 <script>
 (async function(){
   const sess=BN.auth.require(); if(!sess) return;
@@ -71,7 +80,7 @@
   const cls=w=>w>=1?'qld':w<=0?'shv':'half', pc=x=>(x*100).toFixed(1)+'%';
   // 規則和策略區不一致時（策略區剛更新、規則還在同步、模型到期），只顯示提示、不顯示任何持有結果，避免照舊規則操作
   const pending=(why,tail=true)=>{const t=why+(tail?'完成前不顯示持有結果，以免照舊規則操作；完成後本頁會自動顯示。':'');$('#stale').textContent=t;$('#stale').hidden=false;
-    $('#nowbody').innerHTML='<tr><td colspan="4">'+esc(t)+'</td></tr>';$('#cards').innerHTML='';$('#prob-head').textContent='—';$('#sched-list').innerHTML='';};
+    $('#nowbody').innerHTML='<tr><td colspan="4">'+esc(t)+'</td></tr>';$('#cards').innerHTML='';$('#prob-head').textContent='—';};
   try{
     const [rules,market,tb,rs]=await Promise.all([BN.auth.loadRules(sess).catch(e=>({err:e})),get('data/market.json'),get('data/tb3ms.json').catch(()=>null),get('data/rules-status.json').catch(()=>null)]);
     if(rules.err) return rules.err.name==='OperationError'?pending('會員規則暫時無法解密（多半是剛更換金鑰），正在用新金鑰重新發布。'):pending('會員規則載入失敗（'+(rules.err.message||rules.err)+'），請稍後重新整理。',false);
@@ -113,11 +122,10 @@
     }
     window.BN.memberTargets={month:holdM,list:rules.STRATEGIES.map(st=>({id:st.id,w:L.lastComplete.w[st.id],text:T(L.lastComplete.w[st.id])}))};
     document.dispatchEvent(new CustomEvent('bn:targets',{detail:window.BN.memberTargets}));
-    $('#sched-list').innerHTML='<li>正式判斷：<b>'+esc(c.m)+' 最後一個交易日收盤後</b>（美東時間），用當月收盤重新判斷。</li><li>執行：下一個交易日<b>開盤</b>調整到目標比例（台北時間約 21:30 夏令／22:30 冬令）。</li><li>機率與「用最新收盤推算」會隨每天收盤更新，月底那天收盤後就變成正式結果。</li>';
   }catch(err){$('#nowbody').innerHTML='<tr><td colspan="4"><span class="msg err">載入失敗：'+esc(err.message||err)+'</span></td></tr>';$('#cards').innerHTML='';$('#prob-head').textContent='';}
 })();
 </script>
-<script src="assets/pie3d.js?v=694c6d663f"></script><script src="assets/mh.js?v=7d9384aaa4"></script>
+<script src="assets/mh-core.js?v=d8d1283337"></script><script src="assets/pie3d.js?v=430f9034ae"></script><script src="assets/mh.js?v=97113b7710"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">

@@ -103,53 +103,82 @@ def fetch_tpex():
     return date, items
 
 
-def _yahoo_chart_last(sym, rng='5d'):
+from zoneinfo import ZoneInfo
+# 只用「已收盤」的交易日：今天的 K 棒要到收盤後才算數（美股 16:10 美東、台股 14:30 台北）。
+# 2026-11-12 發現：排程常延到台北晚上 11 點才跑，那時美股盤中，最後一根 K 棒是盤中價，卻被當成當天收盤寫進來。
+DONE = {'US': (ZoneInfo('America/New_York'), dt.time(16, 10)), 'TW': (ZoneInfo('Asia/Taipei'), dt.time(14, 30))}
+
+
+def _closed(ts, cl, mkt, now=None):
+    """Yahoo 的 (時間戳, 收盤) → [(日期, 收盤)]，只留已收盤的交易日；mkt=None 不篩（匯率）。"""
+    tz, done = DONE[mkt] if mkt else (ZoneInfo('Asia/Taipei'), None)
+    now = (now or dt.datetime.now(dt.timezone.utc)).astimezone(tz)
+    by = {}
+    for t, c in zip(ts or [], cl or []):
+        if c is None:
+            continue
+        d = dt.datetime.fromtimestamp(t, tz).date()
+        if done and (d > now.date() or (d == now.date() and now.time() < done)):
+            continue
+        by[d.isoformat()] = float(c)   # 同一天多筆取最後一筆
+    return sorted(by.items())
+
+
+def _last(pairs):
+    """[(日期, 收盤)] → (日期, 收盤, 漲跌)"""
+    (d, c), prev = pairs[-1], (pairs[-2][1] if len(pairs) > 1 else None)
+    return d, c, (round(c - prev, 4) if prev is not None else None)
+
+
+def _yahoo_chart_last(sym, rng='5d', mkt='US'):
     j = _get_json(f'https://query2.finance.yahoo.com/v8/finance/chart/{urllib.request.quote(sym)}?range={rng}&interval=1d')
     res = j['chart']['result'][0]
-    ts = res.get('timestamp') or []; cl = res['indicators']['quote'][0]['close']
-    pairs = [(t, c) for t, c in zip(ts, cl) if c is not None]
+    pairs = _closed(res.get('timestamp'), res['indicators']['quote'][0]['close'], mkt)
     if not pairs:
         raise RuntimeError('no closes')
-    t, c = pairs[-1]; prev = pairs[-2][1] if len(pairs) > 1 else None
-    d = dt.datetime.fromtimestamp(t, tz=dt.timezone(dt.timedelta(hours=-4))).date().isoformat()
-    return d, float(c), (round(float(c) - prev, 4) if prev is not None else None)
+    return _last(pairs)
 
 
-def fetch_us(codes, sleep=0.25):
-    """美股最新收盤：先用 spark 批次（每批 20），失敗的用單檔 chart。回傳 (date, items)"""
+def _yahoo_batch(codes, mkt, suffix='', sleep=0.25):
+    """Yahoo 最新收盤（只取已收盤）：先 spark 批次（每批 20），失敗的用單檔 chart。回傳 (最新日期, {代號: (日期, 收盤, 漲跌)})"""
     import time
-    items, date = {}, ''
-    todo = list(codes)
+    out, todo = {}, list(codes)
     for i in range(0, len(todo), 20):
         batch = todo[i:i + 20]
         try:
-            j = _get_json('https://query1.finance.yahoo.com/v7/finance/spark?symbols=' + ','.join(urllib.request.quote(c) for c in batch) + '&range=5d&interval=1d')
+            j = _get_json('https://query1.finance.yahoo.com/v7/finance/spark?symbols=' + ','.join(urllib.request.quote(c + suffix) for c in batch) + '&range=5d&interval=1d')
             for r in (j.get('spark', {}).get('result') or []):
-                sym = r.get('symbol'); resp = (r.get('response') or [{}])[0]
-                ts = resp.get('timestamp') or []; cl = (resp.get('indicators', {}).get('quote') or [{}])[0].get('close') or []
-                pairs = [(t, c) for t, c in zip(ts, cl) if c is not None]
-                if not sym or not pairs:
-                    continue
-                t, c = pairs[-1]; prev = pairs[-2][1] if len(pairs) > 1 else None
-                d = dt.datetime.fromtimestamp(t, tz=dt.timezone(dt.timedelta(hours=-4))).date().isoformat()
-                items[sym] = [float(c), (round(float(c) - prev, 4) if prev is not None else None), '', 'US']
-                date = max(date, d)
+                sym = str(r.get('symbol') or ''); resp = (r.get('response') or [{}])[0]
+                pairs = _closed(resp.get('timestamp'), (resp.get('indicators', {}).get('quote') or [{}])[0].get('close'), mkt)
+                if sym and pairs:
+                    out[sym[:-len(suffix)] if suffix and sym.endswith(suffix) else sym] = _last(pairs)
         except Exception as e:  # noqa
             log('spark batch failed:', repr(e)[:120])
         time.sleep(sleep)
-    missing = [c for c in todo if c not in items]
-    for c in missing[:400]:
+    for c in [c for c in todo if c not in out][:400]:
         try:
-            d, close, chg = _yahoo_chart_last(c); items[c] = [close, chg, '', 'US']; date = max(date, d)
+            out[c] = _yahoo_chart_last(c + suffix, mkt=mkt)
         except Exception as e:  # noqa
-            log('us', c, 'failed:', repr(e)[:100])
+            log(mkt, c, 'failed:', repr(e)[:100])
         time.sleep(sleep)
-    return date, items
+    return max((v[0] for v in out.values()), default=''), out
+
+
+def fetch_us(codes, sleep=0.25):
+    """美股最新收盤（已收盤的交易日）。回傳 (date, items)；只收最新日期那天的代號（停牌或資料落後的不混進來）"""
+    date, got = _yahoo_batch(codes, 'US', sleep=sleep)
+    return date, {c: [v[1], v[2], '', 'US'] for c, v in got.items() if v[0] == date}
+
+
+def fetch_tw_yahoo(codes, sleep=0.25):
+    """上市證券的 Yahoo 收盤（代號.TW）：證交所兩個來源都還沒有當天資料時的備援。"""
+    date, got = _yahoo_batch(codes, 'TW', suffix='.TW', sleep=sleep)
+    return date, {c: v for c, v in got.items() if v[0] == date}
 
 
 def fetch_fx():
-    d, close, chg = _yahoo_chart_last('TWD=X')
-    return dict(rate=close, date=d, source='Yahoo TWD=X')
+    d, close, chg = _yahoo_chart_last('TWD=X', mkt=None)
+    return dict(rate=close, date=d, chg=chg, source='Yahoo TWD=X')   # chg＝和前一天的匯率差（美元資產的台幣每日變化用）
 
 
 def build_fx_monthly():
@@ -236,6 +265,23 @@ def main():
             if old and old.get('asof', {}).get(name):
                 asof[name] = old['asof'][name]
                 items.update({k: v for k, v in old.get('items', {}).items() if (v[3] if len(v) > 3 else None) == name})
+    # 上市備援：證交所網站版擋雲端主機（回傳非 JSON）時只剩 OpenAPI，而 OpenAPI 要到隔天才有當天收盤，
+    # 上市日期會比上櫃晚一天 → 改用 Yahoo（代號.TW）同一天的收盤，九成以上有資料才採用，並在 source／notes 標明
+    src_tw = '證交所 STOCK_DAY_ALL（上市）'
+    tw_codes = [k for k, v in items.items() if (v[3] if len(v) > 3 else '') == 'TW']
+    target = asof.get('TWO') or ''
+    if tw_codes and target and (asof.get('TW') or '') < target:
+        try:
+            yd, got = fetch_tw_yahoo(tw_codes)
+            if yd == target and len(got) >= 0.9 * len(tw_codes):
+                for c, (d, close, chg) in got.items():
+                    items[c] = [close, chg, items[c][2], 'TW']
+                RWD_NOTE.append('上市：證交所 %s 尚未更新到 %s，改用 Yahoo（.TW）收盤 %d／%d 檔' % (asof.get('TW') or '—', yd, len(got), len(tw_codes)))
+                log('TW via Yahoo', yd, len(got), 'of', len(tw_codes)); asof['TW'] = yd; src_tw = '證交所 STOCK_DAY_ALL＋Yahoo Finance（上市，證交所延遲時）'
+            else:
+                log('TW Yahoo not used:', yd, len(got), 'of', len(tw_codes), 'target', target)
+        except Exception as e:  # noqa
+            log('TW Yahoo failed:', repr(e)[:160])
     # 美股 + 匯率
     try:
         us_codes = [r[0] for r in (json.load(open(os.path.join(ROOT, 'data', 'tw', 'index.json'), encoding='utf-8')).get('list') or []) if r[2] == 'US']
@@ -265,7 +311,7 @@ def main():
     if old and old.get('asof') and set(asof) == set(old['asof']) and all(asof.get(k, '') <= old['asof'].get(k, '') for k in asof) and old.get('items'):
         log('no newer date than existing', old['asof'], '; not rewriting'); return 0
     out = dict(schema='bnasdaq-tw-latest/1', asof=asof, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               source='證交所 STOCK_DAY_ALL（上市）、櫃買中心 OpenAPI（上櫃）、Yahoo Finance（美股、匯率）', errors=errors, notes=RWD_NOTE, fx=fx, items=items)
+               source=src_tw + '、櫃買中心 OpenAPI（上櫃）、Yahoo Finance（美股、匯率；只用已收盤的交易日）', errors=errors, notes=RWD_NOTE, fx=fx, items=items)
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     log('written', OUT, asof, len(items), 'items')
     return 0

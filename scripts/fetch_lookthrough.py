@@ -193,27 +193,53 @@ def build_universe():
         if code not in U and len(v) >= 4 and v[3] in ('TW', 'TWO'):
             U[code] = [code, v[2] or code, v[3], 'E' if code.startswith('00') else 'S', v[0], '']
     hdr = {'Accept': 'application/json, text/plain, */*', 'Origin': 'https://www.nasdaq.com', 'Referer': 'https://www.nasdaq.com/'}
-    st = json.loads(get('https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=25&download=true', hdr))
-    rows = (st.get('data') or {}).get('rows') or []
-    for r in rows:
-        c = norm_us(r.get('symbol'))
-        if not re.match(r'^[A-Z][A-Z0-9-]{0,7}$', c):
-            continue
-        U[c] = [c, clean_name(r.get('name')), 'US', 'S', num(r.get('lastsale')), fund_sector(c, 'US') or sector_zh(r.get('sector'))]
-    us_asof = ''   # 篩選器價格是 Nasdaq 的快照（不一定是正式收盤價），日期以 Nasdaq 自己標示的為準
+    # Nasdaq 篩選器擋掉雲端主機（2026-11-11 起回 HTTP 403）時，美股清單與價格沿用上一份 universe.json／px.json（日期也沿用，不冒充新資料），
+    # 台股價格與 ETF 成分股照常更新——以前這裡一失敗整支停掉，連台股價格都停在舊的那天。頁面另外會用更新的收盤檔（data/tw/latest.json、熱力圖）。
+    prev = {}
+    def keep_prev(kind):
+        if not prev:
+            prev['u'] = json.load(open(os.path.join(OUT, 'universe.json'), encoding='utf-8'))
+            prev['p'] = json.load(open(os.path.join(OUT, 'px.json'), encoding='utf-8'))
+        n = 0
+        for x in prev['u'].get('list') or []:
+            if x[2] == 'US' and x[3] == kind:
+                U[x[0]] = [x[0], x[1], 'US', kind, (prev['p'].get('px') or {}).get(x[0]), x[4]]; n += 1
+        log('Nasdaq', '股票' if kind == 'S' else 'ETF', '篩選器失敗：沿用上一份', n, '檔，日期', (prev['p'].get('asof') or {}).get('US' if kind == 'S' else 'USETF'))
+        return n
+    rows, erows = [], []
     try:
-        us_asof = nasdaq_day(((json.loads(get('https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=1', hdr)).get('data')) or {}).get('asof'))
+        st = json.loads(get('https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=25&download=true', hdr))
+        rows = (st.get('data') or {}).get('rows') or []
+        if len(rows) < 3000:
+            raise RuntimeError('篩選器只回 %d 列' % len(rows))
+        for r in rows:
+            c = norm_us(r.get('symbol'))
+            if not re.match(r'^[A-Z][A-Z0-9-]{0,7}$', c):
+                continue
+            U[c] = [c, clean_name(r.get('name')), 'US', 'S', num(r.get('lastsale')), fund_sector(c, 'US') or sector_zh(r.get('sector'))]
+        us_asof = ''   # 篩選器價格是 Nasdaq 的快照（不一定是正式收盤價），日期以 Nasdaq 自己標示的為準
+        try:
+            us_asof = nasdaq_day(((json.loads(get('https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=1', hdr)).get('data')) or {}).get('asof'))
+        except Exception as e:  # noqa
+            log('nasdaq asof failed', repr(e)[:100])
     except Exception as e:  # noqa
-        log('nasdaq asof failed', repr(e)[:100])
-    et = json.loads(get('https://api.nasdaq.com/api/screener/etf?tableonly=true&limit=25&download=true', hdr))
-    d = et.get('data') or {}
-    etf_asof = nasdaq_time(d.get('dataAsOf'))
-    erows = d.get('rows') or (d.get('data') or {}).get('rows') or []
-    for r in erows:
-        c = norm_us(r.get('symbol'))
-        if not re.match(r'^[A-Z][A-Z0-9-]{0,7}$', c):
-            continue
-        U[c] = [c, re.sub(r'\s+', ' ', str(r.get('companyName') or c)).strip(), 'US', 'E', num(r.get('lastSalePrice')), '']
+        log('Nasdaq 股票篩選器失敗', repr(e)[:160]); rows = []
+        keep_prev('S'); us_asof = (prev['p'].get('asof') or {}).get('US', '')
+    try:
+        et = json.loads(get('https://api.nasdaq.com/api/screener/etf?tableonly=true&limit=25&download=true', hdr))
+        d = et.get('data') or {}
+        etf_asof = nasdaq_time(d.get('dataAsOf'))
+        erows = d.get('rows') or (d.get('data') or {}).get('rows') or []
+        if len(erows) < 1000:
+            raise RuntimeError('ETF 篩選器只回 %d 列' % len(erows))
+        for r in erows:
+            c = norm_us(r.get('symbol'))
+            if not re.match(r'^[A-Z][A-Z0-9-]{0,7}$', c):
+                continue
+            U[c] = [c, re.sub(r'\s+', ' ', str(r.get('companyName') or c)).strip(), 'US', 'E', num(r.get('lastSalePrice')), '']
+    except Exception as e:  # noqa
+        log('Nasdaq ETF 篩選器失敗', repr(e)[:160]); erows = []
+        keep_prev('E'); etf_asof = (prev['p'].get('asof') or {}).get('USETF', '')
     fx = tw_lt.get('fx') or {}
     log('universe: TW', sum(1 for v in U.values() if v[2] != 'US'), 'US stocks', len(rows), 'US ETFs', len(erows))
     return U, {'USDTWD': fx.get('rate'), 'date': fx.get('date'), 'source': fx.get('source')}, {'TW': (tw_lt.get('asof') or {}).get('TW'), 'TWO': (tw_lt.get('asof') or {}).get('TWO'), 'US': us_asof, 'USETF': etf_asof}

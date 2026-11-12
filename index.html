@@ -8,7 +8,7 @@
 <meta name="description" content="BNASDAQ-26110、BNASDAQ-26111：以 QQQ 月線為訊號、在 QLD 與 SHV 之間配置的規則化策略，採邀請制。完整回測（可自訂起點）、定期定額、個股對比、目標資產試算與風險揭露。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=2112a8e937">
+<link rel="stylesheet" href="assets/site.css?v=456c56d75e">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -28,7 +28,7 @@
     <h1>30 年信任，成就不凡</h1>
     <div class="cta"><a class="btn primary" href="research.html">查看完整回測</a><a class="btn ghost" href="calculator.html">試算目標資產</a></div>
   </div>
-  <div class="stat"><div class="kicker">每月 1 萬定期定額，期末價值<span hidden id="hero-end">2026-10-30</span></div><div class="hs"><div class="hcode"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-26110｜30 年</div><div class="big" id="hero-big">98.5 億</div><div class="kicker hsub" id="hero-sub">IRR 年化 40.6%｜本金 360 萬｜本金的 2,736 倍</div></div><div class="hs"><div class="hcode"><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-26111｜<span id="hero-yrs2">26.6</span> 年（模型自 <span id="hero-from2">2000-03</span> 起）</div><div class="big" id="hero-big2">61.3 億</div><div class="kicker hsub" id="hero-sub2">IRR 年化 44.7%｜本金 319 萬｜本金的 1,920 倍</div></div></div>
+  <div class="stat"><div class="kicker">每月 1 萬定期定額，期末價值<span hidden id="hero-end">2026-10-30</span></div><div class="hs"><div class="hcode"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-26110｜30 年</div><div class="big" id="hero-big">98.5 億</div><div class="kicker hsub" id="hero-sub">IRR 年化 40.6%｜本金 360 萬｜本金的 2,736 倍</div></div><div class="hs"><div class="hcode"><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-26111｜30 年</div><div class="big" id="hero-big2">145.8 億</div><div class="kicker hsub" id="hero-sub2">IRR 年化 42.7%｜本金 360 萬｜本金的 4,049 倍</div></div></div>
 </div></section>
 
 <section class="band" id="client" hidden><div class="wrap">
@@ -110,7 +110,7 @@
   </ul>
 </div></section>
 
-<script src="assets/site.js?v=62df238a20"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=c8ab2ed622"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=72e0d40d19"></script><script src="assets/charts.js?v=43696f0c67"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=c8ab2ed622"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=72e0d40d19"></script><script src="assets/charts.js?v=43696f0c67"></script>
 <script>
 (function(){
   // 最新發布分頁與公告
@@ -262,7 +262,8 @@ function renderInd(start){
   (()=>{const e=END.slice(0,7),t=+e.slice(0,4)*12+ +e.slice(5,7)-1-360,s=Math.floor(t/12)+'-'+String(t%12+1).padStart(2,'0'),D=B.dca('fund',s);
     $('hero-big').textContent=(D.end/1e8).toFixed(1)+' 億';$('hero-sub').textContent='IRR 年化 '+pct(D.irr)+'｜本金 '+(D.principal/1e4).toLocaleString('zh-Hant-TW')+' 萬｜本金的 '+Math.round(D.mult).toLocaleString('zh-Hant-TW')+' 倍';
     $('hero-end').textContent=END;const be=$('bt-end');if(be)be.textContent=END;
-    const f0=B.first('sat'),D2=B.dca('sat',f0);$('hero-big2').textContent=(D2.end/1e8).toFixed(1)+' 億';$('hero-sub2').textContent='IRR 年化 '+pct(D2.irr)+'｜本金 '+(D2.principal/1e4).toLocaleString('zh-Hant-TW')+' 萬｜本金的 '+Math.round(D2.mult).toLocaleString('zh-Hant-TW')+' 倍';$('hero-yrs2').textContent=B.yrs(B.MED[B.M.indexOf(f0)],END).toFixed(1);$('hero-from2').textContent=f0;
+    // BNASDAQ-26111 也用 30 年（同一起點）：2000-03 前接 bt-sat30.js 的延伸前段（B.3 模型依同一走動式規則往前多訓練 1996-03、1998-03 兩次），2000-03 起即正式序列
+    const f0=B.first('sat'),D2=B.dca('sat30',s);$('hero-big2').textContent=(D2.end/1e8).toFixed(1)+' 億';$('hero-sub2').textContent='IRR 年化 '+pct(D2.irr)+'｜本金 '+(D2.principal/1e4).toLocaleString('zh-Hant-TW')+' 萬｜本金的 '+Math.round(D2.mult).toLocaleString('zh-Hant-TW')+' 倍';
     const rk=$('risk-card'),s0=f0>'2000-05'?f0:'2000-05',a=B.drawdown('fund','2000-05'),b=B.drawdown('sat',s0);if(rk)rk.textContent='最大回撤：BNASDAQ-26110 '+pct(-a.mdd)+'、BNASDAQ-26111 '+pct(-b.mdd)+'；年化波動度：'+pct(B.vol('fund','2000-05'))+'、'+pct(B.vol('sat',s0))+'（2000-05-31～'+END+'）。另有決策日延後、減碼訊號錯失上漲等投入前須了解的代價。';})();
   B.def('2000-05');
   B.picker('bt-pick',{presets:[['1986-09','最早 1986'],['1996-09','近 30 年'],['2000-05','正式回測'],['2009-01','2009-01 起'],['2013-12','2013-12 起'],['2020-12','2020 年底']]});

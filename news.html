@@ -8,7 +8,7 @@
 <meta name="description" content="BNASDAQ 公告、研究更新與完整影片。">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=2112a8e937">
+<link rel="stylesheet" href="assets/site.css?v=456c56d75e">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -50,7 +50,7 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#ann">公告</a></li><li><a href="#video">完整影片</a></li><li><a href="#updates">研究更新</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="index.html">首頁</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=62df238a20"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script>
 <script>
 fetch('data/site.json').then(r=>r.json()).then(j=>{const ul=document.getElementById('ann-list');ul.innerHTML='';(j.announcements||[]).forEach(a=>{const li=document.createElement('li');li.innerHTML='<time>'+a.date+'</time><span><b>'+a.title.replace(/[<>]/g,'')+'</b>'+(a.body?'<br>'+a.body.replace(/[<>]/g,''):'')+'</span>';ul.appendChild(li);});if(!ul.children.length)ul.innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';}).catch(()=>{document.getElementById('ann-list').innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';});
 </script>

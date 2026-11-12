@@ -57,7 +57,7 @@
   /* 資產全貌 3D 圓餅（投資組合透視）：股票藍 6 階、債券綠、現金金黃、反向紫、ETF 內現金灰、商品橘、未拆解淺灰、其他洋紅；依切片順序驗證相鄰色差（淺色＝白底、深色＝#15171a） */
   --p3-s1: #02376f; --p3-s2: #3e7fcf; --p3-s3: #064d95; --p3-s4: #5799eb; --p3-s5: #2365b3; --p3-so: #7cb4fc; --p3-b1: #2e9e52; --p3-b2: #015e28; --p3-m1: #f5af20; --p3-m2: #af7b11; --p3-i: #6250d6; --p3-e: #898781; --p3-c1: #f3743f; --p3-c2: #9d3900; --p3-u: #c3c2b7; --p3-x: #e87ba4;
   /* 分類圓餅（BN.charts.pie3d.cat）：網站 8 色分類色盤＋「其他」灰；圓餅首尾相接，「其他」與 8 色相鄰皆通過 validate_palette.js（CVD ≥8、正常視覺 ≥15） */
-  --pc-1: #2a78d6; --pc-2: #eb6834; --pc-3: #1baf7a; --pc-4: #eda100; --pc-5: #e87ba4; --pc-6: #008300; --pc-7: #6250d6; --pc-8: #e34948; --pc-o: #c9c7bf;
+  --pc-1: #2a78d6; --pc-2: #eb6834; --pc-3: #1baf7a; --pc-4: #eda100; --pc-5: #e87ba4; --pc-6: #008300; --pc-7: #6250d6; --pc-8: #e34948; --pc-o: #c9c7bf; --pc-cash: #6a3a06; --pc-bond: #00201b;   /* 資產全貌的現金、債券與其他：和 8 色、灰、彼此皆通過 */
   --serif: "BN Serif", "Noto Serif TC", "Songti TC", "PMingLiU", Georgia, serif;
   --sans: "BN Sans", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Helvetica Neue", Arial, system-ui, sans-serif;
   --maxw: 1800px; --gutter: 16px; /* 2026-11-10 加寬（1200→1600→1800）：寬螢幕不再擠壓（文章段落仍由 p 的 74ch 控制行長） */
@@ -74,7 +74,7 @@
     --s-fund: #3987e5; --s-qqq: #d95926; --s-qld: #199e70; --s-tw: #c98500; --s-tsmc: #d55181; --s-save: #008300; --s-shv: #93a3b7; --s-sat: #e66767;
     --grid: #26292e; --axis: #4a4e55;
     --p3-s1: #c0dafc; --p3-s2: #5b92d8; --p3-s3: #93c2ff; --p3-s4: #447bbe; --p3-s5: #72aaf1; --p3-so: #2e64a6; --p3-b1: #6fd087; --p3-b2: #2a904b; --p3-m1: #f2b036; --p3-m2: #b7810f; --p3-i: #9085e9; --p3-e: #898781; --p3-c1: #fd8453; --p3-c2: #b44200; --p3-u: #5f5e5a; --p3-x: #d55181;
-    --pc-1: #3987e5; --pc-2: #d95926; --pc-3: #199e70; --pc-4: #c98500; --pc-5: #d55181; --pc-6: #008300; --pc-7: #9085e9; --pc-8: #e66767; --pc-o: #4a4946;
+    --pc-1: #3987e5; --pc-2: #d95926; --pc-3: #199e70; --pc-4: #c98500; --pc-5: #d55181; --pc-6: #008300; --pc-7: #9085e9; --pc-8: #e66767; --pc-o: #4a4946; --pc-cash: #efd956; --pc-bond: #22edd1;
   }
 }
 :root[data-theme="dark"] {
@@ -87,7 +87,7 @@
   --s-fund: #3987e5; --s-qqq: #d95926; --s-qld: #199e70; --s-tw: #c98500; --s-tsmc: #d55181; --s-save: #008300; --s-shv: #93a3b7; --s-sat: #e66767;
   --grid: #26292e; --axis: #4a4e55;
   --p3-s1: #c0dafc; --p3-s2: #5b92d8; --p3-s3: #93c2ff; --p3-s4: #447bbe; --p3-s5: #72aaf1; --p3-so: #2e64a6; --p3-b1: #6fd087; --p3-b2: #2a904b; --p3-m1: #f2b036; --p3-m2: #b7810f; --p3-i: #9085e9; --p3-e: #898781; --p3-c1: #fd8453; --p3-c2: #b44200; --p3-u: #5f5e5a; --p3-x: #d55181;
-  --pc-1: #3987e5; --pc-2: #d95926; --pc-3: #199e70; --pc-4: #c98500; --pc-5: #d55181; --pc-6: #008300; --pc-7: #9085e9; --pc-8: #e66767; --pc-o: #4a4946;
+  --pc-1: #3987e5; --pc-2: #d95926; --pc-3: #199e70; --pc-4: #c98500; --pc-5: #d55181; --pc-6: #008300; --pc-7: #9085e9; --pc-8: #e66767; --pc-o: #4a4946; --pc-cash: #efd956; --pc-bond: #22edd1;
 }
 
 /* ---------- base ---------- */
@@ -127,6 +127,9 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 .mark .word { font-family: var(--serif); font-size: 27px; font-weight: 700; letter-spacing: .2em; line-height: 1; color: #fff; }
 .mark .word b { color: var(--gold-hi); font-weight: 700; }
 .mark .sub, .tagline { display: none; }
+/* 登入後頁首 BNASDAQ 旁的「會員專區」（site.js 放進頁首中間那一欄） */
+.brand .mlink { display: inline-flex; align-items: center; height: 36px; padding: 0 16px; border: 1px solid var(--gold-hi); color: var(--gold-hi); text-decoration: none; font-weight: 600; letter-spacing: .1em; font-size: 15px; white-space: nowrap; }
+.brand .mlink:hover, .brand .mlink[aria-current] { background: var(--gold-hi); color: #111; }
 .brand .tools { display: flex; gap: 10px; align-items: center; justify-content: flex-end; min-width: 0; }
 .search { display: flex; gap: 0; }
 .search input { font: inherit; font-size: 14.5px; padding: 8px 12px; border: 1px solid var(--line); border-right: 0; min-width: 210px; width: 244px; /* 固定寬度：原本依字型度量自動計算，會隨字型載入快慢而不同 */ background: var(--paper); color: var(--ink); border-radius: 2px 0 0 2px; }
@@ -524,3 +527,20 @@ ul.ind { max-width: none; }
 /* 放在半寬欄（會員專區兩欄）時：圓餅在上、數字表在下 */
 .pie3d { container-type: inline-size; }
 @container (max-width: 640px) { .pie3d .p3-wrap { grid-template-columns: 1fr; } .pie3d .p3-svg svg { max-width: 460px; } }
+
+/* ---------- 每日市場分析：會員「你的資產變化」（assets/mychange.js；只有登入看得到） ---------- */
+.mychg { padding: 30px 0 10px; border-bottom: 1px solid var(--line); }
+.mychg h2 { margin-top: 0; }
+.mychg .kv .tile .v.pos, .mychg .kv .tile .s.pos, .mychg .pos { color: var(--good); }
+.mychg .kv .tile .v.neg, .mychg .kv .tile .s.neg, .mychg .neg { color: var(--bad); }
+.mychg-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 12px 36px; align-items: start; }
+@media (max-width: 900px) { .mychg-grid { grid-template-columns: minmax(0, 1fr); } }
+.mychg-bars { display: grid; gap: 8px; margin: 6px 0 10px; }
+.mychg-bars .mb { display: grid; grid-template-columns: minmax(110px, 42%) minmax(60px, 1fr) 64px; gap: 10px; align-items: center; font-size: 13.5px; }
+.mychg-bars .lb { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mychg-bars .tr { position: relative; height: 14px; background: var(--band); border: 1px solid var(--line-2); }
+.mychg-bars .tr::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--muted); }
+.mychg-bars .tr i { position: absolute; top: 0; bottom: 0; }
+.mychg-bars .tr i.up { left: 50%; background: var(--good); }
+.mychg-bars .tr i.dn { right: 50%; background: var(--bad); }
+.mychg-bars .vv { text-align: right; font-variant-numeric: tabular-nums; }
