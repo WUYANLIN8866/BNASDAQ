@@ -1,10 +1,10 @@
-/* 最新策略探索進度：讀取最新的探索進度快照並每 60 秒重繪（純前端，無伺服器）。
+/* 最新策略探索進度：讀取最新的探索進度快照並每 2 分鐘重繪（純前端，無伺服器）。
    資料來源依序：live 分支的 explore-live.json（raw → GitHub API）→ 本站部署的 data/explore-live.json。 */
 (function () {
   'use strict';
   const REPO = 'WUYANLIN8866/BNASDAQ', BRANCH = 'live', FILE = 'explore-live.json';
   const LOCAL = /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
-  const POLL_MS = 60 * 1000, STALE_MIN = 10;
+  const POLL_MS = 120 * 1000, STALE_MIN = 10;
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const nf = new Intl.NumberFormat('zh-Hant-TW');
@@ -81,7 +81,7 @@
     const st = statusInfo(d), age = Math.max(0, Math.round(ageMin(d.updated_at)));
     $('xp-status').className = 'xp-status ' + st.cls;
     $('xp-status').innerHTML = `<span class="xp-dot" aria-hidden="true"></span><b>${esc(st.text)}</b>` +
-      `<span class="xp-meta">${d.machines > 1 ? d.machines + ' 台 AI Server 同時運算・' : ''}最後更新 ${tpe(d.updated_at)}（台北時間）・${age < 1 ? '不到 1 分鐘前' : age + ' 分鐘前'}・本頁每 60 秒自動更新</span>`;
+      `<span class="xp-meta">${d.machines > 1 ? d.machines + ' 台 AI Server 同時運算・' : ''}最後更新 ${tpe(d.updated_at)}（台北時間）・${age < 1 ? '不到 1 分鐘前' : age + ' 分鐘前'}・本頁每 2 分鐘自動更新</span>`;
   }
 
   // a long plain number stays on one line and shrinks only when its tile is too narrow (cqi = 1% of the tile's inner
