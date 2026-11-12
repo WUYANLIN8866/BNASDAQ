@@ -139,13 +139,24 @@
     if (r.total) k += tile('總金額（台幣）', money(r.total), st.mode === 'shares' ? '股數 × 價格' + (S.cash > 1e-12 ? '＋現金' : '') + (FX ? '（美元 × ' + nf(FX, 3) + '）' : '') : '依輸入的總金額');
     $('ltKv').innerHTML = k + '</div>';
     mix(r);
-    const top = r.cos.filter(c => c.w > 0).slice(0, 15);
-    $('fTop').innerHTML = ''; $('fSec').innerHTML = '';
-    const W = Math.max(340, Math.min(820, ($('fTop').clientWidth || 820) - 34)), narrow = W < 560;
-    if (top.length) BN.charts.hbars($('fTop'), { title: '前 15 大公司（占總資產）', sub: '同一家公司在不同 ETF 與個股的持有已合併', items: top.map(c => ({ name: short(c.name, narrow ? 12 : 22), value: c.w * 100, color: 'var(--s-fund)' })), fmt: v => v.toFixed(2) + '%', labelW: narrow ? 118 : 170, padR: narrow ? 64 : 120, rowH: narrow ? 30 : 34, W });
-    const secs = r.sectors.filter(s => s[1] > 0).slice(0, 12);
-    if (secs.length) BN.charts.hbars($('fSec'), { title: '產業分布（占總資產）', sub: '依各公司所屬產業加總；非股票資產不列入', items: secs.map(s => ({ name: s[0], value: s[1] * 100, color: 'var(--s-qld)' })), fmt: v => v.toFixed(1) + '%', labelW: narrow ? 80 : 110, padR: narrow ? 56 : 120, rowH: narrow ? 30 : 34, W });
+    pies(r);
     table(r); overlap(r); sources(r);
+  }
+  // ---------- 主要公司、產業分布（3D 圓餅）：股票曝險拆到公司與產業（合計 100%）；前 8 名個別列出，其餘併入「其他」 ----------
+  // 「占總資產」照舊另列一欄：槓桿 ETF 依倍數放大，合計可以超過 100%，圓餅只能畫合計 100% 的「占股票曝險」
+  function pies(r) {
+    const P = BN.charts.pie3d; $('fTop').innerHTML = ''; $('fSec').innerHTML = ''; if (!P) return;
+    const cos = r.cos.filter(c => c.w > 0), secs = r.sectors.filter(s => s[1] > 0);
+    const exp = cos.reduce((t, c) => t + c.w, 0), neg = r.cos.reduce((t, c) => t + Math.min(c.w, 0), 0);
+    const note = neg < -1e-9 ? '反向 ETF 的放空曝險（' + pct(neg, 1) + '）不能畫成圓餅，未列入。' : null;
+    if (cos.length) P.cat($('fTop'), {
+      title: '主要公司（占股票曝險）', sub: '股票曝險 ' + pct(exp, 1) + ' 拆到各公司；同一家公司在不同 ETF 與個股的持有已合併；前 8 大個別列出，完整名單見下方「完整明細」',
+      items: cos.map(c => ({ key: c.key, name: c.key + ' ' + short(c.name, 20), w: c.w, d: { t: c.w } })),
+      head: '公司', share: '占股票曝險', cols: [{ head: '占總資產', cell: s => pct(s.d.t, 2) }], otherName: '其他公司', otherTag: k => '含 ' + nf(k) + ' 家', note });
+    if (secs.length) P.cat($('fSec'), {
+      title: '產業分布（占股票曝險）', sub: '依各公司所屬產業加總；現金、債券等非股票資產不列入',
+      items: secs.map(s => ({ key: s[0], name: s[0], w: s[1], d: { t: s[1] }, other: s[0] === '未分類' })),
+      head: '產業', share: '占股票曝險', cols: [{ head: '占總資產', cell: s => pct(s.d.t, 1) }], otherName: '其他產業', otherTag: k => '含 ' + k + ' 個產業（或未分類）', note });
   }
   // ---------- 資產全貌（3D 圓餅）：股票依公司、債券、現金、商品、ETF 內現金等，全部以投入資金計（合計 100%） ----------
   // 顏色：股票＝藍色 6 階（前 5 大公司依序深淺交錯，其他股票最淺／最深），債券、現金、商品各 2 階交替，其餘各 1 色；相鄰切片已用色盲模擬驗證（深淺色各一組，在 site.css）

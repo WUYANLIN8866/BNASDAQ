@@ -98,9 +98,37 @@
     const R = LT.compute(rows, { mode: 'shares', U, E, fx: FX, alias: ALIAS });
     render(R);
   }
-  function bars(items, fmt) { // items: [[label, value(0~1), note]]
-    const mx = Math.max(1e-9, ...items.map(x => Math.abs(x[1])));
-    return '<div class="mh-bars">' + items.map(x => '<div class="mh-bar"><span class="lb">' + esc(x[0]) + '</span><span class="tr"><i style="width:' + (Math.abs(x[1]) / mx * 100).toFixed(1) + '%"></i></span><span class="vv">' + (fmt ? fmt(x[1]) : pc(x[1])) + (x[2] ? ' <small>' + esc(x[2]) + '</small>' : '') + '</span></div>').join('') + '</div>';
+  // 公司名稱縮短：去掉 Inc.、Corporation、Class A 等尾綴，太長加「…」
+  const SUF = /[,\s]+(Inc\.?|Incorporated|Corporation|Corp\.?|Co\.?|Company|Ltd\.?|Limited|plc|PLC|N\.?V\.?|S\.?A\.?|AG|SE|Holdings?|Group|Class [A-C]|Cl [A-C]|CL [A-C]|ADR|The)$/i;
+  const short = (s, n) => { s = String(s || '').trim(); let t; do { t = s; s = s.replace(SUF, '').trim(); } while (s !== t && s.length > 3); n = n || 22; return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+  // 每一區都用 3D 圓餅（BN.charts.pie3d；圓餅旁的數字表是完整數字，顏色不是唯一辨識方式）
+  function pies(R, lines) {
+    const P = window.BN && BN.charts && BN.charts.pie3d; if (!P) return;
+    const cos = R.cos.filter(c => c.w > 0), secs = R.sectors.filter(s => s[1] > 0);
+    const exp = cos.reduce((t, c) => t + c.w, 0), neg = R.cos.reduce((t, c) => t + Math.min(c.w, 0), 0);
+    const negNote = neg < -0.0005 ? '反向 ETF 的放空曝險（' + pc(neg) + '）不能畫成圓餅，未列入。' : null;
+    if ($('mh-p-alloc')) P.cat($('mh-p-alloc'), {
+      items: lines.map(x => ({ key: x.a.code, name: x.a.kind === 'C' ? x.a.name : x.a.code + ' ' + short(x.a.name, 18), w: x.a.w, d: { v: x.a.value } })),
+      head: '資產', share: '占總資產', cols: [{ head: '市值（台幣）', cell: s => twd(s.d.v) }], otherName: '其他資產', otherTag: k => '含 ' + k + ' 項',
+      sub: '依你輸入的持有計算；超過 8 項時，其餘併入「其他資產」' });
+    if ($('mh-p-top')) P.cat($('mh-p-top'), {
+      items: cos.map(c => ({ key: c.key, name: c.key + ' ' + short(c.name, 20), w: c.w, d: { t: c.w } })),
+      head: '公司', share: '占股票曝險', cols: [{ head: '占總資產', cell: s => pc(s.d.t) }], otherName: '其他公司', otherTag: k => '含 ' + k + ' 家',
+      sub: '圓餅＝股票曝險 ' + pc(exp) + ' 拆到各公司；前 8 大個別列出。槓桿 ETF 依倍數放大，所以「占總資產」合計可以超過 100%', note: negNote });
+    if ($('mh-p-sec')) P.cat($('mh-p-sec'), {
+      items: secs.map(s => ({ key: s[0], name: s[0], w: s[1], d: { t: s[1] }, other: s[0] === '未分類' })),
+      head: '產業', share: '占股票曝險', cols: [{ head: '占總資產', cell: s => pc(s.d.t) }], otherName: '其他產業', otherTag: k => '含 ' + k + ' 個產業（或未分類）',
+      sub: '圓餅＝股票曝險 ' + pc(exp) + ' 依產業拆分', note: negNote });
+    const S = stratParts(R);
+    if ($('mh-p-strat') && S.sl) P($('mh-p-strat'), {
+      slices: [{ key: 'L', name: '多方（' + (S.L.map(a => a.code).join('、') || '—') + '）', w: S.lv, color: 'var(--s-qld)', d: { v: S.lv } }, { key: 'H', name: '避險（' + (S.H.map(a => a.code).join('、') || 'SHV') + '）', w: S.hv, color: 'var(--s-shv)', d: { v: S.hv } }],
+      head: '策略部位（目前）', share: '占策略部位', cols: [{ head: '市值（台幣）', cell: s => twd(s.d.v) }],
+      sub: '多方 ' + pc(S.lv / S.sl) + '、避險 ' + pc(S.hv / S.sl) + '；下表是和本月目標的差額' });
+  }
+  function stratParts(R) {
+    const L = R.assets.filter(a => LONG[a.code]), H = R.assets.filter(a => HEDGE[a.code]);
+    const lv = L.reduce((t, a) => t + a.value, 0), hv = H.reduce((t, a) => t + a.value, 0);
+    return { L, H, lv, hv, sl: lv + hv };
   }
   function render(R) {
     const out = $('mh-out');
@@ -125,24 +153,22 @@
     h += '<h3>持有明細</h3><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">名稱</th><th>股數／金額</th><th>價格（日期）</th><th>市值（台幣）</th><th>占比</th><th>平均成本</th><th>未實現損益</th></tr></thead><tbody>' +
       lines.map(x => { const a = x.a; return '<tr><td class="l"><b>' + esc(a.code) + '</b></td><td class="l">' + esc(a.name) + '</td><td>' + qty(a.v) + '</td><td>' + (a.kind === 'C' ? '—' : nf(a.px, a.px < 10 ? 3 : 2) + (a.cur === 'USD' ? ' 美元' : ' 元') + '<br><small>' + esc(PXD[a.code] || '') + '</small>') + '</td><td>' + twd(a.value) + '</td><td>' + pc(a.w) + '</td><td>' + (x.c > 0 ? nf(x.c, 2) : '—') + '</td><td class="' + (x.pl > 0 ? 'pos' : x.pl < 0 ? 'neg' : '') + '">' + (x.pl == null ? '—' : (x.pl >= 0 ? '+' : '−') + nf(Math.abs(Math.round(x.pl))) + '<br><small>' + sg(x.plp) + '</small>') + '</td></tr>'; }).join('') +
       '</tbody></table></div>';
-    // 配置
-    h += '<div class="mh-two"><div><h3>資產配置</h3>' + bars(lines.map(x => [x.a.code, x.a.w, ''])) + '</div>';
-    // 透視
-    const top = R.cos.filter(c => c.w > 0).slice(0, 10);
-    h += '<div><h3>透視：實際持有的前 10 大公司</h3>' + (top.length ? bars(top.map(c => [c.key + ' ' + (c.name || ''), c.w, ''])) : '<p class="small">沒有可拆解的股票部位。</p>') + '</div></div>';
-    h += '<div class="mh-two"><div><h3>產業分布（股票曝險）</h3>' + (R.sectors.length ? bars(R.sectors.slice(0, 11).map(s => [s[0], s[1], ''])) : '<p class="small">—</p>') + '</div>';
-    // 策略對照
+    // 配置、透視、產業、策略對照：每一區都是 3D 圓餅（out.innerHTML 之後由 pies() 畫）
+    const hasCo = R.cos.some(c => c.w > 0), hasSec = R.sectors.some(s => s[1] > 0);
+    h += '<div class="mh-two"><div><h3>資產配置</h3><div id="mh-p-alloc"></div></div>';
+    h += '<div><h3>透視：實際持有的公司</h3>' + (hasCo ? '<div id="mh-p-top"></div>' : '<p class="small">沒有可拆解的股票部位。</p>') + '</div></div>';
+    h += '<div class="mh-two"><div><h3>產業分布（股票曝險）</h3>' + (hasSec ? '<div id="mh-p-sec"></div>' : '<p class="small">—</p>') + '</div>';
     h += '<div><h3>' + (targets && targets.list && targets.list.length ? '和 ' + targets.list.map(t => esc(t.id)).join('、') + ' 本月目標比較' : '和策略本月目標比較') + '</h3>' + strategy(R) + '</div></div>';
     h += '<p class="small">說明：價格為各市場最近收盤（美股大型股用最新交易日收盤，其餘用每日價格檔），日期列在價格下方；ETF 依發行商公布的持股拆解，槓桿 ETF 依倍數放大。以上為依你輸入的數字所做的計算，不構成投資建議。</p>';
     out.innerHTML = h;
+    pies(R, lines);
   }
   function strategy(R) {
-    const L = R.assets.filter(a => LONG[a.code]), H = R.assets.filter(a => HEDGE[a.code]);
-    const lv = L.reduce((t, a) => t + a.value, 0), hv = H.reduce((t, a) => t + a.value, 0), sl = lv + hv;
+    const { L, H, lv, hv, sl } = stratParts(R);
     if (!sl) return '<p class="small">你的持有中沒有策略使用的商品（多方 QLD 或台股 00670L、避險 SHV），所以不計算差額。</p>';
-    if (!targets) return '<p class="small">策略部位（' + [...L, ...H].map(a => a.code).join('、') + '）共 ' + twd(sl) + '，其中多方 ' + pc(lv / sl) + '。會員規則載入後，這裡會算出和本月目標的差額。</p>';
+    if (!targets) return '<div id="mh-p-strat"></div><p class="small">策略部位（' + [...L, ...H].map(a => a.code).join('、') + '）共 ' + twd(sl) + '，其中多方 ' + pc(lv / sl) + '。會員規則載入後，這裡會算出和本月目標的差額。</p>';
     const ref = L.find(a => a.code === 'QLD') || L[0] || null, refPx = ref ? ref.px * (ref.cur === 'USD' ? FX : 1) : (U.get('QLD') && U.get('QLD').p ? U.get('QLD').p * FX : null), refCode = ref ? ref.code : 'QLD';
-    let h = '<p class="small">策略部位＝' + [...L, ...H].map(a => a.code).join('＋') + '，共 ' + twd(sl) + '；目前多方 ' + pc(lv / sl) + '、避險 ' + pc(hv / sl) + '（' + esc(targets.month) + ' 持有）。</p><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">策略</th><th class="l">本月目標</th><th>多方應有</th><th>多方目前</th><th>差額</th></tr></thead><tbody>';
+    let h = '<div id="mh-p-strat"></div><p class="small">策略部位＝' + [...L, ...H].map(a => a.code).join('＋') + '，共 ' + twd(sl) + '；目前多方 ' + pc(lv / sl) + '、避險 ' + pc(hv / sl) + '（' + esc(targets.month) + ' 持有）。</p><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">策略</th><th class="l">本月目標</th><th>多方應有</th><th>多方目前</th><th>差額</th></tr></thead><tbody>';
     targets.list.forEach(t => { const want = t.w * sl, d = want - lv, sh = refPx ? d / refPx : null;
       h += '<tr><td class="l"><b>' + esc(t.id) + '</b></td><td class="l">' + esc(t.text) + '</td><td>' + twd(want) + '</td><td>' + twd(lv) + '</td><td class="' + (Math.abs(d) < 1 ? '' : d > 0 ? 'pos' : 'neg') + '">' + (Math.abs(d) < 1 ? '已一致' : (d > 0 ? '多方增加 ' : '多方減少 ') + twd(Math.abs(d)) + (sh ? '<br><small>約 ' + nf(Math.abs(sh), 1) + ' 股 ' + esc(refCode) + '</small>' : '')) + '</td></tr>'; });
     return h + '</tbody></table></div><p class="small">差額＝本月目標多方比例 × 策略部位總額 − 目前多方市值；只是依策略規則的數學換算，不是投資建議。</p>';

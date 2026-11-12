@@ -1,6 +1,12 @@
 /* BNASDAQ｜立體圓餅圖（內嵌 SVG，無外部函式庫）
-   BN.charts.pie3d(host, {title, sub, note, slices:[{key, name, w, color, cls, tag}], value: w => 金額文字（可省略）, label: 圓餅上標百分比的最小占比（預設 0.05）})
-   - slices 的 w 為占比（合計 1）；順時針、自 12 點鐘方向開始；切片之間留 1.5px 底色縫隙
+   BN.charts.pie3d(host, {title, sub, note, slices:[{key, name, w, color, cls, tag, d}], head: 圖例第一欄名稱（預設「項目」）,
+     share: 占比欄名稱（預設「占總資產」）, cols: [{head, cell: slice => 文字}] 另加的欄（例：金額、占總資產）,
+     value: w => 金額文字（舊寫法，等同加一欄「金額（台幣）」）, label: 圓餅上標百分比的最小占比（預設 0.05）})
+   BN.charts.pie3d.cat(host, {…同上, items:[{key, name, w, d, other}], max: 個別列出的上限（預設 8）, otherName, otherTag: n => 文字})
+     分類圓餅：依 w 由大到小；超過 max 項時第 max+1 名起併成灰色「其他」（d 的數字欄位加總）；other:true 的項目（例：未分類）也併進去。
+     配色＝網站 8 色分類色盤（--pc-1～--pc-8，同 dataviz 驗證過的順序）＋「其他」--pc-o；圓餅首尾相接，剛好 7 塊時跳過第 6 色（綠），
+     避免第 7 色（紫）接回第 1 色（藍）——色盲模擬下兩色太接近（2026-11-12 以 validate_palette.js 驗證，淺色、深色主題都通過）。
+   - slices 的 w 為占比（合計 1；不是 1 時依合計換算）；順時針、自 12 點鐘方向開始；切片之間留 1.5px 底色縫隙
    - 立體側面只畫朝向讀者的半圈（0～180 度），以同色加 22% 黑色覆蓋表示陰影；淺色與深色主題都適用
    - 滑過切片或圖例：切片外移並顯示提示框；圖例同時是完整數字表（顏色不是唯一辨識方式） */
 (function () {
@@ -58,9 +64,11 @@
       return g;
     });
     // 圖例＝完整數字表
-    const hasV = typeof o.value === 'function';
-    const rows = parts.map(p => '<tr data-i="' + p.i + '"><td class="l"><span class="sw" style="background:' + p.s.color + '"></span>' + esc(p.s.name) + (p.s.tag && (p.i === 0 || parts[p.i - 1].s.tag !== p.s.tag) ? ' <small class="muted">' + esc(p.s.tag) + '</small>' : '') + '</td><td>' + pctTxt(p.s.w / tot) + '</td>' + (hasV ? '<td>' + esc(o.value(p.s.w)) + '</td>' : '') + '</tr>').join('');
-    fig.querySelector('.p3-leg').innerHTML = '<table class="tbl p3-tbl"><thead><tr><th class="l">項目</th><th>占總資產</th>' + (hasV ? '<th>金額（台幣）</th>' : '') + '</tr></thead><tbody>' + rows + '</tbody></table>';
+    const cols = (o.cols || []).slice();
+    if (typeof o.value === 'function') cols.push({ head: '金額（台幣）', cell: s => o.value(s.w) });
+    const shareHead = o.share || '占總資產';
+    const rows = parts.map(p => '<tr data-i="' + p.i + '"><td class="l"><span class="sw" style="background:' + p.s.color + '"></span>' + esc(p.s.name) + (p.s.tag && (p.i === 0 || parts[p.i - 1].s.tag !== p.s.tag) ? ' <small class="muted">' + esc(p.s.tag) + '</small>' : '') + '</td><td>' + pctTxt(p.s.w / tot) + '</td>' + cols.map(c => '<td>' + esc(c.cell(p.s)) + '</td>').join('') + '</tr>').join('');
+    fig.querySelector('.p3-leg').innerHTML = '<table class="tbl p3-tbl"><thead><tr><th class="l">' + esc(o.head || '項目') + '</th><th>' + esc(shareHead) + '</th>' + cols.map(c => '<th>' + esc(c.head) + '</th>').join('') + '</tr></thead><tbody>' + rows + '</tbody></table>';
     const trs = [...fig.querySelectorAll('.p3-tbl tbody tr')];
     let cur = -1;
     const on = (i, ev) => {
@@ -69,12 +77,28 @@
         cur = i;
         if (i >= 0) { const m = parts[i].mid, dx = 10 * Math.cos(m), dy = 10 * Math.sin(m) * ry / rx; ['wall', 'top', 'lbl'].forEach(k => G[i][k].setAttribute('transform', 'translate(' + f2(dx) + ' ' + f2(dy) + ')')); trs[i].classList.add('on'); }
       }
-      if (i >= 0 && ev && BN.tip) { const s = parts[i].s; BN.tip.show('<b>' + esc(s.name) + '</b><br>占總資產 ' + pctTxt(s.w / tot) + (hasV ? '<br>' + esc(o.value(s.w)) : '') + (s.tag ? '<br>' + esc(s.tag) : ''), ev.clientX, ev.clientY); }
+      if (i >= 0 && ev && BN.tip) { const s = parts[i].s; BN.tip.show('<b>' + esc(s.name) + '</b><br>' + esc(shareHead) + ' ' + pctTxt(s.w / tot) + cols.map(c => '<br>' + esc(c.head) + ' ' + esc(c.cell(s))).join('') + (s.tag ? '<br>' + esc(s.tag) : ''), ev.clientX, ev.clientY); }
     };
     const off = () => { on(-1); if (BN.tip) BN.tip.hide(); };
     G.forEach((g, i) => { [g.top, g.wall].forEach(n => { n.addEventListener('mousemove', ev => on(i, ev)); n.addEventListener('mouseleave', off); }); g.top.firstChild.addEventListener('focus', () => on(i)); g.top.firstChild.addEventListener('blur', off); });
     trs.forEach((tr, i) => { tr.addEventListener('mouseenter', () => on(i)); tr.addEventListener('mouseleave', off); });
     return fig;
   }
+  // 分類圓餅：前 max 名個別列出、其餘併成「其他」，顏色依上方規則自動配
+  function cat(host, o) {
+    const max = o.max || 8, items = (o.items || []).filter(x => x.w > 0);
+    const main = items.filter(x => !x.other).sort((p, q) => q.w - p.w);
+    const keep = main.slice(0, max), rest = main.slice(max).concat(items.filter(x => x.other));
+    const n = keep.length, slots = n === 7 ? [1, 2, 3, 4, 5, 7, 8] : keep.map((_, i) => i + 1);
+    const slices = keep.map((x, i) => ({ key: x.key, name: x.name, w: x.w, d: x.d || {}, tag: x.tag, color: 'var(--pc-' + slots[i] + ')' }));
+    if (rest.length) {
+      const d = {};
+      rest.forEach(x => Object.entries(x.d || {}).forEach(([k, v]) => { if (typeof v === 'number') d[k] = (d[k] || 0) + v; }));
+      slices.push({ key: '_other', name: o.otherName || '其他', w: rest.reduce((t, x) => t + x.w, 0), d, color: 'var(--pc-o)',
+        tag: o.otherTag ? o.otherTag(rest.length) : '含 ' + rest.length + ' 項' });
+    }
+    return pie3d(host, Object.assign({}, o, { slices }));
+  }
+  pie3d.cat = cat;
   window.BN = window.BN || {}; BN.charts = BN.charts || {}; BN.charts.pie3d = pie3d;
 })();

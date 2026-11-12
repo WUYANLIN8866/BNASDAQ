@@ -8,7 +8,7 @@
 <meta name="description" content="BNASDAQ 會員專區。">
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/site.css?v=f72728b251">
+<link rel="stylesheet" href="assets/site.css?v=2112a8e937">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 .pbar{display:flex;height:22px;border:1px solid var(--line);margin:8px 0 6px;overflow:hidden;background:var(--band-1,transparent)}
@@ -22,12 +22,6 @@
 .mh-in .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.mh-in .actions .btn{padding:7px 14px;font-size:13.5px}
 .mh-kv{margin-top:6px}
 .mh-two{display:grid;grid-template-columns:1fr 1fr;gap:12px 36px}
-.mh-bars{display:grid;gap:6px;margin:6px 0 18px}
-.mh-bar{display:grid;grid-template-columns:minmax(90px,38%) 1fr auto;gap:10px;align-items:center;font-size:13.5px}
-.mh-bar .lb{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mh-bar .tr{height:12px;background:var(--band,#eee);border:1px solid var(--line-2)}
-.mh-bar .tr i{display:block;height:100%;background:var(--gold-hi)}
-.mh-bar .vv{font-variant-numeric:tabular-nums;white-space:nowrap}
 @media (max-width:760px){.mh-two{grid-template-columns:1fr}.mh-in .tbl td.info{min-width:140px}}
 
 </style>
@@ -43,7 +37,7 @@
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 會員專區</div><h1>會員專區</h1><p class="lede">各策略目前持有的資產，以及下個月持有各種資產的機率。所有策略依專案 B 區規則即時計算。</p></div></div>
-<div class="main"><div class="wrap"><div class="cols">
+<div class="main"><div class="wrap"><div>
 <div>
   <div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>歡迎，<b id="who">—</b></div><div class="actions"><a class="btn line" id="adminlink" href="admin.html" hidden>管理後台</a><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div><p class="small" id="status" style="margin:10px 0 0">載入市場資料…</p></div>
   <p class="msg err" id="stale" hidden></p>
@@ -65,7 +59,6 @@
   <ul id="sched-list" class="small"></ul>
   <div class="note"><p>持有資產依專案規則，由 AI 模型找出的交易規則計算；本頁僅顯示結果，不顯示規則。歷史回測並非保證報酬，請自行評估風險。</p></div>
 </div>
-<aside><div class="side"><h3>閱讀說明</h3><ul><li><b>本月持有</b>＝上個月底收盤後的正式判斷結果。</li><li><b>下月持有機率</b>＝把本月剩下的交易日模擬 10,000 次，看月底判斷結果各占多少；是估計，不是保證。</li><li><b>用最新收盤推算</b>＝假設本月月底收盤價等於最新收盤價時的判斷結果。</li><li><b>翻轉價位</b>＝月底收盤價達到哪個水準時，判斷結論會改變。</li><li>市場資料於每個交易日美股收盤後自動更新；頁面每次開啟都重新計算。</li><li><b>我的持有資產</b>＝只存在你的瀏覽器（加密），可匯出備份到其他裝置。</li></ul></div></aside>
 </div></div></div>
 <script src="assets/site.js?v=62df238a20"></script><script src="assets/auth.js?v=d4c04c5c73"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
 <script>
@@ -124,7 +117,7 @@
   }catch(err){$('#nowbody').innerHTML='<tr><td colspan="4"><span class="msg err">載入失敗：'+esc(err.message||err)+'</span></td></tr>';$('#cards').innerHTML='';$('#prob-head').textContent='';}
 })();
 </script>
-<script src="assets/mh.js?v=bf219e09cb"></script>
+<script src="assets/pie3d.js?v=694c6d663f"></script><script src="assets/mh.js?v=7d9384aaa4"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">
