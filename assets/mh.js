@@ -96,7 +96,7 @@
       items: lines.map(x => ({ key: x.a.code, name: x.a.kind === 'C' ? x.a.name : x.a.code + ' ' + short(x.a.name, 18), w: x.a.w, d: { v: x.a.value } })),
       head: '資產', share: '占總資產', cols: [{ head: '市值（台幣）', cell: s => twd(s.d.v) }], otherName: '其他資產', otherTag: k => '含 ' + k + ' 項',
       sub: '依你輸入的持有計算；超過 8 項時，其餘併入「其他資產」' });
-    // 資產全貌：現金＋透視後的每一家公司（以投入的資金計，合計 100%）；前 8 家和右邊「透視」同一家同一色
+    // 資產全貌：現金＋透視後的每一家公司（以投入的資金計，合計 100%）；前 8 家和「透視」圓餅同一家同一色
     if ($('mh-p-mix')) {
       const M = LT.mix(R, { top: 0, min: 1 }), K = M.cls, col = P.colorsFor(coItems, 8), cw = new Map(R.cos.map(c => [c.key, c.cw || 0]));
       const slices = [...col.keys()].map(k => { const c = cos.find(x => x.key === k); return { key: k, name: k + ' ' + short(c && c.name, 20), w: cw.get(k) || 0, color: col.get(k) }; });
@@ -111,8 +111,8 @@
           tag: ne.length === 1 && ne[0].cls === 'etfcash' ? '股票型 ETF 中不屬於任何公司的部分' : ne.map(x => (x.codes ? x.name + '（' + x.codes.join('、') + '）' : x.cls === 'bond' ? x.key : x.name) + ' ' + pc(x.w)).join('、') });
       }
       P($('mh-p-mix'), { slices, head: '資產', share: '占總資產', cols: R.total ? [{ head: '金額（台幣）', cell: s => twd(s.w * R.total) }] : [],
-        sub: '以投入的資金計，合計 100%：現金加上 ETF 拆開後的各公司；前 8 家和右邊「透視」同一家同一色',
-        note: R.levExtra > 0.0005 ? '槓桿 ETF 以投入的資金計、不放大；槓桿多出的股票曝險 ' + pc(R.levExtra) + ' 不在這張圓餅裡，見右邊「透視」。' : null });
+        sub: '以投入的資金計，合計 100%：現金加上 ETF 拆開後的各公司；前 8 家和「透視」圓餅同一家同一色',
+        note: R.levExtra > 0.0005 ? '槓桿 ETF 以投入的資金計、不放大；槓桿多出的股票曝險 ' + pc(R.levExtra) + ' 不在這張圓餅裡，見「透視：實際持有的公司」。' : null });
     }
     if ($('mh-p-top')) P.cat($('mh-p-top'), {
       items: coItems, head: '公司', share: '占股票曝險', cols: [{ head: '占總資產', cell: s => pc(s.d.t) }], otherName: '其他公司', otherTag: k => '含 ' + k + ' 家',
@@ -156,10 +156,10 @@
     h += '<h3>持有明細</h3><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">名稱</th><th>股數／金額</th><th>價格（日期）</th><th>市值（台幣）</th><th>占比</th><th>平均成本</th><th>未實現損益</th></tr></thead><tbody>' +
       lines.map(x => { const a = x.a, u = U.get(a.code) || {}; return '<tr><td class="l"><b>' + esc(a.code) + '</b></td><td class="l">' + esc(a.name) + '</td><td>' + qty(a.v) + '</td><td>' + (a.kind === 'C' ? '—' : nf(a.px, a.px < 10 ? 3 : 2) + (a.cur === 'USD' ? ' 美元' : ' 元') + '<br><small>' + esc(u.d || '') + '</small>') + '</td><td>' + twd(a.value) + '</td><td>' + pc(a.w) + '</td><td>' + (x.c > 0 ? nf(x.c, 2) : '—') + '</td><td class="' + (x.pl > 0 ? 'pos' : x.pl < 0 ? 'neg' : '') + '">' + (x.pl == null ? '—' : (x.pl >= 0 ? '+' : '−') + nf(Math.abs(Math.round(x.pl))) + '<br><small>' + sg(x.plp) + '</small>') + '</td></tr>'; }).join('') +
       '</tbody></table></div>';
-    // 配置＋資產全貌、透視、產業、策略對照：每一區都是 3D 圓餅（out.innerHTML 之後由 pies() 畫）
+    // 左：配置＋透視；右：資產全貌；下一排：產業、策略對照。每一區都是 3D 圓餅（out.innerHTML 之後由 pies() 畫）
     const hasCo = R.cos.some(c => c.w > 0), hasSec = R.sectors.some(s => s[1] > 0);
-    h += '<div class="mh-two"><div><h3>資產配置</h3><div id="mh-p-alloc"></div><h3>資產全貌：現金＋透視後的公司</h3><div id="mh-p-mix"></div></div>';
-    h += '<div><h3>透視：實際持有的公司</h3>' + (hasCo ? '<div id="mh-p-top"></div>' : '<p class="small">沒有可拆解的股票部位。</p>') + '</div></div>';
+    h += '<div class="mh-two"><div><h3>資產配置</h3><div id="mh-p-alloc"></div><h3>透視：實際持有的公司</h3>' + (hasCo ? '<div id="mh-p-top"></div>' : '<p class="small">沒有可拆解的股票部位。</p>') + '</div>';
+    h += '<div><h3>資產全貌：現金＋透視後的公司</h3><div id="mh-p-mix"></div></div></div>';
     h += '<div class="mh-two"><div><h3>產業分布（股票曝險）</h3>' + (hasSec ? '<div id="mh-p-sec"></div>' : '<p class="small">—</p>') + '</div>';
     h += '<div><h3>' + (targets && targets.list && targets.list.length ? '和 ' + targets.list.map(t => esc(t.id)).join('、') + ' 本月目標比較' : '和策略本月目標比較') + '</h3>' + strategy(R) + '</div></div>';
     h += '<p class="small">說明：價格取各來源中日期最新的收盤（證交所／櫃買中心、Yahoo Finance、熱力圖、投資組合透視價格檔），日期列在價格下方；ETF 依發行商公布的持股拆解，槓桿 ETF 依倍數放大。以上為依你輸入的數字所做的計算，不構成投資建議。</p>';
