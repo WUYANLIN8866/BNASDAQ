@@ -107,14 +107,23 @@ from zoneinfo import ZoneInfo
 # 只用「已收盤」的交易日：今天的 K 棒要到收盤後才算數（美股 16:10 美東、台股 14:30 台北）。
 # 2026-11-12 發現：排程常延到台北晚上 11 點才跑，那時美股盤中，最後一根 K 棒是盤中價，卻被當成當天收盤寫進來。
 DONE = {'US': (ZoneInfo('America/New_York'), dt.time(16, 10)), 'TW': (ZoneInfo('Asia/Taipei'), dt.time(14, 30))}
+# 收盤後 Yahoo 當天日線的 close 常常還是空值（2026-11-12 01:11 UTC 實測：美股全部停在前一天）：
+# 這時用 meta 的 regularMarketPrice 補上，但成交時間必須在該日收盤之後（美股 16:00 美東、台股 13:30 台北），盤中價不補。同 fetch_heatmap.py 的 _bars。
+BELL = {'US': dt.time(16, 0), 'TW': dt.time(13, 30)}
 
 
-def _closed(ts, cl, mkt, now=None):
-    """Yahoo 的 (時間戳, 收盤) → [(日期, 收盤)]，只留已收盤的交易日；mkt=None 不篩（匯率）。"""
+def _closed(ts, cl, mkt, now=None, meta=None):
+    """Yahoo 的 (時間戳, 收盤) → [(日期, 收盤)]，只留已收盤的交易日；mkt=None 不篩（匯率）。
+    最後一根的 close 是空值時，用 meta.regularMarketPrice 補（成交時間要在同一天收盤之後）。"""
     tz, done = DONE[mkt] if mkt else (ZoneInfo('Asia/Taipei'), None)
     now = (now or dt.datetime.now(dt.timezone.utc)).astimezone(tz)
+    ts, cl = list(ts or []), list(cl or [])
+    if mkt and ts and len(cl) == len(ts) and cl[-1] is None and meta and meta.get('regularMarketPrice') and meta.get('regularMarketTime'):
+        mt = dt.datetime.fromtimestamp(meta['regularMarketTime'], tz)
+        if mt.date() == dt.datetime.fromtimestamp(ts[-1], tz).date() and mt.time() >= BELL[mkt]:
+            cl[-1] = float(meta['regularMarketPrice'])
     by = {}
-    for t, c in zip(ts or [], cl or []):
+    for t, c in zip(ts, cl):
         if c is None:
             continue
         d = dt.datetime.fromtimestamp(t, tz).date()
@@ -133,7 +142,7 @@ def _last(pairs):
 def _yahoo_chart_last(sym, rng='5d', mkt='US'):
     j = _get_json(f'https://query2.finance.yahoo.com/v8/finance/chart/{urllib.request.quote(sym)}?range={rng}&interval=1d')
     res = j['chart']['result'][0]
-    pairs = _closed(res.get('timestamp'), res['indicators']['quote'][0]['close'], mkt)
+    pairs = _closed(res.get('timestamp'), (res['indicators']['quote'] or [{}])[0].get('close'), mkt, meta=res.get('meta'))
     if not pairs:
         raise RuntimeError('no closes')
     return _last(pairs)
@@ -149,7 +158,7 @@ def _yahoo_batch(codes, mkt, suffix='', sleep=0.25):
             j = _get_json('https://query1.finance.yahoo.com/v7/finance/spark?symbols=' + ','.join(urllib.request.quote(c + suffix) for c in batch) + '&range=5d&interval=1d')
             for r in (j.get('spark', {}).get('result') or []):
                 sym = str(r.get('symbol') or ''); resp = (r.get('response') or [{}])[0]
-                pairs = _closed(resp.get('timestamp'), (resp.get('indicators', {}).get('quote') or [{}])[0].get('close'), mkt)
+                pairs = _closed(resp.get('timestamp'), (resp.get('indicators', {}).get('quote') or [{}])[0].get('close'), mkt, meta=resp.get('meta'))
                 if sym and pairs:
                     out[sym[:-len(suffix)] if suffix and sym.endswith(suffix) else sym] = _last(pairs)
         except Exception as e:  # noqa
