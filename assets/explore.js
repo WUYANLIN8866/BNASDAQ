@@ -160,6 +160,15 @@
     const C = Array.isArray(d.cands) ? d.cands : [];
     const GW = { pass: ['done', '通過'], fail: ['bad', '未通過'], pending: ['run', '驗證中'], skip: ['wait', '未驗'] };
     const gb = g => { const w = GW[g] || ['wait', '—']; return `<span class="badge xp-${w[0]}">${w[1]}</span>`; };
+    // 2026-11-14 01:43 user: the whole section and every candidate's note can be collapsed; remember the choice
+    if ($('xp-cands-box') && !$('xp-cands-box').dataset.wired) {
+      const box = $('xp-cands-box'); box.dataset.wired = '1';
+      try { if (localStorage.getItem('xp-cands-box') === 'closed') box.open = false; } catch (e) {}
+      box.addEventListener('toggle', () => { try { localStorage.setItem('xp-cands-box', box.open ? 'open' : 'closed'); } catch (e) {} });
+      const all = v => document.querySelectorAll('#xp-cand-notes details').forEach(d => { d.open = v; });
+      $('xp-cand-all-open').addEventListener('click', () => all(true));
+      $('xp-cand-all-close').addEventListener('click', () => all(false));
+    }
     if ($('xp-cands')) {
       const open = new Set([...document.querySelectorAll('#xp-cand-notes details[open]')].map(e => e.getAttribute('data-id')));
       $('xp-cands-none').hidden = C.length > 0;
