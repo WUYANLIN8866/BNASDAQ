@@ -39,6 +39,12 @@
 .badge.xp-run { background: rgba(42, 120, 214, .10); border-color: rgba(42, 120, 214, .45); color: var(--s-fund); }
 .badge.xp-pause { background: rgba(154, 106, 0, .10); border-color: rgba(154, 106, 0, .45); color: var(--warn); }
 .badge.xp-wait { color: var(--muted); }
+.badge.xp-bad { background: rgba(179, 38, 30, .10); border-color: rgba(179, 38, 30, .45); color: var(--bad); }
+#xp-cands td { white-space: nowrap; }
+#xp-cand-notes { margin-top: 12px; }
+#xp-cand-notes summary b { font-family: var(--serif); }
+#xp-cand-notes .ans p { margin: 12px 0 8px; }
+#xp-cand-notes .ans ol { margin: 0; padding-left: 1.4em; }
 #xp-stages td.l:first-child, #xp-top td.l { min-width: 13em; }
 #xp-stages td, #xp-top td { white-space: nowrap; }
 #xp-stages td.l:first-child, #xp-top td.l { white-space: normal; }
@@ -63,6 +69,12 @@
   <div class="kv" id="xp-kv"></div>
   <div class="xp-prog"><div class="xp-prog-h"><span id="xp-stage">—</span><span id="xp-pct">—</span></div><div class="xp-track" id="xp-track" role="progressbar" aria-label="本階段進度" aria-valuemin="0" aria-valuemax="100"><i id="xp-fill"></i></div><div class="xp-prog-s" id="xp-sub"></div></div>
 
+  <h2 id="cands">初步達標候選的驗證進度</h2>
+  <p>候選的回測年化報酬率一超過門檻（第 1 關），就列在這裡，並立刻接著驗證其餘 4 關（關卡順序同頁尾「新策略必須同時通過的門檻」）。未通過時，點開下方各候選可看原因與數字。組合內容與參數涉及交易規則，依本站政策不公開。</p>
+  <p id="xp-cands-none" class="note" hidden>目前還沒有候選通過第 1 關。</p>
+  <div class="tblwrap"><table class="tbl" id="xp-cands"></table></div>
+  <div id="xp-cand-notes"></div>
+
   <h2 id="trend">最佳候選的變化</h2>
   <div id="c-best"></div>
   <div id="c-tested"></div>
@@ -85,10 +97,10 @@
   </ol>
   <div class="note"><p>運算分段進行，每段最長約 2 小時；兩段之間本頁會顯示「暫停中」，續跑後自動恢復更新。所有數字皆為歷史回測，不代表未來報酬。</p></div>
 </div>
-<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#trend">最佳候選的變化</a></li><li><a href="#stages">各階段進度</a></li><li><a href="#top">前 10 名候選</a></li><li><a href="#bar">新策略的門檻</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">研究與回測</a></li><li><a href="risk.html#robust">參數穩健性檢驗</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div></aside>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#cands">初步達標候選</a></li><li><a href="#trend">最佳候選的變化</a></li><li><a href="#stages">各階段進度</a></li><li><a href="#top">前 10 名候選</a></li><li><a href="#bar">新策略的門檻</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">研究與回測</a></li><li><a href="risk.html#robust">參數穩健性檢驗</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div></aside>
 </div></div></div>
 <script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/charts.js?v=43696f0c67"></script>
-<script src="assets/explore.js?v=8dcacf73c5"></script>
+<script src="assets/explore.js?v=3ba534d6e2"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">

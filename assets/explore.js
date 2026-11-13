@@ -101,7 +101,11 @@
       tile('本階段進度', pct(d.stage_pct, 1), d.stage ? esc(d.stage) : '—'),
       tile('累計已回測組數', full(d.tested), `涵蓋 ${full(d.types_tested)} 種方法組合`, 'fit'),
       tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap != null ? `，還差 ${gap.toFixed(2)} 個百分點` : ''}`),
-      tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
+      // 2026-11-13: pass count as a 5-tuple, one figure per gate in the order of the list at the foot of the page
+      // (cumulative: the k-th figure = candidates that passed gates 1..k, so the last one = passed everything)
+      Array.isArray(d.gates) && d.gates.length === 5
+        ? tile('過關數（第 1 → 5 關）', '(' + d.gates.map(g => nf.format(g || 0)).join(',') + ')', '依序為報酬、回撤、參數穩健、各時間窗、不使用未來資訊；每一格是連續通過到該關的候選數，最後一格才是全部通過')
+        : tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
       // tokens used by the AI session that runs the search on machine 1 (user request 2026-11-07), plain numbers
       d.tokens && d.tokens.total != null ? `<div class="tile xp-tok"><div class="k">AI 已使用 token 數量（所有 AI Server 合計）</div>` +
         `<div class="v">${full(d.tokens.total)}</div></div>` : '',          // total only (user 12:30: no per-machine figures)
@@ -145,6 +149,19 @@
     const badge = s => `<span class="badge xp-${s === '完成' ? 'done' : s === '進行中' ? 'run' : s === '暫停' ? 'pause' : 'wait'}">${esc(s)}</span>`;
     $('xp-stages').innerHTML = '<thead><tr><th class="l">階段</th><th class="l">狀態</th><th>進度</th><th>已回測組數</th><th>階段最佳年化</th></tr></thead><tbody>' +
       (d.stages || []).map(s => `<tr><td class="l">${esc(s.name)}</td><td class="l">${badge(s.status)}</td><td>${pct(s.pct, 1)}<div class="xp-mini"><i style="width:${Math.min(100, (s.pct || 0) * 100).toFixed(1)}%"></i></div></td><td>${full(s.tested)}</td><td>${s.best == null ? '—' : pct(s.best)}</td></tr>`).join('') + '</tbody>';
+    // candidates that passed gate 1 (return above the bar): result of each of the 5 gates and why a gate failed.
+    // Only gate results and their figures are published; methods, parameters and rules stay private. -- 2026-11-13
+    const C = Array.isArray(d.cands) ? d.cands : [];
+    const GW = { pass: ['done', '通過'], fail: ['bad', '未通過'], pending: ['run', '驗證中'], skip: ['wait', '未驗'] };
+    const gb = g => { const w = GW[g] || ['wait', '—']; return `<span class="badge xp-${w[0]}">${w[1]}</span>`; };
+    if ($('xp-cands')) {
+      const open = new Set([...document.querySelectorAll('#xp-cand-notes details[open]')].map(e => e.getAttribute('data-id')));
+      $('xp-cands-none').hidden = C.length > 0;
+      $('xp-cands').innerHTML = !C.length ? '' : '<thead><tr><th class="l">編號</th><th>年化報酬率</th><th>1 報酬</th><th>2 回撤</th><th>3 穩健</th><th>4 時間窗</th><th>5 未來資訊</th><th class="l">結論</th></tr></thead><tbody>' +
+        C.map(c => `<tr><td class="l">${esc(c.id)}</td><td>${pct(c.cagr)}</td>${[0, 1, 2, 3, 4].map(k => `<td>${gb((c.g || [])[k])}</td>`).join('')}<td class="l">${esc(c.verdict)}</td></tr>`).join('') + '</tbody>';
+      $('xp-cand-notes').innerHTML = C.map(c => `<details class="xp-cand" data-id="${esc(c.id)}"${open.has(String(c.id)) ? ' open' : ''}><summary><b>${esc(c.id)}</b>　年化 ${pct(c.cagr)}　${esc(c.verdict)}</summary>` +
+        `<div class="ans"><p><b>原因：</b>${esc(c.reason).replace(/\n/g, '<br>')}</p><ol>${(c.nums || []).map(n => `<li>${esc(n)}</li>`).join('')}</ol></div></details>`).join('');
+    }
     // top candidates (combination contents are trading rules and stay private)
     $('xp-top').innerHTML = '<thead><tr><th>名次</th><th>年化報酬率</th><th>與門檻差距</th><th class="l">來源階段</th></tr></thead><tbody>' +
       (d.top || []).map(t => `<tr><td>${t.rank}</td><td>${pct(t.best)}</td><td>${((t.best - d.target) * 100).toFixed(2)} 個百分點</td><td class="l">${esc(t.stage)}</td></tr>`).join('') + '</tbody>';
