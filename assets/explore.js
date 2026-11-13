@@ -73,7 +73,13 @@
     if (d.status === 'done') return { cls: 'done', text: '本輪搜尋已完成' };
     if (d.status === 'paused') return { cls: 'paused', text: '運算暫停中，恢復後本頁自動更新' };
     if (age > STALE_MIN) return { cls: 'stale', text: '暫時未收到新進度' };
-    return { cls: 'live', text: '運算進行中' };
+    // 2026-11-13 daily usage budget: 'quiet' = today's quota used up -> AI Servers keep computing but stop reporting
+    const b = d.budget;
+    if (b && b.mode === 'quiet') {
+      const u = String(b.until || '').replace(/^\d{4}-(\d\d)-(\d\d) /, (m, mo, da) => `${+mo}/${+da} `);
+      return { cls: 'paused', text: `等待明天額度：今日額度已用完，AI Server 繼續運算但暫停回報，${u} 恢復` };
+    }
+    return { cls: 'live', text: b ? '正常運算中（省電模式）' : '運算進行中' };
   }
 
   function renderStatus() {
