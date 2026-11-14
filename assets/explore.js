@@ -79,7 +79,7 @@
       const u = String(b.until || '').replace(/^\d{4}-(\d\d)-(\d\d) /, (m, mo, da) => `${+mo}/${+da} `);
       return { cls: 'paused', text: `等待明天額度：今日額度已用完，AI Server 繼續運算但暫停回報，${u} 恢復` };
     }
-    return { cls: 'live', text: b ? '正常運算中（省電模式）' : '運算進行中' };
+    return { cls: 'live', text: b ? '正常運算中' : '運算進行中' };
   }
 
   function renderStatus() {
