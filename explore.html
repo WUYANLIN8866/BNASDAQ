@@ -19,8 +19,8 @@
 @media (min-width: 760px) { #xp-kv { grid-template-columns: 1fr 1.55fr 1fr 1fr; } }
 .xp-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 12px 16px; margin: 6px 0 18px; background: var(--paper); border: 1px solid var(--line); border-left: 3px solid var(--good); font-size: 15px; }
 .xp-box { margin: 6px 0 18px; }
-.xp-box > summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
-.xp-box-hint { font-weight: 400; color: var(--muted); font-size: 13.5px; margin-left: 6px; }
+.xp-box > summary { cursor: pointer; font-weight: 600; padding: 10px 12px; }
+.xp-box-hint, .xp-box-count { font-weight: 400; color: var(--muted); font-size: 13.5px; white-space: nowrap; }
 .xp-box-tools button { font: inherit; font-size: 13.5px; padding: 4px 10px; margin-right: 6px; border: 1px solid var(--line); background: var(--paper); color: inherit; cursor: pointer; }
 .xp-status .xp-meta { color: var(--muted); font-size: 13.5px; }
 .xp-status.paused, .xp-status.stale { border-left-color: var(--warn); }
@@ -78,7 +78,7 @@
   <h2 id="cands">初步達標候選的驗證進度</h2>
   <p>候選的回測年化報酬率一超過門檻（第 1 關），就列在這裡，並立刻接著驗證其餘 4 關（關卡順序同頁尾「新策略必須同時通過的門檻」）。未通過時，點開下方各候選可看原因與數字。組合內容與參數涉及交易規則，依本站政策不公開。</p>
   <details class="xp-box" id="xp-cands-box" open>
-    <summary>驗證進度表與各候選說明<span class="xp-box-hint">（點這裡收合／展開）</span></summary>
+    <summary><span>驗證進度表與各候選說明 <span class="xp-box-hint">（點這裡收合／展開）</span></span></summary>
     <p id="xp-cands-none" class="note" hidden>目前還沒有候選通過第 1 關。</p>
     <div class="tblwrap"><table class="tbl" id="xp-cands"></table></div>
     <p class="xp-box-tools"><button type="button" id="xp-cand-all-open">全部展開說明</button> <button type="button" id="xp-cand-all-close">全部收合說明</button></p>
@@ -91,7 +91,10 @@
 
   <h2 id="stages">各階段進度</h2>
   <p>搜尋分成先導、初篩與精篩：先以較粗的參數間距快速篩選大量方法組合，再把排名最前的組合以完整參數重新回測。某一輪若沒有候選通過全部門檻，下一輪會多組合一個方法，方法組合數擴大為至少 10 倍；第 9～20 輪已排定並列在下表，開跑時自動更新為進行中。</p>
-  <div class="tblwrap"><table class="tbl" id="xp-stages"></table></div>
+  <details class="xp-box" id="xp-stages-box" open>
+    <summary><span>各階段進度表 <span class="xp-box-count" id="xp-stages-count"></span> <span class="xp-box-hint">（點這裡收合／展開）</span></span></summary>
+    <div class="tblwrap"><table class="tbl" id="xp-stages"></table></div>
+  </details>
 
   <h2 id="top">目前前 10 名候選</h2>
   <p>以下為目前回測年化報酬率最高的 10 個候選（同時符合最大回撤條件）。組合內容涉及交易規則，依本站政策不公開。</p>
@@ -110,7 +113,7 @@
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#cands">初步達標候選</a></li><li><a href="#trend">最佳候選的變化</a></li><li><a href="#stages">各階段進度</a></li><li><a href="#top">前 10 名候選</a></li><li><a href="#bar">新策略的門檻</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">研究與回測</a></li><li><a href="risk.html#robust">參數穩健性檢驗</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div></aside>
 </div></div></div>
 <script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/charts.js?v=43696f0c67"></script>
-<script src="assets/explore.js?v=dc4118515d"></script>
+<script src="assets/explore.js?v=877ab1ccb8"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">

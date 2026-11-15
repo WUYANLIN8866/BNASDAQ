@@ -160,11 +160,16 @@
     const C = Array.isArray(d.cands) ? d.cands : [];
     const GW = { pass: ['done', '通過'], fail: ['bad', '未通過'], pending: ['run', '驗證中'], skip: ['wait', '未驗'] };
     const gb = g => { const w = GW[g] || ['wait', '—']; return `<span class="badge xp-${w[0]}">${w[1]}</span>`; };
+    // 2026-11-15 20:57 user: the stage table can be collapsed too (same way as the candidate section below); the summary line keeps
+    // a count per status so the gist stays visible while collapsed
+    if ($('xp-stages-count')) {
+      const n = {}; (d.stages || []).forEach(s => { n[s.status] = (n[s.status] || 0) + 1; });
+      const order = ['完成', '進行中', '暫停', '等待中'], keys = order.filter(k => n[k]).concat(Object.keys(n).filter(k => !order.includes(k)));
+      $('xp-stages-count').textContent = keys.map(k => k + ' ' + n[k]).join('・');
+    }
+    fold('xp-stages-box');
     // 2026-11-14 01:43 user: the whole section and every candidate's note can be collapsed; remember the choice
-    if ($('xp-cands-box') && !$('xp-cands-box').dataset.wired) {
-      const box = $('xp-cands-box'); box.dataset.wired = '1';
-      try { if (localStorage.getItem('xp-cands-box') === 'closed') box.open = false; } catch (e) {}
-      box.addEventListener('toggle', () => { try { localStorage.setItem('xp-cands-box', box.open ? 'open' : 'closed'); } catch (e) {} });
+    if (fold('xp-cands-box')) {
       const all = v => document.querySelectorAll('#xp-cand-notes details').forEach(d => { d.open = v; });
       $('xp-cand-all-open').addEventListener('click', () => all(true));
       $('xp-cand-all-close').addEventListener('click', () => all(false));
@@ -180,6 +185,15 @@
     // top candidates (combination contents are trading rules and stay private)
     $('xp-top').innerHTML = '<thead><tr><th>名次</th><th>年化報酬率</th><th>與門檻差距</th><th class="l">來源階段</th></tr></thead><tbody>' +
       (d.top || []).map(t => `<tr><td>${t.rank}</td><td>${pct(t.best)}</td><td>${((t.best - d.target) * 100).toFixed(2)} 個百分點</td><td class="l">${esc(t.stage)}</td></tr>`).join('') + '</tbody>';
+  }
+
+  // Collapsible section that remembers the reader's choice (localStorage key = element id). Returns true the first time it wires a box.
+  function fold(id) {
+    const box = $(id); if (!box || box.dataset.wired) return false;
+    box.dataset.wired = '1';
+    try { if (localStorage.getItem(id) === 'closed') box.open = false; } catch (e) {}
+    box.addEventListener('toggle', () => { try { localStorage.setItem(id, box.open ? 'open' : 'closed'); } catch (e) {} });
+    return true;
   }
 
   async function tick() {
