@@ -1,0 +1,20 @@
+{
+  "name": "BNASDAQ",
+  "short_name": "BNASDAQ",
+  "description": "BNASDAQ 研究站：每日市場分析、完整回測、定期定額、投資組合透視與風險揭露。",
+  "lang": "zh-Hant",
+  "dir": "ltr",
+  "id": "/BNASDAQ/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0b0c",
+  "theme_color": "#0b0b0c",
+  "categories": ["finance"],
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
