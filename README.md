@@ -14,6 +14,7 @@
 - `data/accounts.json`：帳號（只有密碼雜湊與包裝後的金鑰）；`data/site.json`：公告
 - `data/tw/<代號>.json`、`data/tw/index.json`：個股對比頁與研究與回測頁「加入台股／美股」用的預算結果（Yahoo 還原收盤；台股上市上櫃全部、美股 S&P 500／Nasdaq-100／常見 ETF；每檔含台幣 2013 起與美元 2000 起兩段；FRED 每日匯率），由 `.github/workflows/tw-data.yml` 每月重算（可手動觸發、可指定代號）；`data/tw/latest.json`：台股官方最新收盤＋美股 Yahoo 收盤＋匯率，`.github/workflows/tw-latest.yml` 每個交易日 15:10 更新
 - `scripts/fetch_market.py`、`scripts/fetch_treasury.py`、`scripts/fetch_stocks.py`、`scripts/fetch_latest.py`：市場資料更新腳本；`.github/workflows/site.yml`：每日更新＋部署 Pages
+- `scripts/heatmap_live.py`、`.github/workflows/heatmap-live.yml`：每日市場分析頁「市值熱力圖」的盤中更新。開盤期間每分鐘把成分股最新價寫到 `heatmap-live` 分支（只留最新一筆 commit；不部署網站、不動 main），`daily.html` 每分鐘讀一次；收盤後的正式資料仍是 `scripts/fetch_heatmap.py` 產生的 `data/heatmap/latest.json`。啟動方式、資料來源與實測紀錄寫在腳本檔頭
 
 ## 管理
 管理員登入後台後，貼一次 fine-grained PAT（Contents: Read and write；Actions: Read and write 可手動觸發更新）即可新增／停用／刪除帳號、重設密碼、發布公告。

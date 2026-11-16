@@ -1,0 +1,79 @@
+name: Heatmap live quotes (intraday)
+
+# 市值熱力圖盤中更新：開盤期間每分鐘把成分股最新價寫到 heatmap-live 分支，網頁每分鐘讀一次。
+# 說明在 scripts/heatmap_live.py 檔頭。這個流程不部署網站、不動 main 分支。
+#
+# 怎麼啟動：
+#   1. 主要：Claude 的排程「BNASDAQ 熱力圖盤中啟動」平日台北 08:10、21:10 各執行一次 workflow_dispatch（台股、美股開盤前）。
+#   2. 備援：下面的 schedule。GitHub 的排程在這個 repo 實測會晚 3～10 小時才啟動（2026-10-29～11-15 的紀錄），
+#      所以不能當主要啟動方式；每 2 小時排一次，剛好落在盤中、而且沒有別的 run 在跑時才會接手。
+#   3. 接力：一個 job 最多 6 小時，美股一個交易日 6.5 小時，所以跑滿 320 分鐘會自己啟動下一棒（relay）。
+# gate 只花十幾秒：不在「開盤前 90 分鐘～收盤後幾分鐘」之內，或已經有人在跑，就直接結束。
+
+on:
+  workflow_dispatch:
+    inputs:
+      relay:
+        description: '接力用：上一棒的 run 編號（程式自動帶入；手動啟動請留空）'
+        required: false
+        default: ''
+      market:
+        description: 'TW 或 US（留空＝依現在時間自動判斷）'
+        required: false
+        default: ''
+      budget:
+        description: '測試交棒用：一個 job 最多跑幾秒（留空＝19200）'
+        required: false
+        default: ''
+  schedule:
+    - cron: '23 */2 * * 0-5'
+
+permissions:
+  contents: write   # 寫 heatmap-live 分支
+  actions: write    # 查有沒有別的 run 在跑、啟動下一棒
+
+jobs:
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      go: ${{ steps.g.outputs.go }}
+      market: ${{ steps.g.outputs.market }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts
+            data/heatmap
+      - id: g
+        name: Decide whether a trading session needs a runner now
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELAY: ${{ inputs.relay }}
+          MARKET: ${{ inputs.market }}
+        run: python3 scripts/heatmap_live.py gate
+
+  session:
+    name: session
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    concurrency:
+      group: heatmap-live-session
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts
+            data/heatmap
+      - name: Publish intraday quotes every minute until the close
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MARKET: ${{ needs.gate.outputs.market }}
+          HM_BUDGET: ${{ inputs.budget }}
+        run: python3 scripts/heatmap_live.py run
