@@ -1,0 +1,39 @@
+[fetch_latest] fx monthly unchanged
+[fetch_latest] twse rwd failed: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')
+[fetch_latest] TW 2026-11-13 1295 items
+[fetch_latest] TWO 2026-11-16 992 items
+[fetch_latest] TW via Yahoo 2026-11-16 1292 of 1295
+[fetch_latest] US KVUE failed: RuntimeError('no closes')
+[fetch_latest] US PSTG failed: RuntimeError('no closes')
+[fetch_latest] US ROKU failed: RuntimeError('no closes')
+[fetch_latest] US SPLG failed: RuntimeError('no closes')
+[fetch_latest] US 2026-11-13 640 items of 644
+[fetch_latest] fx {'rate': 32.959999084472656, 'date': '2026-11-16', 'chg': 0.021, 'source': 'Yahoo TWD=X'}
+[fetch_latest] us-all: retry 96 codes
+[fetch_latest] us-all written 2026-11-13 12156 of 12404
+[fetch_latest] written /home/runner/work/BNASDAQ/BNASDAQ/data/tw/latest.json {'TW': '2026-11-16', 'TWO': '2026-11-16', 'US': '2026-11-13'} 2926 items
+exit 0 seconds 256
+LATEST asof {'TW': '2026-11-16', 'TWO': '2026-11-16', 'US': '2026-11-13'} | prelim [] | changed ['TW', 'TWO'] | updated 2026-11-16T08:13:10Z
+notes ["rwd JSONDecodeError('Expecting value: line 1 column 1 (char 0)')", '上市：證交所 2026-11-13 尚未更新到 2026-11-16，改用 Yahoo（.TW）收盤 1292／1295 檔']
+errors {}
+source 證交所 STOCK_DAY_ALL＋Yahoo Finance（上市，證交所延遲時）、櫃買中心 OpenAPI（上櫃）、Yahoo Finance（美股、匯率；只用已收盤的交易日）
+items by market {'TW': 1295, 'TWO': 992, 'US': 639}
+   2330 [2215.0, -135.0, '台積電', 'TW']
+   0050 [96.45, -6.05, '元大台灣50', 'TW']
+   00670L [170.8, -7.0, '富邦NASDAQ正2', 'TW']
+   009800 [12.7, -0.22, '中信NASDAQ', 'TW']
+   6488 [577.0, -53.0, '環球晶', 'TWO']
+   8069 [137.5, -8.5, '元太', 'TWO']
+   QLD [79.3, -2.0, '', 'US']
+   SHV [110.18, 0.04, '', 'US']
+   TSLA [390.22, -7.23, '', 'US']
+   QQQ [679.89, -8.28, '', 'US']
+fx {'rate': 32.959999084472656, 'date': '2026-11-16', 'chg': 0.021, 'source': 'Yahoo TWD=X'}
+US-ALL asof 2026-11-13 n 12156 of 12404 updated 2026-11-16T08:13:10Z
+   SPCX [139.11, -0.83]
+   QLD [79.3, -2.0]
+   AAPL [356.27, 1.39]
+   BRK-B [592.94, 3.11]
+   SPY [754.37, -2.75]
+   VOO [693.38, -2.62]
+missing 244 {'S': 244} sample ['AAC-WS', 'AACPW', 'ADACW', 'AEAQW', 'AERTW', 'AESPR', 'AFJKR', 'ALOVW', 'ALPXR', 'ALUB-WS', 'AMPX-WS', 'ANGHW', 'APACR', 'APMCR', 'APURR', 'ARCIW', 'ARCLW', 'ASBPW', 'ASPCR', 'ATLQR', 'ATLQW', 'BBAI-WS', 'BBCIW', 'BCGWW', 'BCSS-WS', 'BDCIW', 'BEBE-WS', 'BENFW', 'BESS-WS', 'BHAVR', 'BIAFW', 'BLRKW', 'BLZRW', 'BPACR', 'BREZR', 'BRLSW', 'BSAAR', 'BWIV-WS', 'CDIOW', 'CHARR']
