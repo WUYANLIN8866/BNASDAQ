@@ -9,7 +9,8 @@
   台股  Yahoo奇摩股市前端用的報價 API（一次 50 檔、約 0.5 秒、報價時間只落後 4 秒）；失敗時改用鉅亨網報價 API（每批 10 檔）。
         不用證交所「基本市況報導」mis.twse.com.tw：從 GitHub 的機器讀，同一份資料會重複回 1～2 分鐘，而且成交價欄位多半是空的（實測 13 次輪詢都是同一份）。
         不用 Yahoo 國際版的 .TW 報價：開盤 7 分鐘後仍是前一個交易日的價格（延遲報價）。
-  美股  Yahoo Finance spark（每批最多 20 檔、27 批、4 條連線約 0.7 秒；regularMarketPrice／regularMarketTime／chartPreviousClose）。
+  美股  Yahoo Finance spark（每批最多 20 檔、27 批、4 條連線約 0.7 秒；現價＝regularMarketPrice、前收＝上一根日 K 的收盤）。
+        盤中實測（11-16 22:40～22:53）：522 檔全有報價、沒有被限流；同一網址會被快取 5 分鐘，所以每輪要帶不同的參數（見 yahoo_batch）。
         不用 Nasdaq 篩選器：實測回的是前一天的價格，而且會擋雲端主機。
 
 放哪裡（heatmap-live 分支，只留最新一筆 commit，不會越積越多）：
@@ -126,11 +127,18 @@ def num(x):
 
 
 # ---------- 美股：Yahoo spark ----------
-def yahoo_batch(batch):
-    """回傳 (狀態碼, {代號: (現價, 前收, 報價時間, (正規時段開始, 結束) 或 None)})"""
+def yahoo_batch(batch, nonce=None):
+    """回傳 (狀態碼, {代號: (現價, 上一個交易日收盤, 報價時間, (正規時段開始, 結束) 或 None)})
+
+    兩件 2026-11-16 美股盤中實測才發現的事：
+    1. 前收要用「上一根日 K 的收盤」（所以抓 range=5d）。meta 的 chartPreviousClose 在除息日是扣掉股息後的價格
+       （UPS：chartPreviousClose 110.76，實際上一日收盤 112.40），regularMarketChangePercent 也是用它算的；
+       用它算出來的漲跌會和一般報價、以及收盤後的正式資料不一樣（當天 522 檔裡有 21 檔差 0.1 個百分點以上）。
+    2. 同一個網址的回應會被快取 5 分鐘（回應標頭 cache-control: max-age=300）：同一批每分鐘問一次，拿到的常常是 1～5 分鐘前的那一份。
+       每一輪帶一個不同的參數（nonce）才拿得到當下的報價（實測 6 輪都在 4 秒內）。"""
     last = 0
     for host in ('query2', 'query1'):
-        url = f'https://{host}.finance.yahoo.com/v7/finance/spark?symbols={",".join(batch)}&range=1d&interval=1d'
+        url = f'https://{host}.finance.yahoo.com/v7/finance/spark?symbols={",".join(batch)}&range=5d&interval=1d' + (f'&_={nonce}' if nonce else '')
         try:
             st, body = http(url, timeout=10)
             j = json.loads(body)
@@ -144,9 +152,19 @@ def yahoo_batch(batch):
         out = {}
         for r in ((j.get('spark') or {}).get('result') or []):
             try:
-                m = r['response'][0]['meta']
-                p, t, prev = num(m.get('regularMarketPrice')), num(m.get('regularMarketTime')), num(m.get('chartPreviousClose'))
-                if p and t and prev and p > 0 and prev > 0:
+                resp = r['response'][0]; m = resp['meta']
+                p, t = num(m.get('regularMarketPrice')), num(m.get('regularMarketTime'))
+                if not (p and t and p > 0):
+                    continue
+                off = num(m.get('gmtoffset')); off = -18000 if off is None else off
+                day = lambda e: int((e + off) // 86400)   # 交易所當地的日期（第幾天）
+                ts = resp.get('timestamp') or []
+                cl = (((resp.get('indicators') or {}).get('quote') or [{}])[0].get('close')) or []
+                prev = None
+                for e, c in zip(reversed(ts), reversed(cl)):   # 從最新往回找：日期早於「報價那一天」、而且有收盤價的第一根
+                    if c is not None and num(e) is not None and day(e) < day(t):
+                        prev = num(c); break
+                if prev and prev > 0:
                     reg = (m.get('currentTradingPeriod') or {}).get('regular') or {}
                     per = (int(reg['start']), int(reg['end'])) if num(reg.get('start')) and num(reg.get('end')) else None
                     out[str(r['symbol']).upper()] = (p, prev, int(t), per)
@@ -156,11 +174,11 @@ def yahoo_batch(batch):
     return last, {}
 
 
-def fetch_us(syms):
+def fetch_us(syms, nonce=None):
     batches = [syms[i:i + 20] for i in range(0, len(syms), 20)]
     out, stat = {}, {'ok': 0, '429': 0, 'fail': 0}
     with cf.ThreadPoolExecutor(4) as ex:
-        for st, got in ex.map(yahoo_batch, batches):
+        for st, got in ex.map(lambda b: yahoo_batch(b, nonce), batches):
             stat['ok' if st == 200 else '429' if st == 429 else 'fail'] += 1
             out.update(got)
     return out, stat
@@ -351,7 +369,7 @@ class Session:
 
     # --- 抓一輪 ---
     def poll_us(self):
-        got, stat = fetch_us(self.syms)
+        got, stat = fetch_us(self.syms, int(self.clock()))   # 每一輪不同的參數：避開 Yahoo 的 5 分鐘快取
         lo, per = self.sess['open'] - 60, {}
         for s, (p, prev, t, reg) in got.items():
             if t >= lo and t <= self.clock() + 300:
