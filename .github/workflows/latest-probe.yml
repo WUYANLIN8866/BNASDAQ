@@ -17,11 +17,11 @@ jobs:
           python-version: '3.12'
       - name: Probe US intraday quote fields and freshness
         run: |
-          python3 scripts/probe_us.py > probe-us.log 2>&1 || true
+          python3 scripts/probe_us2.py > probe-us2.log 2>&1 || true
       - name: Save results to this branch
         run: |
           git config user.name "bnasdaq-bot"
           git config user.email "bnasdaq-bot@users.noreply.github.com"
-          git add -f probe-us.log || true
+          git add -f probe-us2.log || true
           git commit -m "probe result" || exit 0
           git push origin HEAD:hm-dev
