@@ -4,8 +4,10 @@
    跨裝置同步（站方啟用後才有；見下方「跨裝置同步」）：同一份資料另外用「個人金鑰」加密後放到站方的私人 GitHub repo，會員在任何裝置登入都看到同一份。
    價格：每一檔取「日期最新」的來源，並記下同一來源的前一個交易日收盤（算每日變化用）——
      data/lt/px.json（投資組合透視每日價格，只有最新價；Nasdaq 擋線時美股會停在舊日期，例如 11/11 起停在 11/06）
-     data/tw/latest.json（台股官方收盤，證交所延遲時 Yahoo 補位；美股 Yahoo；只收已收盤的交易日；附漲跌）
+     data/tw/latest.json（台股官方收盤，證交所延遲時 Yahoo 補位；美股 Yahoo；只收已收盤的交易日；附漲跌。台股收盤後幾分鐘先放 Yahoo奇摩股市的收盤，檔內 prelim 標明，官方檔案出來後換掉）
+     data/lt/us-close.json（美股總表全部代號的最新收盤＋漲跌，美股收盤後更新；上面那個檔的美股只有比較頁清單六百多檔）
      data/heatmap/latest.json（指數成分股收盤＋漲跌%）、data/market.json（QQQ 本月每日收盤）
+   各市場收盤後由 heatmap-live.yml 的 session 啟動 tw-latest.yml 更新上面兩個檔並重新部署（GitHub 自己的排程在這個 repo 會晚 7～10 小時）。
    「不列入計算」的列（row.off）在 rows() 會換成空白列：引擎略過它，列號不變。計算交給 assets/lt-engine.js（股數模式）。 */
 (function () {
   'use strict';
@@ -206,7 +208,7 @@
   const getJ = async u => { try { const r = await fetch(u, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (e) { return null; } };
   C.data = async () => {
     if (D) return D;
-    const [UNI, P, L, H, M] = await Promise.all(['data/lt/universe.json', 'data/lt/px.json', 'data/tw/latest.json', 'data/heatmap/latest.json', 'data/market.json'].map(getJ));
+    const [UNI, P, L, H, M, UC] = await Promise.all(['data/lt/universe.json', 'data/lt/px.json', 'data/tw/latest.json', 'data/heatmap/latest.json', 'data/market.json', 'data/lt/us-close.json'].map(getJ));
     if (!UNI) throw new Error('證券總表讀取失敗');
     const U = new Map(), A = (P && P.asof) || {}, PX = (P && P.px) || {};
     UNI.list.forEach(x => U.set(x[0], { code: x[0], n: x[1], m: x[2], k: x[3], s: x[4], lt: x[5], p: PX[x[0]] || null,
@@ -217,9 +219,14 @@
       const u = U.get(code); if (!u || !(p > 0) || !d) return;
       if (d > (u.d || '') || (d === u.d && pr > (u.pr || 0))) { u.p = p; u.d = d; u.pp = pp > 0 ? pp : null; u.src = src; u.pr = pr; }
     };
-    // 最新收盤檔：舊版程式曾在美股盤中抓價（11/11 台北 23:05），更新時間早於該日美股收盤（約 21:10 UTC）的美股資料不用
-    const usOk = L && L.asof && L.asof.US && L.updated && Date.parse(L.updated) >= Date.parse(L.asof.US + 'T21:10:00Z');
-    if (L && L.items) Object.entries(L.items).forEach(([c, v]) => { const mk = v[3] || 'TW'; if (mk === 'US' && !usOk) return; take(c, (L.asof || {})[mk], v[0], v[1] != null ? v[0] - v[1] : null, mk === 'US' ? 'Yahoo 收盤' : '證交所／櫃買中心收盤', 1); });
+    // 最新收盤檔：舊版程式曾在美股盤中抓價（11/11 台北 23:05），所以更新時間早於該日美股收盤的美股資料不用。
+    // 美股收盤＝夏令 20:00 UTC、冬令 21:00 UTC；現在的程式只收已收盤的交易日，這裡用較早的 20:00 當門檻（用 21:10 的話，夏令收盤後 10 分鐘那一次會被誤擋）
+    const usOk = L && L.asof && L.asof.US && L.updated && Date.parse(L.updated) >= Date.parse(L.asof.US + 'T20:00:00Z');
+    // 台股收盤後幾分鐘內先放 Yahoo奇摩股市的收盤（prelim＝初值），官方檔案出來後同一天的資料會換成官方的
+    const pre = new Set((L && L.prelim) || []);
+    if (L && L.items) Object.entries(L.items).forEach(([c, v]) => { const mk = v[3] || 'TW'; if (mk === 'US' && !usOk) return; take(c, (L.asof || {})[mk], v[0], v[1] != null ? v[0] - v[1] : null, mk === 'US' ? 'Yahoo 收盤' : pre.has(mk) ? 'Yahoo奇摩股市收盤（官方檔案出來後更新）' : '證交所／櫃買中心收盤', 1); });
+    // 美股總表全部代號的最新收盤（data/lt/us-close.json，美股收盤後更新）：上面那個檔只有比較頁清單的六百多檔，其餘一萬多檔靠這個
+    if (UC && UC.px && /^\d{4}-\d{2}-\d{2}$/.test(UC.asof || '')) Object.entries(UC.px).forEach(([c, v]) => { if (Array.isArray(v)) take(c, UC.asof, v[0], v[1] != null ? v[0] - v[1] : null, 'Yahoo 收盤', 1); });
     if (H && H.sets) Object.values(H.sets).forEach(S => (S.tiles || []).forEach(t => { if (t[5] != null) take(t[0], S.session || H.session, t[5], t[4] != null ? t[5] / (1 + t[4] / 100) : null, '收盤（熱力圖）', 2); }));
     if (M && M.current && M.current.daily && M.current.daily.length) { const dd = M.current.daily, a = dd[dd.length - 1], b = dd[dd.length - 2]; take('QQQ', a.d, a.c, b ? b.c : null, 'Yahoo 收盤', 2); }
     // 匯率：取日期最新；前一日匯率（算美元資產的台幣變化）只有最新收盤檔有

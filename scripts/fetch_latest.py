@@ -5,9 +5,10 @@
 來源（官方）：
   上市：證交所 https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY_ALL?response=json（含日期、全部上市證券含 ETF）
   上櫃：櫃買中心 https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes（含日期）
-輸出：{"asof": {"TW": "YYYY-MM-DD", "TWO": "YYYY-MM-DD"}, "updated": "...Z",
-       "items": {"2330": [收盤, 漲跌, "名稱"], ...}}
-日期沒有前進（例如假日重跑）就不覆蓋原檔。
+輸出：{"asof": {"TW": "YYYY-MM-DD", "TWO": "YYYY-MM-DD", "US": "YYYY-MM-DD"}, "updated": "...Z", "prelim": ["TW", …],
+       "items": {"2330": [收盤, 漲跌, "名稱", "市場"], ...}}；另外 data/lt/us-close.json＝美股總表全部代號的最新收盤。
+每個市場各自比較：日期有前進（或同一天從初值換成官方）才換，其他情況沿用原有的；三個市場都沒變就不重寫（例如假日重跑）。
+什麼時候跑：每個市場收盤後由 heatmap-live.yml 的 session 啟動 tw-latest.yml（台股 13:32 後、美股收盤 10 分鐘後）；GitHub 排程當備援。
 """
 import json, os, sys, datetime as dt, urllib.request
 
@@ -20,8 +21,8 @@ def log(*a):
     print('[fetch_latest]', *a, flush=True)
 
 
-def _get_json(url, timeout=60):
-    req = urllib.request.Request(url, headers=UA)
+def _get_json(url, timeout=60, headers=None):
+    req = urllib.request.Request(url, headers=headers or UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read().decode('utf-8'))
 
@@ -103,12 +104,58 @@ def fetch_tpex():
     return date, items
 
 
+# ---------- 台股收盤後馬上要有當天收盤：Yahoo奇摩股市的報價 API（初值）----------
+# 為什麼需要：證交所網站版擋雲端主機、證交所 OpenAPI 隔天才有當天收盤、櫃買 OpenAPI 下午才更新；
+# 收盤後幾分鐘內拿得到「全部上市櫃」當天收盤價的公開來源是這個（2026-11-16 從 GitHub runner 實測：一次 50 檔、約 0.5 秒）。
+# 這裡的結果在 latest.json 標成 prelim（初值）；之後官方檔案有同一天的資料時，會被官方資料換掉。
+BUA = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+       'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'zh-TW,zh;q=0.9', 'Referer': 'https://tw.stock.yahoo.com/'}
+FAST_AFTER = 13 * 60 + 32          # 台北 13:32 之後才用（13:30 收盤集合競價撮合完）
+FAST_MIN = {'TW': 0.85, 'TWO': 0.60}   # 至少這個比例的代號「今天有成交」才採用；休市日沒有任何代號今天成交，不會誤用
+
+
+def _ytw_batch(syms):
+    """['2330.TW', '6488.TWO'…] → {同樣的代號: (成交價, 漲跌, 最後成交的台北日期)}"""
+    j = _get_json('https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=' + ','.join(syms), timeout=20, headers=BUA)
+    tz, out = dt.timezone(dt.timedelta(hours=8)), {}
+    raw = lambda v: _num(v.get('raw')) if isinstance(v, dict) else _num(v)
+    for a in (j if isinstance(j, list) else []):
+        try:
+            p, ch = raw(a.get('price')), raw(a.get('change'))
+            t = dt.datetime.fromisoformat(str(a.get('regularMarketTime')).replace('Z', '+00:00')).astimezone(tz)
+            if a.get('symbol') and p and p > 0:
+                out[str(a['symbol'])] = (p, ch, t.date().isoformat())
+        except Exception:
+            continue
+    return out
+
+
+def fetch_tw_fast(codes, today, sleep=0.15):
+    """codes＝{'TW': [代號…], 'TWO': [代號…]} → {'TW': {代號: (收盤, 漲跌)}, 'TWO': {…}}；只收最後成交日是 today 的代號。"""
+    import time
+    out = {'TW': {}, 'TWO': {}}
+    for mk, suf in (('TW', '.TW'), ('TWO', '.TWO')):
+        lst = list(codes.get(mk) or [])
+        for i in range(0, len(lst), 50):
+            try:
+                got = _ytw_batch([c + suf for c in lst[i:i + 50]])
+            except Exception as e:  # noqa
+                log('fast', mk, 'batch failed:', repr(e)[:100]); got = {}
+            for sym, (p, ch, d) in got.items():
+                if d == today and sym.endswith(suf):
+                    out[mk][sym[:-len(suf)]] = (p, ch)
+            time.sleep(sleep)
+    return out
+
+
 from zoneinfo import ZoneInfo
 # 只用「已收盤」的交易日：今天的 K 棒要到收盤後才算數（美股 16:10 美東、台股 14:30 台北）。
 # 2026-11-12 發現：排程常延到台北晚上 11 點才跑，那時美股盤中，最後一根 K 棒是盤中價，卻被當成當天收盤寫進來。
 DONE = {'US': (ZoneInfo('America/New_York'), dt.time(16, 10)), 'TW': (ZoneInfo('Asia/Taipei'), dt.time(14, 30))}
 # 收盤後 Yahoo 當天日線的 close 常常還是空值（2026-11-12 01:11 UTC 實測：美股全部停在前一天）：
-# 這時用 meta 的 regularMarketPrice 補上，但成交時間必須在該日收盤之後（美股 16:00 美東、台股 13:30 台北），盤中價不補。同 fetch_heatmap.py 的 _bars。
+# 這時用 meta 的 regularMarketPrice 補上，條件是「那一天的交易時段已經結束」——
+#   (1) 現在已經過了那一天的收盤確認時間（DONE），或 (2) 最後一筆成交在收盤鐘（BELL）之後。
+# 冷門的股票／ETF 最後一筆成交常在收盤前幾分鐘，只看 (2) 會漏掉它們（美股總表一萬多檔裡這種很多）；盤中價不會被補（盤中兩個條件都不成立）。
 BELL = {'US': dt.time(16, 0), 'TW': dt.time(13, 30)}
 
 
@@ -119,8 +166,9 @@ def _closed(ts, cl, mkt, now=None, meta=None):
     now = (now or dt.datetime.now(dt.timezone.utc)).astimezone(tz)
     ts, cl = list(ts or []), list(cl or [])
     if mkt and ts and len(cl) == len(ts) and cl[-1] is None and meta and meta.get('regularMarketPrice') and meta.get('regularMarketTime'):
-        mt = dt.datetime.fromtimestamp(meta['regularMarketTime'], tz)
-        if mt.date() == dt.datetime.fromtimestamp(ts[-1], tz).date() and mt.time() >= BELL[mkt]:
+        mt = dt.datetime.fromtimestamp(meta['regularMarketTime'], tz); bar = dt.datetime.fromtimestamp(ts[-1], tz).date()
+        over = bar < now.date() or (bar == now.date() and now.time() >= done)   # 那一根 K 棒的交易時段已經結束
+        if mt.date() == bar and (over or mt.time() >= BELL[mkt]):
             cl[-1] = float(meta['regularMarketPrice'])
     by = {}
     for t, c in zip(ts, cl):
@@ -177,6 +225,84 @@ def fetch_us(codes, sleep=0.25):
     """美股最新收盤（已收盤的交易日）。回傳 (date, items)；只收最新日期那天的代號（停牌或資料落後的不混進來）"""
     date, got = _yahoo_batch(codes, 'US', sleep=sleep)
     return date, {c: [v[1], v[2], '', 'US'] for c, v in got.items() if v[0] == date}
+
+
+# ---------- 美股總表全部代號的最新收盤 → data/lt/us-close.json ----------
+# 為什麼需要：latest.json 的美股只有比較頁清單那 644 檔；會員可以輸入的美股有一萬兩千多檔，其餘的原本只有
+# Nasdaq 篩選器的快照價（data/lt/px.json），而篩選器從 2026-11-11 起擋雲端主機，那些價格就停在 11-12。
+US_ALL = os.path.join(ROOT, 'data', 'lt', 'us-close.json')
+
+
+def _spark_us(batch, depth=0):
+    """一批（最多 20 檔）→ {代號: (日期, 收盤, 漲跌)}。429 等一下再試；其他 4xx 代表這批裡有 Yahoo 不收的代號 → 對半拆開各自再試。"""
+    import time, urllib.error
+    url = 'https://query1.finance.yahoo.com/v7/finance/spark?symbols=' + ','.join(urllib.request.quote(c) for c in batch) + '&range=5d&interval=1d'
+    for attempt in range(3):
+        try:
+            j = _get_json(url, timeout=20)
+            out = {}
+            for r in (j.get('spark', {}).get('result') or []):
+                sym = str(r.get('symbol') or ''); resp = (r.get('response') or [{}])[0]
+                pairs = _closed(resp.get('timestamp'), (resp.get('indicators', {}).get('quote') or [{}])[0].get('close'), 'US', meta=resp.get('meta'))
+                if sym and pairs:
+                    out[sym.upper()] = _last(pairs)
+            return out
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                time.sleep(20 * (attempt + 1)); continue
+            if 400 <= e.code < 500 and len(batch) > 1 and depth < 5:
+                h = len(batch) // 2; out = _spark_us(batch[:h], depth + 1); out.update(_spark_us(batch[h:], depth + 1)); return out
+            return {}
+        except Exception:
+            time.sleep(1 + attempt)
+    return {}
+
+
+def fetch_us_bulk(codes, workers=3):
+    """回傳 (最新已收盤的交易日, {代號: [收盤, 漲跌]})；只收日期等於最新交易日的代號（停牌、下市、Yahoo 沒有的不放）。"""
+    import concurrent.futures as cf
+    codes = list(dict.fromkeys(codes)); got = {}
+    import time
+    for rnd in range(2):   # 第二輪只補第一輪沒回來的（被限流或逾時的那幾批；Yahoo 沒有的代號兩輪都不會有）
+        todo = [c for c in codes if c not in got]
+        if not todo or (rnd and len(todo) > 0.5 * len(codes)):
+            break
+        if rnd:
+            log('us-all: retry', len(todo), 'codes'); time.sleep(5)
+        with cf.ThreadPoolExecutor(workers if not rnd else 2) as ex:
+            for part in ex.map(_spark_us, [todo[i:i + 20] for i in range(0, len(todo), 20)]):
+                got.update(part)
+    if not got:
+        return '', {}
+    days = {}
+    for v in got.values():
+        days[v[0]] = days.get(v[0], 0) + 1
+    date = max(d for d, n in days.items() if n >= 0.2 * len(got))   # 最新、而且有夠多代號的那一天（個別代號資料超前不算）
+    return date, {c: [round(v[1], 4), v[2]] for c, v in got.items() if v[0] == date}
+
+
+def update_us_all(us_date, extra=()):
+    """美股總表的收盤檔還沒到 us_date 才抓（一個交易日只抓一次，約 620 個請求）。回傳說明文字或 None。"""
+    try:
+        old = json.load(open(US_ALL, encoding='utf-8'))
+    except Exception:
+        old = {}
+    if not us_date or (old.get('asof') or '') >= us_date:
+        return None
+    try:
+        uni = json.load(open(os.path.join(ROOT, 'data', 'lt', 'universe.json'), encoding='utf-8')).get('list') or []
+    except Exception as e:  # noqa
+        log('us-all: universe unreadable', repr(e)[:100]); return None
+    codes = [x[0] for x in uni if x[2] == 'US'] + [c for c in extra]
+    date, px = fetch_us_bulk(codes)
+    n_all = len(set(codes))
+    if date != us_date or len(px) < 0.5 * n_all:
+        log('us-all: not written', date, len(px), 'of', n_all, 'expected', us_date); return 'us-all 未更新：%s %d／%d' % (date or '—', len(px), n_all)
+    json.dump(dict(schema='bnasdaq-us-close/1', asof=date, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                   source='Yahoo Finance（美股總表全部代號的最新收盤與漲跌；只用已收盤的交易日）', n=len(px), of=n_all, px=px),
+              open(US_ALL, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+    log('us-all written', date, len(px), 'of', n_all)
+    return None
 
 
 def fetch_tw_yahoo(codes, sleep=0.25):
@@ -291,6 +417,29 @@ def main():
                 log('TW Yahoo not used:', yd, len(got), 'of', len(tw_codes), 'target', target)
         except Exception as e:  # noqa
             log('TW Yahoo failed:', repr(e)[:160])
+    # 收盤後快速更新：官方來源還沒有今天的資料、而且台北時間已過 13:32 → 先用 Yahoo奇摩股市的當天收盤（標成初值）
+    prelim = []
+    now_tpe = dt.datetime.now(dt.timezone(dt.timedelta(hours=8))); today = now_tpe.date().isoformat()
+    lag = [m for m in ('TW', 'TWO') if (asof.get(m) or '') < today]
+    if lag and now_tpe.weekday() < 5 and now_tpe.hour * 60 + now_tpe.minute >= FAST_AFTER:
+        by = {m: [k for k, v in items.items() if (v[3] if len(v) > 3 else '') == m] for m in lag}
+        try:
+            fast = fetch_tw_fast(by, today)
+        except Exception as e:  # noqa
+            log('fast failed:', repr(e)[:160]); fast = {}
+        for m in lag:
+            got, base = fast.get(m) or {}, by[m]
+            if base and len(got) >= FAST_MIN[m] * len(base):
+                for c in base:
+                    if c in got:
+                        items[c] = [got[c][0], got[c][1], items[c][2], m]
+                    else:
+                        items.pop(c, None)   # 今天沒有成交：不放進來（頁面改用價格檔裡較早的收盤，日期也是較早的）
+                asof[m] = today; prelim.append(m)
+                RWD_NOTE.append('%s：官方檔案還沒有 %s 的資料，先用 Yahoo奇摩股市收盤後報價 %d／%d 檔（初值）' % ('上市' if m == 'TW' else '上櫃', today, len(got), len(base)))
+                log(m, 'fast', today, len(got), 'of', len(base))
+            else:
+                log(m, 'fast not used:', len(got), 'of', len(base), '（休市日或資料不足）')
     # 美股 + 匯率
     try:
         us_codes = [r[0] for r in (json.load(open(os.path.join(ROOT, 'data', 'tw', 'index.json'), encoding='utf-8')).get('list') or []) if r[2] == 'US']
@@ -316,11 +465,47 @@ def main():
         now_tpe = dt.datetime.now(dt.timezone(dt.timedelta(hours=8)))
         asof['TW'] = asof.get('TWO') or (now_tpe.date().isoformat() if now_tpe.hour * 60 + now_tpe.minute >= 14 * 60 + 30 else '')
         RWD_NOTE.append('TW date fallback=' + asof['TW'])
-    # 日期沒前進就不覆蓋
-    if old and old.get('asof') and set(asof) == set(old['asof']) and all(asof.get(k, '') <= old['asof'].get(k, '') for k in asof) and old.get('items'):
-        log('no newer date than existing', old['asof'], '; not rewriting'); return 0
-    out = dict(schema='bnasdaq-tw-latest/1', asof=asof, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               source=src_tw + '、櫃買中心 OpenAPI（上櫃）、Yahoo Finance（美股、匯率；只用已收盤的交易日）', errors=errors, notes=RWD_NOTE, fx=fx, items=items)
+    # 美股總表全部代號的收盤（另一個檔 data/lt/us-close.json；一個交易日只抓一次）
+    try:
+        note = update_us_all(asof.get('US') or '', extra=us_codes)
+        if note:
+            RWD_NOTE.append(note)
+    except Exception as e:  # noqa
+        log('us-all failed:', repr(e)[:200])
+    # 每個市場各自比較，寫進檔案的是每個市場「最好的那一份」——
+    #   新的日期較新 → 用新的；同一天、舊的是初值而新的是官方 → 換成官方；
+    #   其他情況（新的比較舊、這次沒抓到、同一天同等級）→ 沿用檔案裡原有的，絕不倒退。
+    # 例：隔天凌晨那一次，櫃買官方已經有昨天的資料、證交所 OpenAPI 還停在前天 → 上櫃換成官方，上市維持昨天的初值，不會被前天的資料蓋掉。
+    mk_of = lambda v: (v[3] if len(v) > 3 else 'TW')
+    PRE = 'Yahoo奇摩股市收盤後報價（初值，官方檔案出來後更新）'
+    new_src = {'TW': PRE if 'TW' in prelim else src_tw, 'TWO': PRE if 'TWO' in prelim else '櫃買中心 OpenAPI（上櫃）', 'US': 'Yahoo Finance（美股；只用已收盤的交易日）'}
+    o_asof, o_items, o_pre, o_src = (old or {}).get('asof') or {}, (old or {}).get('items') or {}, set((old or {}).get('prelim') or []), (old or {}).get('sources') or {}
+    f_asof, f_items, f_pre, f_src, changed = {}, {}, [], {}, []
+    for m in ('TW', 'TWO', 'US'):
+        n_d, n_it = asof.get(m) or '', {k: v for k, v in items.items() if mk_of(v) == m}
+        o_d, o_it = o_asof.get(m) or '', {k: v for k, v in o_items.items() if mk_of(v) == m}
+        if n_d and n_it and (not o_d or not o_it or n_d > o_d or (n_d == o_d and m in o_pre and m not in prelim)):
+            f_asof[m] = n_d; f_items.update(n_it); f_src[m] = new_src[m]; changed.append(m)
+            if m in prelim:
+                f_pre.append(m)
+        elif o_d and o_it:
+            f_asof[m] = o_d; f_items.update(o_it); f_src[m] = o_src.get(m) or (PRE if m in o_pre else new_src[m])
+            if m in o_pre:
+                f_pre.append(m)
+            if n_d and n_d < o_d:
+                log(m, 'kept existing', o_d, '(fetched', n_d, 'is older)')
+    if not f_items:
+        log('nothing usable; keeping existing'); return 1
+    if old and old.get('items') and not changed:
+        log('no newer date than existing', o_asof, '; not rewriting'); return 0
+    asof, items, prelim = f_asof, f_items, f_pre
+    parts = []
+    if prelim:
+        parts.append('Yahoo奇摩股市收盤後報價（%s；初值，官方檔案出來後更新）' % '、'.join('上市' if m == 'TW' else '上櫃' for m in prelim))
+    parts += [f_src[m] for m in ('TW', 'TWO') if m in f_src and m not in prelim]
+    parts.append('Yahoo Finance（美股、匯率；只用已收盤的交易日）')
+    out = dict(schema='bnasdaq-tw-latest/1', asof=asof, updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'), prelim=prelim,
+               source='、'.join(parts), sources=f_src, changed=changed, errors=errors, notes=RWD_NOTE, fx=fx, items=items)
     json.dump(out, open(OUT, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     log('written', OUT, asof, len(items), 'items')
     return 0

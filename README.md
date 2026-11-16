@@ -14,6 +14,7 @@
 - `data/accounts.json`：帳號（只有密碼雜湊與包裝後的金鑰）；`data/site.json`：公告
 - `data/tw/<代號>.json`、`data/tw/index.json`：個股對比頁與研究與回測頁「加入台股／美股」用的預算結果（Yahoo 還原收盤；台股上市上櫃全部、美股 S&P 500／Nasdaq-100／常見 ETF；每檔含台幣 2013 起與美元 2000 起兩段；FRED 每日匯率），由 `.github/workflows/tw-data.yml` 每月重算（可手動觸發、可指定代號）；`data/tw/latest.json`：台股官方最新收盤＋美股 Yahoo 收盤＋匯率，`.github/workflows/tw-latest.yml` 每個交易日 15:10 更新
 - `scripts/fetch_market.py`、`scripts/fetch_treasury.py`、`scripts/fetch_stocks.py`、`scripts/fetch_latest.py`：市場資料更新腳本；`.github/workflows/site.yml`：每日更新＋部署 Pages
+- `.github/workflows/tw-latest.yml`（`scripts/fetch_latest.py`）：各市場收盤後更新最新收盤價——`data/tw/latest.json`（台灣上市／上櫃、美股比較清單、匯率）與 `data/lt/us-close.json`（美股總表全部代號），更新完自動重新部署。由熱力圖盤中更新的工作在每個市場收盤後啟動（台股 13:30 後約 2.5 分鐘、美股收盤後 10 分鐘）；GitHub 排程只當備援，因為它在這個 repo 實測會晚 7～10 小時。台股收盤後官方檔案還沒出來時先用 Yahoo奇摩股市的收盤價（檔內 `prelim` 標明），官方檔案出來後換掉
 - `scripts/heatmap_live.py`、`.github/workflows/heatmap-live.yml`：每日市場分析頁「市值熱力圖」的盤中更新。開盤期間定時（台股每 30 秒、美股每 60 秒）把成分股最新價寫到 `heatmap-live` 分支（只留最新一筆 commit；不部署網站、不動 main），`daily.html` 用同樣的間隔讀；收盤後的正式資料仍是 `scripts/fetch_heatmap.py` 產生的 `data/heatmap/latest.json`。啟動方式、資料來源與實測紀錄寫在腳本檔頭
 
 ## 管理

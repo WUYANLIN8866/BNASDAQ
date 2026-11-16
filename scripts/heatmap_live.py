@@ -47,6 +47,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = os.path.join(ROOT, 'data', 'heatmap', 'latest.json')
 BRANCH = 'heatmap-live'
 WORKFLOW = 'heatmap-live.yml'
+AFTER = 'tw-latest.yml'   # 每個市場收盤後要啟動的工作流程：更新全站的最新收盤價（scripts/fetch_latest.py）並重新部署
 SCHEMA = 'bnasdaq-heatmap-live/1'
 KEEP = 8             # 時間格檔留最近幾個（每個市場多久發布一次寫在 MARKETS 的 step）
 LEAD = 90 * 60       # 開盤前最多提早多久進場等
@@ -56,9 +57,10 @@ FREEZE = 25 * 60     # 盤中連續這麼久「抓得到資料、但最新報價
 YUA = 'Mozilla/5.0 (BNASDAQ heatmap fetch)'   # Yahoo：瀏覽器 UA 會被回 429（實測）
 BUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
 MARKETS = {
-    'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, sets=('tw50',), file='tw', step=30, src='Yahoo奇摩股市'),
+    # after＝收盤後幾秒啟動「最新收盤價更新」：台股 13:30 集合競價撮合完就是收盤價，等 150 秒；美股等 10 分鐘（fetch_latest.py 只收 16:10 美東之後的當天 K 棒）
+    'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, after=150, sets=('tw50',), file='tw', step=30, src='Yahoo奇摩股市'),
     # step＝一個時間格幾秒（＝多久發布一次）。美股一輪要對 Yahoo 發 27 個請求，先維持 60 秒
-    'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', step=60, src='Yahoo Finance'),
+    'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, after=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', step=60, src='Yahoo Finance'),
 }
 README = ('# heatmap-live\n\n這個分支由 `.github/workflows/heatmap-live.yml` 在開盤期間定時自動覆寫（只留最新一筆 commit），'
           '內容是市值熱力圖的盤中報價。請勿手動修改；程式在 main 分支的 `scripts/heatmap_live.py`。\n')
@@ -265,8 +267,8 @@ class Pub:
         self.keep = {e['path']: e['sha'] for e in (t.get('tree') or []) if e.get('type') == 'blob'}
         return True
 
-    def dispatch(self, ref, inputs):
-        st, r = self.call('POST', f'/actions/workflows/{WORKFLOW}/dispatches', {'ref': ref, 'inputs': inputs})
+    def dispatch(self, ref, inputs, workflow=WORKFLOW):
+        st, r = self.call('POST', f'/actions/workflows/{workflow}/dispatches', {'ref': ref, 'inputs': inputs})
         return st in (200, 204), st, r
 
     def others(self, me):
@@ -299,8 +301,8 @@ class FilePub:
             os.remove(os.path.join(self.out, p))
         return True
 
-    def dispatch(self, ref, inputs):
-        open(os.path.join(self.out, 'dispatch.json'), 'w').write(json.dumps({'ref': ref, 'inputs': inputs})); return True, 204, {}
+    def dispatch(self, ref, inputs, workflow=WORKFLOW):
+        open(os.path.join(self.out, 'dispatch.json'), 'w').write(json.dumps({'ref': ref, 'inputs': inputs, 'workflow': workflow})); return True, 204, {}
 
     def others(self, me):
         return []
@@ -321,6 +323,21 @@ class Session:
         self.poll_n = 0
         self.src = MARKETS[mk]['src']
         self.budget = int(os.environ.get('HM_BUDGET') or BUDGET)
+        self.after_tries = 0  # 收盤後啟動「最新收盤價更新」試了幾次
+        self.after_done = False
+
+    def after_close(self):
+        """收盤後啟動 tw-latest.yml（更新全站的最新收盤價，更新完它會自己重新部署網站）。一個時段只做一次；啟動失敗下一輪再試，最多 3 次。
+        為什麼由這裡啟動：GitHub 的排程在這個 repo 會晚 7～10 小時才跑，而這個 job 剛好在收盤那一刻醒著。"""
+        if self.after_done or self.after_tries >= 3:
+            return
+        self.after_tries += 1
+        try:
+            ok, st, r = self.pub.dispatch(os.environ.get('GITHUB_REF_NAME') or 'main', {}, workflow=AFTER)
+        except Exception as e:  # noqa
+            ok, st, r = False, 0, {'message': repr(e)[:100]}
+        self.after_done = bool(ok)
+        log('收盤後更新最新收盤價（' + AFTER + '）：', '已啟動' if ok else f'啟動失敗 {st} {str((r or {}).get("message"))[:100]}')
 
     # --- 抓一輪 ---
     def poll_us(self):
@@ -412,12 +429,16 @@ class Session:
                     self.fails = 0 if done else self.fails + 1
                     if self.poll_n % 10 == 1 or state != 'open' or not done:
                         log(f'{state} 第 {slot} 格：{snap["have"]}/{snap["n"]} 檔，來源 {self.src}，發布{"成功" if done else "失敗"}')
+                    if state == 'closed' and (done or self.fails >= 5):
+                        self.after_close()
                     if state == 'closed' and done:
                         log('提早收盤（報價不再更新），結束' if frozen else '收盤，結束'); return 'closed'
                     if state == 'closed' and self.fails >= 5:
                         log('收盤那一份發布不出去，放棄'); return 'failed'
                 elif self.poll_n % 10 == 1:
                     log('這一輪抓不到資料，跳過')
+                if now >= self.sess['close'] + MARKETS[mk]['after']:   # 收盤後過了這麼久（收盤價到齊）→ 更新全站的最新收盤價
+                    self.after_close()
             if now - self.t0 > self.budget and now < self.sess['close'] - 180:
                 ok2, st, r = self.pub.dispatch(os.environ.get('GITHUB_REF_NAME') or 'main', {'relay': str(os.environ.get('GITHUB_RUN_ID') or '1'), 'market': mk})
                 log('這個 job 跑滿了，交棒給下一個 run：', '已啟動' if ok2 else f'啟動失敗 {st} {str((r or {}).get("message"))[:100]}')

@@ -1,5 +1,14 @@
 name: Update latest closes (TW official + US Yahoo)
 
+# 各市場收盤後更新最新收盤價（data/tw/latest.json：台灣上市／上櫃＋美股比較清單＋匯率；data/lt/us-close.json：美股總表全部代號）。
+#
+# 怎麼啟動：
+#   1. 主要：熱力圖盤中更新（heatmap-live.yml 的 session）在每個市場收盤後自動啟動這個流程
+#      （台股 13:30 收盤後約 2.5 分鐘、美股收盤後約 10 分鐘），所以收盤後十幾分鐘內網站就是當天收盤價。
+#   2. 備援：下面的 schedule。GitHub 的排程在這個 repo 實測會晚 7～10 小時（2026-11-04～11-13：排 15:10，實際 22:56～01:23 才跑），
+#      所以只當備援；它跑的時候官方檔案通常已經出來，會把收盤後先放的「初值」換成官方資料。
+# 資料有更新就接著啟動 site.yml 重新部署：用 GITHUB_TOKEN 推上去的 commit 不會觸發別的工作流程，不部署的話網站看不到新價格。
+
 on:
   workflow_dispatch:
   schedule:
@@ -10,6 +19,7 @@ on:
 
 permissions:
   contents: write
+  actions: write   # 啟動 site.yml 重新部署
 
 concurrency:
   group: tw-latest
@@ -18,7 +28,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,18 +36,27 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fetch latest closes (TWSE + TPEx official)
+      - name: Fetch latest closes (TWSE + TPEx official, Yahoo right after the close)
         run: python3 scripts/fetch_latest.py
       - name: Commit if changed
+        id: commit
         run: |
           git config user.name "bnasdaq-bot"
           git config user.email "bnasdaq-bot@users.noreply.github.com"
-          git add data/tw/latest.json data/tw/_fx.json
+          for f in data/tw/latest.json data/tw/_fx.json data/lt/us-close.json; do
+            if [ -e "$f" ]; then git add "$f"; fi
+          done
           if git diff --cached --quiet; then
-            echo "latest.json unchanged"
+            echo "latest closes unchanged"
           else
-            ASOF=$(python3 -c "import json;print(json.load(open('data/tw/latest.json'))['asof'].get('TW',''))")
+            ASOF=$(python3 -c "import json;a=json.load(open('data/tw/latest.json'))['asof'];print('%s（美股 %s）' % (a.get('TW',''), a.get('US','')))")
             git commit -m "data: tw latest ${ASOF}"
             git pull --rebase origin main || true
             git push origin HEAD:main
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+      - name: Deploy the site so the new closes are visible
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run site.yml -R "${{ github.repository }}" --ref main
