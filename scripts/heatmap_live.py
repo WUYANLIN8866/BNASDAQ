@@ -25,6 +25,8 @@
   session  等到開盤 → 每一格更新一次 → 收盤後多抓幾分鐘（收盤價到齊）→ 標成 closed 結束。
            一個 job 最多跑 320 分鐘，超過就自己啟動下一棒接手（美股一個交易日 6.5 小時，要兩棒）。
   開盤後 25 分鐘都沒有當天的報價＝休市，直接結束、不發布。
+  收盤後（台股 +150 秒、美股 +10 分鐘）session 會啟動 tw-latest.yml，把全站的最新收盤價更新到當天並重新部署；
+  gate 被外部準時啟動時另外檢查一次：有市場已收盤但收盤價還落後，就補啟動 tw-latest.yml。
 
 用法：
   python3 scripts/heatmap_live.py gate
@@ -33,6 +35,7 @@
 環境變數：GITHUB_TOKEN、GITHUB_REPOSITORY、GITHUB_RUN_ID、GITHUB_OUTPUT、GITHUB_REF_NAME；RELAY（上一棒的 run 編號）、MARKET（指定市場）、
           HM_BUDGET（測試交棒用：一個 job 最多跑幾秒，預設 19200）。
 只用 Python 標準函式庫。"""
+import base64
 import concurrent.futures as cf
 import datetime as dt
 import json
@@ -68,6 +71,13 @@ README = ('# heatmap-live\n\n這個分支由 `.github/workflows/heatmap-live.yml
 
 def log(*a):
     print(dt.datetime.now(ZoneInfo('Asia/Taipei')).strftime('%H:%M:%S'), *a, flush=True)
+
+
+def note(*a):
+    """重要的結果另外寫成 GitHub 的 notice 註記（用 API 就查得到，不必下載整份紀錄）。"""
+    log(*a)
+    if os.environ.get('GITHUB_ACTIONS'):
+        print('::notice title=heatmap-live::' + ' '.join(str(x) for x in a).replace('%', '%25').replace('\r', ' ').replace('\n', ' '), flush=True)
 
 
 # ---------- 交易時段 ----------
@@ -337,7 +347,7 @@ class Session:
         except Exception as e:  # noqa
             ok, st, r = False, 0, {'message': repr(e)[:100]}
         self.after_done = bool(ok)
-        log('收盤後更新最新收盤價（' + AFTER + '）：', '已啟動' if ok else f'啟動失敗 {st} {str((r or {}).get("message"))[:100]}')
+        note('收盤後更新最新收盤價（' + AFTER + '）：', '已啟動' if ok else f'啟動失敗 {st} {str((r or {}).get("message"))[:100]}')
 
     # --- 抓一輪 ---
     def poll_us(self):
@@ -458,23 +468,59 @@ def out(**kv):
             open(p, 'a').write(f'{k}={v}\n')
 
 
+def last_closed(mk, now):
+    """最近一個「已經收盤、而且過了 after 秒」的平日（交易所當地日期）。這裡不知道休市日，休市日會被當成交易日。"""
+    c = MARKETS[mk]
+    d = dt.datetime.fromtimestamp(now, ZoneInfo(c['tz']))
+    for back in range(8):
+        day = d - dt.timedelta(days=back)
+        if day.weekday() < 5 and day.replace(hour=c['close'][0], minute=c['close'][1], second=0, microsecond=0).timestamp() + c['after'] <= now:
+            return day.strftime('%Y-%m-%d')
+    return ''
+
+
+def catch_up(pub, now):
+    """補救：某個市場已經收盤，網站的最新收盤檔卻還停在更早的日期（代表收盤當下沒有 session 在跑，例如那天沒被啟動或中途掛掉）
+    → 啟動 tw-latest.yml 補抓。只在外部準時啟動（workflow_dispatch，一天兩次）時檢查。
+    休市日會被誤判成落後而多跑一次，那一次抓不到新資料、不會改任何檔案。回傳落後的市場清單（讀不到檔案回 None）。"""
+    ref = os.environ.get('GITHUB_REF_NAME') or 'main'
+    st, j = pub.call('GET', '/contents/data/tw/latest.json?ref=' + ref)
+    if st != 200 or not j.get('content'):
+        note('補救檢查：讀不到最新收盤檔', st); return None
+    asof = json.loads(base64.b64decode(j['content']).decode('utf-8')).get('asof') or {}
+    stale = [mk for mk in MARKETS if (asof.get(mk) or '') < last_closed(mk, now)]
+    if not stale:
+        note('補救檢查：最新收盤檔不落後', asof); return []
+    st, r = pub.call('GET', f'/actions/workflows/{AFTER}/runs?per_page=5')
+    if st == 200 and any(x.get('status') != 'completed' for x in (r.get('workflow_runs') or [])):
+        note('補救檢查：', stale, '的收盤價落後，但已經有更新在跑'); return stale
+    ok, st, r = pub.dispatch(ref, {}, workflow=AFTER)
+    note('補救檢查：', stale, '的收盤價落後', {m: asof.get(m) for m in stale}, '→', ('已啟動 ' + AFTER) if ok else f'啟動失敗 {st}')
+    return stale
+
+
 def gate():
     now = time.time()
     want, relay = (os.environ.get('MARKET') or '').strip().upper(), (os.environ.get('RELAY') or '').strip()
+    if os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch' and not relay:
+        try:
+            catch_up(Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN']), now)
+        except Exception as e:  # noqa：補救檢查失敗不能影響盤中更新
+            note('補救檢查失敗：', repr(e)[:120])
     cands = [m for m in MARKETS if (not want or m == want) and active(m, now)]
     if not cands:
-        log('90 分鐘內沒有要開盤或正在進行的交易時段（週末或時間還沒到）→ 不跑'); out(go='false', market=''); return 0
+        note('gate：90 分鐘內沒有要開盤或正在進行的交易時段（週末或時間還沒到）→ 不跑'); out(go='false', market=''); return 0
     mk = cands[0]
     if relay:
-        log(f'接力：接手 run {relay} 的 {mk} 時段'); out(go='true', market=mk); return 0
+        note(f'gate：接力，接手 run {relay} 的 {mk} 時段'); out(go='true', market=mk); return 0
     me = os.environ.get('GITHUB_RUN_ID') or '0'
     pub = Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN'])
     for rid, sess_st, gate_st in pub.others(me):
         if sess_st in ('queued', 'in_progress', 'waiting', 'pending', 'requested'):
-            log(f'run {rid} 已經在跑這個時段 → 不重複跑'); out(go='false', market=mk); return 0
+            note(f'gate：run {rid} 已經在跑這個時段 → 不重複跑'); out(go='false', market=mk); return 0
         if rid < int(me) and gate_st != 'completed':
-            log(f'較早的 run {rid} 還在判斷中，讓它先 → 不跑'); out(go='false', market=mk); return 0
-    log(f'啟動 {mk} 時段'); out(go='true', market=mk); return 0
+            note(f'gate：較早的 run {rid} 還在判斷中，讓它先 → 不跑'); out(go='false', market=mk); return 0
+    note(f'gate：啟動 {mk} 時段'); out(go='true', market=mk); return 0
 
 
 def main():
@@ -505,7 +551,7 @@ def main():
             log(mk, '今天的時段已經結束'); return 0
         pub = Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN'])
         res = Session(mk, sess, syms, pub).run()
-        log('結果：', res)
+        note(f'session：{mk} {sess["date"]} 結果', res)
         return 0
     print(__doc__); return 2
 
