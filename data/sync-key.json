@@ -1,5 +1,7 @@
 {
  "schema": "bnasdaq-sync-key/1",
- "enabled": false,
- "note": "會員資產跨裝置同步尚未啟用；啟用方式見管理後台「會員資產跨裝置同步」"
+ "created": "2026-11-16",
+ "note": "會員資產跨裝置同步：以會員主金鑰加密的 {repo, token}；token 只能讀寫那個私人 repo",
+ "iv": "k48TRFKNuyia8EzK",
+ "ct": "GJlregBc/jHDxUTjQi35bOCiw+pqV660+tUhKYADKTMCQ41Pc9Uc/rfXcs572dmSfZA/CDdGWLGanTiWsRMSyusVE31hxgg3ySdInWaE0qiaHK59lyPpOszwVrJ+xHtVWDW+IQ8p9iWU1nPa/SC1U4/Wz+tgFUXq8BqiSymqhpluYVpjUDtLpQ5iPen4F8ze2A6cCJSoAcuLN2x0"
 }
