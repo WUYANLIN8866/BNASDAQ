@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=456c56d75e">
+<link rel="stylesheet" href="assets/site.css?v=88be785642">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -49,6 +49,20 @@
     <div class="actions"><button class="btn navy" type="button" id="rk-make">建立會員規則金鑰</button><a id="rk-dl" class="btn line" download="rules-key.json" hidden>下載 rules-key.json（手動上傳用）</a></div>
     <div id="rk-msg"></div>
   </div>
+  <div class="panel" id="msync">
+    <h3>會員資產跨裝置同步（一次性設定）</h3>
+    <p class="small">啟用後，會員在任何裝置新增或修改「會員持有資產」，都會自動同步到他登入的每一台裝置。本站沒有伺服器，所以同步資料放在你另一個<b>私人</b> GitHub repo；每位會員的資料先用他的登入密碼導出的金鑰加密才上傳，repo 裡只有密文，也看不出哪一份是誰的。</p>
+    <ol class="small" style="margin:6px 0 10px 20px">
+      <li>在 GitHub 建一個<b>私人（Private）</b>repo，建議命名 <b>BNASDAQ-sync</b>，並勾選「Add a README file」。</li>
+      <li>建一把新的 <b>fine-grained personal access token</b>：Repository access 選「Only select repositories」，<b>只選剛建的那個 repo</b> → Permissions：<b>Contents: Read and write</b>。不要用上面那把管理用的 PAT。</li>
+      <li>把 repo 名稱和 token 貼到下面，按「檢查並啟用」。</li>
+    </ol>
+    <div class="row2"><div class="field"><label for="ms-repo">同步用的私人 repo（擁有者/名稱）</label><input id="ms-repo" type="text" autocomplete="off" spellcheck="false" placeholder="WUYANLIN8866/BNASDAQ-sync"></div><div class="field"><label for="ms-token">同步用的 token</label><input id="ms-token" type="password" autocomplete="off" placeholder="github_pat_…"></div></div>
+    <div class="actions"><button class="btn navy" type="button" id="ms-save">檢查並啟用</button><button class="btn line" type="button" id="ms-off" hidden>停用同步</button><a id="ms-dl" class="btn line" download="sync-key.json" hidden>下載 sync-key.json（手動上傳用）</a></div>
+    <p class="small" id="ms-status">檢查中…</p>
+    <div id="ms-msg"></div>
+    <p class="small muted">這把 token 會先用會員主金鑰加密才放到網站上，登入的會員才解得開，而且只能讀寫那個私人 repo。限制：會員共用同一把，所以惡意的會員可以刪掉或覆寫 repo 裡的密文（解不開內容；每台裝置都留有自己的一份，會自動補傳）。token 到期或想換一把時，回來這裡重新貼一次即可，會員的資料不受影響。</p>
+  </div>
   <div class="panel">
     <h3>帳號清單 <span class="small">（最後更新 <span id="acct-updated">—</span>）</span></h3>
     <div class="tblwrap"><table class="tbl" id="acct-table"><thead><tr><th class="l">帳號</th><th class="l">角色</th><th class="l">建立</th><th class="l">狀態</th><th class="l">備註</th><th class="l">操作</th></tr></thead><tbody id="acct-body"><tr><td colspan="6">載入中…</td></tr></tbody></table></div>
@@ -76,7 +90,7 @@
   </div>
   <div class="note"><p>安全提醒：accounts.json 是公開檔案，只存密碼雜湊（PBKDF2 310,000 次）與包裝後的金鑰；請給會員夠長的密碼。管理員的 PAT 只存在這台瀏覽器（以你的金鑰加密），不會進入 repo。</p></div>
 </div></div>
-<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=d4c04c5c73"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=1bf86eee5a"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -108,6 +122,72 @@
       msg('#rk-msg','完成：已寫入 data/rules-key.json。之後的規則更新會自動發布。','ok');setTimeout(rkStatus,1500);
     }catch(e){msg('#rk-msg',(e&&e.message)||String(e),'err');}});
   rkStatus();
+
+  // ---------- 會員資產跨裝置同步（一次性設定） ----------
+  // data/sync-key.json＝用會員主金鑰（CK）加密的 {repo, token}；會員端怎麼用見 assets/mh-core.js「跨裝置同步」。
+  // 發布前的檢查都是為了不把權限太大的 token 交到會員手上：必須是 fine-grained、目標是私人 repo、寫不進網站 repo、讀不到別的私人 repo。
+  const GH='https://api.github.com/',OWNER=BN.auth.REPO.split('/')[0];
+  const ghx=(tok,path,opt)=>fetch(GH+path,Object.assign({cache:'no-store'},opt||{},{headers:Object.assign({Accept:'application/vnd.github+json',Authorization:'Bearer '+tok},opt&&opt.body?{'Content-Type':'application/json'}:{})}));
+  const utf8b64=str=>{const u=new TextEncoder().encode(str);let x='';u.forEach(c=>x+=String.fromCharCode(c));return btoa(x);};
+  // 讀設定檔：以 GitHub 上那份為準（剛寫入時網站那份還沒部署），讀不到才用網站那份。沒有 ct 欄位＝沒啟用（佔位檔）
+  async function msCur(){let j=null;
+    try{const r=await fetch(GH+'repos/'+BN.auth.REPO+'/contents/data/sync-key.json?ref=main&t='+Date.now(),{headers:Object.assign({Accept:'application/vnd.github+json'},pat?{Authorization:'Bearer '+pat}:{}),cache:'no-store'});
+      if(r.ok){const x=await r.json();j=JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(String(x.content||'').replace(/\s/g,'')),c=>c.charCodeAt(0))));}}catch(e){}
+    if(!j){try{j=await BN.auth.fetchJSON('data/sync-key.json');}catch(e){}}
+    if(!j||!j.ct)return null;
+    try{const o=JSON.parse(new TextDecoder().decode(await BN.auth.aesDec(BN.auth.b64.dec(sess.ck),j.iv,j.ct)));o.created=j.created||'';return o;}catch(e){return {broken:true,created:j.created||''};}}
+  async function msStatus(){const c=await msCur();$('#ms-off').hidden=!c;
+    if(!c){$('#ms-status').innerHTML='<span style="color:var(--bad)">尚未啟用</span>：會員的持有資產目前只存在各自的裝置。';$('#ms-save').textContent='檢查並啟用';return null;}
+    if(c.broken){$('#ms-status').innerHTML='<span style="color:var(--bad)">設定檔無法用目前的會員主金鑰解開</span>（可能換過金鑰）：請重新貼一次 token 並啟用。';return c;}
+    if(!$('#ms-repo').value)$('#ms-repo').value=c.repo;$('#ms-save').textContent='更換 token（重新檢查並啟用）';
+    let extra='';
+    try{const r=await ghx(c.token,'repos/'+c.repo);
+      if(r.status===401)extra='<br><span style="color:var(--bad)">這把 token 已失效（過期或被撤銷），會員目前無法同步。請建一把新的貼到上面。</span>';
+      else if(!r.ok)extra='<br><span style="color:var(--bad)">用這把 token 讀不到 repo（GitHub 回 '+r.status+'），會員目前無法同步。</span>';
+      else{const l=await ghx(c.token,'repos/'+c.repo+'/contents/v1');const a=l.ok?await l.json():[];const n=Array.isArray(a)?a.filter(x=>/^[0-9a-f]{40}\.json$/.test(x.name)).length:0;extra='目前有 '+n+' 份會員的同步資料。';}
+    }catch(e){extra='（暫時連不上 GitHub，無法確認 token 狀態）';}
+    $('#ms-status').innerHTML='<span class="ok-dot"></span>已啟用（設定於 '+esc(c.created)+'）：同步到 <b>'+esc(c.repo)+'</b>。'+extra;return c;}
+  $('#ms-save').addEventListener('click',async()=>{
+    const repo=$('#ms-repo').value.trim().replace(/^https:\/\/github\.com\//,'').replace(/\.git$/,'').replace(/\/$/,''),tok=$('#ms-token').value.trim();$('#ms-dl').hidden=true;
+    const fail=t=>{msg('#ms-msg',t,'err');};
+    if(!/^[\w.-]+\/[\w.-]+$/.test(repo))return fail('repo 請寫成「擁有者/名稱」，例如 '+OWNER+'/BNASDAQ-sync。');
+    if(repo.toLowerCase()===BN.auth.REPO.toLowerCase())return fail('不能用網站本身的 repo：請另外建一個私人 repo 專門放同步資料。');
+    if(!tok)return fail('請貼上同步用的 token。');
+    if(!/^github_pat_/.test(tok))return fail('請使用 fine-grained personal access token（github_pat_ 開頭）；classic token（ghp_ 開頭）的權限範圍太大，不能發給會員。');
+    if(pat&&tok===pat)return fail('這把是上面管理用的 PAT，寫得進網站本身，不能發給會員。請另外建一把只選同步 repo 的 token。');
+    msg('#ms-msg','檢查中…');
+    try{
+      // 1) 讀得到那個 repo，而且是私人的
+      let r=await ghx(tok,'repos/'+repo);
+      if(r.status===401)return fail('token 無效（GitHub 回 401）：請確認有完整貼上，或重新產生一把。');
+      if(r.status===404)return fail('找不到 '+repo+'，或這把 token 沒有選到它：建立 token 時 Repository access 要選這個 repo。');
+      if(!r.ok)return fail('讀取 repo 失敗（GitHub 回 '+r.status+'）。');
+      const info=await r.json();if(!info.private)return fail(repo+' 是公開的 repo：請改用私人（Private）repo，同步資料才不會被外人下載。');
+      // 2) 權限不能太大：寫不進網站 repo；讀不到含策略規則的 BNASDAQ-engine，也讀不到你其他的私人 repo
+      r=await ghx(tok,'repos/'+BN.auth.REPO+'/git/blobs',{method:'POST',body:JSON.stringify({content:'bnasdaq sync token probe',encoding:'utf-8'})});
+      if(r.status===201||r.status===200)return fail('這把 token 寫得進網站本身的 repo（'+BN.auth.REPO+'），權限太大，不能發給會員。請重建一把，Repository access 只選 '+repo+'。');
+      const others=[OWNER+'/BNASDAQ-engine'];
+      try{r=await ghx(tok,'user/repos?visibility=private&affiliation=owner&per_page=100');if(r.ok)(await r.json()).forEach(x=>{if(x&&x.full_name&&others.length<8&&!others.includes(x.full_name))others.push(x.full_name);});}catch(e){}
+      for(const o of others){if(o.toLowerCase()===repo.toLowerCase())continue;r=await ghx(tok,'repos/'+o);if(r.ok){const j=await r.json();if(j.private)return fail('這把 token 讀得到你另一個私人 repo（'+o+'），權限太大，不能發給會員。請重建一把，Repository access 只選 '+repo+'。');}}
+      // 3) 真的寫得進去：建立（或更新）v1/README.md
+      const readme='# BNASDAQ 會員資產同步資料\n\n這個資料夾裡每個 .json 檔是一位會員加密後的持有資產，由網站自動讀寫；請勿手動修改或刪除。\n';
+      r=await ghx(tok,'repos/'+repo+'/contents/v1/README.md');let sha=null;if(r.ok)sha=(await r.json()).sha;
+      r=await ghx(tok,'repos/'+repo+'/contents/v1/README.md',{method:'PUT',body:JSON.stringify(Object.assign({message:'sync: setup check',content:utf8b64(readme)},sha?{sha}:{}))});
+      if(r.status===403)return fail('這把 token 讀得到 '+repo+' 但寫不進去：Permissions 要設 Contents: Read and write。');
+      if(!r.ok){let m='';try{m=(await r.json()).message||'';}catch(e){}return fail('寫入測試失敗（GitHub 回 '+r.status+(m?'：'+m:'')+'）。如果 repo 是空的，請先在 GitHub 上幫它加一個 README 再試。');}
+      // 4) 用會員主金鑰加密（先自我檢查解得回來）再發布
+      const w=await BN.auth.aesEnc(BN.auth.b64.dec(sess.ck),new TextEncoder().encode(JSON.stringify({repo,token:tok})));
+      const back=JSON.parse(new TextDecoder().decode(await BN.auth.aesDec(BN.auth.b64.dec(sess.ck),w.iv,w.ct)));if(back.repo!==repo||back.token!==tok)throw new Error('自我檢查失敗，沒有寫入。');
+      const text=JSON.stringify({schema:'bnasdaq-sync-key/1',created:new Date().toISOString().slice(0,10),note:'會員資產跨裝置同步：以會員主金鑰加密的 {repo, token}；token 只能讀寫那個私人 repo',iv:w.iv,ct:w.ct},null,1);
+      $('#ms-token').value='';
+      if(!pat){msg('#ms-msg','檢查通過，但這台瀏覽器沒有管理用的 PAT，無法直接寫回網站。請按「下載 sync-key.json」，把檔案交給 Claude 上傳到 data/sync-key.json（檔內的 token 已加密，可以安全傳送）。','err');$('#ms-dl').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#ms-dl').hidden=false;return;}
+      await BN.auth.ghPut(pat,'data/sync-key.json',text,'admin: 啟用會員資產跨裝置同步（以會員主金鑰加密的同步設定）');
+      msg('#ms-msg','已啟用。網站約 1～2 分鐘後更新；之後會員打開會員專區就會開始同步（這次改版前就登入的裝置，要重新登入一次）。','ok');setTimeout(msStatus,1500);
+    }catch(e){fail((e&&e.message)||String(e));}});
+  $('#ms-off').addEventListener('click',async()=>{if(!confirm('停用跨裝置同步？會員的資料會留在各自的裝置和私人 repo 裡，只是不再互相同步。'))return;
+    if(!pat){msg('#ms-msg','需要管理用的 PAT 才能停用（或請 Claude 刪除 data/sync-key.json）。','err');return;}
+    try{await BN.auth.ghPut(pat,'data/sync-key.json',JSON.stringify({schema:'bnasdaq-sync-key/1',enabled:false,note:'會員資產跨裝置同步已停用；啟用方式見管理後台「會員資產跨裝置同步」'},null,1)+'\n','admin: 停用會員資產跨裝置同步');msg('#ms-msg','已停用。網站約 1～2 分鐘後更新。','ok');setTimeout(msStatus,1500);}catch(e){msg('#ms-msg',(e&&e.message)||String(e),'err');}});
+  msStatus();
 
   // ---------- accounts ----------
   async function loadDB(){DB=await BN.auth.fetchAccounts();renderAccounts();}

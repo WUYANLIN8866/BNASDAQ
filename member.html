@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=456c56d75e">
+<link rel="stylesheet" href="assets/site.css?v=88be785642">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 .pbar{display:flex;height:22px;border:1px solid var(--line);margin:8px 0 6px;overflow:hidden;background:var(--band-1,transparent)}
@@ -35,6 +35,20 @@
 .mh-in .tog input:focus-visible+.tr{outline:2px solid var(--gold-hi);outline-offset:2px}
 .mh-in tr.off td:not(.c){opacity:.45}
 @media (max-width:760px){.mh-two{grid-template-columns:1fr}.mh-in .tbl td.info{min-width:140px}}
+/* 手機：輸入表一列一張卡（代號／股數／成本排一行，名稱與價格在下一行，再來是「不列入計算」和刪除）；原本六欄擠在一起，輸入框窄到看不到自己打的字 */
+@media (max-width:640px){
+.mh-in .tblwrap{overflow:visible}
+.mh-in .tbl,.mh-in .tbl tbody{display:block}.mh-in .tbl{margin:0 0 6px}
+.mh-in .tbl thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.mh-in .tbl tr{display:grid;grid-template-columns:1.15fr 1.25fr 1fr;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line-2)}
+.mh-in .tbl td{display:block;padding:0;border:0;min-width:0;text-align:left}
+.mh-in .tbl tbody tr:hover td{background:transparent}
+.mh-in .tbl td.info{grid-column:1/-1;min-width:0}
+.mh-in .tbl td.c:nth-last-child(2){grid-column:1/3}
+.mh-in .tbl td.c:last-child{text-align:right}
+.mh-in .tog::after{content:"不列入計算";margin-left:8px;font-size:13px;color:var(--ink-2)}
+.mh-in .tbl input{font-size:16px;padding:8px}
+}
 
 </style>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
@@ -55,12 +69,13 @@
   <p class="msg err" id="stale" hidden></p>
   <h2 id="mine" style="margin-top:0">會員持有資產</h2>
   <details class="mh-fold" id="mh-fold" open><summary><span><b>持有輸入表</b><span class="small" id="mh-sum"></span> <span class="small muted mh-hint">（點這裡收起／展開）</span></span></summary>
-  <p class="small">輸入你目前持有的台美股、ETF 與現金，下方會即時做客製化分析。資料只存在這個瀏覽器，用你的會員金鑰加密，不會上傳；換手機或電腦請用「匯出備份／匯入備份」。</p>
+  <p class="small">輸入你目前持有的台美股、ETF 與現金，下方會即時做客製化分析。資料一律先加密才儲存；跨裝置同步啟用後，在任何裝置登入這個帳號都會看到同一份（同步狀態見表格下方）。上傳的內容用你的登入密碼導出的金鑰加密，不知道你密碼的人無法解讀。</p>
   <div class="panel mh-in" id="mh">
     <div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">股數（現金填金額）</th><th class="l">平均成本（選填）</th><th class="l">名稱與價格</th><th class="c">不列入計算</th><th></th></tr></thead><tbody id="mh-rows"></tbody></table></div>
     <datalist id="mh-list"></datalist>
     <div class="actions"><button type="button" class="btn line" id="mh-add">新增一列</button><button type="button" class="btn line" id="mh-export">匯出備份</button><label class="btn line" for="mh-import">匯入備份</label><input type="file" id="mh-import" accept=".json,application/json" hidden><button type="button" class="btn line" id="mh-clear">清空</button></div>
-    <p class="small" id="mh-saved" style="margin:8px 0 0"></p>
+    <p class="small" id="mh-saved" role="status" aria-live="polite" style="margin:8px 0 0"></p>
+    <div id="mh-note"></div>
   </div>
   </details>
   <div id="mh-out"></div>
@@ -71,7 +86,7 @@
   <div class="strat" id="cards"></div>
 </div>
 </div></div></div>
-<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=d4c04c5c73"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=1bf86eee5a"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
 <script>
 (async function(){
   const sess=BN.auth.require(); if(!sess) return;
@@ -127,7 +142,7 @@
   }catch(err){$('#nowbody').innerHTML='<tr><td colspan="4"><span class="msg err">載入失敗：'+esc(err.message||err)+'</span></td></tr>';$('#cards').innerHTML='';$('#prob-head').textContent='';}
 })();
 </script>
-<script src="assets/mh-core.js?v=eda481698d"></script><script src="assets/pie3d.js?v=430f9034ae"></script><script src="assets/mh.js?v=079a58652a"></script>
+<script src="assets/mh-core.js?v=75c6834998"></script><script src="assets/pie3d.js?v=430f9034ae"></script><script src="assets/mh.js?v=3a3ea5d2c9"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">

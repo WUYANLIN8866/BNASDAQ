@@ -2,7 +2,8 @@
    - 密碼驗證：PBKDF2-SHA256（310,000 次）→ 32 bytes → base64 與 accounts.json 的 auth.hash 比對
    - 規則金鑰 CK：以「密碼派生金鑰（另一個 salt）」用 AES-GCM 包裝，存在每個帳號的 wrap 欄位；登入後解開 CK → 解密 data/rules.enc.json → 在瀏覽器執行規則
   - 第 2 版規則（rules.enc.json 有 ek 欄位）：CK 先解開 data/rules-key.json 的 RSA 私鑰，再解開規則的一次性金鑰；發布規則只需要公鑰
-   - 管理員寫入：GitHub Contents API（fine-grained PAT，只存在管理員自己的瀏覽器，且以 CK 加密） */
+   - 管理員寫入：GitHub Contents API（fine-grained PAT，只存在管理員自己的瀏覽器，且以 CK 加密）
+   - 個人金鑰 UK：登入時由密碼導出、只放在這次登入的 session；會員持有資產跨裝置同步用它加密（assets/mh-core.js） */
 (function () {
   'use strict';
   const REPO = 'WUYANLIN8866/BNASDAQ';
@@ -48,7 +49,11 @@
     if (h !== rec.auth.hash) throw new Error('帳號或密碼錯誤。');
     const wk = await pbkdf2(password, b64.dec(rec.wrap.salt), rec.wrap.iter || ITER, 256);
     const ck = await aesDec(wk, rec.wrap.iv, rec.wrap.ct);
-    const sess = { user: rec.user, role: rec.role, ck: b64.enc(ck), ts: Date.now() };
+    // 個人金鑰 UK＝SHA-256('bnasdaq-user-key-v1|' ‖ 包裝金鑰)：只能由這個帳號的密碼導出，其他會員算不出來（CK 是全體會員共用的，UK 不是）。
+    // 用途：加密要跨裝置同步的個人資料（會員持有資產，見 assets/mh-core.js）。密碼被重設或更改後，UK 會換一把。
+    const lab = enc.encode('bnasdaq-user-key-v1|'), buf = new Uint8Array(lab.length + wk.length); buf.set(lab); buf.set(wk, lab.length);
+    const uk = new Uint8Array(await crypto.subtle.digest('SHA-256', buf));
+    const sess = { user: rec.user, role: rec.role, ck: b64.enc(ck), uk: b64.enc(uk), ts: Date.now() };
     sessionStorage.setItem('bn-session', JSON.stringify(sess));
     return sess;
   }

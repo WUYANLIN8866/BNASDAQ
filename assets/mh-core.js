@@ -1,6 +1,7 @@
 /* BNASDAQ｜持有資產共用核心：會員專區（assets/mh.js）、每日市場分析「你的資產變化」（assets/mychange.js）、
    公開的投資組合透視（assets/lt-ui.js，只用價格部分）共用同一套。
-   加密（只有會員頁用，需要 assets/auth.js）：每個帳號的金鑰＝SHA-256('bnasdaq-holdings-v1|' + 帳號 + '|' + 會員主金鑰)，AES-GCM；只存在這個瀏覽器（localStorage 'bn-mh-v1:' + 帳號），不上傳。
+   本機那份（只有會員頁用，需要 assets/auth.js）：每個帳號的金鑰＝SHA-256('bnasdaq-holdings-v1|' + 帳號 + '|' + 會員主金鑰)，AES-GCM，存在 localStorage 'bn-mh-v1:' + 帳號。
+   跨裝置同步（站方啟用後才有；見下方「跨裝置同步」）：同一份資料另外用「個人金鑰」加密後放到站方的私人 GitHub repo，會員在任何裝置登入都看到同一份。
    價格：每一檔取「日期最新」的來源，並記下同一來源的前一個交易日收盤（算每日變化用）——
      data/lt/px.json（投資組合透視每日價格，只有最新價；Nasdaq 擋線時美股會停在舊日期，例如 11/11 起停在 11/06）
      data/tw/latest.json（台股官方收盤，證交所延遲時 Yahoo 補位；美股 Yahoo；只收已收盤的交易日；附漲跌）
@@ -23,6 +24,182 @@
     return JSON.parse(dec.decode(await BN.auth.aesDec(await C.ukey(sess), env.iv, env.ct)));
   };
   C.load = async sess => { const raw = localStorage.getItem(C.store(sess.user)); return raw ? C.open(sess, JSON.parse(raw)) : null; };
+  C.saveLocal = async (sess, obj) => { localStorage.setItem(C.store(sess.user), JSON.stringify(await C.seal(sess, obj))); };
+
+  // ---------- 跨裝置同步 ----------
+  // 本站沒有伺服器：同步資料放在站方另一個「私人」GitHub repo，瀏覽器經 GitHub Contents API 讀寫（只連 api.github.com）。
+  //   data/sync-key.json＝{iv, ct}：用會員主金鑰 CK 加密的 {repo, token}，登入的會員才解得開；token 只能讀寫那個私人 repo。
+  //   沒有這個檔＝站方沒啟用，一切照舊只存本機。
+  //   每位會員一個檔 v1/<檔名>.json，內容是 AES-GCM 密文。檔名與內容金鑰都由個人金鑰 UK 算出（UK 由登入密碼導出，見 auth.js），
+  //   所以其他會員看不出哪個檔是誰的，也解不開；repo 裡沒有帳號、沒有明文。
+  //   密文裡的文件＝{user, rev, saved, device, rows}；rev 每上傳一次加 1。
+  //   這台的同步紀錄存在 localStorage 'bn-mh-sync:' + 帳號＝{fid, rev, hash, sha, etag}（上次同步時雲端的版本、內容雜湊、檔案 sha）。
+  //   本機那份照舊保留：離線也能用；密碼被重設後 UK 換了、雲端舊檔解不開，就靠任何一台還有本機資料的裝置重新上傳。
+  //   規則（once）：
+  //     兩邊內容相同 → 只更新紀錄
+  //     雲端沒被別的裝置改過（rev 和上次同步一樣）→ 這台有改就上傳
+  //     雲端被改過、這台沒改 → 採用雲端
+  //     兩邊都改過（或這台第一次同步而兩邊內容不同）→ 取儲存時間較新的一份；另一份留在這台當備份（'bn-mh-bak:' + 帳號），畫面上可以還原
+  //     雲端的 rev 比上次同步還小（被換回舊檔，或檔案被刪後由別台重傳）→ 一樣取儲存時間較新的一份，另一份留作備份
+  //     雲端那份解不開（損毀、被竄改）或不見了 → 這台有資料就重新上傳（rev 接著往上加）
+  const hex = u8 => Array.from(u8, x => x.toString(16).padStart(2, '0')).join('');
+  const sha256 = async (label, u8) => { const l = enc.encode(label), buf = new Uint8Array(l.length + u8.length); buf.set(l); buf.set(u8, l.length); return new Uint8Array(await crypto.subtle.digest('SHA-256', buf)); };
+  const LS = {
+    get: k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } },
+    set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+    del: k => { try { localStorage.removeItem(k); } catch (e) { /* 略過 */ } }
+  };
+  const memMeta = {};   // localStorage 不能用（無痕模式）時，同步紀錄只留在這一頁
+  const getMeta = user => memMeta[user] || LS.get('bn-mh-sync:' + user) || {};
+  const setMeta = (user, m) => { memMeta[user] = m; LS.set('bn-mh-sync:' + user, m); };
+  const deviceId = () => { let d = ''; try { d = localStorage.getItem('bn-device') || ''; if (!d) { d = hex(crypto.getRandomValues(new Uint8Array(6))); localStorage.setItem('bn-device', d); } } catch (e) { d = d || 'nostore'; } return d; };
+  // 內容比對用的標準寫法：只留有代號或數量的列，欄位一律轉成字串（和會員頁儲存時的篩選一致）
+  C.canon = rows => JSON.stringify((rows || []).map(r => { const o = { code: String(r.code == null ? '' : r.code).trim(), v: String(r.v == null ? '' : r.v).trim(), cost: String(r.cost == null ? '' : r.cost).trim() }; if (r.off) o.off = true; return o; }).filter(o => o.code || +o.v));
+  const rowsHash = async rows => hex(await sha256('bnasdaq-rows|', enc.encode(C.canon(rows))));
+
+  let CFG, repoSeen = false, KEYS = null;
+  // 讀同步設定：cfg｜null（沒啟用或解不開）｜'offline'（連不上，之後再試）
+  C.syncConfig = async sess => {
+    if (CFG !== undefined) return CFG;
+    let r; try { r = await tfetch('data/sync-key.json?t=' + Date.now(), { cache: 'no-store' }, 8000); } catch (e) { return 'offline'; }
+    CFG = null;
+    try {
+      const j = r.ok ? await r.json() : null;
+      if (j && j.iv && j.ct) { const o = JSON.parse(dec.decode(await BN.auth.aesDec(BN.auth.b64.dec(sess.ck), j.iv, j.ct)));
+        if (o && /^[\w.-]+\/[\w.-]+$/.test(o.repo || '') && o.token) CFG = { repo: o.repo, token: o.token, api: 'https://api.github.com/repos/' + o.repo }; }
+    } catch (e) { CFG = null; }
+    return CFG;
+  };
+  const keys = async sess => {
+    if (KEYS && KEYS.uk === sess.uk) return KEYS;
+    const uk = BN.auth.b64.dec(sess.uk);
+    KEYS = { uk: sess.uk, fid: hex(await sha256('bnasdaq-sync-file-v1|', uk)).slice(0, 40), key: await sha256('bnasdaq-sync-data-v1|', uk) };
+    return KEYS;
+  };
+  // 每個請求都有時限：連線卡住時當作連不上，下一輪再試（否則同步會永遠卡在那一次）
+  const tfetch = (url, opt, ms) => { const c = new AbortController(), t = setTimeout(() => c.abort(), ms || 12000); return fetch(url, Object.assign({}, opt, { signal: c.signal })).finally(() => clearTimeout(t)); };
+  const ghHead = (cfg, more) => Object.assign({ Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + cfg.token }, more);
+  const limited = r => (r.status === 403 || r.status === 429) && (r.headers.get('x-ratelimit-remaining') === '0' || r.headers.get('retry-after'));
+  async function rGet(cfg, fid, etag) {
+    let r; try { r = await tfetch(cfg.api + '/contents/v1/' + fid + '.json', { headers: ghHead(cfg, etag ? { 'If-None-Match': etag } : null), cache: 'no-store' }); } catch (e) { return { st: 'offline' }; }
+    if (r.status === 304) return { st: 'same' };
+    if (r.status === 404) return { st: 'none' };
+    if (r.status === 401) return { st: 'auth' };
+    if (r.status === 403 || r.status === 429) return { st: limited(r) ? 'busy' : 'auth' };
+    if (!r.ok) return { st: 'error', why: 'GitHub ' + r.status };
+    try { const j = await r.json(); return { st: 'ok', sha: j.sha, etag: r.headers.get('ETag') || '', text: atob(String(j.content || '').replace(/\s/g, '')) }; } catch (e) { return { st: 'error', why: '回應格式不對' }; }
+  }
+  async function rPut(cfg, fid, text, sha, keepalive) {
+    const body = { message: 'sync', content: btoa(text) }; if (sha) body.sha = sha;
+    let r; try { r = await tfetch(cfg.api + '/contents/v1/' + fid + '.json', { method: 'PUT', headers: ghHead(cfg, { 'Content-Type': 'application/json' }), body: JSON.stringify(body), keepalive: !!keepalive }, 15000); } catch (e) { return { st: 'offline' }; }
+    if (r.status === 200 || r.status === 201) { try { const j = await r.json(); return { st: 'ok', sha: (j.content && j.content.sha) || '' }; } catch (e) { return { st: 'ok', sha: '' }; } }
+    if (r.status === 409 || r.status === 422 || (r.status === 404 && sha)) return { st: 'conflict' };   // 雲端那份已經不是我們以為的版本（或被刪了）→ 重新讀再決定
+    if (r.status === 401 || r.status === 404) return { st: 'auth' };
+    if (r.status === 403 || r.status === 429) return { st: limited(r) ? 'busy' : 'auth' };
+    return { st: 'error', why: 'GitHub ' + r.status };
+  }
+  // 檔案讀不到時，分清楚是「這位會員還沒有資料」還是「整個 repo 讀不到（金鑰失效或沒權限）」
+  async function repoReachable(cfg) { if (repoSeen) return true; try { const r = await tfetch(cfg.api, { headers: ghHead(cfg), cache: 'no-store' }); repoSeen = r.ok; } catch (e) { return false; } return repoSeen; }
+  async function sealDoc(sess, K, d) {
+    const e = await BN.auth.aesEnc(K.key, enc.encode(JSON.stringify({ schema: 'bnasdaq-holdings-sync/1', user: sess.user, rev: d.rev, saved: d.saved, device: deviceId(), rows: d.rows })));
+    return JSON.stringify({ schema: 'bnasdaq-sync/1', iv: e.iv, ct: e.ct });
+  }
+  async function openDoc(sess, K, text) {
+    const j = JSON.parse(text); if (!j || j.schema !== 'bnasdaq-sync/1') throw new Error('schema');
+    const d = JSON.parse(dec.decode(await BN.auth.aesDec(K.key, j.iv, j.ct)));
+    if (String(d.user || '').toLowerCase() !== String(sess.user).toLowerCase()) throw new Error('user');
+    return { rev: +d.rev || 0, saved: String(d.saved || ''), rows: Array.isArray(d.rows) ? d.rows : [] };
+  }
+  const keepBackup = async (sess, doc, why) => { try { LS.set('bn-mh-bak:' + sess.user, { at: new Date().toISOString(), why, env: await C.seal(sess, { rows: doc.rows, saved: doc.saved }) }); } catch (e) { /* 略過 */ } };
+  C.syncBackup = async sess => { const b = LS.get('bn-mh-bak:' + sess.user); if (!b || !b.env) return null; try { return { at: b.at, why: b.why, doc: await C.open(sess, b.env) }; } catch (e) { return null; } };
+  C.syncBackupDrop = sess => LS.del('bn-mh-bak:' + sess.user);
+
+  let HOOK = null, SESS = null, chain = Promise.resolve(), pushTimer = 0, wired = false, last = { state: 'init' };
+  async function localDoc(sess) {
+    if (HOOK && HOOK.getDoc && SESS === sess) { const d = HOOK.getDoc(); if (d) return { rows: d.rows || [], saved: d.saved || '' }; }
+    try { const o = await C.load(sess); return { rows: (o && o.rows) || [], saved: (o && o.saved) || '' }; } catch (e) { return { rows: [], saved: '' }; }   // 本機那份解不開就當作沒有，改用雲端
+  }
+  // 同步一輪。回傳 {state, …}：state＝off｜relogin｜synced｜offline｜auth｜busy｜error；changed＝這台改用了雲端的資料（doc）；notice＝兩邊都改過時的說明
+  async function once(sess, opt) {
+    opt = opt || {};
+    const cfg = await C.syncConfig(sess);
+    if (cfg === 'offline') return { state: 'offline' };
+    if (!cfg) return { state: 'off' };
+    if (!sess.uk) return { state: 'relogin' };
+    const K = await keys(sess), user = sess.user, now = new Date().toISOString();
+    for (let turn = 0; turn < 4; turn++) {
+      let meta = getMeta(user); if (meta.fid !== K.fid) meta = { fid: K.fid };   // 密碼改過 → 檔名換了 → 當作第一次同步
+      const L = await localDoc(sess), lhash = await rowsHash(L.rows), hasLocal = C.canon(L.rows) !== '[]';
+      const dirty = meta.hash ? lhash !== meta.hash : hasLocal;
+      const put = async (rev, sha, extra) => {
+        const p = await rPut(cfg, K.fid, await sealDoc(sess, K, { rev, saved: L.saved || now, rows: JSON.parse(C.canon(L.rows)) }), sha, opt.keepalive);
+        if (p.st === 'ok') { setMeta(user, { fid: K.fid, rev, hash: lhash, sha: p.sha }); return Object.assign({ state: 'synced', rev, pushed: true }, extra); }
+        return p.st === 'conflict' ? null : { state: p.st, why: p.why, dirty: true };
+      };
+      // 捷徑：這台有改、而且知道上次同步時雲端那份的 sha → 直接上傳；雲端若被別的裝置改過，GitHub 會拒絕（409），再走完整流程
+      // 其他任何結果（包含意料之外的錯誤）→ 接著走下面的完整流程，重新讀雲端再決定
+      if (dirty && meta.hash && meta.sha && turn === 0) { const r = await put((meta.rev || 0) + 1, meta.sha); if (r && ['synced', 'offline', 'auth', 'busy'].includes(r.state)) return r; }
+      const g = await rGet(cfg, K.fid, opt.poll && !dirty ? meta.etag : null);
+      if (g.st === 'same') return { state: 'synced', rev: meta.rev };
+      if (g.st !== 'ok' && g.st !== 'none') return { state: g.st, why: g.why, dirty };
+      if (g.st === 'none' && !(await repoReachable(cfg))) return { state: 'auth', dirty };
+      let R = null, bad = false;
+      if (g.st === 'ok') { try { R = await openDoc(sess, K, g.text); } catch (e) { bad = true; } }
+      if (!R) {   // 雲端沒有這位會員的檔（還沒傳過、或被刪了），或那份解不開（損毀、被竄改）
+        if (!hasLocal) { if (bad) return { state: 'error', why: '雲端那份資料無法解讀' }; setMeta(user, { fid: K.fid, rev: meta.rev || 0, hash: lhash }); return { state: 'synced', rev: meta.rev || 0 }; }
+        // 版本號接著這台上次同步的往上加（不從 1 重來），別台才不會把它當成「被換回舊檔」
+        const r = await put((meta.rev || 0) + 1, bad ? g.sha : null, bad ? { repaired: true } : null); if (r) return r; continue;
+      }
+      const rhash = await rowsHash(R.rows);
+      if (rhash === lhash) { setMeta(user, { fid: K.fid, rev: R.rev, hash: lhash, sha: g.sha, etag: g.etag }); return { state: 'synced', rev: R.rev }; }
+      const moved = !(meta.hash && meta.rev === R.rev);            // 雲端被別的裝置改過（或這台第一次同步）
+      const older = !!meta.hash && R.rev < (meta.rev || 0);        // 雲端版本號倒退：被換回舊檔，或檔案被刪後由別台重傳
+      if (!moved) { const r = await put(R.rev + 1, g.sha); if (r) return r; continue; }   // 雲端沒動、這台有改 → 上傳
+      const adopt = async notice => {
+        // 讀雲端的這段時間，這台又被改了（會員正在打字）→ 重來一輪，不要蓋掉剛打的
+        if ((await rowsHash((await localDoc(sess)).rows)) !== lhash) return null;
+        const doc = { rows: R.rows, saved: R.saved || now };
+        try { await C.saveLocal(sess, doc); } catch (e) { /* 這台存不了（無痕模式）：資料仍顯示在畫面上 */ }
+        setMeta(user, { fid: K.fid, rev: R.rev, hash: rhash, sha: g.sha, etag: g.etag });
+        return { state: 'synced', rev: R.rev, changed: true, doc, notice };
+      };
+      if (!dirty && !older) { const r = await adopt(null); if (r) return r; continue; }   // 一般情況：別台改了、這台沒改 → 採用雲端
+      // 兩邊都改過，或雲端版本號倒退：取儲存時間較新的一份，另一份留在這台當備份
+      if (L.saved > R.saved) {
+        await keepBackup(sess, R, 'local-won');
+        const r = await put(Math.max(R.rev, meta.rev || 0) + 1, g.sha, { notice: { type: 'local-won', mine: L.saved, other: R.saved } }); if (r) return r; continue;
+      }
+      const r = await adopt(hasLocal ? { type: 'remote-won', mine: L.saved, other: R.saved } : null);
+      if (r) { if (hasLocal) await keepBackup(sess, L, 'remote-won'); return r; }   // 這台原本那份（L）留作備份；這台本來就沒資料就不用留
+    }
+    return { state: 'busy', dirty: true };
+  }
+  const say = s => { last = Object.assign({ at: new Date().toISOString() }, s); if (HOOK && HOOK.onStatus) { try { HOOK.onStatus(last); } catch (e) { /* 略過 */ } } return last; };
+  // 只同步一輪、不掛任何事件（每日市場分析用）
+  C.syncOnce = async sess => { try { return await once(sess, {}); } catch (e) { return { state: 'error', why: String((e && e.message) || e) }; } };
+  // 會員頁：hook＝{getDoc() 目前畫面上的資料, onRemote(doc, result) 改用雲端資料時, onStatus(status)}
+  C.syncNow = opt => {
+    chain = chain.then(async () => {
+      if (!SESS) return last;
+      clearTimeout(pushTimer); pushTimer = 0;
+      if (!(opt && opt.quiet)) say({ state: 'syncing' });
+      let r; try { r = await once(SESS, opt); } catch (e) { r = { state: 'error', why: String((e && e.message) || e) }; }
+      if (r.changed && HOOK && HOOK.onRemote) { try { await HOOK.onRemote(r.doc, r); } catch (e) { /* 略過 */ } }
+      return say(r);
+    });
+    return chain;
+  };
+  C.syncTouch = () => { if (!SESS) return; clearTimeout(pushTimer); pushTimer = setTimeout(() => C.syncNow(), 1500); };
+  C.syncStart = (sess, hook) => {
+    SESS = sess; HOOK = hook || {};
+    if (!wired) { wired = true;
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') C.syncNow({ poll: true, quiet: true }); else if (pushTimer) C.syncNow({ keepalive: true, quiet: true }); });
+      window.addEventListener('online', () => C.syncNow({ quiet: true }));
+      setInterval(() => { if (document.visibilityState === 'visible' && !pushTimer && last.state !== 'off' && last.state !== 'relogin') C.syncNow({ poll: true, quiet: true }); }, 60000);
+    }
+    return C.syncNow();
+  };
+  C.syncStatus = () => last;
 
   // ---------- 價格（每檔取日期最新的來源）----------
   let D = null;

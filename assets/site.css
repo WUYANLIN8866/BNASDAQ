@@ -194,6 +194,7 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 
 /* ---------- buttons ---------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; border-radius: 2px; text-decoration: none; font-weight: 600; font-size: 15px; letter-spacing: .05em; border: 1px solid transparent; cursor: pointer; font-family: inherit; line-height: 1.4; transition: background .15s, color .15s, border-color .15s; }
+.btn[hidden] { display: none; }   /* .btn 的 display 會蓋過瀏覽器內建的 [hidden]：按鈕設了 hidden 卻還看得到（管理後台的「下載…手動上傳用」） */
 .btn.primary { background: var(--gold-hi); color: #111; border-color: var(--gold-hi); }
 .btn.primary:hover { background: #e0c48d; color: #111; border-color: #e0c48d; }
 .btn.ghost { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .45); }

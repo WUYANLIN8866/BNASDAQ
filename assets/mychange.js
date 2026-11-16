@@ -1,5 +1,5 @@
 /* BNASDAQ｜每日市場分析最上面的「你的資產變化」：只有登入的會員看得到。
-   讀會員在「會員持有資產」加密保存的持有（只在這個瀏覽器解密計算，不上傳），用每檔最新收盤與前一個交易日收盤算出：
+   讀會員在「會員持有資產」加密保存的持有（站方啟用跨裝置同步時先同步一輪；只在這個瀏覽器解密計算），用每檔最新收盤與前一個交易日收盤算出：
      今日資產變化（金額與 %）、每一檔的變化、影響最大的公司（透視後的曝險 × 該公司當日漲跌，估算），並和那斯達克 100 當日漲跌對照。
    「不列入計算」的持有不算；價格來源、日期與前一日收盤都依 assets/mh-core.js（每檔取日期最新的來源）。
    美元資產：用最新匯率與前一天匯率分別換算台幣（兩天的匯率都有時，變化含匯率影響）。 */
@@ -21,8 +21,10 @@
 
   (async function () {
     put(H + '<p class="small">正在用最新收盤計算你的資產變化…</p>');
-    let saved = null;
-    try { saved = await BN.mh.load(sess); } catch (e) { put(H + '<p class="msg err">讀取你的持有資料失敗：' + esc(e.message || e) + '</p>'); return; }
+    let saved = null, sy = null;
+    // 先和雲端同步一輪（站方啟用跨裝置同步時）：在別台裝置輸入的持有，這裡也看得到；連不上就用這台存的那份
+    try { sy = await BN.mh.syncOnce(sess); } catch (e) { sy = null; }
+    try { saved = await BN.mh.load(sess); if (!saved && sy && sy.changed) saved = sy.doc; } catch (e) { put(H + '<p class="msg err">讀取你的持有資料失敗：' + esc(e.message || e) + '</p>'); return; }
     const rows = (saved && saved.rows) || [], used = rows.filter(r => String(r.code || '').trim() && +r.v && !r.off);
     if (!used.length) { put(H + '<p>還沒有持有資料。到 <a href="member.html#mine">會員專區・會員持有資產</a> 輸入後，這裡每天都會先分析你的資產變化。</p>'); return; }
     let D, R;
@@ -50,7 +52,7 @@
     const dates = {}; its.forEach(x => { if (x.a.kind !== 'C' && x.d) { const m = x.a.market === 'US' ? '美股' : '台股'; dates[m] = dates[m] && dates[m] > x.d ? dates[m] : x.d; } });
     const dTxt = Object.entries(dates).map(([m, d]) => m + ' ' + d).join('、');
     // ---------- 版面 ----------
-    let h = H + '<p class="small">依你在會員專區保存的持有' + (rows.some(r => r.off && String(r.code || '').trim()) ? '（不含設為「不列入計算」的項目）' : '') + '，用每檔最新收盤和前一個交易日收盤計算' + (dTxt ? '（' + esc(dTxt) + ' 收盤）' : '') + '。只在你的瀏覽器計算，不上傳。</p>';
+    let h = H + '<p class="small">依你在會員專區保存的持有' + (rows.some(r => r.off && String(r.code || '').trim()) ? '（不含設為「不列入計算」的項目）' : '') + '，用每檔最新收盤和前一個交易日收盤計算' + (dTxt ? '（' + esc(dTxt) + ' 收盤）' : '') + '。計算只在你的瀏覽器進行。</p>';
     h += '<div class="kv">' +
       '<div class="tile"><div class="k">今日資產變化</div><div class="v ' + cls(chg) + '">' + wan(chg) + '</div><div class="s ' + cls(chg) + '">' + sg(pct) + '（' + amt(chg) + '）</div></div>' +
       '<div class="tile"><div class="k">目前總市值</div><div class="v">' + wan(now).replace(/^\+/, '') + '</div><div class="s">前一交易日 ' + nf(Math.round(prev)) + ' 元</div></div>' +

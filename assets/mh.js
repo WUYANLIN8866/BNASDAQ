@@ -1,7 +1,9 @@
 /* BNASDAQ｜會員專區「會員持有資產」：會員輸入目前持有 → 客製化分析（市值與損益、資產配置、資產全貌、透視到公司與產業、與策略本月目標的差額）
    加密存取、價格（每檔取日期最新的來源，含前一交易日收盤）與計算都在 assets/mh-core.js——每日市場分析的「你的資產變化」用同一套。
    每一列有「不列入計算」開關：打開的列仍加密保存，但下方所有計算（含每日市場分析）都略過它。
-   輸入表可收起（<details>），收合狀態記在這個瀏覽器。計算交給 assets/lt-engine.js（股數模式），每一步都可手算。 */
+   輸入表可收起（<details>），收合狀態記在這個瀏覽器。計算交給 assets/lt-engine.js（股數模式），每一步都可手算。
+   跨裝置同步（2026-11-16）：站方啟用後，每次修改先加密存在這台裝置，再用個人金鑰加密上傳；在任何裝置登入同一個帳號都看到同一份。
+   同步規則、金鑰與檔案格式都在 mh-core.js；這裡只負責畫面：同步狀態一行字、兩邊都改過時的提示與還原。 */
 (function () {
   'use strict';
   const root = document.getElementById('mh'); if (!root || !window.BN || !BN.auth || !BN.lt || !BN.mh) return;
@@ -21,18 +23,63 @@
   const blank = () => ({ code: '', v: '', cost: '' });
   const filled = r => !!String(r.code || '').trim();
 
-  // ---------- 加密存取（mh-core.js）----------
+  // ---------- 加密存取與同步（mh-core.js）----------
+  let lastCanon = '[]', localOk = true, syncSt = { state: 'init' }, drawn = false;
+  const kept = () => st.rows.filter(r => filled(r) || +r.v);
+  const when = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }); };
+  // 內容真的有變才存檔、才更新「儲存時間」——兩台裝置比新舊靠的就是這個時間，只是打開頁面不能算修改
   async function save() {
-    st.saved = new Date().toISOString();
-    try { localStorage.setItem(STORE, JSON.stringify(await MH.seal(sess, { rows: st.rows.filter(r => filled(r) || +r.v), saved: st.saved }))); $('mh-saved').textContent = '已加密儲存在這個瀏覽器（' + st.saved.replace('T', ' ').slice(0, 16) + ' UTC）'; }
-    catch (e) { $('mh-saved').textContent = '這個瀏覽器無法儲存（可能是無痕模式）；請用「匯出備份」保存'; }
-    sumText();
+    const rows = kept(), c = MH.canon(rows);
+    if (c !== lastCanon) {
+      lastCanon = c; st.saved = new Date().toISOString();
+      try { await MH.saveLocal(sess, { rows, saved: st.saved }); localOk = true; } catch (e) { localOk = false; }
+      MH.syncTouch();
+      if (syncSt.state === 'synced') syncSt = { state: 'pending' };   // 剛改完、還沒傳出去：先顯示「同步中…」
+    }
+    status(); sumText();
   }
   async function restore() {
-    try { const o = await MH.load(sess); if (o) { st.rows = o.rows || []; st.saved = o.saved || ''; } } catch (e) { $('mh-saved').textContent = '讀取已存的持有失敗：' + (e.message || e); }
+    try { const o = await MH.load(sess); if (o) { st.rows = o.rows || []; st.saved = o.saved || ''; } } catch (e) { /* 這台存的那份解不開：當作沒有，啟用同步時會改用雲端那份 */ }
+    lastCanon = MH.canon(st.rows);
     if (!st.rows.length) st.rows = [blank(), blank(), blank()];
-    if (st.saved) $('mh-saved').textContent = '已載入你上次儲存的持有（' + st.saved.replace('T', ' ').slice(0, 16) + ' UTC）';
   }
+  // 改用另一份資料（雲端傳來的、或還原備份）：換掉畫面上的列，重算
+  async function adopt(doc) {
+    st.rows = doc.rows && doc.rows.length ? doc.rows.map(r => Object.assign({}, r)) : [blank(), blank(), blank()];
+    st.saved = doc.saved || ''; lastCanon = MH.canon(st.rows);
+    if (!drawn) return;
+    drawRows(); if (U) render(await MH.compute(st.rows));
+  }
+  // 一行狀態：這台存了沒、同步到哪了
+  function status() {
+    const el = $('mh-saved'); if (!el) return;
+    const s = syncSt || {}, t = st.saved ? when(st.saved) : '';
+    const local = localOk ? (t ? '已加密儲存在這台裝置（' + t + '）' : '') : '這台裝置無法儲存（可能是無痕模式）';
+    const dot = '<span class="ok-dot"></span>', pre = local ? esc(local) + '。' : '';
+    let h;
+    if (s.state === 'synced') h = dot + '已同步（' + esc(when(s.at)) + '）：在任何裝置登入這個帳號，都會看到同一份資料。' + (localOk ? '' : '這台裝置本身無法儲存（可能是無痕模式），離線時看不到。');
+    else if (s.state === 'off') h = pre + '跨裝置同步尚未啟用，資料目前只存在這台裝置' + (sess.role === 'admin' ? '；到<a href="admin.html#msync">管理後台</a>啟用' : '') + '。';
+    else if (s.state === 'relogin') h = pre + '請<button type="button" class="btn line" id="mh-relogin" style="padding:2px 10px;font-size:13px;margin:0 6px">重新登入</button>一次，資料才會同步到你的其他裝置（這台的資料不會不見）。';
+    else if (s.state === 'offline') h = pre + '目前連不上同步服務，連上後會自動同步。';
+    else if (s.state === 'auth') h = pre + '同步金鑰失效，暫時無法同步到其他裝置，請通知管理員。';
+    else if (s.state === 'busy') h = pre + '同步服務忙碌中，稍後會自動重試。';
+    else if (s.state === 'error') h = pre + '同步失敗' + (s.why ? '（' + esc(s.why) + '）' : '') + '。<button type="button" class="btn line" id="mh-retry" style="padding:2px 10px;font-size:13px;margin-left:6px">重試</button>';
+    else h = pre + '同步中…';
+    el.innerHTML = h;
+  }
+  // 兩台裝置都改過時：採用較新的一份，另一份留在這台，這裡讓會員選要不要換回來
+  async function note() {
+    const box = $('mh-note'); if (!box) return;
+    const b = await MH.syncBackup(sess);
+    if (!b) { box.innerHTML = ''; return; }
+    const t = when(b.doc.saved) || '時間不明', n = (b.doc.rows || []).length;
+    const remoteWon = b.why === 'remote-won';
+    box.innerHTML = '<div class="msg info">' + (remoteWon
+      ? '你在另一台裝置的資料比較新，這台已改用那一份。這台原本的版本（' + esc(t) + ' 儲存，' + n + ' 筆）還留著。'
+      : '這台的資料比較新，已同步到你所有的裝置。另一台原本的版本（' + esc(t) + ' 儲存，' + n + ' 筆）還留著。') +
+      '<span class="actions" style="display:inline-flex;gap:8px;margin-left:8px"><button type="button" class="btn line" id="mh-bak-use" style="padding:2px 10px;font-size:13px">' + (remoteWon ? '還原這台原本的版本' : '改用另一台的版本') + '</button><button type="button" class="btn line" id="mh-bak-drop" style="padding:2px 10px;font-size:13px">不需要了</button></span></div>';
+  }
+
   // 輸入表收合：狀態記在這個瀏覽器；摘要顯示幾筆、幾筆不列入計算
   function fold() {
     const f = $('mh-fold'); if (!f) return;
@@ -63,7 +110,7 @@
       '<td class="c"><label class="tog" title="打開後，這一列在下方所有計算都不算（仍會保存）"><input type="checkbox" class="off"' + (r.off ? ' checked' : '') + '><span class="tr" aria-hidden="true"></span><span class="sr-only">第 ' + (i + 1) + ' 列不列入計算</span></label></td>' +
       '<td class="c"><button type="button" class="sm danger del" aria-label="刪除第 ' + (i + 1) + ' 列">刪除</button></td></tr>').join('');
     st.rows.forEach((r, i) => info(i));
-    sumText();
+    sumText(); drawn = true;
   }
   function info(i) {
     const r = st.rows[i], cell = $('mi' + i); if (!cell) return;
@@ -186,16 +233,36 @@
       schedule(); });
     $('mh-rows').addEventListener('click', e => { const b = e.target.closest('.del'); if (!b) return; st.rows.splice(+b.closest('tr').dataset.i, 1); if (!st.rows.length) st.rows.push(blank()); drawRows(); schedule(); });
     $('mh-add').addEventListener('click', () => { st.rows.push(blank()); drawRows(); const c = $('mc' + (st.rows.length - 1)); if (c) c.focus(); });
-    $('mh-clear').addEventListener('click', () => { if (!confirm('清空這個瀏覽器裡儲存的持有資產？（建議先匯出備份）')) return; st.rows = [blank()]; try { localStorage.removeItem(STORE); } catch (e) { } drawRows(); run(); });
+    $('mh-clear').addEventListener('click', () => { if (!confirm(syncSt.state === 'synced' ? '清空你的持有資產？你所有裝置上的資料都會一起清空（建議先匯出備份）' : '清空這台裝置裡儲存的持有資產？（建議先匯出備份）')) return; st.rows = [blank()]; drawRows(); run(); });
     $('mh-export').addEventListener('click', async () => { const env = await MH.seal(sess, { rows: st.rows.filter(filled), saved: new Date().toISOString() });
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(env)], { type: 'application/json' })); a.download = 'BNASDAQ-holdings-' + sess.user.replace(/[^A-Za-z0-9_.-]/g, '_') + '-' + new Date().toISOString().slice(0, 10) + '.json'; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); });
     $('mh-import').addEventListener('change', async e => { const f = e.target.files && e.target.files[0]; if (!f) return;
-      try { const o = await MH.open(sess, JSON.parse(await f.text())); st.rows = o.rows && o.rows.length ? o.rows : st.rows; drawRows(); await run(); $('mh-saved').textContent = '已匯入備份（' + (o.saved || '').replace('T', ' ').slice(0, 16) + ' UTC 的版本）並加密儲存'; }
+      try { const o = await MH.open(sess, JSON.parse(await f.text())); st.rows = o.rows && o.rows.length ? o.rows : st.rows; drawRows(); await run(); }
       catch (err) { alert('匯入失敗：' + (err.message || err)); } e.target.value = ''; });
     document.addEventListener('bn:targets', e => { targets = e.detail; run(); });
+    $('mh-saved').addEventListener('click', e => {
+      if (e.target.id === 'mh-retry') MH.syncNow();
+      // 改版前登入的 session 沒有個人金鑰：登入頁看到已登入會直接轉回來，所以要先登出再去登入頁
+      if (e.target.id === 'mh-relogin') { try { sessionStorage.removeItem('bn-session'); } catch (err) { /* 略過 */ } location.href = 'login.html?next=member.html'; }
+    });
+    $('mh-note').addEventListener('click', async e => {
+      if (e.target.id === 'mh-bak-drop') { MH.syncBackupDrop(sess); note(); }
+      if (e.target.id === 'mh-bak-use') { const b = await MH.syncBackup(sess); if (!b) return note(); MH.syncBackupDrop(sess); st.rows = b.doc.rows && b.doc.rows.length ? b.doc.rows : [blank()]; drawRows(); await run(); note(); }
+    });
+    // 同一台裝置的另一個分頁改了資料 → 這個分頁跟著換（自己正在改就不動）
+    window.addEventListener('storage', async e => { if (e.key !== STORE) return; try { const o = await MH.load(sess), rows = (o && o.rows) || []; if (MH.canon(rows) !== lastCanon && MH.canon(kept()) === lastCanon) await adopt({ rows, saved: o && o.saved }); status(); } catch (err) { /* 略過 */ } });
   }
   (async function init() {
-    fold(); await restore(); drawRows(); bind();
+    fold(); await restore(); status();
+    const first = MH.syncStart(sess, {
+      getDoc: () => ({ rows: kept(), saved: st.saved }),
+      onRemote: async doc => { await adopt(doc); },
+      onStatus: s => { syncSt = s; status(); if (s.notice) note(); }
+    });
+    let firstDone = false; first.then(() => { firstDone = true; root.inert = false; });
+    await Promise.race([first, new Promise(r => setTimeout(r, 4000))]);
+    drawRows(); bind(); note();
+    if (!firstDone) root.inert = true;   // 連線很慢：先顯示這台存的資料，但等第一次同步有結果才開放編輯（最久約 12 秒），免得剛打的字和雲端那份互相覆蓋
     try { const D = await MH.data(); U = D.U; FX = D.FX.rate; st.rows.forEach((r, i) => info(i)); await run(); }
     catch (e) { $('mh-out').innerHTML = '<p class="msg err">資料載入失敗：' + esc(e.message || e) + '</p>'; }
   })();
