@@ -14,7 +14,7 @@ jobs:
       - name: Probe intraday quote sources from a runner
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python3 probe.py
+        run: python3 probe2.py
       - name: Save result to this branch
         if: always()
         run: |
