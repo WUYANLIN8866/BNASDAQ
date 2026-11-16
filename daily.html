@@ -367,15 +367,18 @@ function squarify(items,x,y,w,h){
   return out;
 }
 let D=null, cur='ndx', tip=null, lastPT='mouse', armed=null, shown=[], shownLive=false, tipSym=null, tipXY=null;
-// ---- 盤中即時：scripts/heatmap_live.py 開盤期間每分鐘把最新價寫到 heatmap-live 分支；這裡每分鐘讀一次、重畫。讀不到就照舊顯示正式收盤資料。
-// 檔名有兩種：<市場>-<時間格>.json（時間格＝UNIX 秒÷60；每分鐘一個新檔名，才不會被 raw 的 5 分鐘快取卡住）、<市場>.json（最新一份；收盤後就是收盤那一份）
+// ---- 盤中即時：scripts/heatmap_live.py 開盤期間定時（台股每 30 秒、美股每 60 秒）把最新價寫到 heatmap-live 分支；這裡用同樣的間隔讀、重畫。讀不到就照舊顯示正式收盤資料。
+// 檔名有兩種：<市場>-<時間格>.json（時間格＝UNIX 秒÷間隔；每一格一個新檔名，才不會被 raw 的 5 分鐘快取卡住）、<市場>.json（最新一份；收盤後就是收盤那一份）
 const RAW='https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/';
-const MKT={TW:{file:'tw',tz:'Asia/Taipei',open:540,close:810,name:'台股'},US:{file:'us',tz:'America/New_York',open:570,close:960,name:'美股'}};   // 開收盤＝當地時間的第幾分鐘
-const LIVE={}, MISS={TW:0,US:0}, FIXED={TW:0,US:0}, MARGIN=15;   // MARGIN：時間格開始後幾秒才去讀（太早讀到 404 會被快取 60 秒）
+// open／close＝當地時間的第幾分鐘；step＝發布間隔秒數（以快照裡的 step 為準，這裡是還沒讀到快照時的預設）；margin＝時間格開始後幾秒才去讀（太早讀到 404 會被快取 60 秒）
+const MKT={TW:{file:'tw',tz:'Asia/Taipei',open:540,close:810,name:'台股',step:30,margin:8},US:{file:'us',tz:'America/New_York',open:570,close:960,name:'美股',step:60,margin:15}};
+const LIVE={}, MISS={TW:0,US:0}, FIXED={TW:0,US:0};
+const stepOf=mk=>{const L=LIVE[mk];return (L&&L.step>=15&&L.step<=600)?L.step:MKT[mk].step;};
+const everyTxt=L=>{const e=L.every>0?L.every:(L.step>0?L.step:60);return e<50?'約每 '+Math.round(e)+' 秒更新一次':e<=90?'約每分鐘更新一次':'約每 '+Math.round(e/60)+' 分鐘更新一次';};
 let skew=0, liveTimer=0, liveBusy=false, liveAgain=false;
 const now=()=>Date.now()+skew;   // skew＝伺服器時間−本機時間：本機時鐘不準時，時間格才不會算錯
 const mkOf=S=>S&&S.market==='TW'?'TW':'US';
-const hhmm=sec=>{const z=new Date(sec*1000+8*36e5);return String(z.getUTCHours()).padStart(2,'0')+':'+String(z.getUTCMinutes()).padStart(2,'0');};   // 台北時間（固定 UTC+8）
+const hhmm=(sec,ss)=>{const z=new Date(sec*1000+8*36e5), p=v=>String(v).padStart(2,'0');return p(z.getUTCHours())+':'+p(z.getUTCMinutes())+(ss?':'+p(z.getUTCSeconds()):'');};   // 台北時間（固定 UTC+8）；ss＝要不要顯示秒
 function phase(mk){   // 依交易所當地時間：off 週末、pre 開盤前、open 盤中（到收盤後 12 分鐘）、post 收盤後
   try{const p=new Intl.DateTimeFormat('en-US',{timeZone:MKT[mk].tz,weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(now())), g=k=>(p.find(x=>x.type===k)||{}).value;
     const wd=g('weekday'), m=(+g('hour')%24)*60+(+g('minute'));
@@ -392,10 +395,10 @@ function view(S){   // 這個分頁要畫的方塊：盤中快照的交易日比
     const k=t[5]>0?p/t[5]:1; return [t[0],t[1],t[2],(k>0.5&&k<2)?t[3]*k:t[3],c,p,t[6]];})};
 }
 function liveLabel(S,L){   // [說明文字, 是不是正在更新]
-  const nm=MKT[mkOf(S)].name+' '+L.session, age=(now()/1000-L.at)/60, at='台北 '+hhmm(L.at), lim=Math.max(4,(L.every>0?L.every:60)/30+1);   // 超過這麼多分鐘沒更新＝中斷（發布間隔拉長時跟著放寬）
+  const nm=MKT[mkOf(S)].name+' '+L.session, age=(now()/1000-L.at)/60, at='台北 '+hhmm(L.at,L.every>0&&L.every<50), lim=Math.max(4,(L.every>0?L.every:60)/30+1);   // 超過這麼多分鐘沒更新＝中斷（發布間隔拉長時跟著放寬）
   if(L.state==='closed') return [nm+' 收盤（即時報價，正式收盤資料稍後更新）',false];
   if(L.state==='settling'&&age<=20) return [nm+' 剛收盤（收盤價確認中，'+at+' 更新）',false];
-  if(age<=lim) return [nm+' 盤中（'+at+' 更新，約每'+(L.every>90?' '+Math.round(L.every/60)+' ':'')+'分鐘更新一次）',true];
+  if(age<=lim) return [nm+' 盤中（'+at+' 更新，'+everyTxt(L)+'）',true];
   return [nm+' 盤中資料停在 '+at+'（更新中斷）',false];
 }
 async function getJ(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
@@ -403,15 +406,15 @@ async function liveTick(){
   if(!D||document.hidden) return; if(liveBusy){liveAgain=true;return;}
   const S=D.sets[cur]; if(!S) return; const mk=mkOf(S), M=MKT[mk], had=LIVE[mk]; liveBusy=true;
   try{
-    const ph=phase(mk), step=(had&&had.step>=15&&had.step<=600)?had.step:60, t=now()/1000;
+    const ph=phase(mk), step=stepOf(mk), t=now()/1000, slow=Math.max(3,Math.ceil(180/step));   // slow：連續這麼多輪（約 3 分鐘）找不到時間格檔，就改成慢慢讀
     const done=had&&had.state==='closed'&&t-had.at<6*3600;   // 今天已經收盤：不用再讀
     let got=null;
-    if(ph==='open'&&!done&&MISS[mk]<3&&!(had&&had.every>step&&t-had.at<600)){   // 盤中：讀最新的時間格檔，沒有就往前找兩格
-      const s0=Math.floor((t-MARGIN)/step);
+    if(ph==='open'&&!done&&MISS[mk]<slow&&!(had&&had.every>step&&t-had.at<600)){   // 盤中：讀最新的時間格檔，沒有就往前找兩格
+      const s0=Math.floor((t-M.margin)/step);
       for(let k=0;k<3&&!got;k++){try{const j=await getJ(RAW+M.file+'-'+(s0-k)+'.json');if(okSnap(j,mk))got=j;}catch(e){}}
       MISS[mk]=got?0:MISS[mk]+1;
     }
-    if(!got&&!done&&Date.now()-FIXED[mk]>(ph!=='open'?600:MISS[mk]>=3?300:55)*1000){   // 讀「最新一份」：非盤中 10 分鐘一次；盤中連續找不到時間格檔（休市或更新中斷）5 分鐘一次
+    if(!got&&!done&&Date.now()-FIXED[mk]>(ph!=='open'?600:MISS[mk]>=slow?300:55)*1000){   // 讀「最新一份」：非盤中 10 分鐘一次；盤中連續找不到時間格檔（休市或更新中斷）5 分鐘一次
       FIXED[mk]=Date.now();
       try{const j=await getJ(RAW+M.file+'.json');if(okSnap(j,mk)){got=j;if(j.state!=='closed'&&now()/1000-j.at<360)MISS[mk]=0;}}catch(e){}
     }
@@ -421,8 +424,9 @@ async function liveTick(){
     if((fresh||(LIVE[mk]&&LIVE[mk].state!=='closed'))&&D.sets[cur]&&mkOf(D.sets[cur])===mk) draw();
   }finally{liveBusy=false; if(liveAgain){liveAgain=false;liveTick();}}
 }
-function liveLoop(){clearTimeout(liveTimer); const t=now()/1000, nb=(Math.floor((t-MARGIN)/60)+1)*60+MARGIN;
-  liveTimer=setTimeout(()=>{liveTick().catch(()=>{}).then(liveLoop);},Math.max(5,nb-t)*1000+Math.random()*2500);}
+function liveLoop(){clearTimeout(liveTimer); if(!D) return;   // 下一次讀的時間：這個分頁的市場盤中時用它的間隔（台股 30 秒），其他時候每分鐘看一次就好
+  const mk=mkOf(D.sets[cur]), M=MKT[mk], st=phase(mk)==='open'?stepOf(mk):60, t=now()/1000, nb=(Math.floor((t-M.margin)/st)+1)*st+M.margin;
+  liveTimer=setTimeout(()=>{liveTick().catch(()=>{}).then(liveLoop);},Math.max(3,nb-t)*1000+Math.random()*2000);}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveTick().catch(()=>{});});
 function draw(){
   if(!D) return; const S=D.sets[cur]; if(!S) return;
@@ -449,7 +453,7 @@ function draw(){
   $('hm-meta').textContent=mk+'｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+(none?'、今天還沒成交 '+none:'')+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+capNote+'）、顏色＝單日漲跌';
   box.setAttribute('aria-label',S.name+'市值熱力圖，'+mk+'：上漲 '+up+' 檔、下跌 '+dn+' 檔');
   const links=(S.sources||D.sources).map(s=>'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.t)+'</a>').join('；');
-  $('hm-src').innerHTML=(L?'盤中的現價與漲跌：'+esc(L.src||'')+'（開盤期間約每分鐘更新一次）。收盤後的正式資料：'+links+'。':'資料：'+links+'。')+
+  $('hm-src').innerHTML=(L?'盤中的現價與漲跌：'+esc(L.src||'')+'（開盤期間'+everyTxt(L)+'）。收盤後的正式資料：'+links+'。':'資料：'+links+'。')+
     (S.market==='TW'?(L?'':'台股漲跌相對證交所除權息參考價；')+'方塊顯示公司簡稱，點方塊看個股分析。':(L?'':'市值依該日收盤換算；')+'同一家公司多種股別合併為一格（例如 GOOGL＝Alphabet A＋C）。');
   $('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th><th>'+(shownLive?'現價':'收盤')+'</th><th>單日漲跌</th></tr></thead><tbody>'+T.map(t=>'<tr><td class="l"><a href="valuation.html#code='+encodeURIComponent(t[0])+'"><b>'+esc(t[0])+'</b></a></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3],S)+(t[6]?'（估）':'')+'</td><td>'+(t[5]==null?'—':t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td></tr>').join('')+'</tbody>';
 }
@@ -469,7 +473,7 @@ box.addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';},{passive:
 box.addEventListener('click',e=>{const el=e.target.closest('.tl');if(!el)return;   // 滑鼠：點一下就開個股分析；觸控：第一下看提示、同一格再點一下才開
   if(lastPT==='mouse'||armed===el.dataset.s){go(el.dataset.s);return;}
   armed=el.dataset.s;show(el,e);});
-document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();liveTick().catch(()=>{});}));
+document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();liveTick().catch(()=>{}).then(liveLoop);}));
 let rt=0; if('ResizeObserver' in window) new ResizeObserver(()=>{clearTimeout(rt);rt=setTimeout(draw,120);}).observe(box); else window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
 fetch('data/heatmap/latest.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);
   const sv=Date.parse(r.headers.get('date')||''); if(isFinite(sv)&&Math.abs(sv+500-Date.now())>2500) skew=sv+500-Date.now();   // 回應標頭的時間只到秒，差 2.5 秒以上才校正

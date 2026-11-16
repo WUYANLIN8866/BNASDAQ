@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """BNASDAQ｜市值熱力圖盤中更新（每日市場分析頁最上方那張圖）。
 
-做什麼：開盤期間每分鐘抓一次成分股的最新價，算出「相對前一交易日收盤（台股為證交所參考價）」的漲跌，
-       寫成一個小 JSON 放到 heatmap-live 分支；網頁（daily.html）盤中每分鐘讀一次、重畫方塊顏色與大小。
+做什麼：開盤期間定時（台股每 30 秒、美股每 60 秒）抓一次成分股的最新價，算出「相對前一交易日收盤（台股為來源的參考價）」的漲跌，
+       寫成一個小 JSON 放到 heatmap-live 分支；網頁（daily.html）盤中用同樣的間隔讀、重畫方塊顏色與大小。
        收盤後的正式資料仍由 scripts/fetch_heatmap.py 產生（data/heatmap/latest.json），這支程式不會動它。
 
 資料來源（都是公開報價；2026-11-16 09:00～09:07 從 GitHub runner 實測）：
@@ -14,13 +14,15 @@
 
 放哪裡（heatmap-live 分支，只留最新一筆 commit，不會越積越多）：
   tw.json、us.json                 各市場「最新一份」；收盤後就是收盤那一份
-  tw-<時間格>.json、us-<時間格>.json   時間格＝UNIX 秒 ÷ 60 取整數；每個時間格一個不會再變的檔名，只留最近 6 個。
+  tw-<時間格>.json、us-<時間格>.json   時間格＝UNIX 秒 ÷ 該市場的間隔（台股 30、美股 60）取整數；每個時間格一個不會再變的檔名，只留最近 8 個。
   為什麼要時間格檔：raw.githubusercontent.com 同一個網址會被快取 5 分鐘（網址加參數也沒用，2026-11-16 實測），
-  檔名每分鐘換一個，網頁才讀得到 1 分鐘內的資料；新檔名推上去後立刻讀得到（實測 0.2～0.3 秒）。
+  檔名每一格換一個，網頁才讀得到最新的資料；新檔名推上去後立刻讀得到（實測 0.2～0.3 秒）。
+  間隔為什麼不能更短：每次發布要對 GitHub 寫 3 次（tree、commit、ref），GitHub 文件規定寫入類請求每小時不超過 500 次、
+  每分鐘不超過 80 次（secondary rate limit）；30 秒一次＝每小時 360 次，20 秒一次＝540 次就超過了。
 
 怎麼啟動（.github/workflows/heatmap-live.yml）：
   gate     判斷現在要不要跑：90 分鐘內有開盤（或正在盤中）、而且沒有別的 run 正在跑 → go
-  session  等到開盤 → 每分鐘更新 → 收盤後多抓幾分鐘（收盤價到齊）→ 標成 closed 結束。
+  session  等到開盤 → 每一格更新一次 → 收盤後多抓幾分鐘（收盤價到齊）→ 標成 closed 結束。
            一個 job 最多跑 320 分鐘，超過就自己啟動下一棒接手（美股一個交易日 6.5 小時，要兩棒）。
   開盤後 25 分鐘都沒有當天的報價＝休市，直接結束、不發布。
 
@@ -46,19 +48,19 @@ BASE = os.path.join(ROOT, 'data', 'heatmap', 'latest.json')
 BRANCH = 'heatmap-live'
 WORKFLOW = 'heatmap-live.yml'
 SCHEMA = 'bnasdaq-heatmap-live/1'
-STEP = 60            # 一個時間格幾秒（＝多久發布一次）
-KEEP = 6             # 時間格檔留最近幾個
+KEEP = 8             # 時間格檔留最近幾個（每個市場多久發布一次寫在 MARKETS 的 step）
 LEAD = 90 * 60       # 開盤前最多提早多久進場等
 BUDGET = 320 * 60    # 一個 job 最多跑多久；之後交棒（GitHub 單一 job 上限 6 小時）
 HOLIDAY = 25 * 60    # 開盤後這麼久都沒有當天報價＝休市
-FREEZE_POLLS = 25    # 盤中連續這麼多輪「抓得到資料、但最新報價時間沒有前進」＝提早收盤（熔斷暫停 15 分鐘不算）
+FREEZE = 25 * 60     # 盤中連續這麼久「抓得到資料、但最新報價時間沒有前進」＝提早收盤（熔斷暫停 15 分鐘不算）
 YUA = 'Mozilla/5.0 (BNASDAQ heatmap fetch)'   # Yahoo：瀏覽器 UA 會被回 429（實測）
 BUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
 MARKETS = {
-    'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, sets=('tw50',), file='tw', src='Yahoo奇摩股市'),
-    'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', src='Yahoo Finance'),
+    'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, sets=('tw50',), file='tw', step=30, src='Yahoo奇摩股市'),
+    # step＝一個時間格幾秒（＝多久發布一次）。美股一輪要對 Yahoo 發 27 個請求，先維持 60 秒
+    'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', step=60, src='Yahoo Finance'),
 }
-README = ('# heatmap-live\n\n這個分支由 `.github/workflows/heatmap-live.yml` 在開盤期間每分鐘自動覆寫（只留最新一筆 commit），'
+README = ('# heatmap-live\n\n這個分支由 `.github/workflows/heatmap-live.yml` 在開盤期間定時自動覆寫（只留最新一筆 commit），'
           '內容是市值熱力圖的盤中報價。請勿手動修改；程式在 main 分支的 `scripts/heatmap_live.py`。\n')
 
 
@@ -310,7 +312,8 @@ class Session:
         self.mk, self.sess, self.syms, self.pub, self.clock, self.sleep = mk, dict(sess), list(syms), pub, clock, sleep
         self.t0 = t0 if t0 is not None else clock()
         self.q = {}          # 代號 → [現價, 前收（或參考價）, 報價時間]
-        self.every = STEP    # 目前多久發布一次（Yahoo 回 429 時會拉長）
+        self.step = MARKETS[mk]['step']
+        self.every = self.step   # 目前多久發布一次（Yahoo 回 429 時會拉長）
         self.clean = 0       # 連續幾輪沒有 429
         self.maxt = 0        # 目前看到的最新報價時間
         self.still = 0       # 連續幾輪抓得到資料、但最新報價時間沒有前進
@@ -338,8 +341,8 @@ class Session:
             log('Yahoo 回 429，更新間隔拉長到', self.every, '秒')
         else:
             self.clean += 1
-            if self.clean >= 10 and self.every > STEP:
-                self.every, self.clean = max(STEP, self.every // 2), 0
+            if self.clean >= 10 and self.every > self.step:
+                self.every, self.clean = max(self.step, self.every // 2), 0
                 log('更新間隔縮回', self.every, '秒')
         return stat['ok'] > 0
 
@@ -370,7 +373,7 @@ class Session:
             if v:
                 q[s] = [round(v[0], 4), round((v[0] / v[1] - 1) * 100, 2), max(0, int(now - v[2]))]
         return {'schema': SCHEMA, 'market': self.mk, 'session': self.sess['date'], 'state': state, 'at': int(now), 'slot': slot, 'every': self.every,
-                'step': STEP, 'open': self.sess['open'], 'close': self.sess['close'], 'src': self.src, 'n': len(self.syms), 'have': len(q), 'q': q}
+                'step': self.step, 'open': self.sess['open'], 'close': self.sess['close'], 'src': self.src, 'n': len(self.syms), 'have': len(q), 'q': q}
 
     def publish(self, state, slot, now):
         snap = self.snapshot(state, slot, now)
@@ -381,7 +384,7 @@ class Session:
 
     # --- 主迴圈 ---
     def run(self):
-        mk, tail = self.mk, MARKETS[self.mk]['tail']
+        mk, tail, step = self.mk, MARKETS[self.mk]['tail'], self.step
         log(f'{mk} 時段 {self.sess["date"]}：開盤', self.sess['open'], '收盤', self.sess['close'], f'；{len(self.syms)} 檔')
         self.pub.load()
         wait = self.sess['open'] - self.clock()
@@ -389,16 +392,16 @@ class Session:
             log(f'離開盤還有 {wait / 60:.1f} 分鐘，等待中')
         while self.sess['open'] - self.clock() > 0:
             self.sleep(min(30, max(0.5, self.sess['open'] - self.clock())))
-        nxt = (int(self.clock()) // STEP) * STEP   # 現在這一格立刻做
+        nxt = (int(self.clock()) // step) * step   # 現在這一格立刻做
         while True:
             now = self.clock()
             if now < nxt:
                 self.sleep(min(30, max(0.2, nxt - now))); continue
-            slot = nxt // STEP
+            slot = nxt // step
             ok = self.poll()
             now = self.clock()
             over = now >= self.sess['close'] + tail
-            frozen = bool(self.q) and self.still >= FREEZE_POLLS and now < self.sess['close']
+            frozen = bool(self.q) and self.still >= max(10, FREEZE // self.every) and now < self.sess['close']
             if not self.q:
                 if now - self.sess['open'] > HOLIDAY:
                     log('開盤後一直沒有當天的報價：休市或來源異常，結束（不發布）'); return 'holiday'
@@ -421,8 +424,8 @@ class Session:
                 if ok2:
                     return 'relay'
                 self.t0 += 600   # 啟動失敗：10 分鐘後再試（離 6 小時上限還有餘裕）
-            every = self.every if now < self.sess['close'] else STEP
-            nxt = (int(now) // STEP) * STEP + max(STEP, (every // STEP) * STEP)
+            every = self.every if now < self.sess['close'] else step
+            nxt = (int(now) // step) * step + max(step, (every // step) * step)
 
 
 # ---------- 入口 ----------
@@ -472,7 +475,7 @@ def main():
         syms = universe(mk)
         if cmd == 'once':
             s = Session(mk, sess, syms, None)
-            ok = s.poll(); snap = s.snapshot('open', int(time.time()) // STEP, time.time())
+            ok = s.poll(); snap = s.snapshot('open', int(time.time()) // s.step, time.time())
             ages = sorted(v[2] for v in snap['q'].values())
             print(json.dumps({'ok': ok, 'src': s.src, 'have': snap['have'], 'n': snap['n'], 'quote_age_sec_min_med_max': [ages[0], ages[len(ages) // 2], ages[-1]] if ages else None,
                               'sample': dict(list(snap['q'].items())[:5])}, ensure_ascii=False))
