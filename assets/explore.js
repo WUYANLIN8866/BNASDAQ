@@ -25,6 +25,15 @@
   const ageMin = iso => (Date.now() - Date.parse(iso)) / 60000;
   let DATA = null, lastKey = '';
 
+  // 2026-11-18 00:00 user（截圖圈起兩列：「移除圈起來的」）：階段表不列這兩列——
+  //   「第 11 輪前 100 名，參數抽樣跑（延後，排到最後再跑）」、「第 12 輪前 1,000 名，參數全跑」。
+  // 階段名單來自探索程式每分鐘覆寫的快照，沒有 id 欄位，所以用名稱開頭認列（後面的文字會變，例如括號裡的備註）。
+  // 只在「還沒算過任何一組」時不列：探索程式之後若真的開跑，這一列會照常出現——階段表不隱藏實際做過的運算。
+  // 要連排程一起取消，得在探索程式那一端移除（那時快照裡就沒有這兩列，這裡的名單自然不再作用）。
+  const HIDE_STAGES = [/^第\s*11\s*輪前\s*100\s*名/, /^第\s*12\s*輪前\s*1,?000\s*名/];
+  const idle = s => !(s.done > 0) && !(s.tested > 0) && s.status !== '進行中' && s.status !== '完成';
+  const shownStages = d => (d.stages || []).filter(s => !(idle(s) && HIDE_STAGES.some(re => re.test(String(s.name == null ? '' : s.name).trim()))));
+
   // 時間刻度（台北時間；台灣沒有夏令時間，固定 UTC+8）：每天 00:00 一個「月/日」；起點離第一個 00:00 超過半天時，起點也標日期；
   // 不到兩個刻度（資料不滿一天）改成每 6 小時；最多約 8 個標籤。charts.js 另有防重疊。
   const HOUR = 36e5, DAY = 24 * HOUR, TZ = 8 * HOUR, GAP_MS = 2 * HOUR;
@@ -151,10 +160,11 @@
         series: [{ name: '累計已回測', values: H.map(h => h[1]), color: 'var(--s-qld)', fill: true }],
       });
     }
-    // stage table
+    // stage table (without the rows listed in HIDE_STAGES; the count on the summary line below uses the same list)
+    const ST = shownStages(d);
     const badge = s => `<span class="badge xp-${s === '完成' ? 'done' : s === '進行中' ? 'run' : s === '暫停' ? 'pause' : 'wait'}">${esc(s)}</span>`;
     $('xp-stages').innerHTML = '<thead><tr><th class="l">階段</th><th class="l">狀態</th><th>進度</th><th>已回測組數</th><th>階段最佳年化</th></tr></thead><tbody>' +
-      (d.stages || []).map(s => `<tr><td class="l">${esc(s.name)}</td><td class="l">${badge(s.status)}</td><td>${pct(s.pct, 1)}<div class="xp-mini"><i style="width:${Math.min(100, (s.pct || 0) * 100).toFixed(1)}%"></i></div></td><td>${full(s.tested)}</td><td>${s.best == null ? '—' : pct(s.best)}</td></tr>`).join('') + '</tbody>';
+      ST.map(s => `<tr><td class="l">${esc(s.name)}</td><td class="l">${badge(s.status)}</td><td>${pct(s.pct, 1)}<div class="xp-mini"><i style="width:${Math.min(100, (s.pct || 0) * 100).toFixed(1)}%"></i></div></td><td>${full(s.tested)}</td><td>${s.best == null ? '—' : pct(s.best)}</td></tr>`).join('') + '</tbody>';
     // candidates that passed gate 1 (return above the bar): result of each of the 5 gates and why a gate failed.
     // Only gate results and their figures are published; methods, parameters and rules stay private. -- 2026-11-13
     const C = Array.isArray(d.cands) ? d.cands : [];
@@ -163,7 +173,7 @@
     // 2026-11-15 20:57 user: the stage table can be collapsed too (same way as the candidate section below); the summary line keeps
     // a count per status so the gist stays visible while collapsed
     if ($('xp-stages-count')) {
-      const n = {}; (d.stages || []).forEach(s => { n[s.status] = (n[s.status] || 0) + 1; });
+      const n = {}; ST.forEach(s => { n[s.status] = (n[s.status] || 0) + 1; });
       const order = ['完成', '進行中', '暫停', '等待中'], keys = order.filter(k => n[k]).concat(Object.keys(n).filter(k => !order.includes(k)));
       $('xp-stages-count').textContent = keys.map(k => k + ' ' + n[k]).join('・');
     }
