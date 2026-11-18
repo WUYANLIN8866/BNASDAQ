@@ -57,6 +57,12 @@ jobs:
         continue-on-error: true
         run: python3 scripts/fetch_tb3ms.py
 
+      - name: Fetch FRED interest and exchange-rate group, encrypted for members and the private generator (public data only)
+        continue-on-error: true
+        run: |
+          pip install --quiet cryptography || true
+          python3 scripts/fetch_macro.py
+
       - name: Fetch homepage comparison series to the last complete month (public data only)
         continue-on-error: true
         run: python3 scripts/fetch_home.py
@@ -73,7 +79,7 @@ jobs:
         run: |
           git config user.name "bnasdaq-bot"
           git config user.email "bnasdaq-bot@users.noreply.github.com"
-          for f in data/market.json data/treasury.json data/market_daily.json data/tb3ms.json data/home.json data/qqq_fhs.json data/heatmap/latest.json data/treasury_curve.json data/company/_tw_insider.json; do if [ -f "$f" ]; then git add "$f"; fi; done
+          for f in data/market.json data/treasury.json data/market_daily.json data/tb3ms.json data/macro.enc.json data/home.json data/qqq_fhs.json data/heatmap/latest.json data/treasury_curve.json data/company/_tw_insider.json; do if [ -f "$f" ]; then git add "$f"; fi; done
           if git diff --cached --quiet; then
             echo "market data unchanged"
           else

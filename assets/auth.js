@@ -73,6 +73,13 @@
       const pk = await crypto.subtle.importKey('pkcs8', await aesDec(b64.dec(sess.ck), kf.priv.iv, kf.priv.ct), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
       const dk = new Uint8Array(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, pk, b64.dec(j.ek)));
       src = dec.decode(await aesDec(dk, j.iv, j.ct));
+      // 規則用到的金融環境月資料（data/macro.enc.json，GitHub Actions 每天由 FRED 公開資料產生、用同一把會員規則公鑰加密）；
+      // 沒有或解不開時設為 null，由規則自己決定怎麼處理（例如沿用規則內建的歷史資料）
+      try {
+        const mj = await (await fetch('data/macro.enc.json?t=' + Date.now(), { cache: 'no-store' })).json();
+        const mk = new Uint8Array(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, pk, b64.dec(mj.ek.member)));
+        window.BN_MACRO = JSON.parse(dec.decode(await aesDec(mk, mj.iv, mj.ct)));
+      } catch (e) { window.BN_MACRO = null; }
     } else {
       src = dec.decode(await aesDec(b64.dec(sess.ck), j.iv, j.ct));
     }

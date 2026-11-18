@@ -1,0 +1,7 @@
+{
+ "schema": "bnasdaq-macro-key/1",
+ "created": "2026-11-18",
+ "alg": "RSA-OAEP-3072-SHA256",
+ "pub": "MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAq+XjVXRzlGGL2bRxO0QOx/iKfFWt/39mzGoSnDOsQvROWeHqQvbcTJaWQeLpeZ9qoGYfUOJEhl1m55GtQlALGLJwAs2qkYSfQEwOFW4dTPIDS6Eyf3DLYy1SyQH48p0B4fjTmpFz6iNGKPOjczNODMe5yL5o36L/MC8udQVCXT2bIh8Rf7sd0JLdABFF2r0Icw6T6qrDH1g2KrLU37j3LcZOZkEppJ6ybOBYzI0N1Ij9ntM0JydG7lxoaxA9uSTfThPl3qj74/L+Gqyo/xwT9Ux5cZiID76n/S8iiJOpFrTNJnCvSvPRdWKUNpvlzH/8CuxI8sKTsF3bRi0RRmZJhWgPi1XGOgLZK2KBxrc8d/eH8cGbzPB83rz1iDpjNHpYKdSK4LoaTVMU4pQkk7KgqG4FkH7xa2oUlp5uv8joqRg/P56EEmbrnjMopAd9OYfxAywsH9WYrFYXIhyOyPszetLRsPu14b5q5b6UrvD9P1EmvnRfgyZPN+FcfNYW31Y/AgMBAAE=",
+ "note": "私人回測產生器解開 data/macro.enc.json 用的公鑰（私鑰只在使用者的私人 Artifact）；公鑰公開無妨。"
+}
