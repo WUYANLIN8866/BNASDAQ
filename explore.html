@@ -54,6 +54,9 @@
 #xp-stages td.l:first-child, #xp-top td.l { min-width: 13em; }
 #xp-stages td, #xp-top td { white-space: nowrap; }
 #xp-stages td.l:first-child, #xp-top td.l { white-space: normal; }
+#xp-top td.xp-say { white-space: normal; min-width: 16em; line-height: 1.6; }
+#xp-top th { white-space: nowrap; }
+#xp-top td b { font-family: var(--serif); }
 </style>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -96,8 +99,9 @@
     <div class="tblwrap"><table class="tbl" id="xp-stages"></table></div>
   </details>
 
-  <h2 id="top">目前前 10 名候選</h2>
-  <p>以下為目前回測年化報酬率最高的 10 個候選（同時符合最大回撤條件）。組合內容涉及交易規則，依本站政策不公開。</p>
+  <h2 id="top">5 關全過的策略</h2>
+  <p>以下為通過全部 5 關（報酬、回撤、各時間窗、不使用未來資訊、參數穩健）的策略，依回測年化報酬率排序。「點」＝百分點。組合內容涉及交易規則，依本站政策不公開。</p>
+  <p id="xp-top-none" class="note" hidden>目前還沒有策略通過全部 5 關。</p>
   <div class="tblwrap"><table class="tbl" id="xp-top"></table></div>
 
   <h2 id="bar">新策略必須同時通過的門檻</h2>
@@ -110,10 +114,10 @@
   </ol>
   <div class="note"><p>運算分段進行，每段最長約 2 小時；兩段之間本頁會顯示「暫停中」，續跑後自動恢復更新。所有數字皆為歷史回測，不代表未來報酬。</p></div>
 </div>
-<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#cands">初步達標候選</a></li><li><a href="#trend">最佳候選的變化</a></li><li><a href="#stages">各階段進度</a></li><li><a href="#top">前 10 名候選</a></li><li><a href="#bar">新策略的門檻</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">研究與回測</a></li><li><a href="risk.html#robust">參數穩健性檢驗</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div></aside>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#cands">初步達標候選</a></li><li><a href="#trend">最佳候選的變化</a></li><li><a href="#stages">各階段進度</a></li><li><a href="#top">5 關全過的策略</a></li><li><a href="#bar">新策略的門檻</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">研究與回測</a></li><li><a href="risk.html#robust">參數穩健性檢驗</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div></aside>
 </div></div></div>
 <script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/charts.js?v=43696f0c67"></script>
-<script src="assets/explore.js?v=77eedaede3"></script>
+<script src="assets/explore.js?v=f44bf1c519"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-grid">

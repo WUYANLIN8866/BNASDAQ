@@ -193,9 +193,29 @@
       $('xp-cand-notes').innerHTML = C.map(c => `<details class="xp-cand" data-id="${esc(c.id)}"${open.has(String(c.id)) ? ' open' : ''}><summary><b>${esc(c.id)}</b>　年化 ${pct(c.cagr)}　${esc(c.verdict)}</summary>` +
         `<div class="ans"><p><b>原因：</b>${esc(c.reason).replace(/\n/g, '<br>')}</p><ol>${(c.nums || []).map(n => `<li>${esc(n)}</li>`).join('')}</ol></div></details>`).join('');
     }
-    // top candidates (combination contents are trading rules and stay private)
-    $('xp-top').innerHTML = '<thead><tr><th>名次</th><th>年化報酬率</th><th>與門檻差距</th><th class="l">來源階段</th></tr></thead><tbody>' +
-      (d.top || []).map(t => `<tr><td>${t.rank}</td><td>${pct(t.best)}</td><td>${((t.best - d.target) * 100).toFixed(2)} 個百分點</td><td class="l">${esc(t.stage)}</td></tr>`).join('') + '</tbody>';
+    // 2026-11-18 08:43 user: this section used to list the 10 best returns (screenshot of 「目前前 10 名候選」);
+    // now it lists the strategies that passed all 5 gates, each with a one-sentence plain explanation.
+    // Only published gate figures are used (the same text already shown in the candidate notes above); methods, parameters
+    // and rules stay private. Figures are read from each candidate's gate notes; a figure that cannot be read is left out.
+    const num = (t, re) => { const m = re.exec(String(t || '')); return m ? parseFloat(m[1].replace(/[−–]/g, '-')) : null; };
+    const P = C.filter(c => Array.isArray(c.g) && c.g.length === 5 && c.g.every(x => x === 'pass')).sort((a, b) => (b.cagr || 0) - (a.cagr || 0));
+    const p2 = v => v == null ? '—' : v.toFixed(2) + '%';
+    const say = c => {   // one short sentence; figures already in the columns are not repeated
+      const n = c.nums || [], out = [];
+      const mdd = num(n[1], /回撤\s*([−–-]?\d+(?:\.\d+)?)%/);
+      if (c.cagr != null && d.base != null) out.push(`比現行最佳模型每年多賺 ${((c.cagr - d.base) * 100).toFixed(2)} 點` +
+        (mdd != null && d.base_mdd != null ? `、最慘時少跌 ${(mdd - d.base_mdd * 100).toFixed(2)} 點` : ''));
+      const W = [...String(n[2] || '').matchAll(/(全期|近\d+年)\s*([\d.]+)%（QQQ\s*([\d.]+)%）/g)].map(m => +m[2] - +m[3]);
+      if (W.length) out.push(`${W.length} 個時間窗都贏 QQQ（最少多 ${Math.min(...W).toFixed(2)} 點）`);
+      const lo = num(n[4], /最差\s*5%\s*([\d.]+)%/);
+      if (lo != null) out.push(`參數微調後最差也有 ${lo.toFixed(2)}%`);
+      return out.length ? out.join('；') + '。' : '';
+    };
+    const when = t => { const m = /^\d{4}-(\d{2})-(\d{2})\s+(\d{2}:\d{2})/.exec(String(t || '')); return m ? `${+m[1]}/${+m[2]} ${m[3]}` : (t || '—'); };
+    $('xp-top-none').hidden = P.length > 0;
+    $('xp-top').innerHTML = !P.length ? '' : '<thead><tr><th class="l">編號</th><th>年化報酬率</th><th>日線最大回撤</th><th>微調後中位數</th><th class="l">發現</th><th class="l">簡單說明</th></tr></thead><tbody>' +
+      P.map(c => { const n = c.nums || [], mdd = num(n[1], /回撤\s*([−–-]?\d+(?:\.\d+)?)%/), med = num(n[4], /中位數\s*([\d.]+)%/);
+        return `<tr><td class="l"><b>${esc(c.id)}</b></td><td>${pct(c.cagr)}</td><td>${p2(mdd)}</td><td>${p2(med)}</td><td class="l">${esc(when(c.found_at))}</td><td class="l xp-say">${esc(say(c))}</td></tr>`; }).join('') + '</tbody>';
   }
 
   // Collapsible section that remembers the reader's choice (localStorage key = element id). Returns true the first time it wires a box.
