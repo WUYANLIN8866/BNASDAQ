@@ -106,6 +106,16 @@
     return ` style="font-size:min(26px, calc(98cqi / ${em.toFixed(3)}))"`; };
   function tile(k, v, s, cls) { return `<div class="tile"><div class="k">${k}</div><div class="v${cls ? ' ' + cls : ''}"${cls === 'fit' ? fitStyle(v) : ''}>${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`; }
 
+  // 2026-11-18 15:50 user: 「列表沒有 50% 以上的」——頂部的最佳值來自新一輪搜尋（top），那一輪的候選還沒進入 5 關驗證，所以不在 cands。
+  // 把「比 cands 裡最新一輪還新、且年化高於目標」的 top 列成「待驗證」列，數字只用已公開的年化與來源階段。
+  const roundOf = t => { const m = /第\s*(\d+)\s*輪/.exec(String(t || '')); return m ? +m[1] : null; };
+  function pendingTop(d) {
+    const C = Array.isArray(d.cands) ? d.cands : [], T = Array.isArray(d.top) ? d.top : [];
+    const maxR = C.reduce((a, c) => { const m = /^R(\d+)/.exec(String(c.id || '')); return m ? Math.max(a, +m[1]) : a; }, 0);
+    return T.filter(t => t && t.best != null && d.target != null && t.best > d.target && roundOf(t.stage) != null && roundOf(t.stage) > maxR)
+      .map((t, i) => ({ round: roundOf(t.stage), rank: i + 1, best: t.best, stage: t.stage }));
+  }
+
   function render() {
     const d = DATA; if (!d) return;
     renderStatus();
@@ -116,7 +126,8 @@
     $('xp-kv').innerHTML = [
       tile('本階段進度', pct(d.stage_pct, 1), d.stage ? esc(d.stage) : '—'),
       tile('累計已回測組數', full(d.tested), `涵蓋 ${full(d.types_tested)} 種方法組合`, 'fit'),
-      tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap != null ? `，還差 ${gap.toFixed(2)} 個百分點` : ''}`),
+      // 2026-11-18 15:50 user: 「還差 -4.50」看不懂 → 超過目標時改寫「已高出」；最佳值來自還沒驗證的新一輪搜尋時一併註明
+      tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap == null ? '' : gap > 0 ? `，還差 ${gap.toFixed(2)} 個百分點` : `，已高出 ${(-gap).toFixed(2)} 個百分點`}${pendingTop(d).length && pendingTop(d)[0].best >= d.best - 1e-12 ? `（第 ${pendingTop(d)[0].round} 輪搜尋中的數字，尚待驗證）` : ''}`),
       // 2026-11-13: pass count as a 5-tuple, one figure per gate in the order of the list at the foot of the page
       // (cumulative: the k-th figure = candidates that passed gates 1..k, so the last one = passed everything)
       Array.isArray(d.gates) && d.gates.length === 5
@@ -181,17 +192,23 @@
     fold('xp-stages-box');
     // 2026-11-14 01:43 user: the whole section and every candidate's note can be collapsed; remember the choice
     if (fold('xp-cands-box')) {
-      const all = v => document.querySelectorAll('#xp-cand-notes details').forEach(d => { d.open = v; });
+      const all = v => { NOTE_OPEN.clear(); if (v) document.querySelectorAll('#xp-cands button.xp-note-btn').forEach(b => NOTE_OPEN.add(b.dataset.id)); syncNotes(); };
       $('xp-cand-all-open').addEventListener('click', () => all(true));
       $('xp-cand-all-close').addEventListener('click', () => all(false));
     }
     if ($('xp-cands')) {
-      const open = new Set([...document.querySelectorAll('#xp-cand-notes details[open]')].map(e => e.getAttribute('data-id')));
-      $('xp-cands-none').hidden = C.length > 0;
-      $('xp-cands').innerHTML = !C.length ? '' : '<thead><tr><th class="l">編號</th><th>年化報酬率</th><th>1 報酬</th><th>2 回撤</th><th>3 時間窗</th><th>4 未來資訊</th><th>5 穩健</th><th class="l">結論</th></tr></thead><tbody>' +
-        C.map(c => `<tr><td class="l">${esc(c.id)}</td><td>${pct(c.cagr)}</td>${[0, 1, 2, 3, 4].map(k => `<td>${gb((c.g || [])[k])}</td>`).join('')}<td class="l">${esc(c.verdict)}</td></tr>`).join('') + '</tbody>';
-      $('xp-cand-notes').innerHTML = C.map(c => `<details class="xp-cand" data-id="${esc(c.id)}"${open.has(String(c.id)) ? ' open' : ''}><summary><b>${esc(c.id)}</b>　年化 ${pct(c.cagr)}　${esc(c.verdict)}</summary>` +
-        `<div class="ans"><p><b>原因：</b>${esc(c.reason).replace(/\n/g, '<br>')}</p><ol>${(c.nums || []).map(n => `<li>${esc(n)}</li>`).join('')}</ol></div></details>`).join('');
+      // 2026-11-18 15:51 user: 各候選的詳細說明移到表格最右欄——按「看說明」就在該列正下方展開（原因＋各關數字），不再另列在表格下方
+      const P = pendingTop(d), st = d.status === 'paused' ? '目前暫停中' : d.status === 'running' ? '運算中' : '';
+      const rows = P.map(p => ({ id: 'R' + p.round + ' 搜尋第 ' + p.rank + ' 高', cagr: p.best, g: ['pass', 'skip', 'skip', 'skip', 'skip'], verdict: '待驗證（第 ' + p.round + ' 輪）', pending: true,
+        reason: '這是第 ' + p.round + ' 輪搜尋目前找到的第 ' + p.rank + ' 高年化報酬，來源：' + p.stage + '。還沒進入第 2～5 關驗證；第 ' + p.round + ' 輪搜尋進度 ' + pct(d.stage_pct, 1) + (st ? '，' + st : '') + '。',
+        nums: ['搜尋階段年化 ' + pct(p.best) + '（要 > ' + pct(d.target) + '）'] })).concat(C);
+      $('xp-cands-none').hidden = rows.length > 0;
+      $('xp-cands').innerHTML = !rows.length ? '' : '<thead><tr><th class="l">編號</th><th>年化報酬率</th><th>1 報酬</th><th>2 回撤</th><th>3 時間窗</th><th>4 未來資訊</th><th>5 穩健</th><th class="l">結論</th><th class="l">說明</th></tr></thead><tbody>' +
+        rows.map(c => `<tr${c.pending ? ' class="xp-pend"' : ''}><td class="l">${esc(c.id)}</td><td>${pct(c.cagr)}</td>${[0, 1, 2, 3, 4].map(k => `<td>${gb((c.g || [])[k])}</td>`).join('')}<td class="l">${esc(c.verdict)}</td>` +
+          `<td class="l"><button type="button" class="xp-note-btn" data-id="${esc(c.id)}" aria-expanded="false">看說明</button></td></tr>` +
+          `<tr class="xp-note-row" data-id="${esc(c.id)}" hidden><td colspan="9"><div class="ans"><p><b>原因：</b>${esc(c.reason).replace(/\n/g, '<br>')}</p><ol>${(c.nums || []).map(n => `<li>${esc(n)}</li>`).join('')}</ol></div></td></tr>`).join('') + '</tbody>';
+      $('xp-cands').querySelectorAll('button.xp-note-btn').forEach(b => b.addEventListener('click', () => { const id = b.dataset.id; NOTE_OPEN.has(id) ? NOTE_OPEN.delete(id) : NOTE_OPEN.add(id); syncNotes(); }));
+      syncNotes();
     }
     // 2026-11-18 08:43 user: this section used to list the 10 best returns (screenshot of 「目前前 10 名候選」);
     // now it lists the strategies that passed all 5 gates, each with a one-sentence plain explanation.
@@ -219,6 +236,11 @@
   }
 
   // Collapsible section that remembers the reader's choice (localStorage key = element id). Returns true the first time it wires a box.
+  const NOTE_OPEN = new Set();   // 展開中的候選說明（每 2 分鐘重畫時保留）
+  function syncNotes() {
+    document.querySelectorAll('#xp-cands tr.xp-note-row').forEach(r => { r.hidden = !NOTE_OPEN.has(r.dataset.id); });
+    document.querySelectorAll('#xp-cands button.xp-note-btn').forEach(b => { const o = NOTE_OPEN.has(b.dataset.id); b.setAttribute('aria-expanded', o); b.textContent = o ? '收合說明' : '看說明'; });
+  }
   function fold(id) {
     const box = $(id); if (!box || box.dataset.wired) return false;
     box.dataset.wired = '1';
