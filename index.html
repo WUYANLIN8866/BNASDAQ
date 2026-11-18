@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=e1a28d47f3">
+<link rel="stylesheet" href="assets/site.css?v=8aba4a769a">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -26,11 +26,11 @@
 
 <section class="hero"><div class="wrap">
   <div>
-    <span class="eyebrow">BNASDAQ-26110・BNASDAQ-26111・BNASDAQ-26112｜僅限受邀</span>
+    <span class="eyebrow">BNASDAQ｜僅限受邀</span>
     <h1>30 年信任，成就不凡</h1>
     <div class="cta"><a class="btn primary" href="research.html">查看完整回測</a><a class="btn ghost" href="calculator.html">試算目標資產</a></div>
   </div>
-  <div class="stat"><div class="kicker">每月 1 萬定期定額，期末價值<span hidden id="hero-end">2026-10-30</span></div><div class="hs"><div class="hcode"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-26110｜30 年</div><div class="big" id="hero-big">98.5 億</div><div class="kicker hsub" id="hero-sub">IRR 年化 40.6%｜本金 360 萬｜本金的 2,736 倍</div></div><div class="hs"><div class="hcode"><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-26111｜30 年</div><div class="big" id="hero-big2">145.8 億</div><div class="kicker hsub" id="hero-sub2">IRR 年化 42.7%｜本金 360 萬｜本金的 4,049 倍</div></div><div class="hs"><div class="hcode"><span class="sw" style="background:var(--s-sat2)"></span>BNASDAQ-26112｜30 年</div><div class="big" id="hero-big3">343.7 億</div><div class="kicker hsub" id="hero-sub3">IRR 年化 47.2%｜本金 360 萬｜本金的 9,547 倍</div></div></div>
+  <div class="stat"><div class="shead"><span class="kicker">每月 1 萬定期定額 30 年的期末價值</span><span class="kicker">本金 <b id="hero-prin">360 萬</b>｜資料至 <b id="hero-end">2026-10-30</b></span></div><div class="hrow"><div class="hs" style="--c:var(--s-fund)"><div class="hcode"><span class="sw"></span>BNASDAQ-26110</div><div class="big"><span id="hero-big">98.5</span><small>億</small></div><dl class="hm"><div><dt>IRR 年化</dt><dd id="hero-irr">40.6%</dd></div><div><dt>本金的</dt><dd id="hero-mult">2,736 倍</dd></div></dl></div><div class="hs" style="--c:var(--s-sat)"><div class="hcode"><span class="sw"></span>BNASDAQ-26111</div><div class="big"><span id="hero-big2">145.8</span><small>億</small></div><dl class="hm"><div><dt>IRR 年化</dt><dd id="hero-irr2">42.7%</dd></div><div><dt>本金的</dt><dd id="hero-mult2">4,049 倍</dd></div></dl></div><div class="hs" style="--c:var(--s-sat2)"><div class="hcode"><span class="sw"></span>BNASDAQ-26112</div><div class="big"><span id="hero-big3">343.7</span><small>億</small></div><dl class="hm"><div><dt>IRR 年化</dt><dd id="hero-irr3">47.2%</dd></div><div><dt>本金的</dt><dd id="hero-mult3">9,547 倍</dd></div></dl></div></div></div>
 </div></section>
 
 <section class="band" id="client" hidden><div class="wrap">
@@ -267,12 +267,12 @@ function renderInd(start){
   else if(idx&&idx.series){idxUpdated=idx.updated||'';for(const sym of Object.keys(idx.series)){const it=idx.series[sym];const gi=sym===GSYM;ALL.push({name:it.name,vals:pad26(it.values),color:gi?'var(--ink-2)':pal[k++%pal.length],dash:gi?'6 4':null,cur:gi?'美元，價格指數不含息':'當地幣別，價格指數不含息',isIdx:true,gidx:gi});}}
   const i50=v0050?v0050.findIndex(v=>v!=null):-1,i33=v2330?v2330.findIndex(v=>v!=null):-1;TWMIN=BM[Math.max(i50,i33,OFF)];
   (()=>{const e=END.slice(0,7),t=+e.slice(0,4)*12+ +e.slice(5,7)-1-360,s=Math.floor(t/12)+'-'+String(t%12+1).padStart(2,'0'),D=B.dca('fund',s);
-    $('hero-big').textContent=(D.end/1e8).toFixed(1)+' 億';$('hero-sub').textContent='IRR 年化 '+pct(D.irr)+'｜本金 '+(D.principal/1e4).toLocaleString('zh-Hant-TW')+' 萬｜本金的 '+Math.round(D.mult).toLocaleString('zh-Hant-TW')+' 倍';
+    const HF=(k,X)=>{$('hero-big'+k).textContent=(X.end/1e8).toFixed(1);$('hero-irr'+k).textContent=pct(X.irr);$('hero-mult'+k).textContent=Math.round(X.mult).toLocaleString('zh-Hant-TW')+' 倍';};HF('',D);$('hero-prin').textContent=(D.principal/1e4).toLocaleString('zh-Hant-TW')+' 萬';
     $('hero-end').textContent=END;const be=$('bt-end');if(be)be.textContent=END;
     // BNASDAQ-26111 也用 30 年（同一起點）：2000-03 前接 bt-sat30.js 的延伸前段（B.3 模型依同一走動式規則往前多訓練 1996-03、1998-03 兩次），2000-03 起即正式序列
-    const f0=B.first('sat'),D2=B.dca('sat30',s);$('hero-big2').textContent=(D2.end/1e8).toFixed(1)+' 億';$('hero-sub2').textContent='IRR 年化 '+pct(D2.irr)+'｜本金 '+(D2.principal/1e4).toLocaleString('zh-Hant-TW')+' 萬｜本金的 '+Math.round(D2.mult).toLocaleString('zh-Hant-TW')+' 倍';
+    const f0=B.first('sat'),D2=B.dca('sat30',s);HF('2',D2);
     // BNASDAQ-26112 同法：2000-03 前接 bt-sat2-30.js 的延伸前段（B.4 模型往前多訓練 1996-03、1998-03 兩次），2000-03 起即正式序列
-    if(B.T.eq.sat2_30){const D3=B.dca('sat2_30',s);$('hero-big3').textContent=(D3.end/1e8).toFixed(1)+' 億';$('hero-sub3').textContent='IRR 年化 '+pct(D3.irr)+'｜本金 '+(D3.principal/1e4).toLocaleString('zh-Hant-TW')+' 萬｜本金的 '+Math.round(D3.mult).toLocaleString('zh-Hant-TW')+' 倍';}
+    if(B.T.eq.sat2_30){HF('3',B.dca('sat2_30',s));}
     const rk=$('risk-card'),s0=f0>'2000-05'?f0:'2000-05',a=B.drawdown('fund','2000-05'),b=B.drawdown('sat',s0),c3=B.drawdown('sat2',s0);if(rk)rk.textContent='最大回撤：BNASDAQ-26110 '+pct(-a.mdd)+'、BNASDAQ-26111 '+pct(-b.mdd)+'、BNASDAQ-26112 '+pct(-c3.mdd)+'；年化波動度：'+pct(B.vol('fund','2000-05'))+'、'+pct(B.vol('sat',s0))+'、'+pct(B.vol('sat2',s0))+'（2000-05-31～'+END+'）。另有決策日延後、減碼訊號錯失上漲等投入前須了解的代價。';})();
   B.def('2000-05');
   B.picker('bt-pick',{presets:[['1986-09','最早 1986'],['1996-09','近 30 年'],['2000-05','正式回測'],['2009-01','2009-01 起'],['2013-12','2013-12 起'],['2020-12','2020 年底']]});
