@@ -28,7 +28,10 @@
   // ---------------- line chart ----------------
   function line(host, o) {
     const body = wrapFig(host, o);
-    const W = o.W || 820, H = o.height || 360, pad = { l: o.padL || 64, r: o.padR || 16, t: 14, b: 34 };
+    // o.endVals＝{ fmt, W, height, padR, minWidth }：游標不在圖上時，每條線的終點標出最新值（數值＋名稱，上下錯開不重疊）；游標移入時隱藏、改看提示框。
+    // 畫面寬度小於 minWidth（預設 700px）時字會太小，不畫，改看圖下表格。
+    const EV = o.endVals && !(typeof window !== 'undefined' && window.innerWidth < (o.endVals.minWidth || 700)) ? o.endVals : null;
+    const W = (EV && EV.W) || o.W || 820, H = (EV && EV.height) || o.height || 360, pad = { l: o.padL || 64, r: EV ? (EV.padR || 200) : (o.padR || 16), t: 14, b: 34 };
     const svg = frame(body, W, H);
     const n = o.x.length;
     // X 位置：預設一點一格（月線、日線本來就等距）。給 o.xPos（每點的數值位置，例如時間毫秒）就依實際間距排，
@@ -75,6 +78,23 @@
     });
     endLabels.sort((a, b) => a.y - b.y); for (let i = 1; i < endLabels.length; i++) if (endLabels[i].y - endLabels[i - 1].y < 13) endLabels[i].y = endLabels[i - 1].y + 13;
     endLabels.forEach(l => text(svg, Math.min(l.x + 4, W - 2), l.y + 4, l.t, { class: 'viz-txt', 'font-weight': 600, 'text-anchor': (W - l.x) < 70 ? 'end' : 'start', fill: l.c }));
+    let evg = null;
+    if (EV) {
+      evg = el('g', { class: 'viz-endvals' }, svg);
+      const gap = EV.gap || 15, top = pad.t + 6, bot = H - pad.b - 4, lx = W - pad.r + 22;
+      const L = [];
+      o.series.forEach(s => { let li = s.values.length - 1; while (li >= 0 && (s.values[li] == null || !isFinite(s.values[li]) || (o.log && s.values[li] <= 0))) li--; if (li >= 0) L.push({ s, x0: xOf(li), y0: yOf(s.values[li]), v: s.values[li] }); });
+      L.sort((a, b) => a.y0 - b.y0); L.forEach(l => { l.y = Math.min(Math.max(l.y0, top), bot); });
+      for (let i = 1; i < L.length; i++) if (L[i].y < L[i - 1].y + gap) L[i].y = L[i - 1].y + gap;           // 往下推開
+      if (L.length && L[L.length - 1].y > bot) { L[L.length - 1].y = bot; for (let i = L.length - 2; i >= 0; i--) if (L[i].y > L[i + 1].y - gap) L[i].y = L[i + 1].y - gap; }   // 超出底部就整串往上收
+      L.forEach(l => {
+        el('circle', { cx: l.x0, cy: l.y0, r: 3, fill: l.s.color, stroke: 'var(--paper)', 'stroke-width': 1.5 }, evg);
+        el('path', { d: 'M' + (l.x0 + 4).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (lx - 12).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (lx - 4).toFixed(1) + ' ' + l.y.toFixed(1), fill: 'none', stroke: l.s.color, 'stroke-width': 1, 'stroke-opacity': .55 }, evg);
+        const t = text(evg, lx, l.y + 4, '', { class: 'viz-txt' });
+        const a = el('tspan', { fill: l.s.color, 'font-weight': 700 }, t); a.textContent = EV.fmt(l.v);
+        const b = el('tspan', { dx: 6, class: 'viz-endname' }, t); b.textContent = l.s.short || l.s.name;
+      });
+    }
     (o.marks || []).forEach(m => { const x = xOf(m.i), y = yOf(m.v); el('circle', { cx: x, cy: y, r: 5, fill: 'var(--paper)', stroke: m.color || 'var(--ink)', 'stroke-width': 2 }, svg); if (m.label) text(svg, x + (m.dx || 8), y + (m.dy || -8), m.label, { class: 'viz-txt', 'font-weight': 600 }); });
     hover(svg, pad, W, H, xOf, n, (i, cx, cy) => {
       let h = '<b>' + (o.xLabel ? o.xLabel(o.x[i]) : o.x[i]) + '</b>';
@@ -83,8 +103,8 @@
       // 提示框依該點數值由高到低排列（tipSort:false 可改回序列順序）
       const order = o.tipSort === false ? items : items.slice().sort((a, b) => ((b.v == null || !isFinite(b.v)) ? -Infinity : b.v) - ((a.v == null || !isFinite(a.v)) ? -Infinity : a.v));
       order.forEach(({ s, v }) => { if (v == null || !isFinite(v)) return; h += '<br><span style="color:' + s.color + '">●</span> ' + s.name + '：' + (o.tipfmt || yfmt)(v); });
-      BN.tip.show(h, cx, cy);
-    }, () => dots.forEach(d => d.style.display = 'none'));
+      BN.tip.show(h, cx, cy); if (evg) evg.style.display = 'none';
+    }, () => { dots.forEach(d => d.style.display = 'none'); if (evg) evg.style.display = ''; });
     return svg;
   }
 

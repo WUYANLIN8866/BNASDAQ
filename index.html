@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=2c7fe2a1b2">
+<link rel="stylesheet" href="assets/site.css?v=1a43f318db">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -114,7 +114,7 @@
   </ul>
 </div></section>
 
-<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=8d0db1f8e7"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=eb42bcefe3"></script><script src="assets/charts.js?v=43696f0c67"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=8d0db1f8e7"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=eb42bcefe3"></script><script src="assets/charts.js?v=c43fad7fec"></script>
 <script>
 (function(){
   // 最新發布分頁與公告
@@ -155,7 +155,7 @@ function renderWorld(start){
   if(g){removed=series.filter(x=>x.isIdx&&!x.gidx&&x.end<g.end);series=series.filter(x=>removed.indexOf(x)<0);}
   const cg=x=>Math.pow(1+x.end,1/yrs)-1;
   $('c-world').innerHTML='';
-  BN.charts.line($('c-world'),{title:'起點＝100 的累積走勢（對數刻度）',sub:W0+' 至 '+END+'，每月月底；ETF／個股含息，指數為價格指數；虛線＝全球股票指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',series:series.map(s=>({name:s.name,values:s.values,color:s.color,dash:s.dash||undefined}))});
+  BN.charts.line($('c-world'),{title:'起點＝100 的累積走勢（對數刻度）',sub:W0+' 至 '+END+'，每月月底；ETF／個股含息，指數為價格指數；虛線＝全球股票指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',endVals:{W:1040,height:460,padR:210,fmt:v=>(v>=100?'+':'')+Math.round(v-100).toLocaleString('zh-Hant-TW')+'%'},series:series.map(s=>({name:s.name,short:s.gidx?'MSCI ACWI':undefined,values:s.values,color:s.color,dash:s.dash||undefined}))});
   const rows=series.slice().sort((a,b)=>b.end-a.end);
   $('t-world').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+W0+' 至 '+END+'（'+yrs.toFixed(1)+' 年）的累積報酬與年化</caption><thead><tr><th class=l>標的</th><th>累積報酬</th><th>年化</th><th class=l>幣別／口徑</th></tr></thead><tbody>'+rows.map(s=>{const cagr=Math.pow(1+s.end,1/yrs)-1;return '<tr'+(s.gidx?' class="hl"':'')+'><td class=l><span class="sw" style="background:'+s.color+'"></span>'+s.name+(s.gidx?' <small>（比較基準）</small>':'')+'</td><td>'+(s.end>=0?'+':'')+(s.end*100).toLocaleString('zh-Hant-TW',{maximumFractionDigits:0})+'%</td><td>'+(cagr*100).toFixed(1)+'%</td><td class=l>'+s.cur+'</td></tr>';}).join('')+'</tbody></table></div>';
   const px=B.proxyNote(start);
