@@ -1,6 +1,6 @@
 {
  "schema": "bnasdaq-accounts/1",
- "updated": "2026-11-19T06:09:42.012Z",
+ "updated": "2026-11-19T06:10:02.304Z",
  "view": {
   "schema": "bnasdaq-pwview/1",
   "alg": "RSA-OAEP-3072-SHA256",
@@ -37,6 +37,25 @@
     "ct": "9ZPWbwoJBqrbXLlujandnsJg+RvgbQhF44fPHcnpkni3YvPwtdNPa8AXMrlqSs4X"
    },
    "pv": "HBTEzBXr464P/JMpO8teEqIEwDNAYE1eUKdBGaKfk4ObNoayCAe1kp27hZcNGAAokgVZFFbk3+4bN5uZYgtoq4HawUBn5FLRn3xLzkCJlRQtNMiFdRzoKB7xRvT0m84c+rGKJ9hX1nFgXt8r4F7w9AxLRqQOySBsPojchSVxNiRsMk/LS1cHT3W3QJWCDHPm6C8XofakgMQi08Ft2BqSE7dDK1/3vtg+cym7T2kSkBLBk1ApRrTl5IvmkOGMgqmIz3kBxBfLXPp2j6KEOOtYDnBwjWg1f2qywtPmVx9KhMtyNlX9ELqfScwWV584hvnouAGSTCrnaJNu113N+n9TTdi4rufokWvqKmbynNRqxEpdpSL9qgL1vmo9qr3XR84LV/zpe54SX92/aLw6e+LyhhukEoXPQa4b43A4/UCA2TB4EyfbsRCcA40oxlnLVnRZZB1mw8Iy55SdJuAzmKOzK9BWTiqKvfsy4nR6Lq7TiClHiVW6B0yccg6VjEvgMo8b"
+  },
+  {
+   "user": "YuWei",
+   "role": "member",
+   "created": "2026-11-19",
+   "active": true,
+   "note": "YuWei",
+   "auth": {
+    "salt": "Nv7CCnMy/2ujgMCUBX8yJw==",
+    "iter": 310000,
+    "hash": "92XjCGKjykC5VPnaGA0DC7avrfeorK4hDjmjsycYFHA="
+   },
+   "wrap": {
+    "salt": "xAAyCHWkyvdL/B8NZyULAQ==",
+    "iter": 310000,
+    "iv": "PVWpOJ6vjy+goeUw",
+    "ct": "zQP4JnwzZfSoiCs60cMFtX1SK1/IePDGwNfLi4vordDrsDn2xzUh5T8Y3P5JAx1U"
+   },
+   "pv": "HevmRktiiU7cLVwbt0bbVxPyHSUThSteaNaEpYgboetPu4D6lff7yWAuc504qjKbrLlEtMkZhk++K0/PtPAtcmJ4F+yL2DDaEWAS4D7dIxxXTegbJ8r2Xv8qPxHAImfRjrydozaQm9mBvMv6Y2iWFBzi8jP63kjyUK4GCLgwK5OrVjfdMY7Rv9Fj+/TVOK4GW7zkFodqrAqA/LAGTenzMeyMQmWxiNFzhrcP2/zXO4Kw8wR+Jk9oORRstfC5aar+BLMyPRRnDfGdMxjL6pn+V+nUwmb2eq5XhF2F1YOogzdMoYRDZlECkPotmJaiuK3Ts+O9+0uG+fTl9iJ9shfS8mS6tt5JeKco0Pavbii9xEMusrJ1lE1IRsLBRa9Nh5gzfBlp5r0I8PMlnerqr21+51SX3Irfo+hX41AvajDgDWf/k2GT41eLgRfuYsPNmQ35EKpcLzm6wRyOuQGJyN+li4J/1VdUuDyY57S5Tv6mBHUYCffEol1moGjiGjOgMJ30"
   }
  ]
 }
