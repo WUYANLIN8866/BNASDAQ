@@ -10,9 +10,18 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=1a43f318db">
+<link rel="stylesheet" href="assets/site.css?v=689e819110">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<style>
+.acct-dlg { max-width: 560px; width: calc(100% - 32px); border: 1px solid var(--line); background: var(--paper); color: var(--ink); padding: 22px 24px; }
+.acct-dlg::backdrop { background: rgba(0, 0, 0, .55); }
+.acct-dlg h3 { margin-top: 0; }
+.ae-pwrow { display: flex; gap: 8px; } .ae-pwrow input { flex: 1; min-width: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+#acct-table .pw { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+#acct-table td { vertical-align: middle; }
+.btn.danger, button.danger { color: var(--bad); }
+</style>
 </head>
 <body>
 <a class="skip" href="#main">跳到主要內容</a>
@@ -37,8 +46,8 @@
 
   <h2 id="accounts">帳號管理</h2>
   <div class="panel">
-    <h3>GitHub 寫入權限（PAT）</h3>
-    <p class="small">本站沒有伺服器；新增／修改帳號與公告是由你的瀏覽器直接寫回 GitHub。請在 GitHub 建立 <b>fine-grained personal access token</b>：Settings → Developer settings → Personal access tokens → Fine-grained → Repository access 只選 <b>BNASDAQ</b> → Permissions：<b>Contents: Read and write</b>（要手動觸發更新再加 <b>Actions: Read and write</b>）。貼進下方一次即可。</p>
+    <h3>網站寫入權限（只需設定一次）</h3>
+    <p class="small">本站沒有伺服器；新增／修改／刪除帳號與公告時，網頁會在背景直接存到網站的 GitHub 儲存庫，你不用開 GitHub。只需要第一次設定一把存取權杖（PAT）：存好後會用你的管理員金鑰加密、跟著管理員帳號走，<b>之後在任何裝置登入管理員都能直接新增、修改、刪除</b>。權杖到期或被撤銷時才需要重貼。建立方式：GitHub請在 GitHub 建立 <b>fine-grained personal access token</b>：Settings → Developer settings → Personal access tokens → Fine-grained → Repository access 只選 <b>BNASDAQ</b> → Permissions：<b>Contents: Read and write</b>（要手動觸發更新再加 <b>Actions: Read and write</b>）。貼進下方一次即可。</p>
     <div class="row2"><div class="field"><label for="pat">Personal access token</label><input id="pat" type="password" autocomplete="off" placeholder="github_pat_…"></div><div class="field" style="align-self:end"><div class="actions"><button class="btn navy" type="button" id="pat-save">測試並儲存</button><button class="btn line" type="button" id="pat-clear">清除</button></div></div></div>
     <p class="small" id="pat-status"></p><div id="pat-msg"></div>
   </div>
@@ -65,7 +74,19 @@
   </div>
   <div class="panel">
     <h3>帳號清單 <span class="small">（最後更新 <span id="acct-updated">—</span>）</span></h3>
-    <div class="tblwrap"><table class="tbl" id="acct-table"><thead><tr><th class="l">帳號</th><th class="l">角色</th><th class="l">建立</th><th class="l">狀態</th><th class="l">備註</th><th class="l">操作</th></tr></thead><tbody id="acct-body"><tr><td colspan="6">載入中…</td></tr></tbody></table></div>
+    <div id="pv-setup"></div>
+    <div class="actions" style="margin:0 0 8px"><button class="btn line sm" type="button" id="pv-all">全部顯示密碼</button></div>
+    <div class="tblwrap"><table class="tbl" id="acct-table"><thead><tr><th class="l">帳號</th><th class="l">密碼</th><th class="l">角色</th><th class="l">建立</th><th class="l">狀態</th><th class="l">備註</th><th class="l">操作</th></tr></thead><tbody id="acct-body"><tr><td colspan="7">載入中…</td></tr></tbody></table></div>
+    <dialog id="acct-edit" class="acct-dlg"><form method="dialog" class="form" id="ae-form">
+      <h3 id="ae-title">編輯帳號</h3>
+      <div class="field"><label for="ae-user">帳號</label><input id="ae-user" type="text" pattern="[A-Za-z0-9_.-]{3,32}" required><p class="small" id="ae-user-note"></p></div>
+      <div class="field"><label for="ae-pw">密碼</label><div class="ae-pwrow"><input id="ae-pw" type="text" autocomplete="off" spellcheck="false"><button class="btn line sm" type="button" id="ae-gen">產生</button></div><p class="small" id="ae-pw-note"></p></div>
+      <div class="row2"><div class="field"><label for="ae-role">角色</label><select id="ae-role"><option value="member">會員</option><option value="admin">管理員</option></select></div>
+        <div class="field"><label for="ae-active">狀態</label><select id="ae-active"><option value="1">啟用</option><option value="0">停用</option></select></div></div>
+      <div class="field"><label for="ae-note">備註</label><input id="ae-note" type="text"></div>
+      <div id="ae-msg"></div>
+      <div class="actions"><button class="btn navy" type="button" id="ae-save">儲存</button><button class="btn line" type="button" id="ae-cancel">取消</button><button class="btn line danger" type="button" id="ae-del">刪除這個帳號</button></div>
+    </form></dialog>
     <div id="acct-msg"></div><a id="dl" class="btn line" download="accounts.json" hidden>下載 accounts.json（手動上傳用）</a>
     <h3>新增會員</h3>
     <form class="form" id="add"><div class="row2"><div class="field"><label for="nu">帳號</label><input id="nu" type="text" required pattern="[A-Za-z0-9_.-]{3,32}"></div><div class="field"><label for="np">密碼（留空＝自動產生）</label><input id="np" type="text" autocomplete="off"></div></div><div class="field"><label for="nn">備註（例：姓名、來源）</label><input id="nn" type="text"></div><div class="actions"><button class="btn navy" type="submit">建立帳號</button></div></form>
@@ -88,9 +109,9 @@
     <div id="ann-msg"></div><a id="dl2" class="btn line" download="site.json" hidden>下載 site.json（手動上傳用）</a>
     <form class="form" id="annf"><div class="row2"><div class="field"><label for="ad">日期</label><input id="ad" type="date"></div><div class="field"><label for="at">標題</label><input id="at" type="text" required></div></div><div class="field"><label for="ab">內文（可留空）</label><textarea id="ab" rows="3"></textarea></div><div class="actions"><button class="btn navy" type="submit">發布公告</button></div></form>
   </div>
-  <div class="note"><p>安全提醒：accounts.json 是公開檔案，只存密碼雜湊（PBKDF2 310,000 次）與包裝後的金鑰；請給會員夠長的密碼。管理員的 PAT 只存在這台瀏覽器（以你的金鑰加密），不會進入 repo。</p></div>
+  <div class="note"><p>安全提醒：accounts.json 是公開檔案。登入只比對密碼雜湊（PBKDF2 310,000 次）；供管理員查看的密碼副本用 RSA-3072 加密，私鑰與網站寫入權杖都用管理員的個人金鑰加密，只有管理員登入後解得開。所以<b>管理員密碼要夠長、不要和其他網站共用</b>；會員密碼建議用「產生」的隨機密碼，避免會員把在別處使用的密碼交給本站。</p></div>
 </div></div>
-<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=c3285b4498"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=9764066003"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -98,9 +119,9 @@
   $('#who').textContent=sess.user;
   const msg=(id,t,cls)=>{$(id).innerHTML=t?'<p class="msg '+(cls||'info')+'">'+esc(t)+'</p>':'';};
   let pat=await BN.auth.loadPAT(sess); let DB=null; let SITE=null; let rules=null, market=null;
-  function patStatus(){$('#pat-status').innerHTML=pat?'<span class="ok-dot"></span>已儲存 PAT（只存在這台瀏覽器，已用你的金鑰加密）':'<span style="color:var(--bad)">尚未設定 PAT</span>：沒有 PAT 時可以看一切資料，但新增／修改帳號與公告無法寫回 GitHub（可改用下方「下載 JSON 手動上傳」）。';}
+  function patStatus(){$('#pat-status').innerHTML=pat?'<span class="ok-dot"></span>已設定：可以直接在網頁新增、修改、刪除（權杖已用你的管理員金鑰加密，跟著管理員帳號走）':'<span style="color:var(--bad)">尚未設定</span>：可以看一切資料，但新增、修改、刪除存不回網站。請在上方貼一次權杖。';}
   patStatus();
-  $('#pat-save').addEventListener('click',async()=>{const v=$('#pat').value.trim();if(!v)return;msg('#pat-msg','測試中…');try{await BN.auth.ghTest(v);await BN.auth.savePAT(sess,v);pat=v;$('#pat').value='';patStatus();msg('#pat-msg','PAT 可用並已儲存。','ok');}catch(e){msg('#pat-msg',e.message,'err');}});
+  $('#pat-save').addEventListener('click',async()=>{const v=$('#pat').value.trim();if(!v)return;msg('#pat-msg','測試中…');try{await BN.auth.ghTest(v);await BN.auth.savePAT(sess,v);pat=v;$('#pat').value='';patStatus();msg('#pat-msg','權杖可用，已存進你的管理員帳號：之後任何裝置登入都能直接修改。','ok');await syncPatToAccount();}catch(e){msg('#pat-msg',e.message,'err');}});
   $('#pat-clear').addEventListener('click',()=>{BN.auth.clearPAT();pat=null;patStatus();msg('#pat-msg','已清除。','ok');});
 
   // ---------- 會員規則金鑰（一次性設定） ----------
@@ -191,20 +212,79 @@
 
   // ---------- accounts ----------
   async function loadDB(){DB=await BN.auth.fetchAccounts();renderAccounts();}
-  function renderAccounts(){const rows=(DB.accounts||[]).map((a,i)=>'<tr><td class="l"><b>'+esc(a.user)+'</b></td><td class="l">'+(a.role==='admin'?'管理員':'會員')+'</td><td class="l">'+esc(a.created||'')+'</td><td class="l">'+(a.active===false?'<span style="color:var(--bad)">停用</span>':'啟用')+'</td><td class="l">'+esc(a.note||'')+'</td><td class="l"><button class="sm" data-act="reset" data-i="'+i+'">重設密碼</button> '+(a.role==='admin'?'':'<button class="sm" data-act="toggle" data-i="'+i+'">'+(a.active===false?'啟用':'停用')+'</button> <button class="sm danger" data-act="del" data-i="'+i+'">刪除</button>')+'</td></tr>').join('');
-    $('#acct-body').innerHTML=rows||'<tr><td colspan="6">沒有帳號</td></tr>';$('#acct-updated').textContent=DB.updated||'—';}
-  async function saveDB(message){DB.updated=new Date().toISOString();const text=JSON.stringify({schema:DB.schema||'bnasdaq-accounts/1',updated:DB.updated,accounts:DB.accounts},null,1);
-    if(!pat){msg('#acct-msg','沒有 PAT，無法寫回 GitHub。已產生檔案內容，請用「下載 JSON」後手動上傳到 data/accounts.json。','err');$('#dl').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#dl').hidden=false;return false;}
-    msg('#acct-msg','寫入 GitHub 中…');try{await BN.auth.ghPut(pat,'data/accounts.json',text,message);msg('#acct-msg','已儲存（'+message+'）。網站約 1 分鐘後更新；登入頁會直接讀 GitHub，所以新帳號可立即登入。','ok');renderAccounts();return true;}catch(e){msg('#acct-msg',e.message,'err');return false;}}
+  // 2026-11-19 使用者：管理員要能看到、編輯、刪除所有帳號的帳號密碼；全部在網頁完成，不用開 GitHub。
+  // 密碼另存一份「只有管理員解得開」的加密副本（BN.auth.sealPw／openPw）；PAT 跟著管理員帳號（adminPat）。
+  const PV={};let showAll=false;
+  const canView=()=>!!(DB&&DB.view&&DB.view.owner===sess.user);
+  async function pwOf(a){if(!canView()||!a.pv)return null;if(PV[a.user]!=null)return PV[a.user];try{PV[a.user]=await BN.auth.openPw(DB.view,sess,a.pv);}catch(e){PV[a.user]=null;}return PV[a.user];}
+  async function sealInto(rec,pw){if(DB.view)rec.pv=await BN.auth.sealPw(DB.view,pw);PV[rec.user]=pw;return rec;}
+  function renderPvSetup(){const el=$('#pv-setup');
+    if(!DB.view){el.innerHTML='<p class="msg info">密碼查看尚未啟用：輸入你目前的管理員密碼按「啟用」，之後新增、修改的帳號密碼都能在這裡查看。（舊帳號的密碼原本只存雜湊、無法還原，按「編輯」設一次新密碼後就能查看。）</p><div class="row2"><div class="field"><input id="pv-pw" type="password" autocomplete="current-password" placeholder="目前的管理員密碼"></div><div class="field"><div class="actions"><button class="btn navy" type="button" id="pv-on">啟用密碼查看</button></div></div></div><div id="pv-msg"></div>';
+      $('#pv-on').addEventListener('click',enableView);$('#pv-all').hidden=true;return;}
+    $('#pv-all').hidden=!canView();el.innerHTML=canView()?'':'<p class="msg info">密碼只有啟用查看的管理員（'+esc(DB.view.owner)+'）看得到。</p>';}
+  async function enableView(){const pw=$('#pv-pw').value;if(!pw){msg('#pv-msg','請輸入管理員密碼。','err');return;}
+    const i=DB.accounts.findIndex(a=>a.user===sess.user);if(i<0){msg('#pv-msg','找不到你的帳號。','err');return;}
+    msg('#pv-msg','確認密碼中…');const uk=await BN.auth.ukFrom(pw,DB.accounts[i].wrap);
+    if(BN.auth.b64.enc(uk)!==sess.uk){msg('#pv-msg','密碼不對。','err');return;}
+    DB.view=await BN.auth.viewSetup(sess);await sealInto(DB.accounts[i],pw);
+    if(await saveDB('admin: enable password view')){renderPvSetup();renderAccounts();}}
+  function renderAccounts(){if(!DB)return;renderPvSetup();
+    const rows=(DB.accounts||[]).map((a,i)=>{const me=a.user===sess.user;
+      const pwc=canView()&&a.pv?'<span class="pw" data-u="'+esc(a.user)+'">'+(showAll&&PV[a.user]!=null?esc(PV[a.user]):'••••••••')+'</span> <button class="sm" data-act="show" data-i="'+i+'">'+(showAll?'隱藏':'顯示')+'</button> <button class="sm" data-act="copy" data-i="'+i+'">複製</button>':'<span class="small">'+(DB.view?'未保存（按「編輯」設新密碼後可查看）':'—')+'</span>';
+      return '<tr><td class="l"><b>'+esc(a.user)+'</b>'+(me?' <span class="small">（你）</span>':'')+'</td><td class="l">'+pwc+'</td><td class="l">'+(a.role==='admin'?'管理員':'會員')+'</td><td class="l">'+esc(a.created||'')+'</td><td class="l">'+(a.active===false?'<span style="color:var(--bad)">停用</span>':'啟用')+'</td><td class="l">'+esc(a.note||'')+'</td><td class="l"><button class="sm" data-act="edit" data-i="'+i+'">編輯</button> '+(me?'':'<button class="sm" data-act="toggle" data-i="'+i+'">'+(a.active===false?'啟用':'停用')+'</button> <button class="sm danger" data-act="del" data-i="'+i+'">刪除</button>')+'</td></tr>';}).join('');
+    $('#acct-body').innerHTML=rows||'<tr><td colspan="7">沒有帳號</td></tr>';$('#acct-updated').textContent=DB.updated||'—';$('#pv-all').textContent=showAll?'全部隱藏密碼':'全部顯示密碼';
+    if(showAll)(DB.accounts||[]).forEach(async a=>{const p=await pwOf(a);const el=document.querySelector('#acct-table .pw[data-u="'+CSS.escape(a.user)+'"]');if(el&&p!=null)el.textContent=p;});}
+  $('#pv-all').addEventListener('click',()=>{showAll=!showAll;renderAccounts();});
+  async function saveDB(message){DB.updated=new Date().toISOString();
+    if(pat&&(!DB.adminPat||DB.adminPat.owner!==sess.user||DB.adminPat._v!==pat.length+':'+pat.slice(-4))){try{DB.adminPat=await BN.auth.patBox(sess.uk,pat,sess.user);}catch(e){}}
+    const out={schema:DB.schema||'bnasdaq-accounts/1',updated:DB.updated};if(DB.view)out.view=DB.view;if(DB.adminPat){const{_v,...b}=DB.adminPat;out.adminPat=b;}out.accounts=DB.accounts;
+    const text=JSON.stringify(out,null,1);
+    if(!pat){msg('#acct-msg','還沒設定網站寫入權限（上方「只需設定一次」），所以存不回網站。已產生檔案內容，可用「下載 JSON」手動上傳到 data/accounts.json。','err');$('#dl').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#dl').hidden=false;return false;}
+    msg('#acct-msg','儲存中…');try{await BN.auth.ghPut(pat,'data/accounts.json',text,message);msg('#acct-msg','已儲存（'+message+'），立即生效：登入頁直接讀最新資料。','ok');renderAccounts();return true;}catch(e){msg('#acct-msg',e.message,'err');return false;}}
+  // 管理員改自己的密碼：查看密碼的私鑰與寫入權杖都用新的個人金鑰重新加密，存好後請重新登入
+  async function rekeyOwn(newPw,newRec){if(DB.view&&DB.view.owner===sess.user)DB.view=await BN.auth.rewrapView(DB.view,sess,newPw,newRec);
+    if(pat){DB.adminPat=await BN.auth.patBox(await BN.auth.ukFrom(newPw,newRec.wrap),pat,sess.user);DB.adminPat._v=pat.length+':'+pat.slice(-4);}}
+  // ---------- 編輯對話框 ----------
+  let EI=-1,EPW0='';
+  async function openEdit(i){EI=i;const a=DB.accounts[i],me=a.user===sess.user;msg('#ae-msg','');
+    $('#ae-title').textContent='編輯帳號：'+a.user;$('#ae-user').value=a.user;$('#ae-user').disabled=me;$('#ae-user-note').textContent=me?'目前登入中的管理員帳號不能改名。':'改名後，這位會員要用新帳號登入；他存在本機與同步資料裡的持有資產屬於舊帳號名稱，不會自動搬過去。';
+    const p=await pwOf(a);EPW0=p||'';$('#ae-pw').value=EPW0;$('#ae-pw').placeholder=p==null?'留空＝不變；輸入新密碼即可更改':'';
+    $('#ae-pw-note').textContent=p==null?(DB.view?'這個帳號的密碼沒有保存副本，看不到原密碼；輸入新密碼就會更新並可之後查看。':'尚未啟用密碼查看；輸入新密碼即可更改。'):'這是目前的密碼；改掉後按儲存就會更新。'+(me?'改自己的密碼後需要重新登入。':'');
+    $('#ae-role').value=a.role==='admin'?'admin':'member';$('#ae-role').disabled=me;$('#ae-active').value=a.active===false?'0':'1';$('#ae-active').disabled=me;$('#ae-note').value=a.note||'';$('#ae-del').hidden=me;
+    $('#acct-edit').showModal();}
+  $('#ae-gen').addEventListener('click',()=>{$('#ae-pw').value=BN.auth.genPassword();});
+  $('#ae-cancel').addEventListener('click',()=>$('#acct-edit').close());
+  $('#ae-del').addEventListener('click',async()=>{const a=DB.accounts[EI];if(!a||!confirm('刪除帳號 '+a.user+'？刪除後無法復原。'))return;$('#acct-edit').close();DB.accounts.splice(EI,1);delete PV[a.user];await saveDB('admin: delete account '+a.user);});
+  $('#ae-save').addEventListener('click',async()=>{const a=DB.accounts[EI];if(!a)return;const me=a.user===sess.user;
+    const nu=$('#ae-user').value.trim(),np=$('#ae-pw').value,role=$('#ae-role').value,act=$('#ae-active').value==='1',note=$('#ae-note').value.trim();
+    if(!/^[A-Za-z0-9_.-]{3,32}$/.test(nu)){msg('#ae-msg','帳號只能用英數、底線、點、減號，3～32 字。','err');return;}
+    if(nu.toLowerCase()!==a.user.toLowerCase()&&DB.accounts.some((x,j)=>j!==EI&&x.user.toLowerCase()===nu.toLowerCase())){msg('#ae-msg','這個帳號名稱已經有人用了。','err');return;}
+    const pwChanged=np!==''&&np!==EPW0;if(pwChanged&&np.length<(role==='admin'?10:8)){msg('#ae-msg',(role==='admin'?'管理員':'會員')+'密碼至少 '+(role==='admin'?10:8)+' 碼。','err');return;}
+    const old=JSON.parse(JSON.stringify(a)),oldView=DB.view,oldBox=DB.adminPat;let rec=a;msg('#ae-msg','處理中…');
+    if(pwChanged){rec=await BN.auth.makeRecord(nu,np,role,BN.auth.b64.dec(sess.ck),note);rec.created=a.created;rec.active=act;if(me)await rekeyOwn(np,rec);await sealInto(rec,np);}
+    else{rec.user=nu;rec.role=role;rec.active=act;rec.note=note;if(PV[old.user]!=null){PV[nu]=PV[old.user];}}
+    if(nu!==old.user)delete PV[old.user];DB.accounts[EI]=rec;
+    const ok=await saveDB('admin: edit account '+(nu!==old.user?old.user+' → ':'')+nu+(pwChanged?'（密碼更新）':''));
+    if(!ok){DB.accounts[EI]=old;DB.view=oldView;DB.adminPat=oldBox;msg('#ae-msg','沒有存成功，帳號維持原狀。','err');return;}
+    $('#acct-edit').close();
+    if(me&&pwChanged){alert('管理員密碼已更改，請用新密碼重新登入。');BN.auth.logout();}});
   $('#acct-table').addEventListener('click',async e=>{const b=e.target.closest('button[data-act]');if(!b)return;const i=+b.dataset.i,a=DB.accounts[i];
-    if(b.dataset.act==='del'){if(!confirm('刪除帳號 '+a.user+'？'))return;DB.accounts.splice(i,1);await saveDB('admin: delete account '+a.user);}
-    if(b.dataset.act==='toggle'){a.active=(a.active===false);await saveDB('admin: '+(a.active?'enable ':'disable ')+a.user);}
-    if(b.dataset.act==='reset'){const np=prompt('輸入 '+a.user+' 的新密碼（留空＝自動產生 14 碼）')||BN.auth.genPassword();const rec=await BN.auth.makeRecord(a.user,np,a.role,BN.auth.b64.dec(sess.ck),a.note);rec.created=a.created;rec.active=a.active!==false;DB.accounts[i]=rec;const ok=await saveDB('admin: reset password '+a.user);if(ok)alert('新密碼（只顯示這一次）：\n'+a.user+' / '+np);}});
+    if(b.dataset.act==='edit'){openEdit(i);return;}
+    if(b.dataset.act==='show'){const el=b.parentElement.querySelector('.pw');if(b.textContent==='顯示'){const p=await pwOf(a);el.textContent=p==null?'（解不開）':p;b.textContent='隱藏';}else{el.textContent='••••••••';b.textContent='顯示';}return;}
+    if(b.dataset.act==='copy'){const p=await pwOf(a);if(p==null)return;try{await navigator.clipboard.writeText(p);b.textContent='已複製';setTimeout(()=>{b.textContent='複製';},1500);}catch(err){prompt('複製這個密碼：',p);}return;}
+    if(b.dataset.act==='del'){if(!confirm('刪除帳號 '+a.user+'？刪除後無法復原。'))return;DB.accounts.splice(i,1);delete PV[a.user];await saveDB('admin: delete account '+a.user);}
+    if(b.dataset.act==='toggle'){a.active=(a.active===false);await saveDB('admin: '+(a.active?'enable ':'disable ')+a.user);}});
   $('#add').addEventListener('submit',async e=>{e.preventDefault();const u=$('#nu').value.trim(),note=$('#nn').value.trim();let p=$('#np').value;if(!/^[A-Za-z0-9_.-]{3,32}$/.test(u)){msg('#acct-msg','帳號只能用英數、底線、點、減號，3～32 字。','err');return;}
     if(DB.accounts.some(a=>a.user.toLowerCase()===u.toLowerCase())){msg('#acct-msg','帳號已存在。','err');return;}if(!p)p=BN.auth.genPassword();if(p.length<8){msg('#acct-msg','密碼至少 8 碼。','err');return;}
-    const rec=await BN.auth.makeRecord(u,p,'member',BN.auth.b64.dec(sess.ck),note);DB.accounts.push(rec);const ok=await saveDB('admin: add account '+u);if(ok){alert('帳號已建立（密碼只顯示這一次）：\n'+u+' / '+p);$('#nu').value='';$('#np').value='';$('#nn').value='';}});
+    const rec=await sealInto(await BN.auth.makeRecord(u,p,'member',BN.auth.b64.dec(sess.ck),note),p);DB.accounts.push(rec);const ok=await saveDB('admin: add account '+u);
+    if(ok){alert('帳號已建立：\n'+u+' / '+p+(DB.view?'\n（之後可在帳號清單隨時查看）':''));$('#nu').value='';$('#np').value='';$('#nn').value='';}else{DB.accounts.pop();}});
   $('#chpw').addEventListener('submit',async e=>{e.preventDefault();const p1=$('#pw1').value,p2=$('#pw2').value;if(p1.length<10){msg('#acct-msg','管理員密碼至少 10 碼。','err');return;}if(p1!==p2){msg('#acct-msg','兩次輸入不同。','err');return;}
-    const i=DB.accounts.findIndex(a=>a.user===sess.user);const a=DB.accounts[i];const rec=await BN.auth.makeRecord(a.user,p1,a.role,BN.auth.b64.dec(sess.ck),a.note);rec.created=a.created;DB.accounts[i]=rec;const ok=await saveDB('admin: change admin password');if(ok){$('#pw1').value='';$('#pw2').value='';alert('管理員密碼已更改，下次登入請用新密碼。');}});
+    const i=DB.accounts.findIndex(a=>a.user===sess.user);const a=DB.accounts[i];const oldView=DB.view,oldBox=DB.adminPat;
+    const rec=await BN.auth.makeRecord(a.user,p1,a.role,BN.auth.b64.dec(sess.ck),a.note);rec.created=a.created;await rekeyOwn(p1,rec);await sealInto(rec,p1);DB.accounts[i]=rec;
+    const ok=await saveDB('admin: change admin password');if(ok){$('#pw1').value='';$('#pw2').value='';alert('管理員密碼已更改，請用新密碼重新登入。');BN.auth.logout();}else{DB.accounts[i]=a;DB.view=oldView;DB.adminPat=oldBox;}});
+  // PAT 存好後，馬上把它存進管理員帳號（任何裝置登入都能用）
+  async function syncPatToAccount(){if(!pat||!DB)return;if(DB.adminPat&&DB.adminPat.owner===sess.user){try{const cur=new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:BN.auth.b64.dec(DB.adminPat.iv)},await crypto.subtle.importKey('raw',BN.auth.b64.dec(sess.uk),'AES-GCM',false,['decrypt']),BN.auth.b64.dec(DB.adminPat.ct)));if(cur===pat)return;}catch(e){}}
+    DB.adminPat=await BN.auth.patBox(sess.uk,pat,sess.user);DB.adminPat._v=pat.length+':'+pat.slice(-4);await saveDB('admin: store write token in admin account');}
 
   // ---------- announcements ----------
   async function loadSite(){try{SITE=await BN.auth.fetchJSON('data/site.json');}catch(e){SITE={announcements:[]};}renderAnn();}
@@ -242,7 +322,7 @@
     $('#hist-body').innerHTML=hist.join('');}
   function nextMonth(m){const [y,mm]=m.split('-').map(Number);const d=new Date(y,mm,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
   $('#dispatch').addEventListener('click',async()=>{if(!pat){msg('#data-msg','需要 PAT（Actions: Read and write）。','err');return;}msg('#data-msg','觸發中…');try{await BN.auth.ghDispatch(pat);msg('#data-msg','已觸發，約 2～3 分鐘後重新整理本頁。','ok');}catch(e){msg('#data-msg',e.message,'err');}});
-  try{await loadDB();}catch(e){msg('#acct-msg',e.message,'err');}
+  try{await loadDB();if(pat)await syncPatToAccount();}catch(e){msg('#acct-msg',e.message,'err');}
   await loadSite();
   try{await loadSignals();}catch(e){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">'+(e&&e.name==='OperationError'?'規則無法用目前的會員主金鑰解密：多半是剛重新建立會員規則金鑰，規則還沒用新金鑰重新發布（每日同步檢查會自動重新發布）。':esc(e.message||e))+'</p>';}
 })();
