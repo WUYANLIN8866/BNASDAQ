@@ -31,6 +31,7 @@ BRAND = [
     r'BNASDAQ 常見問題', r'BNASDAQ 公告', r'搜尋 BNASDAQ', r"'BNASDAQ-' \+", r'BNASDAQ-holdings-', r'BNASDAQ company fetch',
     r'BNASDAQ market fetch', r'T\.BNASDAQ\b', r'WUYANLIN8866/BNASDAQ', r'/BNASDAQ/', r'bnasdaq-bot', r'只選 <b>BNASDAQ</b>',
     r'BNASDAQ-sync', r'BNASDAQ-engine',   # repo 名稱（管理後台「會員資產跨裝置同步」的設定說明與權限檢查）
+    r'選 <b>BNASDAQ</b>', r'tokens/new\?name=BNASDAQ%20', r'description=BNASDAQ%20',   # repo 名稱與權杖預填連結（管理後台「網站寫入權限」）
 ]
 OLD = [(r'本策略', '「本策略」'), (r'半倉煞車版', '舊名稱「半倉煞車版」'), (r'\bB42\b', '舊代號「B42」')]
 
