@@ -1,6 +1,6 @@
 {
  "schema": "bnasdaq-accounts/1",
- "updated": "2026-11-19T06:10:02.304Z",
+ "updated": "2026-11-19T06:28:23.107Z",
  "view": {
   "schema": "bnasdaq-pwview/1",
   "alg": "RSA-OAEP-3072-SHA256",
@@ -15,8 +15,8 @@
  "adminPat": {
   "owner": "BNASDAQ",
   "saved": "2026-11-19",
-  "iv": "IC0YbbI3yyEhl8gv",
-  "ct": "S8AGnsvaGbZevlCQxQhBZrHgLVFfTmiV1oH90UG/BQi/hD8u4ulNylB4b8ct/O/91/p7juwsemAY7jDaJuF13D6iV71Y5fKf1MhJ6dZFeiDzknTi1XyqIzEwtHCHaqZL2q2FtvMqdrn7cPgOzw=="
+  "iv": "kb/wzNkXusvBwl1k",
+  "ct": "Yk4rwxhuKhWTZlSbVX/U32JM4AML3rw2jDkR4uLioYgtflelP4UumBd0qQIhTptRnI4x0CZQNEFCdPO5NeRK6smq3Bx76Au4x6aVNS5biKjjsawNzXyexlH8XjaplCZaLSSk5XQK9Q5+UTtHFg=="
  },
  "accounts": [
   {
@@ -56,6 +56,25 @@
     "ct": "zQP4JnwzZfSoiCs60cMFtX1SK1/IePDGwNfLi4vordDrsDn2xzUh5T8Y3P5JAx1U"
    },
    "pv": "HevmRktiiU7cLVwbt0bbVxPyHSUThSteaNaEpYgboetPu4D6lff7yWAuc504qjKbrLlEtMkZhk++K0/PtPAtcmJ4F+yL2DDaEWAS4D7dIxxXTegbJ8r2Xv8qPxHAImfRjrydozaQm9mBvMv6Y2iWFBzi8jP63kjyUK4GCLgwK5OrVjfdMY7Rv9Fj+/TVOK4GW7zkFodqrAqA/LAGTenzMeyMQmWxiNFzhrcP2/zXO4Kw8wR+Jk9oORRstfC5aar+BLMyPRRnDfGdMxjL6pn+V+nUwmb2eq5XhF2F1YOogzdMoYRDZlECkPotmJaiuK3Ts+O9+0uG+fTl9iJ9shfS8mS6tt5JeKco0Pavbii9xEMusrJ1lE1IRsLBRa9Nh5gzfBlp5r0I8PMlnerqr21+51SX3Irfo+hX41AvajDgDWf/k2GT41eLgRfuYsPNmQ35EKpcLzm6wRyOuQGJyN+li4J/1VdUuDyY57S5Tv6mBHUYCffEol1moGjiGjOgMJ30"
+  },
+  {
+   "user": "Lawrence_chuang",
+   "role": "member",
+   "created": "2026-11-19",
+   "active": true,
+   "note": "Lawrence",
+   "auth": {
+    "salt": "aIpMWxDiAtfjBV9gxZ1jfQ==",
+    "iter": 310000,
+    "hash": "Cg/I6lSJRkzrjemPfb4kDAw7VU5n24PUwLdzDludHxI="
+   },
+   "wrap": {
+    "salt": "+9gup6Zb/bfDZmRvcA/hSA==",
+    "iter": 310000,
+    "iv": "3XZYwoS0bbj4Bxka",
+    "ct": "CtnUhhd2TipNtFpW1j9tOWRBWAwx0aBrug3GUy2nBuFchA5KWBebGyPtZbeFGicE"
+   },
+   "pv": "odM/RHK3LSNwYzp1fTy5bS9XJVkxHBKRxo2rt/X6rac6eNYmiTHeIzQsglO/IqoiCEEY5cgW+hWxwg1lAu8X1ydo3tEXwp5PLmly+UD35EyDGAlpWyC4+VsclVqJDcip3fCbuiGZYElxWkwjeCUu+1j5x+be8plE/gvCTVUKaWVQTF9D+xqoM87MbZuTGak+hs0pBkTDhUhJTmszwAMfIdxEWNAF51QLbUOYYl2P4460DcDpytdHvn68JMVSa4xVHN53zHrOPKU2hEC+lme3W+rVpRWnQeB7YYW77Kcq9GqkX8M2Bm4u0NvOhYqXyMR0BqJUF5jf18y147nSTGurgzR8+0JhQyn7gcjihbEs+sy4CO0pS7EXhCKoqQzZppyfpJ7uxl4IzTJRVfSaGUSK3QeaK0rHBdV7tAgwRRmuf7nnI0t0iKKIhOZA/XOYPmzZI+QxkbxwosiMBTLVDHklmCDbLIwEUvltAH9VHxTkcf1La5aGWmNi/wpYlBJxUmmv"
   }
  ]
 }
