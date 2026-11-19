@@ -47,7 +47,9 @@
   <h2 id="accounts">帳號管理</h2>
   <div class="panel">
     <h3>網站寫入權限（只需設定一次）</h3>
-    <p class="small">本站沒有伺服器；新增／修改／刪除帳號與公告時，網頁會在背景直接存到網站的 GitHub 儲存庫，你不用開 GitHub。只需要第一次設定一把存取權杖（PAT）：存好後會用你的管理員金鑰加密、跟著管理員帳號走，<b>之後在任何裝置登入管理員都能直接新增、修改、刪除</b>。權杖到期或被撤銷時才需要重貼。建立方式：GitHub請在 GitHub 建立 <b>fine-grained personal access token</b>：Settings → Developer settings → Personal access tokens → Fine-grained → Repository access 只選 <b>BNASDAQ</b> → Permissions：<b>Contents: Read and write</b>（要手動觸發更新再加 <b>Actions: Read and write</b>）。貼進下方一次即可。</p>
+    <p class="small">本站沒有伺服器；新增／修改／刪除帳號與公告時，網頁會在背景直接存到網站的 GitHub 儲存庫，你不用開 GitHub。只需要第一次設定一把存取權杖（PAT）：存好後會用你的管理員金鑰加密、跟著管理員帳號走，<b>之後在任何裝置登入管理員都能直接新增、修改、刪除</b>。權杖到期或被撤銷時才需要重貼。</p>
+    <ol class="small" style="margin:4px 0 12px;padding-left:1.4em;line-height:1.8"><li>按「在 GitHub 建立權杖」（名稱、期限 366 天、Contents 與 Actions 的讀寫權限都已幫你填好）</li><li>在 <b>Repository access</b> 選 <b>Only select repositories</b> → 選 <b>BNASDAQ</b>（這一步 GitHub 不讓網址預先填）</li><li>按最下面 <b>Generate token</b>，複製 <code>github_pat_…</code>（只顯示這一次）</li><li>貼進下面的框，按「測試並儲存」</li></ol>
+    <p class="actions" style="margin:0 0 12px"><a class="btn navy" href="https://github.com/settings/personal-access-tokens/new?name=BNASDAQ%20admin&amp;description=BNASDAQ%20%E7%B6%B2%E7%AB%99%E7%AE%A1%E7%90%86%E5%BE%8C%E5%8F%B0%E5%AF%AB%E5%85%A5&amp;expires_in=366&amp;contents=write&amp;actions=write" target="_blank" rel="noopener">在 GitHub 建立權杖 ↗</a></p>
     <div class="row2"><div class="field"><label for="pat">Personal access token</label><input id="pat" type="password" autocomplete="off" placeholder="github_pat_…"></div><div class="field" style="align-self:end"><div class="actions"><button class="btn navy" type="button" id="pat-save">測試並儲存</button><button class="btn line" type="button" id="pat-clear">清除</button></div></div></div>
     <p class="small" id="pat-status"></p><div id="pat-msg"></div>
   </div>
