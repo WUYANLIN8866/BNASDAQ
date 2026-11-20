@@ -7,7 +7,8 @@
   股價    Yahoo Finance chart：近 1 年日線（1 年報酬、52 週高低、年化波動、Beta）
   台股    證交所 OpenAPI：董監事持股餘額 t187ap11_L、持股逾 10% 大股東 t187ap02_L、每月營收 t187ap05_L、
           前 10 大股東持股情形（ESG 揭露 t187ap46_L_18 → 證交所文件伺服器 PDF）；集保股權分散表（opendata 1-5）
-  宇宙    data/heatmap/latest.json 四個指數（那斯達克 100、標普 500、費城半導體、台灣 50）的成分股
+  宇宙    data/heatmap/latest.json 全部分頁：那斯達克 100、標普 500、費城半導體、台灣 50 的成分股＋台股全上市、全上櫃（上櫃用 Yahoo .TWO）
+          上櫃公司沒有證交所的公司治理資料（董監持股、月營收、前 10 大股東等），只有財報、股價、股利與集保股權分散
   產業    data/fund/<代號>.json 的 industry（美股 Yahoo 產業、台股證交所產業別）
 衍生指標與分數全部在本程式計算（公式見 METHOD），網頁直接顯示；同業比較在同一市場（美股／台股）內做百分位。
 用法：python3 scripts/fetch_company.py [--codes NVDA,2330] [--limit N]
@@ -65,8 +66,11 @@ KEY = {  # 欄位短名
     'CashCashEquivalentsAndShortTermInvestments': 'cash_sti'}
 
 
+TWO = set()   # 上櫃公司代號（Yahoo 用 .TWO）
+
+
 def ysym(code, market):
-    return code + '.TW' if market == 'TW' else code
+    return code + ('.TWO' if code in TWO else '.TW') if market == 'TW' else code
 
 
 def timeseries(sym):
@@ -324,7 +328,8 @@ def tw_sources(codes, prev=None):
         log('金管會裁罰失敗', repr(e)[:120])
     try:
         links = {str(r.get('公司代號', '')).strip(): (r.get('前10大股東持股情形') or '').strip() for r in twse('/opendata/t187ap46_L_18')}
-        reused = 0
+        reused, fresh = 0, 0
+        MAX_NEW = 250   # 一次最多新抓幾份 PDF（2026-11-20 公司範圍擴大到全上市，第一次有上千份；分幾週補齊，不要一次對證交所文件伺服器發上千個請求）
         for c in codes:
             u = links.get(c)
             if u:
@@ -334,12 +339,15 @@ def tw_sources(codes, prev=None):
                     out[c]['top10'], out[c]['top10_v'] = old['top10'], TOP10_V
                     reused += 1
                     continue
+                if fresh >= MAX_NEW:
+                    continue
+                fresh += 1
                 try:
                     out[c]['top10'], out[c]['top10_v'] = top10_pdf(u), TOP10_V
                 except Exception as e:  # noqa
                     log('前10大股東 PDF 失敗', c, repr(e)[:120])
                 time.sleep(0.3)
-        log('前10大股東 PDF：', sum(1 for c in codes if out[c].get('top10')), '/', len(codes), '（沿用上次', reused, '家）')
+        log('前10大股東 PDF：', sum(1 for c in codes if out[c].get('top10')), '/', len(codes), '（沿用上次', reused, '家；這次新抓', fresh, '份，上限', MAX_NEW, '）')
     except Exception as e:  # noqa
         log('前10大股東清單失敗', repr(e)[:120])
     return out
@@ -576,8 +584,9 @@ def main():
     hm = json.load(open(os.path.join(ROOT, 'data', 'heatmap', 'latest.json'), encoding='utf-8'))
     uni = {}
     for key, S in hm['sets'].items():
-        if key in ('twse', 'tpex'):   # 台股全上市／全上櫃（近兩千家）只是熱力圖分頁，個股分析的公司範圍維持指數成分股
-            continue
+        # 2026-11-20 使用者：個股分析要和每日市場分析點進去的一樣 → 台股全上市、全上櫃（熱力圖分頁）的公司也做詳細分析
+        if key == 'tpex':
+            TWO.update(t[0] for t in S['tiles'])
         mk = S.get('market') or ('TW' if key == 'tw50' else 'US')
         for t in S['tiles']:
             u = uni.setdefault(t[0], {'code': t[0], 'name': t[1], 'sector': t[2], 'cap_bn': t[3], 'market': mk, 'sets': []})
