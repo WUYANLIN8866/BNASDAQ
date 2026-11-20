@@ -124,7 +124,7 @@
 .hm-src{font-size:12px;color:var(--muted);margin:0;max-width:none}
 .hm details{margin:10px 0 0;font-size:13.5px}
 .hm details table{font-size:13px}
-@media (max-width:640px){.hm{padding-top:20px}.hm-head h2{font-size:20px}.hm-legend .bar span,.hm-legend .ticks span{width:28px}}
+@media (max-width:640px){.hm{padding-top:20px}.hm-tabs{flex-wrap:wrap;max-width:100%}.hm-tabs button{padding:5px 10px}.hm-head h2{font-size:20px}.hm-legend .bar span,.hm-legend .ticks span{width:28px}}
 @media (max-width:640px){.cause .ph{grid-template-columns:60px 1fr}.cause .p{font-size:26px}}
 </style>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
@@ -141,7 +141,7 @@
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 每日市場分析</div><h1>每日市場分析</h1><p class="lede">每個美股交易日收盤後更新：五大指數、單日漲跌逾 2% 的主因分析、股匯債一週趨勢、24 小時內與投資相關的國際大事，以及市值逾一兆美元企業的新聞與影響。所有數字附來源，可逐項查證。</p></div></div>
 <section class="mychg" id="mychg" hidden aria-labelledby="mychg-h"><div class="wrap"></div></section>
 <section class="hm" id="heatmap" aria-labelledby="hm-h"><div class="wrap">
-  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button><button type="button" role="tab" aria-selected="false" data-set="tw50">台灣 50</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
+  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button><button type="button" role="tab" aria-selected="false" data-set="tw50">台灣 50</button><button type="button" role="tab" aria-selected="false" data-set="twse">台股全上市</button><button type="button" role="tab" aria-selected="false" data-set="tpex">台股全上櫃</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
   <div class="hm-box" id="hm-box" role="img" aria-label="市值熱力圖"></div>
   <div class="hm-foot"><div class="hm-legend" aria-hidden="true"><span>單日漲跌</span><div><div class="bar" id="hm-bar"></div><div class="ticks"><span>−3%</span><span>−2%</span><span>−1%</span><span>0</span><span>+1%</span><span>+2%</span><span>+3%</span></div></div></div><p class="hm-src" id="hm-src"></p></div>
   <details id="hm-list"><summary><span>看列表（依市值排序）</span><span id="hm-sum" aria-live="polite"></span></summary><div class="tblwrap"><table class="tbl" id="hm-tbl"></table></div></details>
@@ -423,6 +423,7 @@ const okSnap=(L,mk)=>!!L&&L.schema==='bnasdaq-heatmap-live/1'&&L.market===mk&&ty
 function view(S){   // 這個分頁要畫的方塊：盤中快照的交易日比正式資料新，就用快照的現價與漲跌，市值依現價換算；否則用正式資料
   const L=LIVE[mkOf(S)], ses=S.session||D.session;
   if(!L||!(L.session>ses)) return {T:S.tiles,L:null};
+  if(S.tiles.filter(t=>L.q&&L.q[t[0]]).length<S.tiles.length*0.5) return {T:S.tiles,L:null};   // 盤中快照沒涵蓋這個分頁大部分的公司（例如盤中更新還是舊的成分股清單）：先顯示正式收盤，不要整片灰色
   return {L,T:S.tiles.map(t=>{const q=L.q[t[0]], p=Array.isArray(q)?+q[0]:NaN, c=Array.isArray(q)?+q[1]:NaN;
     if(!isFinite(p)||!isFinite(c)||!(p>0)||Math.abs(c)>100) return [t[0],t[1],t[2],t[3],null,null,t[6]];   // 今天還沒有成交（或資料不合理）：灰色
     const k=t[5]>0?p/t[5]:1; return [t[0],t[1],t[2],(k>0.5&&k<2)?t[3]*k:t[3],c,p,t[6]];})};
