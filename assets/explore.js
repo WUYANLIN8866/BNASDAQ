@@ -208,6 +208,8 @@
         reason: '這是第 ' + p.round + ' 輪搜尋目前找到的第 ' + p.rank + ' 高年化報酬，來源：' + p.stage + '。還沒進入第 2～5 關驗證；第 ' + p.round + ' 輪搜尋進度 ' + pct(d.stage_pct, 1) + (st ? '，' + st : '') + '。',
         nums: ['搜尋階段年化 ' + pct(p.best) + '（要 > ' + pct(d.target) + '）'] })).concat(C);
       $('xp-cands-none').hidden = rows.length > 0;
+      // 2026-11-20: 搜尋階段通過 5 關的組數很多時，表格只列其中最好的幾組；這行說明還有幾組沒列出（數字由搜尋機器算好送來）
+      if ($('xp-cands-more')) { $('xp-cands-more').hidden = !d.cands_note; $('xp-cands-more').textContent = d.cands_note || ''; }
       $('xp-cands').innerHTML = !rows.length ? '' : '<thead><tr><th class="l">編號</th><th>年化報酬率</th><th>1 報酬</th><th>2 回撤</th><th>3 時間窗</th><th>4 未來資訊</th><th>5 穩健</th><th class="l">結論</th><th class="l">說明</th></tr></thead><tbody>' +
         rows.map(c => `<tr${c.pending ? ' class="xp-pend"' : ''}><td class="l">${esc(c.id)}</td><td>${pct(c.cagr)}</td>${[0, 1, 2, 3, 4].map(k => `<td>${gb((c.g || [])[k])}</td>`).join('')}<td class="l">${esc(c.verdict)}</td>` +
           `<td class="l"><button type="button" class="xp-note-btn" data-id="${esc(c.id)}" aria-expanded="false">看說明</button></td></tr>` +
