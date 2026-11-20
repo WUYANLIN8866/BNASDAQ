@@ -62,9 +62,10 @@ YUA = 'Mozilla/5.0 (BNASDAQ heatmap fetch)'   # Yahoo：瀏覽器 UA 會被回 4
 BUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
 MARKETS = {
     # after＝收盤後幾秒啟動「最新收盤價更新」：台股 13:30 集合競價撮合完就是收盤價，等 150 秒；美股等 10 分鐘（fetch_latest.py 只收 16:10 美東之後的當天 K 棒）
-    'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, after=150, sets=('tw50',), file='tw', step=30, src='Yahoo奇摩股市'),
+    # pstep＝當日走勢（2026-11-20 使用者：熱力圖每格加當日走勢圖）幾秒一點；美股 6.5 小時 26 點、台股 4.5 小時 27 點，快照多約 60 KB
+    'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, after=150, sets=('tw50',), file='tw', step=30, pstep=600, src='Yahoo奇摩股市'),
     # step＝一個時間格幾秒（＝多久發布一次）。美股一輪要對 Yahoo 發 27 個請求，先維持 60 秒
-    'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, after=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', step=60, src='Yahoo Finance'),
+    'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, after=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', step=60, pstep=900, src='Yahoo Finance'),
 }
 README = ('# heatmap-live\n\n這個分支由 `.github/workflows/heatmap-live.yml` 在開盤期間定時自動覆寫（只留最新一筆 commit），'
           '內容是市值熱力圖的盤中報價。請勿手動修改；程式在 main 分支的 `scripts/heatmap_live.py`。\n')
@@ -353,6 +354,47 @@ class Session:
         self.budget = int(os.environ.get('HM_BUDGET') or BUDGET)
         self.after_tries = 0  # 收盤後啟動「最新收盤價更新」試了幾次
         self.after_done = False
+        self.pstep = MARKETS[mk]['pstep']
+        self.path = {}       # 代號 → {時間格: 漲跌（0.01%）}；時間格＝(報價時間 − 開盤) ÷ pstep，同一格留最後一筆
+
+    def track(self):
+        """把這一輪的報價記進當日走勢（只收開盤後到收盤前的報價）。"""
+        o, c = self.sess['open'], self.sess['close']
+        for s_, v in self.q.items():
+            p, prev, t = v
+            if not (o <= t <= c + 60) or not (p > 0 and prev > 0):
+                continue
+            k = min(int((t - o) // self.pstep), max(0, int((c - o - 1) // self.pstep)))
+            self.path.setdefault(s_, {})[k] = int(round((p / prev - 1) * 10000))
+
+    def path_out(self):
+        n = max(1, int(-(-(self.sess['close'] - self.sess['open']) // self.pstep)))
+        out = {}
+        for s_, d in self.path.items():
+            if d:
+                last = max(d)
+                out[s_] = [d.get(k) for k in range(0, last + 1)]
+        return n, out
+
+    def resume(self):
+        """交棒或重啟時：同一個交易日已發布過的走勢接著用（從分支上的最新檔讀回來）。"""
+        try:
+            f = MARKETS[self.mk]['file'] + '.json'
+            sha = (getattr(self.pub, 'keep', {}) or {}).get(f)
+            if not sha or not hasattr(self.pub, 'call'):
+                return
+            st, b = self.pub.call('GET', f'/git/blobs/{sha}')
+            if st != 200:
+                return
+            j = json.loads(base64.b64decode(b.get('content') or '').decode('utf-8'))
+            if j.get('session') != self.sess['date'] or j.get('ps') != self.pstep or not isinstance(j.get('pp'), dict):
+                return
+            for s_, arr in j['pp'].items():
+                if isinstance(arr, list):
+                    self.path[s_] = {k: int(v) for k, v in enumerate(arr) if isinstance(v, (int, float))}
+            log('接續當日走勢：', len(self.path), '檔')
+        except Exception as e:  # noqa
+            log('接續當日走勢失敗（從這一刻開始記）', repr(e)[:100])
 
     def after_close(self):
         """收盤後啟動 tw-latest.yml（更新全站的最新收盤價，更新完它會自己重新部署網站）。一個時段只做一次；啟動失敗下一輪再試，最多 3 次。
@@ -404,6 +446,8 @@ class Session:
     def poll(self):
         self.poll_n += 1
         ok = self.poll_us() if self.mk == 'US' else self.poll_tw()
+        if ok:
+            self.track()
         m = max((v[2] for v in self.q.values()), default=0)
         if m > self.maxt:
             self.maxt, self.still = m, 0
@@ -412,13 +456,15 @@ class Session:
         return ok
 
     def snapshot(self, state, slot, now):
+        pn, pp = self.path_out()
         q = {}
         for s in self.syms:
             v = self.q.get(s)
             if v:
                 q[s] = [round(v[0], 4), round((v[0] / v[1] - 1) * 100, 2), max(0, int(now - v[2]))]
         return {'schema': SCHEMA, 'market': self.mk, 'session': self.sess['date'], 'state': state, 'at': int(now), 'slot': slot, 'every': self.every,
-                'step': self.step, 'open': self.sess['open'], 'close': self.sess['close'], 'src': self.src, 'n': len(self.syms), 'have': len(q), 'q': q}
+                'step': self.step, 'open': self.sess['open'], 'close': self.sess['close'], 'src': self.src, 'n': len(self.syms), 'have': len(q), 'q': q,
+                'ps': self.pstep, 'pn': pn, 'pp': pp}
 
     def publish(self, state, slot, now):
         snap = self.snapshot(state, slot, now)
@@ -432,6 +478,7 @@ class Session:
         mk, tail, step = self.mk, MARKETS[self.mk]['tail'], self.step
         log(f'{mk} 時段 {self.sess["date"]}：開盤', self.sess['open'], '收盤', self.sess['close'], f'；{len(self.syms)} 檔')
         self.pub.load()
+        self.resume()
         wait = self.sess['open'] - self.clock()
         if wait > 0:
             log(f'離開盤還有 {wait / 60:.1f} 分鐘，等待中')
