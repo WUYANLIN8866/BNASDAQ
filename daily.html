@@ -100,6 +100,10 @@
 .hm-tip .hint{color:#e3c68f;font-size:12px}
 .hm-box .tl i{font-style:normal;font-weight:700;letter-spacing:.02em;white-space:nowrap}
 .hm-box .tl u{text-decoration:none;font-variant-numeric:tabular-nums;opacity:.95;white-space:nowrap}
+.hm-box .tl em{font-style:normal;font-variant-numeric:tabular-nums;opacity:.82;white-space:nowrap;margin-top:1px}
+#hm-list summary{flex-wrap:wrap;gap:4px 18px}#hm-list summary::after{margin-left:auto}
+#hm-sum{font-weight:500;font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+#hm-sum b.pos{color:var(--good)}#hm-sum b.neg{color:var(--bad)}
 .hm-tip{position:absolute;z-index:20;pointer-events:none;background:#121314;color:#f2efe8;border:1px solid #3a3d44;border-radius:2px;padding:8px 10px;font-size:13px;line-height:1.55;box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:260px}
 .hm-tip b{font-size:14px}.hm-tip .up{color:#6fdc8c}.hm-tip .dn{color:#ff8a80}
 .hm-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 20px;margin:10px 0 0}
@@ -131,7 +135,7 @@
   <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button><button type="button" role="tab" aria-selected="false" data-set="tw50">台灣 50</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
   <div class="hm-box" id="hm-box" role="img" aria-label="市值熱力圖"></div>
   <div class="hm-foot"><div class="hm-legend" aria-hidden="true"><span>單日漲跌</span><div><div class="bar" id="hm-bar"></div><div class="ticks"><span>−3%</span><span>−2%</span><span>−1%</span><span>0</span><span>+1%</span><span>+2%</span><span>+3%</span></div></div></div><p class="hm-src" id="hm-src"></p></div>
-  <details><summary>看列表（依市值排序）</summary><div class="tblwrap"><table class="tbl" id="hm-tbl"></table></div></details>
+  <details id="hm-list"><summary><span>看列表（依市值排序）</span><span id="hm-sum" aria-live="polite"></span></summary><div class="tblwrap"><table class="tbl" id="hm-tbl"></table></div></details>
 </div></section>
 <div class="main"><div class="wrap"><div class="cols">
 <div id="report"><div class="loading">載入中…</div></div>
@@ -354,6 +358,11 @@ const NEU=[65,69,84], POS=[31,143,74], NEG=[214,58,58];   // 中性 #414554、+3
 const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
 const col=c=>{if(c==null)return 'rgb(91,95,104)';const t=Math.max(-1,Math.min(1,c/3));return 'rgb('+(t>=0?mix(NEU,POS,t):mix(NEU,NEG,-t)).join(',')+')';};
 const pct=c=>c==null?'—':(c>0?'+':c<0?'−':'')+Math.abs(c).toFixed(2)+'%';
+// 2026-11-20 使用者：每家公司漲跌下面顯示市值增減；列表標題列顯示整個指數市值合計增減。
+// 市值增減＝今天市值 − 前一日市值＝b × r ÷ (1＋r)（b＝今天的市值〔十億〕，r＝單日漲跌）
+const dCap=t=>t[4]==null||t[3]==null?null:t[3]*(t[4]/100)/(1+t[4]/100);
+const capAbs=b=>b>=1000?(b/1000).toFixed(2)+' 兆':b>=0.1?Math.round(b*10).toLocaleString('en-US')+' 億':(b*10).toFixed(2)+' 億';
+const dcapTxt=(d,S,unit)=>d==null?'—':(d>0?'+':d<0?'−':'')+capAbs(Math.abs(d))+(unit?(S&&S.cur==='TWD'?'台幣':'美元'):'');
 const cap=(b,S)=>{const u=S&&S.cur==='TWD'?'台幣':'美元';return b>=1000?(b/1000).toFixed(2)+' 兆'+u:Math.round(b*10).toLocaleString('en-US')+' 億'+u;};
 $('hm-bar').innerHTML=[-3,-2,-1,0,1,2,3].map(v=>'<span style="background:'+col(v)+'"></span>').join('');
 // 擠壓式樹狀圖（squarified treemap）：面積＝數值，盡量接近正方形
@@ -440,7 +449,7 @@ function draw(){
     const head=(r.w>70&&r.h>48)?17:0;
     html+='<div class="sec" style="left:'+r.x.toFixed(1)+'px;top:'+r.y.toFixed(1)+'px;width:'+r.w.toFixed(1)+'px;height:'+r.h.toFixed(1)+'px">'+(head?'<b>'+esc(r.i.name)+'</b>':'')+'</div>';
     squarify(r.i.ts.map(t=>({v:t[3],t})),r.x,r.y+head,r.w,r.h-head).forEach(q=>{const t=q.i.t, a=Math.sqrt(q.w*q.h), fs=Math.max(9,Math.min(26,a/4.6));
-      const tw=S.market==='TW', nm=tw?t[1]:t[0], f1=tw?Math.min(fs,(q.w-8)/nm.length):fs, lab=((tw?f1>=9:q.w>26)&&q.h>14)?'<i style="font-size:'+f1.toFixed(1)+'px">'+esc(nm)+'</i>'+((q.h>f1*2.3&&q.w>38)?'<u style="font-size:'+(Math.min(fs*0.78,Math.max(9,f1))).toFixed(1)+'px">'+pct(t[4])+'</u>':''):'';
+      const tw=S.market==='TW', nm=tw?t[1]:t[0], f1=tw?Math.min(fs,(q.w-8)/nm.length):fs, lab=((tw?f1>=9:q.w>26)&&q.h>14)?'<i style="font-size:'+f1.toFixed(1)+'px">'+esc(nm)+'</i>'+((q.h>f1*2.3&&q.w>38)?'<u style="font-size:'+(Math.min(fs*0.78,Math.max(9,f1))).toFixed(1)+'px">'+pct(t[4])+'</u>'+((q.h>f1*3.6&&q.w>48&&dCap(t)!=null)?'<em style="font-size:'+(Math.min(fs*0.6,Math.max(9,f1*0.8))).toFixed(1)+'px">'+dcapTxt(dCap(t),S,false)+'</em>':''):''):'';
       html+='<div class="tl" data-s="'+esc(t[0])+'" style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;width:'+q.w.toFixed(1)+'px;height:'+q.h.toFixed(1)+'px;background:'+col(t[4])+'">'+lab+'</div>';});
   });
   const keep=(tip&&!tip.hidden)?tipSym:null;   // 盤中重畫時，正在看的那一格提示要留著
@@ -455,13 +464,15 @@ function draw(){
   const links=(S.sources||D.sources).map(s=>'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.t)+'</a>').join('；');
   $('hm-src').innerHTML=(L?'盤中的現價與漲跌：'+esc(L.src||'')+'（開盤期間'+everyTxt(L)+'）。收盤後的正式資料：'+links+'。':'資料：'+links+'。')+
     (S.market==='TW'?(L?'':'台股漲跌相對證交所除權息參考價；')+'方塊顯示公司簡稱，點方塊看個股分析。':(L?'':'市值依該日收盤換算；')+'同一家公司多種股別合併為一格（例如 GOOGL＝Alphabet A＋C）。');
-  $('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th><th>'+(shownLive?'現價':'收盤')+'</th><th>單日漲跌</th></tr></thead><tbody>'+T.map(t=>'<tr><td class="l"><a href="valuation.html#code='+encodeURIComponent(t[0])+'"><b>'+esc(t[0])+'</b></a></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3],S)+(t[6]?'（估）':'')+'</td><td>'+(t[5]==null?'—':t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td></tr>').join('')+'</tbody>';
+  const has=T.filter(t=>dCap(t)!=null), sumD=has.reduce((a,t)=>a+dCap(t),0), sumNow=has.reduce((a,t)=>a+t[3],0), sumPrev=sumNow-sumD;
+  $('hm-sum').innerHTML=has.length?S.name+'（'+has.length+' 家）市值合計'+(shownLive?'（盤中）':'')+' '+capAbs(sumNow)+(S.cur==='TWD'?'台幣':'美元')+'｜'+(shownLive?'今天':'單日')+'<b class="'+(sumD>0?'pos':sumD<0?'neg':'')+'">'+(sumD>=0?'增加 ':'減少 ')+capAbs(Math.abs(sumD))+(S.cur==='TWD'?'台幣':'美元')+'（'+pct(sumPrev>0?sumD/sumPrev*100:null)+'）</b>':'';
+  $('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th><th>'+(shownLive?'現價':'收盤')+'</th><th>單日漲跌</th><th>市值增減</th></tr></thead><tbody>'+T.map(t=>'<tr><td class="l"><a href="valuation.html#code='+encodeURIComponent(t[0])+'"><b>'+esc(t[0])+'</b></a></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3],S)+(t[6]?'（估）':'')+'</td><td>'+(t[5]==null?'—':t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+dcapTxt(dCap(t),S,true)+'</td></tr>').join('')+'</tbody>';
 }
 function show(el,ev){
   if(!D) return; const t=shown.find(x=>x[0]===el.dataset.s); if(!t) return;
   tipSym=t[0]; tipXY=ev?{clientX:ev.clientX,clientY:ev.clientY}:null;
   if(!tip){tip=document.createElement('div');tip.className='hm-tip';box.appendChild(tip);}
-  tip.innerHTML='<b>'+esc(t[0])+'</b> '+esc(t[1])+'<br>'+esc(t[2])+'｜市值 '+cap(t[3],D.sets[cur])+(t[6]?'（估算）':'')+'<br>'+(shownLive?'現價 ':'收盤 ')+(t[5]==null?'—':t[5].toFixed(2))+'｜<span class="'+(t[4]>0?'up':t[4]<0?'dn':'')+'">'+pct(t[4])+'</span><br><span class="hint">'+(lastPT==='mouse'?'點一下':'再點一下')+'看個股分析與目標價試算 ›</span>';
+  tip.innerHTML='<b>'+esc(t[0])+'</b> '+esc(t[1])+'<br>'+esc(t[2])+'｜市值 '+cap(t[3],D.sets[cur])+(t[6]?'（估算）':'')+'<br>'+(shownLive?'現價 ':'收盤 ')+(t[5]==null?'—':t[5].toFixed(2))+'｜<span class="'+(t[4]>0?'up':t[4]<0?'dn':'')+'">'+pct(t[4])+'</span>'+(dCap(t)!=null?'<br>市值'+(dCap(t)>=0?'增加 ':'減少 ')+'<span class="'+(t[4]>0?'up':t[4]<0?'dn':'')+'">'+capAbs(Math.abs(dCap(t)))+(D.sets[cur].cur==='TWD'?'台幣':'美元')+'</span>':'')+'<br><span class="hint">'+(lastPT==='mouse'?'點一下':'再點一下')+'看個股分析與目標價試算 ›</span>';
   const r=box.getBoundingClientRect(), x=(ev?ev.clientX:el.getBoundingClientRect().left+10)-r.left, y=(ev?ev.clientY:el.getBoundingClientRect().top+10)-r.top;
   tip.style.left=Math.min(x+14, r.width-tip.offsetWidth-6)+'px'; tip.style.top=Math.min(y+14, r.height-tip.offsetHeight-6)+'px'; tip.hidden=false;
   box.querySelectorAll('.tl.on').forEach(e=>e.classList.remove('on')); el.classList.add('on');
