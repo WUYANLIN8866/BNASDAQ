@@ -63,7 +63,7 @@ BUA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ch
 MARKETS = {
     # after＝收盤後幾秒啟動「最新收盤價更新」：台股 13:30 集合競價撮合完就是收盤價，等 150 秒；美股等 10 分鐘（fetch_latest.py 只收 16:10 美東之後的當天 K 棒）
     # pstep＝當日走勢（2026-11-20 使用者：熱力圖每格加當日走勢圖）幾秒一點；美股 6.5 小時 26 點、台股 4.5 小時 27 點，快照多約 60 KB
-    'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, after=150, sets=('tw50',), file='tw', step=30, pstep=600, src='Yahoo奇摩股市'),
+    'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, after=150, sets=('tw50', 'twse', 'tpex'), file='tw', step=30, pstep=600, src='Yahoo奇摩股市'),
     # step＝一個時間格幾秒（＝多久發布一次）。美股一輪要對 Yahoo 發 27 個請求，先維持 60 秒
     'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, after=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', step=60, pstep=900, src='Yahoo Finance'),
 }
@@ -108,14 +108,28 @@ def http(url, ua=YUA, headers=None, timeout=12, data=None, method=None):
         return r.status, r.read()
 
 
+SUFFIX = {}      # 台股代號 → Yahoo奇摩股市的後綴（上市 .TW、上櫃 .TWO）
+PATHSET = None   # 要記當日走勢的代號；None＝全部。台股全上市／全上櫃近兩千檔，只記方塊大到畫得下走勢圖的那些（台灣 50＋兩個分頁各前 150 大）
+
+
 def universe(mk):
     """要抓哪些代號：正式熱力圖檔裡這個市場所有分頁的成分股（去重、保留順序）。"""
+    global PATHSET
     d = json.load(open(BASE, encoding='utf-8'))
-    out = []
+    out, seen, ps = [], set(), set()
     for k in MARKETS[mk]['sets']:
-        for t in (d.get('sets', {}).get(k) or {}).get('tiles') or []:
-            if t and t[0] not in out:
-                out.append(str(t[0]))
+        tiles = (d.get('sets', {}).get(k) or {}).get('tiles') or []
+        for i, t in enumerate(tiles):
+            if not t:
+                continue
+            c = str(t[0])
+            if k == 'tpex':
+                SUFFIX[c] = '.TWO'
+            if k not in ('twse', 'tpex') or i < 150:
+                ps.add(c)
+            if c not in seen:
+                seen.add(c); out.append(c)
+    PATHSET = ps if mk == 'TW' and any(k in ('twse', 'tpex') for k in MARKETS[mk]['sets']) else None
     return out
 
 
@@ -220,8 +234,15 @@ def iso_ts(x):
 
 
 def ytw(codes):
-    """回傳 {代號: (現價, 參考價, 報價時間)}。參考價＝現價−漲跌（用來源給的漲跌，漲跌幅才會和來源顯示的一致）；沒有漲跌欄位時用來源的昨收。"""
-    url = 'https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=' + ','.join(c + '.TW' for c in codes)
+    """回傳 {代號: (現價, 參考價, 報價時間)}。參考價＝現價−漲跌（用來源給的漲跌，漲跌幅才會和來源顯示的一致）；沒有漲跌欄位時用來源的昨收。
+    一次最多 50 檔；台股全上市＋全上櫃約兩千檔時分批、4 條連線一起抓（上櫃用 .TWO，2026-11-20 從 GitHub runner 實測可用）。"""
+    if len(codes) > 50:
+        out = {}
+        with cf.ThreadPoolExecutor(4) as ex:
+            for got in ex.map(lambda b: _try(ytw, b), [codes[i:i + 50] for i in range(0, len(codes), 50)]):
+                out.update(got)
+        return out
+    url = 'https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=' + ','.join(c + SUFFIX.get(c, '.TW') for c in codes)
     st, body = http(url, ua=BUA, headers={'Referer': 'https://tw.stock.yahoo.com/', 'Accept-Language': 'zh-TW,zh;q=0.9'}, timeout=10)
     j = json.loads(body)
     raw = lambda v: num(v.get('raw')) if isinstance(v, dict) else num(v)
@@ -236,6 +257,13 @@ def ytw(codes):
         except Exception:
             pass
     return out
+
+
+def _try(f, b):
+    try:
+        return f(b)
+    except Exception as e:  # noqa
+        log('一批報價讀取失敗', repr(e)[:80]); return {}
 
 
 def cnyes(codes):
@@ -387,6 +415,8 @@ class Session:
         """把這一輪的報價記進當日走勢（只收開盤後到收盤前的報價）。"""
         o, c = self.sess['open'], self.sess['close']
         for s_, v in self.q.items():
+            if PATHSET is not None and s_ not in PATHSET:
+                continue
             p, prev, t = v
             if not (o <= t <= c + 60) or not (p > 0 and prev > 0):
                 continue
@@ -411,8 +441,8 @@ class Session:
         o, c = self.sess['open'], self.sess['close']
         if self.clock() - o < self.pstep:
             return
-        ysym = (lambda s_: s_ + '.TW') if self.mk == 'TW' else (lambda s_: s_.replace('.', '-'))
-        need = [s_ for s_ in self.syms if s_ in self.q and len(self.path.get(s_) or {}) <= max(1, int((self.clock() - o) // self.pstep) - 1)]
+        ysym = (lambda s_: s_ + SUFFIX.get(s_, '.TW')) if self.mk == 'TW' else (lambda s_: s_.replace('.', '-'))
+        need = [s_ for s_ in self.syms if s_ in self.q and (PATHSET is None or s_ in PATHSET) and len(self.path.get(s_) or {}) <= max(1, int((self.clock() - o) // self.pstep) - 1)]
         if not need:
             return
         n = 0

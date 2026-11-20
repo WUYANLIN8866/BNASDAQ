@@ -248,7 +248,7 @@ def tpex_day_all():
 
 def build_all(key, label, day, comps):
     """台股全上市／全上櫃分頁：每家公司一格；市值＝已發行普通股數 × 收盤。當天沒有成交（沒有收盤價）或沒有股數的公司不列；列得出的公司少於 80% 時保留舊分頁。"""
-    date, px = day
+    date, px = day[0], day[1]   # twse_day_all() 回傳 (日期, 價格, 來源)、tpex_day_all() 回傳 (日期, 價格)
     tiles, have = [], 0
     for c, (name, sec, sh) in comps.items():
         close, chg = px.get(c, (None, None))
