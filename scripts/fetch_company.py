@@ -645,7 +645,33 @@ def main():
             if k % 50 == 0:
                 log('進度', k, '/', len(codes), '已花 %.0f 秒' % (time.time() - t0))
             got[c] = rec
-    log('財報取得', sum(1 for r in got.values() if r.get('A', {}).get('d')), '/', len(got), '；股價', sum(1 for r in got.values() if r.get('px')), '/', len(got))
+    # 2026-11-20：Yahoo 偶爾回 429（太多請求），那次有 30 家台股沒有股價 → 全部跑完後，失敗的再慢慢重抓兩輪（單執行緒、間隔拉長）
+    for rnd in (1, 2):
+        bad = [c for c, r in got.items() if r.get('err_fin') or r.get('err_px') or r.get('err_p5y')]
+        if not bad:
+            break
+        log('第', rnd, '輪重抓（上次失敗）', len(bad), '家；先等', 60 * rnd, '秒')
+        time.sleep(60 * rnd)
+        for c in bad:
+            got[c] = one(c)[1]
+            time.sleep(1.5 * rnd)
+    # 還是抓不到的欄位：沿用上一次檔案裡的值（股價、財報），不讓一次失敗把頁面清空
+    reuse = 0
+    for c, r in got.items():
+        f = os.path.join(OUT, c + '.json')
+        if not os.path.isfile(f) or not (r.get('err_fin') or r.get('err_px') or r.get('err_p5y')):
+            continue
+        try:
+            old = json.load(open(f, encoding='utf-8'))
+        except Exception:
+            continue
+        for err, ks in (('err_fin', ('A', 'Q', 'T', 'T_d', 'fin_cur')), ('err_px', ('p1y', 'px', 'px_meta')), ('err_p5y', ('p5y', 'divs'))):
+            if r.get(err) and all(old.get(k) is not None for k in ks[:1]):
+                for k in ks:
+                    if old.get(k) is not None:
+                        r[k] = old[k]
+                reuse += 1
+    log('財報取得', sum(1 for r in got.values() if r.get('A', {}).get('d')), '/', len(got), '；股價', sum(1 for r in got.values() if r.get('px')), '/', len(got), '；沿用上次', reuse, '項')
     prev_tw = {}
     for c in codes:
         f = os.path.join(OUT, c + '.json')
