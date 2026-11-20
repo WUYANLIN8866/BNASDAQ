@@ -646,14 +646,22 @@ def main():
                 log('進度', k, '/', len(codes), '已花 %.0f 秒' % (time.time() - t0))
             got[c] = rec
     # 2026-11-20：Yahoo 偶爾回 429（太多請求），那次有 30 家台股沒有股價 → 全部跑完後，失敗的再慢慢重抓兩輪（單執行緒、間隔拉長）
+    # 2026-11-20 下午：重抓設 10 分鐘上限，股價缺的先抓；超過就停，剩下的沿用上次檔案（之前沒上限，Yahoo 一直 429 時整個工作卡住超過 1.5 小時）
+    deadline = time.time() + 600
     for rnd in (1, 2):
         bad = [c for c, r in got.items() if r.get('err_fin') or r.get('err_px') or r.get('err_p5y')]
-        if not bad:
+        bad.sort(key=lambda c: 0 if (got[c].get('err_px') or got[c].get('err_p5y')) else 1)
+        if not bad or time.time() > deadline:
             break
-        log('第', rnd, '輪重抓（上次失敗）', len(bad), '家；先等', 60 * rnd, '秒')
-        time.sleep(60 * rnd)
+        log('第', rnd, '輪重抓（上次失敗）', len(bad), '家；先等', 30 * rnd, '秒')
+        time.sleep(30 * rnd)
+        done = 0
         for c in bad:
+            if time.time() > deadline:
+                log('重抓到 10 分鐘上限，停止；本輪已重抓', done, '家')
+                break
             got[c] = one(c)[1]
+            done += 1
             time.sleep(1.5 * rnd)
     # 還是抓不到的欄位：沿用上一次檔案裡的值（股價、財報），不讓一次失敗把頁面清空
     reuse = 0
