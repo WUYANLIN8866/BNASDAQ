@@ -175,6 +175,32 @@ def yahoo_batch(batch, nonce=None):
     return last, {}
 
 
+def yahoo_intraday(batch, ysym=lambda s: s):
+    """當日 5 分鐘線（補當日走勢用）：回傳 {代號: [(時間, 收盤), …]}。和 yahoo_batch 同一個 spark 端點、同一種回應格式，只是 range=1d&interval=5m。
+    2026-11-20 使用者：熱力圖當日走勢在盤中更新晚開始時前段是空的 → 開始時先把開盤到現在補齊。台股用 <代號>.TW（Yahoo 國際版有延遲，補「過去」的格子沒關係）。"""
+    ys = [ysym(s_) for s_ in batch]; back = {y.upper(): s_ for y, s_ in zip(ys, batch)}
+    for host in ('query2', 'query1'):
+        url = f'https://{host}.finance.yahoo.com/v7/finance/spark?symbols={",".join(ys)}&range=1d&interval=5m&_={int(time.time())}'
+        try:
+            st, body = http(url, timeout=12)
+            j = json.loads(body)
+        except Exception:
+            continue
+        out = {}
+        for r in ((j.get('spark') or {}).get('result') or []):
+            try:
+                resp = r['response'][0]
+                ts = resp.get('timestamp') or []
+                cl = (((resp.get('indicators') or {}).get('quote') or [{}])[0].get('close')) or []
+                pts = [(int(e), float(c)) for e, c in zip(ts, cl) if c is not None and num(e) is not None and num(c)]
+                if pts:
+                    out[back.get(str(r['symbol']).upper(), str(r['symbol']))] = pts
+            except Exception:
+                pass
+        return out
+    return {}
+
+
 def fetch_us(syms, nonce=None):
     batches = [syms[i:i + 20] for i in range(0, len(syms), 20)]
     out, stat = {}, {'ok': 0, '429': 0, 'fail': 0}
@@ -376,6 +402,40 @@ class Session:
                 out[s_] = [d.get(k) for k in range(0, last + 1)]
         return n, out
 
+    def backfill(self):
+        """盤中更新晚開始（排程延遲、交棒、重啟）時，開盤到第一次記錄之間的格子用 Yahoo 當日 5 分鐘線補上；已經有的格子不動。
+        前收用這一輪報價的前收（和方塊上的漲跌同一個基準）。只做一次，失敗就算了（走勢照常從現在開始）。"""
+        if getattr(self, 'filled', False):
+            return
+        self.filled = True
+        o, c = self.sess['open'], self.sess['close']
+        if self.clock() - o < self.pstep:
+            return
+        ysym = (lambda s_: s_ + '.TW') if self.mk == 'TW' else (lambda s_: s_.replace('.', '-'))
+        need = [s_ for s_ in self.syms if s_ in self.q and len(self.path.get(s_) or {}) <= max(1, int((self.clock() - o) // self.pstep) - 1)]
+        if not need:
+            return
+        n = 0
+        try:
+            batches = [need[i:i + 20] for i in range(0, len(need), 20)]
+            with cf.ThreadPoolExecutor(4) as ex:
+                for got in ex.map(lambda b: yahoo_intraday(b, ysym), batches):
+                    for s_, pts in got.items():
+                        prev = (self.q.get(s_) or [None, None])[1]
+                        if not prev or prev <= 0:
+                            continue
+                        d = self.path.setdefault(s_, {}); first = min(d) if d else 10 ** 9; add = {}
+                        for t, px in pts:
+                            if o <= t < c and px > 0:
+                                k = int((t - o) // self.pstep)
+                                if k < first:
+                                    add[k] = int(round((px / prev - 1) * 10000))
+                        if add:
+                            d.update(add); n += 1
+        except Exception as e:  # noqa
+            log('補當日走勢失敗', repr(e)[:100]); return
+        log('補當日走勢：', n, '/', len(need), '檔')
+
     def resume(self):
         """交棒或重啟時：同一個交易日已發布過的走勢接著用（從分支上的最新檔讀回來）。"""
         try:
@@ -448,6 +508,7 @@ class Session:
         ok = self.poll_us() if self.mk == 'US' else self.poll_tw()
         if ok:
             self.track()
+            self.backfill()
         m = max((v[2] for v in self.q.values()), default=0)
         if m > self.maxt:
             self.maxt, self.still = m, 0
