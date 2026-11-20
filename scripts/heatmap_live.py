@@ -709,6 +709,33 @@ def main():
         res = Session(mk, sess, syms, pub).run()
         note(f'session：{mk} {sess["date"]} 結果', res)
         return 0
+    if cmd == 'close':
+        # 2026-11-20：盤中程式是在新分頁（台股全上市／全上櫃）上線前啟動的，收盤快照只有台灣 50 → 同一家公司在不同分頁顯示不同日期的股價。
+        # 補救：收盤後抓一次全部代號的收盤報價，發布成當天的 closed 快照（已有的當日走勢保留，缺的用 Yahoo 5 分鐘線補）。已完整就不動。
+        now = time.time()
+        mk = mk or 'TW'
+        sess = session(mk, now)
+        if not sess or now < sess['close'] + 120:
+            log(mk, '今天還沒收盤或不是交易日，不做'); return 0
+        syms = universe(mk)
+        pub = Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN'])
+        pub.load()
+        s = Session(mk, sess, syms, pub)
+        try:
+            f = MARKETS[mk]['file'] + '.json'; sha = (getattr(pub, 'keep', {}) or {}).get(f)
+            st, b = pub.call('GET', f'/git/blobs/{sha}') if sha else (0, None)
+            j = json.loads(base64.b64decode(b.get('content') or '').decode('utf-8')) if st == 200 else {}
+            if j.get('session') == sess['date'] and j.get('state') == 'closed' and j.get('have', 0) >= 0.95 * len(syms) and '--force' not in a:
+                log(mk, sess['date'], '收盤快照已完整（', j.get('have'), '/', len(syms), '），不用補'); return 0
+        except Exception as e:  # noqa
+            log('讀現有快照失敗（照樣補）', repr(e)[:100])
+        s.resume()
+        ok = s.poll()
+        if not s.q:
+            log('抓不到報價，不發布'); return 1
+        done, snap = s.publish('closed', int(now) // s.step, now)
+        note(f'收盤快照補發：{mk} {sess["date"]} {snap["have"]}/{snap["n"]} 檔，走勢 {len(snap["pp"])} 檔，發布{"成功" if done else "失敗"}')
+        return 0 if done else 1
     print(__doc__); return 2
 
 
