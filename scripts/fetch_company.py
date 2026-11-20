@@ -576,6 +576,8 @@ def main():
     hm = json.load(open(os.path.join(ROOT, 'data', 'heatmap', 'latest.json'), encoding='utf-8'))
     uni = {}
     for key, S in hm['sets'].items():
+        if key in ('twse', 'tpex'):   # 台股全上市／全上櫃（近兩千家）只是熱力圖分頁，個股分析的公司範圍維持指數成分股
+            continue
         mk = S.get('market') or ('TW' if key == 'tw50' else 'US')
         for t in S['tiles']:
             u = uni.setdefault(t[0], {'code': t[0], 'name': t[1], 'sector': t[2], 'cap_bn': t[3], 'market': mk, 'sets': []})

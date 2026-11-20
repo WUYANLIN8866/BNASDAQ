@@ -1,5 +1,5 @@
 name: Probe TW sources (temporary)
-# 一次性：探測台股全上市／全上櫃熱力圖的資料來源欄位（2026-11-20）。結果放 artifact；確認完就刪掉這個檔與 scripts/probe/。
+# 一次性：試跑台股全上市／全上櫃熱力圖分頁的產生（2026-11-20），只印結果、不提交。確認完就刪掉這個檔。
 on:
   workflow_dispatch:
 permissions:
@@ -7,13 +7,19 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - run: python3 scripts/probe/tw_sources.py
-        timeout-minutes: 6
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: probe-tw
-          path: probe_out/
+      - run: python3 scripts/fetch_heatmap.py --force
+        timeout-minutes: 12
+      - run: |
+          python3 - <<'PY'
+          import json
+          d = json.load(open('data/heatmap/latest.json', encoding='utf-8'))
+          for k, S in d['sets'].items():
+              t = S['tiles']; secs = {}
+              for x in t: secs[x[2]] = secs.get(x[2], 0) + 1
+              print(k, S.get('session'), 'n', S['n'], 'cap', S['cap_total_bn'], 'pct-null', sum(1 for x in t if x[4] is None), 'top', [(x[0], x[1], x[2], x[3], x[4], x[5]) for x in t[:6]])
+              if k in ('twse', 'tpex'): print('  sectors', sorted(secs.items(), key=lambda kv: -kv[1]))
+          import os; print('size', os.path.getsize('data/heatmap/latest.json'))
+          PY
