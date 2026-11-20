@@ -33,6 +33,8 @@ def get(url, timeout=60, tries=3):
                 return r.read()
         except urllib.error.HTTPError as e:
             err = e
+            if e.code in (301, 302, 303, 307, 308):
+                log('轉址', e.code, url[:90], '→', str(e.headers.get('Location'))[:120])
             if e.code in (400, 401, 403, 404):
                 break
             time.sleep((5 if e.code == 429 else 2) * (k + 1))
@@ -653,6 +655,15 @@ def main():
             except Exception:
                 pass
     tw = tw_sources([c for c in codes if uni[c]['market'] == 'TW'], prev_tw) if any(uni[c]['market'] == 'TW' for c in codes) else {}
+    # 2026-11-20：證交所某些資料集那次回 HTTP 307，台灣 50 的公司治理與前 10 大股東被洗掉。某個來源這次抓不到時，沿用上一次檔案裡的那一欄（不讓暫時故障清掉資料）
+    kept = 0
+    for c, old in prev_tw.items():
+        if c in tw:
+            for k, v in old.items():
+                if k not in tw[c]:
+                    tw[c][k] = v; kept += 1
+    if kept:
+        log('來源暫時抓不到、沿用上次資料的欄位：', kept, '個')
     # 報表幣別 ≠ 上市幣別（例：TSM 美國 ADR 的財報是台幣）→ 換算成上市幣別再算估值與跨公司比較
     LST = {'US': 'USD', 'TW': 'TWD'}
     pairs = {(r.get('fin_cur'), LST[uni[c]['market']]) for c, r in got.items() if r.get('fin_cur') and r.get('fin_cur') != LST[uni[c]['market']]}
