@@ -54,7 +54,6 @@ probe('twse_day_all_rwd', 'https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY
 probe('tpex_t187ap03_O', 'https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O')
 probe('tpex_daily_close', 'https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes')
 probe('tpex_rwd_daily', 'https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQuotes?response=json')
-job(isin, '2'); job(isin, '4')
 probe('yahoo_tw_mixed', 'https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=2330.TW,6488.TWO,8299.TWO,5347.TWO',
       {'Referer': 'https://tw.stock.yahoo.com/', 'Accept-Language': 'zh-TW,zh;q=0.9'})
 ex = cf.ThreadPoolExecutor(len(JOBS)); fs = [ex.submit(f, *a) for f, a in JOBS]
@@ -62,5 +61,25 @@ cf.wait(fs, timeout=240)
 for (f, a), x in zip(JOBS, fs):
     if not x.done(): out.setdefault(a[0] if f is not isin else 'isin_' + a[0], {'error': 'timeout 240s'})
 save()
+for k, v in out.items():
+    v2 = dict(v); v2.pop('sample', None)
+    print('=== ' + k, json.dumps(v2, ensure_ascii=False, default=str)[:1500], flush=True)
+    for r in (v.get('sample') or [])[:2]:
+        print('  sample', json.dumps(r, ensure_ascii=False, default=str)[:1500], flush=True)
+    for t in (v.get('tables') or [])[:1]:
+        print('  table', json.dumps(t, ensure_ascii=False, default=str)[:1500], flush=True)
+# 產業別欄位的所有值（上市、上櫃）與 TPEx 收盤檔的代號型態
+import collections
+def allrows(url):
+    st, j = get(url); return j
+try:
+    L = allrows('https://openapi.twse.com.tw/v1/opendata/t187ap03_L'); print('L 產業別', sorted(collections.Counter(r.get('產業別') for r in L).items()), flush=True)
+    O = allrows('https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O'); print('O keys', list(O[0].keys()), flush=True); print('O 產業別', sorted(collections.Counter(r.get('產業別') or r.get('SecuritiesIndustryCode') for r in O).items()), flush=True)
+    Q = allrows('https://www.tpex.org.tw/openapi/v1/tpex_mainboard_daily_close_quotes'); print('Q keys', list(Q[0].keys()), flush=True)
+    codes = {str(r.get('公司代號') or r.get('SecuritiesCompanyCode') or '').strip() for r in O}
+    qc = [r for r in Q if str(r.get('SecuritiesCompanyCode', '')).strip() in codes]; print('Q rows matching O companies', len(qc), 'dates', collections.Counter(r.get('Date') for r in Q).most_common(3), flush=True)
+    print('Q sample matched', json.dumps(qc[:2], ensure_ascii=False)[:1200], flush=True)
+except Exception as e:
+    print('extra failed', repr(e)[:300], flush=True)
 print({k: (v.get('n') or v.get('four_digit') or v.get('error') or v.get('status'), v.get('sec')) for k, v in out.items()}, flush=True)
 os._exit(0)
