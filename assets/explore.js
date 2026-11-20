@@ -89,6 +89,11 @@
       const u = String(b.until || '').replace(/^\d{4}-(\d\d)-(\d\d) /, (m, mo, da) => `${+mo}/${+da} `);
       return { cls: 'paused', text: `等待明天額度：今日額度已用完，AI Server 繼續運算但暫停回報，${u} 恢復` };
     }
+    // 2026-11-20 user: 「明明四台都已經在運算中為何最上方沒有顯示全數 AI Server 運算中」 -> the headline itself says how many
+    // AI Servers are computing (machines / machines_total come from each server's own latest report, not from one server)
+    const mt = d.machines_total || 0, mo = d.machines || 0;
+    if (mt > 1 && mo >= mt) return { cls: 'live', text: `全數 ${mt} 台 AI Server ${b ? '正常運算中' : '運算進行中'}` };
+    if (mt > 1) return { cls: 'live', text: `${mo}／${mt} 台 AI Server 運算中（${mt - mo} 台暫時沒有回報）` };
     return { cls: 'live', text: b ? '正常運算中' : '運算進行中' };
   }
 
@@ -97,7 +102,7 @@
     const st = statusInfo(d), age = Math.max(0, Math.round(ageMin(d.updated_at)));
     $('xp-status').className = 'xp-status ' + st.cls;
     $('xp-status').innerHTML = `<span class="xp-dot" aria-hidden="true"></span><b>${esc(st.text)}</b>` +
-      `<span class="xp-meta">${d.machines > 1 ? d.machines + ' 台 AI Server 同時運算・' : ''}最後更新 ${tpe(d.updated_at)}（台北時間）・${age < 1 ? '不到 1 分鐘前' : age + ' 分鐘前'}・本頁每 2 分鐘自動更新</span>`;
+      `<span class="xp-meta">${!d.machines_total && d.machines > 1 ? d.machines + ' 台 AI Server 同時運算・' : ''}最後更新 ${tpe(d.updated_at)}（台北時間）・${age < 1 ? '不到 1 分鐘前' : age + ' 分鐘前'}・本頁每 2 分鐘自動更新</span>`;
   }
 
   // a long plain number stays on one line and shrinks only when its tile is too narrow (cqi = 1% of the tile's inner
