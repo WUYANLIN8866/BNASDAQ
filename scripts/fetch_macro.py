@@ -16,6 +16,8 @@
 來源：https://fred.stlouisfed.org/graph/fredgraph.csv?id=<數列>（失敗改用 https://fred.stlouisfed.org/data/<數列>.txt）。
 規則：舊檔是加密的、沿用不了舊值，所以「全部數列都抓到」才寫檔；內容（明文雜湊）沒變不重寫。
       為了不對 FRED 造成負擔：距離上次成功抓取不到 20 小時、而且不是排程或手動啟動時，不重抓（月底定案檔的複製照做）。
+      月底凍結：本月最後一個交易日收盤後（data/market.json 的最新收盤日之後，到月底都沒有交易日），到換月之前不再重抓。
+      這樣「月底收盤那一刻網站上的資料」就是月底定案檔的內容，月底的判斷從第一次顯示起就不會再變。
 用法：python3 scripts/fetch_macro.py [--force]
 """
 import os, sys, json, csv, io, time, base64, hashlib, shutil, urllib.request, datetime as dt
@@ -30,6 +32,15 @@ KEEP_FROM = '2023-01'      # 第 1 版
 KEEP_MONTHS = 96           # 第 2 版：最近幾個月
 MIN_GAP_H = 20
 RETRY_GAP_H = 2
+# 紐約證交所整日休市日（公開資訊；只用來判斷「本月還有沒有交易日」。清單以外的年份只看週一到週五）
+NYSE_HOLIDAYS = set((
+    '2026-01-01 2026-01-19 2026-02-16 2026-04-03 2026-05-25 2026-06-19 2026-07-03 2026-09-07 2026-11-26 2026-12-25 '
+    '2027-01-01 2027-01-18 2027-02-15 2027-03-26 2027-05-31 2027-06-18 2027-07-05 2027-09-06 2027-11-25 2027-12-24 '
+    '2028-01-17 2028-02-21 2028-04-14 2028-05-29 2028-06-19 2028-07-04 2028-09-04 2028-11-23 2028-12-25 2029-01-01 '
+    '2029-01-15 2029-02-19 2029-03-30 2029-05-28 2029-06-19 2029-07-04 2029-09-03 2029-11-22 2029-12-25 2030-01-01 '
+    '2030-01-21 2030-02-18 2030-04-19 2030-05-27 2030-06-19 2030-07-04 2030-09-02 2030-11-28 2030-12-25 2031-01-01 '
+    '2031-01-20 2031-02-17 2031-04-11 2031-05-26 2031-06-19 2031-07-04 2031-09-01 2031-11-27 2031-12-25 '
+).split())
 # 第 1 版：FRED-MD 第 6 組（利率與匯率）可直接下載的數列（FRED-MD 的 EXSZUSx、EXJPUSx、EXUSUKx、EXCAUSx＝FRED 的 EXSZUS、EXJPUS、EXUSUK、EXCAUS）
 SERIES1 = ['FEDFUNDS', 'TB3MS', 'TB6MS', 'GS1', 'GS5', 'GS10', 'AAA', 'BAA', 'TB3SMFFM', 'TB6SMFFM', 'T1YFFM', 'T5YFFM', 'T10YFFM',
            'AAAFFM', 'BAAFFM', 'EXSZUS', 'EXJPUS', 'EXUSUK', 'EXCAUS']
@@ -195,6 +206,22 @@ def snapshot(now):
         write_json(os.path.join(SNAP, 'index.json'), idx)
 
 
+def month_closed(now):
+    """本月最後一個交易日已經收盤 → True（依 data/market.json 的最新收盤日；讀不到就當作還沒）"""
+    try:
+        asof = (load_json(os.path.join(ROOT, 'data', 'market.json')) or {}).get('asof') or ''
+        if asof[:7] != month_et(now):
+            return False
+        d = dt.date.fromisoformat(asof); nd = d + dt.timedelta(days=1)
+        while nd.month == d.month:
+            if nd.weekday() < 5 and nd.isoformat() not in NYSE_HOLIDAYS:
+                return False
+            nd += dt.timedelta(days=1)
+        return True
+    except Exception as e:  # noqa
+        log('month_closed check failed', repr(e)); return False
+
+
 def status(now, ok, failed, note):
     old = load_json(STATUS) or {}
     ts = now.strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -215,6 +242,8 @@ def main():
             pubs[name] = json.load(open(p, encoding='utf-8'))['pub']
         except Exception as e:  # noqa
             log('no public key', p, repr(e)); return 0
+    if os.path.exists(OUT1) and os.path.exists(OUT2) and month_closed(now) and '--force' not in sys.argv:
+        log('month-end close is in: data stay frozen until the month rolls over'); return 0
     st = load_json(STATUS) or {}
     chk = parse_ts(st.get('checked') or '')
     gap = MIN_GAP_H if st.get('ok') else RETRY_GAP_H     # 上次失敗：隔 RETRY_GAP_H 小時就再試
@@ -240,7 +269,7 @@ def main():
     write_enc(OUT1, 'bnasdaq-macro/1', dict(schema='bnasdaq-macro-plain/1', source='FRED（https://fred.stlouisfed.org/graph/fredgraph.csv?id=…；月平均）',
                                             keep_from=KEEP_FROM, series=s1), pubs, len(s1), max(last1.values()))
     # 第 2 版：月份軸＝最近 KEEP_MONTHS 個月（到所有數列最新的月份為止）；沒有觀測值的月份是 null
-    last = max(max(d) for d in raw.values())
+    last = min(max(max(d) for d in raw.values()), now.strftime('%Y-%m'))
     months = [ym_add(last, -k) for k in range(KEEP_MONTHS - 1, -1, -1)]
     s2 = {sid: [raw[sid].get(m) for m in months] for sid in SERIES2}
     empty = [sid for sid, v in s2.items() if sum(x is not None for x in v) < 12]
