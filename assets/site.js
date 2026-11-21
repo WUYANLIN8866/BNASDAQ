@@ -37,14 +37,18 @@
         { acceptNode: n => (n.nodeType === 1 && RAW.test(n.nodeName)) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
       let n; while ((n = w.nextNode())) { if (n.nodeType === 3) text(n); else attrs(n); }
     };
+    // 只給會員看的數字（data-mo-val；2026-11-21 站主：首頁 26113 卡片的 IRR 與倍數）：沒登入時一律顯示「會員專屬」，頁面程式後來填入的數字也立刻換掉
+    const lock = el => { if (el.textContent !== LABEL) el.textContent = LABEL; };
+    const lockUp = n => { const el = n && (n.nodeType === 1 ? n : n.parentNode), v = el && el.closest && el.closest('[data-mo-val]'); if (v) lock(v); };
     new MutationObserver(list => {
       for (const m of list) {
-        if (m.type === 'characterData') text(m.target);
+        if (m.type === 'characterData') { text(m.target); lockUp(m.target); }
         else if (m.type === 'attributes') attrs(m.target);
-        else m.addedNodes.forEach(sweep);
+        else { m.addedNodes.forEach(n => { sweep(n); if (n.querySelectorAll) n.querySelectorAll('[data-mo-val]').forEach(lock); }); lockUp(m.target); }
       }
     }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
     sweep(document.documentElement);
+    document.querySelectorAll('[data-mo-val]').forEach(lock);
   })();
   BN.toggleTheme = function () {
     const cur = root.getAttribute('data-theme');

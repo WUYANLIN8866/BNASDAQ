@@ -12,7 +12,9 @@ const nf = x => x.toLocaleString('zh-Hant-TW');
 const big = (D.end / 1e8).toFixed(1) + ' 億', sub = 'IRR 年化 ' + (D.irr * 100).toFixed(1) + '%｜本金 ' + nf(D.principal / 1e4) + ' 萬｜本金的 ' + nf(Math.round(D.mult)) + ' 倍';
 let h = A('index.html'); const h0 = h;
 const set = (re, val, all) => { const n = (h.match(new RegExp(re.source, 'g')) || []).length; if (!n || (!all && n !== 1)) throw new Error('找不到 ' + re); h = h.replace(new RegExp(re.source, all ? 'g' : ''), '$1' + val + '$2'); };
-const HF = (k, X) => { set(new RegExp('(id="hero-big' + k + '">)[^<]*(<)'), (X.end / 1e8).toFixed(1)); set(new RegExp('(id="hero-irr' + k + '">)[^<]*(<)'), (X.irr * 100).toFixed(1) + '%'); set(new RegExp('(id="hero-mult' + k + '">)[^<]*(<)'), nf(Math.round(X.mult)) + ' 倍'); };
+// 2026-11-21 站主：BNASDAQ-26113（第 4 張卡）的 IRR 與倍數只給會員看：靜態備用值寫「會員專屬」，會員登入後由首頁程式填入數字（assets/site.js 的 data-mo-val）
+const MOV = k => k === '4';
+const HF = (k, X) => { set(new RegExp('(id="hero-big' + k + '">)[^<]*(<)'), (X.end / 1e8).toFixed(1)); set(new RegExp('(id="hero-irr' + k + '">)[^<]*(<)'), MOV(k) ? '會員專屬' : (X.irr * 100).toFixed(1) + '%'); set(new RegExp('(id="hero-mult' + k + '">)[^<]*(<)'), MOV(k) ? '會員專屬' : nf(Math.round(X.mult)) + ' 倍'); };
 HF('', D); set(/(id="hero-prin">)[^<]*(<)/, nf(D.principal / 1e4) + ' 萬'); set(/(id="hero-end">)[^<]*(<)/, END); set(/(id="bt-end">)[^<]*(<)/, END); set(/(data-k="end">)[^<]*(<)/, END, true);
 if (sw) { set(/(id="ind-sw">)[^<]*(<)/, sw[0] + ' 次'); set(/(id="ind-sw-s">)[^<]*(<)/, '平均每年 ' + (sw[0] / B.yrs('2000-05-31', END)).toFixed(2) + ' 次；' + sw[1] + ' 次全進全出、' + (sw[0] - sw[1]) + ' 次半倉進出（涉及逐月持倉，不隨起點重算）'); }
 // BNASDAQ-26111：和 BNASDAQ-26110 同一個 30 年起點的定期定額（2000-03 前接 bt-sat30.js 延伸前段）與配置調整次數
