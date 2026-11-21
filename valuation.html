@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=dce4af95dc">
+<link rel="stylesheet" href="assets/site.css?v=cc9a3a764c">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -168,7 +168,7 @@ main .btn.ghost:hover{color:var(--ink);background:var(--band);border-color:var(-
 @media(max-width:900px){.esg{grid-template-columns:1fr}}
 .glos{margin-top:10px}.glos summary{cursor:pointer;font-weight:600}.glos td{font-size:13.5px;vertical-align:top}.glos td:first-child{white-space:nowrap}
 </style>
-<script src="assets/company.js?v=005dd08a6c"></script><script src="assets/site.js?v=f307221e06"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=6f33da45ee"></script>
+<script src="assets/company.js?v=22864abbb6"></script><script src="assets/site.js?v=53a18ee4d8"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);
@@ -231,16 +231,23 @@ function run(){
   LAST={P,E,zi,rank,q,gBE,pe0,gLo,gHi,nM,peM};
   renderDetail();
 }
-function band(q,P,zi){
+// 2026-11-21 站主：網頁上所有圖表都要有「動態走勢」——這張圖：由便宜到昂貴依序畫出五段，最後三角形（目前股價）從左邊滑到目前位置
+const ZN=['很便宜（第 5 百分位以下）','便宜（第 5～25 百分位）','合理（第 25～75 百分位）','昂貴（第 75～95 百分位）','很昂貴（第 95 百分位以上）'];
+function bandSvg(q,P,zi,fr,pk){ // fr＝動態走勢的一格 {z, t, m}：畫到第 z 段（第 z 段畫到 t）；m＝三角形滑到哪裡（0～1，null＝還沒出現）
   const W=820,H=128,L=48,R=48;const lo=Math.min(q.min,P)*0.95,hi=Math.max(q.max,P)*1.05;const x=v=>L+(W-L-R)*(v-lo)/(hi-lo);
   const cols=['rgba(31,122,58,.55)','rgba(31,122,58,.28)','rgba(183,121,31,.25)','rgba(179,38,30,.28)','rgba(179,38,30,.55)'];
   const edges=[lo,q.p5,q.p25,q.p75,q.p95,hi];
-  let s='<div class="fig"><p class="ftitle">目前股價落在哪一段</p><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="合理價區間帶">';
-  for(let i=0;i<5;i++){s+='<rect x="'+x(edges[i])+'" y="40" width="'+Math.max(0,x(edges[i+1])-x(edges[i]))+'" height="28" fill="'+cols[i]+'"'+(i===zi?' stroke="var(--gold)" stroke-width="3"':'')+'/>';}
-  [['p5',q.p5],['p25',q.p25],['中位',q.p50],['p75',q.p75],['p95',q.p95]].forEach(([l,v],i)=>{s+='<line x1="'+x(v)+'" x2="'+x(v)+'" y1="36" y2="72" stroke="var(--ink)" stroke-width="1"/><text x="'+x(v)+'" y="'+(i%2?104:86)+'" text-anchor="middle" class="viz-lbl" font-size="11.5">'+l+' '+fp(v)+'</text>';});
-  s+='<polygon points="'+x(P)+',38 '+(x(P)-7)+',24 '+(x(P)+7)+',24" fill="var(--gold)" stroke="var(--ink)" stroke-width="1"/><text x="'+x(P)+'" y="16" text-anchor="middle" class="viz-txt" font-weight="700" font-size="13">目前 '+fp(P)+'</text>';
-  s+='</svg><p class="fnote">綠＝便宜、黃＝合理、紅＝昂貴；三角形＝目前股價。</p></div>';
-  $('vBand').innerHTML=s;
+  let s='<svg'+(pk||'')+' viewBox="0 0 '+W+' '+H+'" role="img" aria-label="合理價區間帶">';
+  for(let i=0;i<5;i++){if(fr&&i>fr.z)break;const w=Math.max(0,x(edges[i+1])-x(edges[i]))*(fr&&i===fr.z?fr.t:1);s+='<rect x="'+x(edges[i])+'" y="40" width="'+w+'" height="28" fill="'+cols[i]+'"'+(i===zi&&(!fr||fr.m===1)?' stroke="var(--gold)" stroke-width="3"':'')+'/>';}
+  if(!fr||fr.m!=null)[['p5',q.p5],['p25',q.p25],['中位',q.p50],['p75',q.p75],['p95',q.p95]].forEach(([l,v],i)=>{s+='<line x1="'+x(v)+'" x2="'+x(v)+'" y1="36" y2="72" stroke="var(--ink)" stroke-width="1"/><text x="'+x(v)+'" y="'+(i%2?104:86)+'" text-anchor="middle" class="viz-lbl" font-size="11.5">'+l+' '+fp(v)+'</text>';});
+  if(!fr||fr.m!=null){const px=fr?x(lo)+(x(P)-x(lo))*fr.m:x(P);s+='<polygon points="'+px+',38 '+(px-7)+',24 '+(px+7)+',24" fill="var(--gold)" stroke="var(--ink)" stroke-width="1"/>'+(!fr||fr.m===1?'<text x="'+px+'" y="16" text-anchor="middle" class="viz-txt" font-weight="700" font-size="13">目前 '+fp(P)+'</text>':'');}
+  return s+'</svg>';
+}
+function band(q,P,zi){
+  const ZS=6,MS=14,N=5*ZS+MS,fr=f=>f<5*ZS?{z:Math.floor(f/ZS),t:1-Math.pow(1-(f%ZS+1)/ZS,3),m:null}:{z:4,t:1,m:Math.min(1,1-Math.pow(1-(f-5*ZS+1)/MS,3))};
+  const pk=window.BN&&BN.play?BN.play.reg({n:N,ms:70,frame:f=>bandSvg(q,P,zi,fr(f)),label:f=>f<5*ZS?'由便宜到昂貴畫出五段（第 '+(Math.floor(f/ZS)+1)+'／5 段：'+ZN[Math.floor(f/ZS)]+'）':'目前股價 '+fp(P)+'：落在「'+ZN[zi]+'」'}):'';
+  const s='<div class="fig"><p class="ftitle">目前股價落在哪一段</p>'+bandSvg(q,P,zi,null,pk)+'<p class="fnote">綠＝便宜、黃＝合理、紅＝昂貴；三角形＝目前股價。</p></div>';
+  $('vBand').innerHTML=s; if(window.BN&&BN.play)BN.play.scan($('vBand'));
 }
 function showTsy(){
   const el=$('vTsy');
@@ -375,17 +382,22 @@ function renderDetail(){
     const R=rows.filter(r=>peOf(r.f,r.t[5])!=null).sort((a,b)=>peOf(a.f,a.t[5])-peOf(b.f,b.t[5]));
     let g='';
     if(R.length>=2){const W=760,bh=28,top=6,L=200,Rr=60,H=top+R.length*bh+6,mx=Math.max(...R.map(r=>peOf(r.f,r.t[5])))*1.05,X=v=>L+(W-L-Rr)*v/mx;
-      g='<div class="fig"><p class="ftitle">同業本益比（'+esc(w.S.session||DET.hm.session)+' 收盤 ÷ 近四季 EPS，倍）'+(peMed!=null?'｜虛線＝同業中位數 '+peMed.toFixed(1)+' 倍':'')+'</p><svg class="pbar" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="同業本益比：'+esc(R.map(r=>r.t[0]+' '+peOf(r.f,r.t[5]).toFixed(1)+' 倍').join('、'))+'">';
-      if(peMed!=null)g+='<line class="md" x1="'+X(peMed).toFixed(1)+'" x2="'+X(peMed).toFixed(1)+'" y1="'+top+'" y2="'+(H-4)+'"/>';   // 中位數線畫在最底層，數字不被遮住
-      R.forEach((r,i)=>{const y=top+i*bh,v=peOf(r.f,r.t[5]),nm=String(r.t[1]);
-        g+='<text class="viz-lbl" x="'+(L-8)+'" y="'+(y+bh/2+4)+'" text-anchor="end" font-size="12.5"'+(r.me?' font-weight="700"':'')+'>'+esc(r.t[0])+'｜'+esc(nm.length>16?nm.slice(0,15)+'…':nm)+'</text>'+
-          '<rect class="'+(r.me?'me':'ot')+'" x="'+L+'" y="'+(y+5)+'" width="'+Math.max(1,X(v)-L).toFixed(1)+'" height="'+(bh-10)+'" rx="2"><title>'+esc(r.t[0])+'：'+v.toFixed(1)+' 倍</title></rect>'+
-          '<text class="viz-lbl" x="'+(X(v)+6).toFixed(1)+'" y="'+(y+bh/2+4)+'" font-size="12.5"'+(r.me?' font-weight="700"':'')+'>'+v.toFixed(1)+'</text>';});
-      g+='</svg><p class="fnote">金色＝'+esc(code)+'、灰色＝同業（同一指數、同一產業市值最大的 '+peers.length+' 家）；本益比為負或沒有資料者不畫。</p></div>';}
+      const svgP=fr=>{   // 動態走勢（2026-11-21 站主）：fr＝{k, t}：由本益比低到高，第 k 家長到 t、後面的還沒畫
+        const pk=fr||!window.BN||!BN.play?'':BN.play.reg({n:R.length*8,ms:45,frame:f=>svgP({k:Math.floor(f/8),t:1-Math.pow(1-(f%8+1)/8,3)}),label:f=>{const r=R[Math.floor(f/8)];return '由低到高逐一畫出（第 '+(Math.floor(f/8)+1)+'／'+R.length+' 家：'+r.t[0]+' '+peOf(r.f,r.t[5]).toFixed(1)+' 倍）';}});
+        let sv='<svg class="pbar"'+pk+' viewBox="0 0 '+W+' '+H+'" role="img" aria-label="同業本益比：'+esc(R.map(r=>r.t[0]+' '+peOf(r.f,r.t[5]).toFixed(1)+' 倍').join('、'))+'">';
+        if(peMed!=null)sv+='<line class="md" x1="'+X(peMed).toFixed(1)+'" x2="'+X(peMed).toFixed(1)+'" y1="'+top+'" y2="'+(H-4)+'"/>';   // 中位數線畫在最底層，數字不被遮住
+        R.forEach((r,i)=>{const y=top+i*bh,v0=peOf(r.f,r.t[5]),nm=String(r.t[1]),gg=fr&&i===fr.k?fr.t:1,v=v0*gg;
+          sv+='<text class="viz-lbl" x="'+(L-8)+'" y="'+(y+bh/2+4)+'" text-anchor="end" font-size="12.5"'+(r.me?' font-weight="700"':'')+'>'+esc(r.t[0])+'｜'+esc(nm.length>16?nm.slice(0,15)+'…':nm)+'</text>';
+          if(fr&&i>fr.k)return;
+          sv+='<rect class="'+(r.me?'me':'ot')+'" x="'+L+'" y="'+(y+5)+'" width="'+Math.max(1,X(v)-L).toFixed(1)+'" height="'+(bh-10)+'" rx="2"><title>'+esc(r.t[0])+'：'+v0.toFixed(1)+' 倍</title></rect>'+
+            (gg<1?'':'<text class="viz-lbl" x="'+(X(v)+6).toFixed(1)+'" y="'+(y+bh/2+4)+'" font-size="12.5"'+(r.me?' font-weight="700"':'')+'>'+v0.toFixed(1)+'</text>');});
+        return sv+'</svg>';};
+      g='<div class="fig"><p class="ftitle">同業本益比（'+esc(w.S.session||DET.hm.session)+' 收盤 ÷ 近四季 EPS，倍）'+(peMed!=null?'｜虛線＝同業中位數 '+peMed.toFixed(1)+' 倍':'')+'</p>'+svgP(null)+'<p class="fnote">金色＝'+esc(code)+'、灰色＝同業（同一指數、同一產業市值最大的 '+peers.length+' 家）；本益比為負或沒有資料者不畫。</p></div>';}
     const body=rows.map(r=>{const pe=peOf(r.f,r.t[5]),gm=gMid(r.f),pg=pegOf(pe,gm),gi=(r.f&&r.f.growth_inputs)||{};const a1=gi.analyst_this_year,a2=gi.analyst_next_year;
       return '<tr'+(r.me?' class="peer-me"':'')+'><td class="l">'+(r.me?esc(r.t[0]):'<a href="#code='+encodeURIComponent(r.t[0])+'" data-code="'+esc(r.t[0])+'">'+esc(r.t[0])+'</a>')+'</td><td class="l">'+esc(r.t[1])+'</td><td>'+(r.t[3]!=null?capS(r.t[3],cur):'—')+'</td><td>'+(pe!=null?pe.toFixed(1):'—')+'</td><td>'+(gm!=null?gm.toFixed(1)+'%':'—')+'</td><td>'+(pg!=null?pg.toFixed(2):'—')+'</td><td>'+(a1!=null||a2!=null?(a1!=null?(a1*100).toFixed(1)+'%':'—')+'／'+(a2!=null?(a2*100).toFixed(1)+'%':'—'):'—')+'</td><td class="'+(r.t[4]>0?'pos':r.t[4]<0?'neg':'')+'">'+pctC(r.t[4])+'</td></tr>';}).join('');
     $('dPeer').innerHTML='<h3>同業比較（'+esc(w.t[2])+'）</h3>'+g+'<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">公司</th><th>市值</th><th>本益比</th><th>成長率中點</th><th>PEG</th><th>分析師 EPS 成長<br>本年度／明年度</th><th>單日漲跌</th></tr></thead><tbody>'+body+'</tbody></table></div>'+
       '<p class="small">本益比＝'+esc((w.S.session||DET.hm.session))+' 收盤 ÷ 近四季 EPS（EPS 來自基本面資料，每週日更新）；成長率中點＝本站自動帶入的成長率區間（最低～最高）的中點；PEG＝本益比 ÷ 成長率中點，小於 1 常被視為相對便宜，但成長率是預估值。'+(below!=null&&pes.length>1?esc(code)+' 的本益比在 '+pes.length+' 家中由低到高排第 '+(below+1)+'。':'')+'點同業代號可直接切換分析。</p>';
+    if(window.BN&&BN.play)BN.play.scan($('dPeer'));
     $('dPeer').querySelectorAll('a[data-code]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const c=a.dataset.code;$('code').value=c;history.replaceState(null,'','#code='+c);loadCode(c);window.scrollTo({top:0,behavior:'smooth'});}));
   }else $('dPeer').innerHTML='';
   // ---- 分析師成長預估：分析師預估 vs 本站試算假設 vs 目前股價隱含的成長 ----
@@ -395,16 +407,22 @@ function renderDetail(){
   if(fund&&(items.length||LAST)){
     const bars=items.slice();if(LAST){bars.push({l:'本站試算假設（最低～最高）',lo:LAST.gLo*100,v:LAST.gHi*100,c:'as'});bars.push({l:'目前股價隱含的年成長',v:LAST.gBE*100,c:'im'});}
     const W=760,bh=30,top=6,L=230,Rr=70,H=top+bars.length*bh+22,vals=bars.flatMap(b=>[b.v,b.lo==null?0:b.lo,0]),mn=Math.min(...vals),mx=Math.max(...vals),pad=(mx-mn)*0.06||1,lo=mn-(mn<0?pad:0),hi=mx+pad,X=v=>L+(W-L-Rr)*(v-lo)/(hi-lo);
-    let g='<div class="fig"><p class="ftitle">成長率比較（每年，%）：'+(hasAn?'分析師預估':'歷史成長')+'、本站試算假設、目前股價隱含</p><svg class="gbar" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="成長率比較：'+esc(bars.map(b=>b.l+' '+(b.lo!=null?b.lo.toFixed(1)+'～':'')+b.v.toFixed(1)+'%').join('、'))+'">';
-    g+='<line class="z" x1="'+X(0).toFixed(1)+'" x2="'+X(0).toFixed(1)+'" y1="'+top+'" y2="'+(H-18)+'"/><text class="viz-lbl" x="'+X(0).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="11.5">0%</text>';
-    bars.forEach((b,i)=>{const y=top+i*bh,a=b.lo!=null?b.lo:0,x1=X(Math.min(a,b.v)),x2=X(Math.max(a,b.v));
-      g+='<text class="viz-lbl" x="'+(L-8)+'" y="'+(y+bh/2+4)+'" text-anchor="end" font-size="12.5"'+(b.c==='im'?' font-weight="700"':'')+'>'+esc(b.l)+'</text><rect class="'+b.c+'" x="'+x1.toFixed(1)+'" y="'+(y+6)+'" width="'+Math.max(2,x2-x1).toFixed(1)+'" height="'+(bh-12)+'" rx="2"/>'+
-        '<text class="viz-lbl" x="'+(Math.max(x2,X(0))+6).toFixed(1)+'" y="'+(y+bh/2+4)+'" font-size="12.5"'+(b.c==='im'?' font-weight="700"':'')+'>'+(b.lo!=null?b.lo.toFixed(1)+'～':'')+b.v.toFixed(1)+'%</text>';});
-    g+='</svg><p class="fnote">藍＝'+(hasAn?'分析師預估（Yahoo Finance 彙整）':'歷史 EPS 成長')+'；綠＝本站自動帶入的成長率區間；金＝讓目前股價剛好等於合理價（中位年數、中位出場本益比）所需的每年成長。金色比綠色短，代表股價只反映了比假設更低的成長。</p></div>';
+    const svgG=fr=>{   // 動態走勢（2026-11-21 站主）：fr＝{k, t}：由上而下，第 k 條長到 t、後面的還沒畫
+      const pk=fr||!window.BN||!BN.play?'':BN.play.reg({n:bars.length*8,ms:50,frame:f=>svgG({k:Math.floor(f/8),t:1-Math.pow(1-(f%8+1)/8,3)}),label:f=>{const b=bars[Math.floor(f/8)];return '逐一畫出（第 '+(Math.floor(f/8)+1)+'／'+bars.length+' 項：'+b.l+' '+(b.lo!=null?b.lo.toFixed(1)+'～':'')+b.v.toFixed(1)+'%）';}});
+      let sv='<svg class="gbar"'+pk+' viewBox="0 0 '+W+' '+H+'" role="img" aria-label="成長率比較：'+esc(bars.map(b=>b.l+' '+(b.lo!=null?b.lo.toFixed(1)+'～':'')+b.v.toFixed(1)+'%').join('、'))+'">';
+      sv+='<line class="z" x1="'+X(0).toFixed(1)+'" x2="'+X(0).toFixed(1)+'" y1="'+top+'" y2="'+(H-18)+'"/><text class="viz-lbl" x="'+X(0).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="11.5">0%</text>';
+      bars.forEach((b,i)=>{const y=top+i*bh,a=b.lo!=null?b.lo:0,gg=fr&&i===fr.k?fr.t:1,bv=a+(b.v-a)*gg,x1=X(Math.min(a,bv)),x2=X(Math.max(a,bv));
+        sv+='<text class="viz-lbl" x="'+(L-8)+'" y="'+(y+bh/2+4)+'" text-anchor="end" font-size="12.5"'+(b.c==='im'?' font-weight="700"':'')+'>'+esc(b.l)+'</text>';
+        if(fr&&i>fr.k)return;
+        sv+='<rect class="'+b.c+'" x="'+x1.toFixed(1)+'" y="'+(y+6)+'" width="'+Math.max(2,x2-x1).toFixed(1)+'" height="'+(bh-12)+'" rx="2"/>'+
+          (gg<1?'':'<text class="viz-lbl" x="'+(Math.max(x2,X(0))+6).toFixed(1)+'" y="'+(y+bh/2+4)+'" font-size="12.5"'+(b.c==='im'?' font-weight="700"':'')+'>'+(b.lo!=null?b.lo.toFixed(1)+'～':'')+b.v.toFixed(1)+'%</text>');});
+      return sv+'</svg>';};
+    let g='<div class="fig"><p class="ftitle">成長率比較（每年，%）：'+(hasAn?'分析師預估':'歷史成長')+'、本站試算假設、目前股價隱含</p>'+svgG(null)+'<p class="fnote">藍＝'+(hasAn?'分析師預估（Yahoo Finance 彙整）':'歷史 EPS 成長')+'；綠＝本站自動帶入的成長率區間；金＝讓目前股價剛好等於合理價（中位年數、中位出場本益比）所需的每年成長。金色比綠色短，代表股價只反映了比假設更低的成長。</p></div>';
     let t='';
     if(fund.target_mean)t='<p>分析師目標價（'+esc(fund.analysts||'?')+' 位）：最低 '+esc(fund.target_lo)+'／平均 <b>'+esc(fund.target_mean)+'</b>／最高 '+esc(fund.target_hi)+(LAST?'；平均目標價相對目前股價 '+((fund.target_mean/LAST.P-1)*100>=0?'+':'')+((fund.target_mean/LAST.P-1)*100).toFixed(1)+'%':'')+'。</p>';
     const sm=LAST&&gi.analyst_this_year!=null?'<p>'+(hasAn?'分析師預估本年度 EPS 成長 '+(gi.analyst_this_year*100).toFixed(1)+'%'+(gi.analyst_next_year!=null?'、明年度 '+(gi.analyst_next_year*100).toFixed(1)+'%':'')+'；':'')+'目前股價隱含每年 '+(LAST.gBE*100).toFixed(1)+'% 成長'+(gi.analyst_this_year*100>LAST.gBE*100?'，<b>低於分析師預估</b>——若預估兌現，股價有上修空間；若預估被下修，這個差距就是安全邊際。':'，<b>高於分析師本年度預估</b>——股價已反映比分析師更樂觀的成長。')+'</p>':'';
     $('dGrow').innerHTML='<h3>分析師成長預估</h3>'+sm+t+g+(hasAn?'':'<p class="small">台股沒有分析師預估資料，這裡列的是歷史 EPS 成長（本站自動參數的依據）。</p>');
+    if(window.BN&&BN.play)BN.play.scan($('dGrow'));
   }else $('dGrow').innerHTML='';
   // ---- 最新新聞 ----
   {const nw=((fund&&fund.news)||[]).length?fund.news:(DET.adr?DET.adr.news:[]),src=((fund&&fund.news)||[]).length?'':(DET.adr?'（'+esc(spz(name))+'本身沒有收錄新聞，以下是美國 ADR '+DET.adr.code+' 的新聞）':'');

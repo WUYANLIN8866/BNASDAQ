@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=dce4af95dc">
+<link rel="stylesheet" href="assets/site.css?v=cc9a3a764c">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -81,7 +81,7 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#report">回測成績總覽</a></li><li><a href="#periods">各區間年化報酬</a></li><li><a href="#years">逐年報酬</a></li><li><a href="#why">績效來源</a></li><li><a href="#crises">大幅修正</a></li><li><a href="#dd">最大回撤</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="risk.html#robust">參數穩健性檢驗</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="dca.html">定期定額</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=f307221e06"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/sat-nb.js?v=770b05a5b5"></script><script src="assets/sat2-nb.js?v=fa67ea95b9"></script><script src="assets/sat3-nb.js?v=c0ca0361d5"></script><script src="assets/period.js?v=f4affab552"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=6f33da45ee"></script>
+<script src="assets/site.js?v=53a18ee4d8"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/sat-nb.js?v=770b05a5b5"></script><script src="assets/sat2-nb.js?v=fa67ea95b9"></script><script src="assets/sat3-nb.js?v=c0ca0361d5"></script><script src="assets/period.js?v=f4affab552"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function () {
   'use strict';
@@ -224,7 +224,7 @@
     if (!per.length) h += '<tr><td class=l colspan="' + (pc.length + 2) + '">共同期間比最短的「近 1 年」還短，沒有可比較的區間。</td></tr>';
     $('t-per').innerHTML = h + '</tbody></table></div>';
     $('c-per').innerHTML = '';
-    if (per.length) BN.charts.bars($('c-per'), { title: '各區間年化報酬率', sub: '終點 ' + END + '｜所選起點 ' + sDate + ' 之後的區間', groups: per.map(p => p.name), series: pc.map(c => ({ name: c[0], values: per.map(c[1]), color: c[2] })), yfmt: v => (v * 100).toFixed(0) + '%', valfmt: v => p1(v), tipfmt: v => (v * 100).toFixed(2) + '%',
+    if (per.length) BN.charts.bars($('c-per'), { title: '各區間年化報酬率', sub: '終點 ' + END + '｜所選起點 ' + sDate + ' 之後的區間', groups: per.map(p => p.name), play: { unit: '個區間' }, series: pc.map(c => ({ name: c[0], values: per.map(c[1]), color: c[2] })), yfmt: v => (v * 100).toFixed(0) + '%', valfmt: v => p1(v), tipfmt: v => (v * 100).toFixed(2) + '%',
       note: notes([BT.proxyNote(per[per.length - 1].start.slice(0, 7)), adjNote]) || undefined });
 
     // ---- 逐年報酬 ----
@@ -257,7 +257,7 @@
     $('c-cal').innerHTML = '';
     if (rows.length) {
       const y0 = rows[0].y, y1 = rows[rows.length - 1].y;
-      BN.charts.bars($('c-cal'), { title: '逐年報酬：四個策略與 QQQ' + (US.length ? '（含加入標的）' : ''), sub: sDate + ' 至 ' + END + '｜' + y0 + '～' + y1 + ' 曆年報酬；' + y1 + ' 年僅計至 ' + endM + ' 月底' + (late ? '；月底資料' : ''), groups: rows.map(r => String(r.y).slice(2)),
+      BN.charts.bars($('c-cal'), { title: '逐年報酬：四個策略與 QQQ' + (US.length ? '（含加入標的）' : ''), sub: sDate + ' 至 ' + END + '｜' + y0 + '～' + y1 + ' 曆年報酬；' + y1 + ' 年僅計至 ' + endM + ' 月底' + (late ? '；月底資料' : ''), groups: rows.map(r => String(r.y).slice(2)), play: { labels: rows.map(r => r.y + ' 年'), unit: '年' },
         series: ['fund', 'sat', 'sat2', 'sat3', 'qqq'].map(k => ({ name: NM[k], values: rows.map(r => gv(k, r.y)), color: COL[k] })).concat(cc.slice(KEYS.length).map(c => ({ name: c[0], values: rows.map(r => c[1](r.y)), color: c[2] }))),
         labels: false, yfmt: v => (v * 100).toFixed(0) + '%', tipfmt: v => p1(v), height: 300, note: notes([late ? '' : BT.proxyNote((y0 - 1) + '-12'), adjNote]) || undefined });
     }
@@ -299,7 +299,7 @@
     cr += '</tbody>' + (miss ? '<tfoot><tr><td colspan="' + ncol + '">加入標的僅有正式回測區間 ' + S.crises.length + ' 次大幅修正（固定高低點）的逐日報酬；事件區間因起點改變而不同時以「—」表示。</td></tr></tfoot>' : '');
     $('t-cr').innerHTML = cr + '</table></div>';
     $('c-cr').innerHTML = '';
-    if (nC) BN.charts.bars($('c-cr'), { title: '大幅修正期間的報酬（' + nC + ' 次）', sub: sDate + ' 至 ' + END + '｜QQQ 高點至低點，日收盤；現金不投資一律為 0%', groups: CR.map(c => nC > 6 && /^\d{4} /.test(c.name) ? c.name.slice(0, 4) : c.name),
+    if (nC) BN.charts.bars($('c-cr'), { title: '大幅修正期間的報酬（' + nC + ' 次）', sub: sDate + ' 至 ' + END + '｜QQQ 高點至低點，日收盤；現金不投資一律為 0%', groups: CR.map(c => nC > 6 && /^\d{4} /.test(c.name) ? c.name.slice(0, 4) : c.name), play: { labels: CR.map(c => c.name), unit: '次' },
       series: KEYS.map(k => ({ name: NM[k], values: CR.map(c => isSat(k) ? satCr(c, k) : c[k]), color: COL[k] })).concat(US.map(x => ({ name: x.a.label, values: CR.map(c => AM.get(x.a.code).cr(c)), color: x.a.color }))),
       yfmt: v => (v * 100).toFixed(0) + '%', valfmt: v => p1(v), tipfmt: v => p1(v),
       note: notes([BT.proxyNote(CR[0].peak.slice(0, 7)), miss ? '加入標的在事件區間與正式回測區間不同時不列示。' : '', adjNote]) || undefined });
@@ -347,7 +347,7 @@
     + (window.SAT2_NB ? (s => 'BNASDAQ-26112 ' + p1(s.us.official) + ' 的年化報酬率在 ' + s.n + ' 組參數隨機抖動（' + s.params + ' 個參數與門檻同時在合理區間內變動）中' + (s.us.above_official ? '有 ' + s.us.above_official + ' 組不低於它' : '高於全部組合') + '；第 5～95 百分位為 ' + p1(s.us.p5) + '～' + p1(s.us.p95) + '（中位數 ' + p1(s.us.median) + '）；門檻每 6 年只用當時資料重選（逐步前推）時，2000-03～2026-10 年化 15.2%、最大回撤 -98.5%；決策日偏移檢驗驗證中。')(window.SAT2_NB) : 'BNASDAQ-26112 的參數穩健性檢驗驗證中，完成前不列數字。')
     + (window.SAT3_NB ? (s => 'BNASDAQ-26113 ' + p1(s.us.official) + ' 的年化報酬率在 ' + s.n + ' 組參數隨機抖動（' + s.params + ' 個參數與門檻同時在合理區間內變動）中' + (s.us.above_official ? '有 ' + s.us.above_official + ' 組不低於它' : '高於全部組合') + '；第 5～95 百分位為 ' + p1(s.us.p5) + '～' + p1(s.us.p95) + '（中位數 ' + p1(s.us.median) + '）；門檻每 6 年只用當時資料重選（逐步前推）時，2000-03～2026-10 年化 30.2%、最大回撤 -76.5%；決策日偏移檢驗驗證中。')(window.SAT3_NB) : 'BNASDAQ-26113 的參數穩健性檢驗驗證中，完成前不列數字。') + '回測績效不代表未來報酬。';
   $('why-3').innerHTML = '<b>槓桿只在走勢平穩時全額運用。</b>正式回測區間內，BNASDAQ-26110 全額持有 QLD 的 ' + q['1.0'].n + ' 個月，QLD 平均月報酬 ' + f.pctS(q['1.0'].mean) + '；配置一半 QLD 的 ' + q['0.5'].n + ' 個月為 ' + f.pctS(q['0.5'].mean) + '；全數轉入 SHV 的 ' + q['0.0'].n + ' 個月為 ' + f.pctS(q['0.0'].mean) + '。2 倍槓桿 ETF 每日重設槓桿倍數，在劇烈震盪中會產生波動耗損，因此 BNASDAQ-26110 只在走勢平穩向上時全額運用槓桿；BNASDAQ-26111、BNASDAQ-26112、BNASDAQ-26113 只有全倉或全數避險兩種狀態，同類逐月統計尚未納入本頁。<br><small class="muted">依正式回測區間（' + OFF_RANGE + '）；涉及逐月持倉，不隨起點重算。</small>';
-  BN.charts.bars($('c-avg'), { title: 'BNASDAQ-26110 三種配置狀態下，QLD 的平均月報酬', sub: '依正式回測區間（' + OFF_RANGE + '）；涉及逐月持倉，不隨起點重算', groups: ['100% QLD', '50% QLD＋50% SHV', '100% SHV'], series: [{ name: 'QLD 平均月報酬', values: [q['1.0'].mean, q['0.5'].mean, q['0.0'].mean], color: 'var(--s-qld)' }], yfmt: v => (v * 100).toFixed(0) + '%', valfmt: v => p1(v), tipfmt: v => (v * 100).toFixed(2) + '%', height: 240,
+  BN.charts.bars($('c-avg'), { title: 'BNASDAQ-26110 三種配置狀態下，QLD 的平均月報酬', sub: '依正式回測區間（' + OFF_RANGE + '）；涉及逐月持倉，不隨起點重算', groups: ['100% QLD', '50% QLD＋50% SHV', '100% SHV'], play: { unit: '種配置' }, series: [{ name: 'QLD 平均月報酬', values: [q['1.0'].mean, q['0.5'].mean, q['0.0'].mean], color: 'var(--s-qld)' }], yfmt: v => (v * 100).toFixed(0) + '%', valfmt: v => p1(v), tipfmt: v => (v * 100).toFixed(2) + '%', height: 240,
     note: '各配置狀態的月數：100% QLD ' + q['1.0'].n + ' 個月／50% QLD＋50% SHV ' + q['0.5'].n + ' 個月／100% SHV ' + q['0.0'].n + ' 個月。' });
 
   // ---- 回測起點（主頻道，預設正式回測區間）與加入比較 ----

@@ -643,6 +643,14 @@ ul.ind { max-width: none; }
 .bt-play { color: var(--gold); border-color: var(--gold); font-weight: 600; }
 .bt-play:hover { color: var(--ink); border-color: var(--ink); }
 .bt-play[aria-pressed="true"] { background: var(--gold); color: #111; border-color: var(--gold); }
+/* 每張圖右上角的「動態走勢」按鈕（2026-11-21 22:23 站主：全站所有圖表都要有）：同首頁按鈕的樣式，放在圖框右上角 */
+.fig-play { float: right; position: relative; z-index: 1; margin: -4px -4px 8px 12px; padding: 4px 11px; font-size: 13px; line-height: 1.5; }
+.fsub-play { font-variant-numeric: tabular-nums; }
+.fig-play.inl { float: none; margin: 0; }
+.p3-tbl tbody tr.p3-wait { opacity: .3; }
+.p3-tbl tbody tr { transition: opacity .25s ease; }
+@media (prefers-reduced-motion: reduce) { .p3-tbl tbody tr { transition: none; } }
+@media print { .fig-play { display: none !important; } }
 /* 動態走勢播放時的「當月持有」列 */
 .whold { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 10px 0 0; padding: 10px 14px; border: 1px solid var(--line); border-left: 3px solid var(--gold); background: var(--paper); font-size: 13.5px; font-variant-numeric: tabular-nums; }
 .whold .wh-k { font-weight: 700; color: var(--ink); margin-right: 4px; }

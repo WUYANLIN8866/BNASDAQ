@@ -70,7 +70,7 @@
     o.series.forEach(s => {
       let d = '', pen = false;
       s.values.forEach((v, i) => { if (v == null || !isFinite(v) || (o.log && v <= 0)) { pen = false; return; } d += (pen ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(v).toFixed(1); pen = true; });
-      if (s.fill) { let a = ''; s.values.forEach((v, i) => { if (v == null) return; a += (a ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(v).toFixed(1); }); a += 'L' + xOf(n - 1).toFixed(1) + ' ' + yOf(o.zero ? 0 : lo).toFixed(1) + 'L' + xOf(0).toFixed(1) + ' ' + yOf(o.zero ? 0 : lo).toFixed(1) + 'Z'; el('path', { d: a, fill: s.color, 'fill-opacity': .14, stroke: 'none' }, svg); }
+      if (s.fill) { let a = '', f0 = -1, f1 = -1; s.values.forEach((v, i) => { if (v == null) return; if (f0 < 0) f0 = i; f1 = i; a += (a ? 'L' : 'M') + xOf(i).toFixed(1) + ' ' + yOf(v).toFixed(1); }); if (a) { a += 'L' + xOf(f1).toFixed(1) + ' ' + yOf(o.zero ? 0 : lo).toFixed(1) + 'L' + xOf(f0).toFixed(1) + ' ' + yOf(o.zero ? 0 : lo).toFixed(1) + 'Z'; el('path', { d: a, fill: s.color, 'fill-opacity': .14, stroke: 'none' }, svg); } }   // 面積收在第一／最後一個有值的點（動態走勢播到一半時不會拉一條斜線到圖尾）
       el('path', { d, fill: 'none', stroke: s.color, 'stroke-width': s.width || 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'stroke-dasharray': s.dash || null }, svg);
       const dot = el('circle', { r: 4, fill: s.color, stroke: 'var(--paper)', 'stroke-width': 2, style: 'display:none' }, svg); dots.push(dot);
       // direct label at the end (collected, then pushed apart)
@@ -115,6 +115,7 @@
     const svg = frame(body, W, H);
     const G = o.groups.length, S = o.series.length;
     let lo = 0, hi = 0; o.series.forEach(s => s.values.forEach(v => { if (v != null) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }));
+    if (o.yRange) { lo = o.yRange[0]; hi = o.yRange[1]; }   // 動態走勢：座標軸固定為完整資料的範圍
     const span = hi - lo || 1; hi += span * 0.1; if (lo < 0) lo -= span * 0.08;
     const yOf = v => H - pad.b - (H - pad.t - pad.b) * (v - lo) / (hi - lo);
     const g = el('g', { class: 'viz-grid' }, svg); const yfmt = o.yfmt || (v => (v * 100).toFixed(0) + '%');
@@ -141,11 +142,12 @@
     const body = wrapFig(host, Object.assign({}, o, { series: null }));
     const n = o.items.length, rowH = o.rowH || 34, W = o.W || 820, pad = { l: o.labelW || 110, r: o.padR || 120, t: 8, b: 8 }, H = pad.t + pad.b + n * rowH;
     const svg = frame(body, W, H);
-    const max = Math.max(...o.items.map(i => i.value)); const log = !!o.log; const minv = log ? Math.min(...o.items.map(i => i.value)) / 1.5 : 0;
+    const max = o.max != null ? o.max : Math.max(...o.items.map(i => i.value)); const log = !!o.log; const minv = log ? (o.minv != null ? o.minv : Math.min(...o.items.map(i => i.value)) / 1.5) : 0;   // o.max／o.minv：動態走勢固定刻度
     const xOf = v => pad.l + (W - pad.l - pad.r) * (log ? (Math.log10(v) - Math.log10(minv)) / (Math.log10(max) - Math.log10(minv)) : v / max);
     o.items.forEach((it, i) => {
       const y = pad.t + i * rowH + 6, h = rowH - 12, x1 = xOf(it.value), r = Math.min(4, h / 2, x1 - pad.l);
       text(svg, pad.l - 10, y + h / 2 + 4, it.name, { 'text-anchor': 'end', class: 'viz-txt', 'font-weight': it.hl ? 700 : 500 });
+      if (it._hide) return;   // 動態走勢：還沒輪到的項目只顯示名稱
       if (it.value > 0) { const d = `M${pad.l} ${y}H${x1 - r}Q${x1} ${y} ${x1} ${y + r}V${y + h - r}Q${x1} ${y + h} ${x1 - r} ${y + h}H${pad.l}Z`; const p = el('path', { d, fill: it.color }, svg); p.addEventListener('mousemove', ev => BN.tip.show('<b>' + it.name + '</b><br>' + (o.tipfmt || o.fmt || fmtDef)(it.value), ev.clientX, ev.clientY)); p.addEventListener('mouseleave', BN.tip.hide); }
       text(svg, x1 + 8, y + h / 2 + 4, (o.fmt || fmtDef)(it.value), { class: 'viz-txt', 'font-weight': 600 });
       if (it.sub) text(svg, pad.l + 6, y + h / 2 + 4, it.sub, { class: 'viz-lbl', fill: '#fff', 'font-size': 11 });
@@ -158,7 +160,7 @@
     const body = wrapFig(host, o);
     const W = 820, H = o.height || 300, pad = { l: 56, r: 12, t: 20, b: 40 };
     const svg = frame(body, W, H);
-    const n = o.counts.length, max = Math.max(...o.counts);
+    const n = o.counts.length, max = o.maxCount != null ? o.maxCount : Math.max(...o.counts);   // o.maxCount：動態走勢固定縱軸
     // 橫軸範圍：分布的兩端；標記線（例如主回測）落在分布之外時，把橫軸延伸到看得到那條線（2026-11-21：之前線與標籤會被切在圖外）
     const mx = (o.marks || []).map(m => m.x).filter(v => v != null && isFinite(v)), e0 = o.edges[0], e1 = o.edges[n], span = Math.max(e1, ...mx) - Math.min(e0, ...mx);
     const x0 = Math.min(e0, ...mx) < e0 ? Math.min(e0, ...mx) - span * 0.012 : e0, x1 = Math.max(e1, ...mx) > e1 ? Math.max(e1, ...mx) + span * 0.012 : e1;
@@ -179,13 +181,99 @@
     el('circle', { cx, cy, r: R, fill: 'none', stroke: 'var(--line)', 'stroke-width': 2, 'stroke-dasharray': '6 6' }, svg);
     const pts = o.steps.map((s, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a), a }; });
     // arrows between steps along the circle
-    for (let i = 0; i < n; i++) { const a0 = pts[i].a + 0.5, a1 = pts[(i + 1) % n].a - 0.5; const p0 = [cx + R * Math.cos(a0), cy + R * Math.sin(a0)], p1 = [cx + R * Math.cos(a1), cy + R * Math.sin(a1)]; el('path', { d: `M${p0[0]} ${p0[1]}A${R} ${R} 0 0 1 ${p1[0]} ${p1[1]}`, fill: 'none', stroke: 'var(--navy-ink)', 'stroke-width': 2.5, 'marker-end': 'url(#arr)' }, svg); }
+    const A = o.active, on = i => A == null || i === A;   // o.active：動態走勢目前這一步（其他步驟變淡）
+    for (let i = 0; i < n; i++) { const a0 = pts[i].a + 0.5, a1 = pts[(i + 1) % n].a - 0.5; const p0 = [cx + R * Math.cos(a0), cy + R * Math.sin(a0)], p1 = [cx + R * Math.cos(a1), cy + R * Math.sin(a1)]; el('path', { d: `M${p0[0]} ${p0[1]}A${R} ${R} 0 0 1 ${p1[0]} ${p1[1]}`, fill: 'none', stroke: A === i ? 'var(--gold)' : 'var(--navy-ink)', 'stroke-width': A === i ? 3.5 : 2.5, opacity: on(i) ? null : .35, 'marker-end': 'url(#arr)' }, svg); }
     const defs = el('defs', {}, svg); const mk = el('marker', { id: 'arr', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs); el('path', { d: 'M0 0L10 5L0 10z', fill: 'var(--navy-ink)' }, mk);
-    pts.forEach((p, i) => { const s = o.steps[i]; const w = 150, h = 56; el('rect', { x: p.x - w / 2, y: p.y - h / 2, width: w, height: h, rx: 4, fill: 'var(--paper)', stroke: 'var(--navy-ink)', 'stroke-width': 2 }, svg); el('circle', { cx: p.x - w / 2 + 16, cy: p.y - h / 2 + 2, r: 11, fill: 'var(--gold)' }, svg); text(svg, p.x - w / 2 + 16, p.y - h / 2 + 6, String(i + 1), { 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#1a1300' }); text(svg, p.x, p.y - 4, s.t, { 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, fill: 'var(--navy-ink)' }); text(svg, p.x, p.y + 15, s.s, { 'text-anchor': 'middle', 'font-size': 11.5, fill: 'var(--ink-2)' }); });
+    pts.forEach((p, i) => { const s = o.steps[i]; const w = 150, h = 56, g = el('g', { opacity: on(i) ? null : .38 }, svg); el('rect', { x: p.x - w / 2, y: p.y - h / 2, width: w, height: h, rx: 4, fill: 'var(--paper)', stroke: A === i ? 'var(--gold)' : 'var(--navy-ink)', 'stroke-width': A === i ? 3.5 : 2 }, g); el('circle', { cx: p.x - w / 2 + 16, cy: p.y - h / 2 + 2, r: 11, fill: 'var(--gold)' }, g); text(g, p.x - w / 2 + 16, p.y - h / 2 + 6, String(i + 1), { 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#1a1300' }); text(g, p.x, p.y - 4, s.t, { 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 700, fill: 'var(--navy-ink)' }); text(g, p.x, p.y + 15, s.s, { 'text-anchor': 'middle', 'font-size': 11.5, fill: 'var(--ink-2)' }); });
     text(svg, cx, cy - 8, o.center || '', { 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 700, fill: 'var(--navy-ink)', 'font-family': 'var(--serif)' });
     text(svg, cx, cy + 16, o.center2 || '', { 'text-anchor': 'middle', 'font-size': 12.5, fill: 'var(--ink-2)' });
     return svg;
   }
 
-  window.BN = window.BN || {}; BN.charts = { line, bars, hbars, hist, ring };
+  // ---------------- 動態走勢（2026-11-21 22:23 站主：網頁上所有圖表都要能像首頁走勢圖一樣播放） ----------------
+  // 每張圖畫好後，圖框右上角放「動態走勢」按鈕（site.js 的 BN.play）。各種圖的播法：
+  //   折線：同首頁走勢圖，從第一筆一格一格畫到最後一筆，座標軸固定為整段範圍；日線太長時每格跳幾天，約 20 秒播完
+  //   直條：一組一組依序長出來（逐年報酬就是一年一年）；橫條：由小到大逐一長出來
+  //   直方圖：依隨機順序（固定種子，每次一樣）把每一組結果加進分布；循環圖：依序亮起每一步
+  //   o.noPlay 或 o.play === false：不放按鈕；o.play = { unit, labels, count:false }：自訂進度單位、每一格的名稱、不顯示「第幾格」
+  const RAW = { line, bars, hbars, hist, ring };
+  const nf = v => v.toLocaleString('zh-Hant-TW'), ease = t => 1 - Math.pow(1 - t, 3);
+  function frameSvg(kind, fig, o) {   // 在原圖框內的隱藏區畫一格（樣式、字寬量法都和原圖相同），取出 svg
+    let tmp = fig._bnTmp;
+    if (!tmp || !tmp.isConnected) { tmp = document.createElement('div'); tmp.setAttribute('aria-hidden', 'true'); tmp.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:0;overflow:hidden;visibility:hidden;pointer-events:none'; fig.appendChild(tmp); fig._bnTmp = tmp; }
+    tmp.innerHTML = ''; RAW[kind](tmp, Object.assign({}, o, { noPlay: true, title: null, sub: null, note: null, noLegend: true }));
+    const s = tmp.querySelector('svg'); if (s) s.remove(); tmp.innerHTML = ''; return s;
+  }
+  function lineSpec(fig, o) {
+    const n = o.x.length; if (n < 3 || !o.series || !o.series.length) return null;
+    const ok = v => v != null && isFinite(v) && (!o.log || v > 0);
+    let lo = Infinity, hi = -Infinity, i0 = n;
+    o.series.forEach(s => s.values.forEach((v, i) => { if (ok(v)) { if (v < lo) lo = v; if (v > hi) hi = v; if (i < i0) i0 = i; } }));
+    if (!(hi >= lo) || i0 >= n - 1) return null;
+    const yMin = o.yMin != null ? o.yMin : lo, yMax = o.yMax != null ? o.yMax : hi;
+    const K = Math.max(1, Math.ceil((n - 1 - i0) / 560)), idx = [];
+    for (let i = i0; i < n - 1; i += K) idx.push(i); idx.push(n - 1);
+    const P = o.play || {}, U = P.unit ? { u: P.unit } : BN.play.unit(o.x), lab = i => { const s = P.labels ? P.labels[i] : o.xLabel ? o.xLabel(o.x[i]) : String(o.x[i]); return U && U.u === '年' && /^\d{4}$/.test(s) ? s + ' 年' : s; };
+    const T = U && U.t ? (U.t[n - 1] - U.t[i0]) / U.k : 0, d1 = v => v.toFixed(U && U.w === '年' || T < 10 ? 1 : 0);
+    const cnt = i => P.count === false ? '' : U && U.u ? '（第 ' + nf(i - i0 + 1) + '／' + nf(n - i0) + ' ' + U.u + '）' : U && U.t ? '（已播 ' + d1((U.t[i] - U.t[i0]) / U.k) + '／' + d1(T) + ' ' + U.w + '）' : '（' + Math.round((i - i0) / (n - 1 - i0) * 100) + '%）';
+    const EV = o.endVals ? Object.assign({}, o.endVals, { leader: .22, leaderDash: '2 4' }) : o.endVals;
+    return {
+      n: idx.length,
+      frame: f => { const i = idx[f]; return frameSvg('line', fig, Object.assign({}, o, { yMin, yMax, endVals: EV, marks: (o.marks || []).filter(m => m.i <= i), series: o.series.map(s => Object.assign({}, s, { values: s.values.map((v, j) => j <= i ? v : null) })) })); },
+      label: f => (idx[f] > i0 ? lab(i0) + ' → ' : '') + lab(idx[f]) + cnt(idx[f])
+    };
+  }
+  function barsSpec(fig, o) {
+    const G = o.groups.length; if (G < 2 || !o.series || !o.series.length) return null;
+    let lo = 0, hi = 0; o.series.forEach(s => s.values.forEach(v => { if (v != null) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }));
+    const SG = G <= 8 ? 10 : G <= 16 ? 6 : 4, N = G * SG, P = o.play || {}, labs = P.labels || o.groups, u = P.unit || '項', span = P.range != null ? P.range : u === '年';   // 依時間排的（逐年）顯示「起點 → 目前」，分類只顯示目前這一項
+    return {
+      n: N, ms: Math.max(30, Math.min(110, Math.round(Math.min(16000, Math.max(3600, G * 650)) / N))),
+      frame: f => { const g = Math.floor(f / SG), t = ease((f % SG + 1) / SG); return frameSvg('bars', fig, Object.assign({}, o, { yRange: [lo, hi], series: o.series.map(s => Object.assign({}, s, { values: s.values.map((v, j) => v == null ? null : j < g ? v : j === g ? v * t : null) })) })); },
+      label: f => { const g = Math.floor(f / SG); return (span && g ? labs[0] + ' → ' : '') + labs[g] + '（第 ' + (g + 1) + '／' + G + ' ' + u + '）'; }
+    };
+  }
+  function hbarsSpec(fig, o) {
+    const n = o.items.length; if (n < 2) return null;
+    const vals = o.items.map(i => i.value), max = Math.max(...vals), log = !!o.log, minv = log ? Math.min(...vals) / 1.5 : 0;
+    const desc = vals.every((v, i) => i === 0 || vals[i - 1] >= v), order = vals.map((_, i) => desc ? n - 1 - i : i), rank = new Map(order.map((i, r) => [i, r]));
+    const SG = 8, N = n * SG, part = (v, t) => log ? Math.exp(Math.log(minv) + (Math.log(v) - Math.log(minv)) * t) : v * t;
+    return {
+      n: N, ms: Math.max(30, Math.min(90, Math.round(Math.min(12000, Math.max(3200, n * 700)) / N))),
+      frame: f => { const k = Math.floor(f / SG), t = ease((f % SG + 1) / SG);
+        return frameSvg('hbars', fig, Object.assign({}, o, { max, minv, items: o.items.map((it, i) => { const r = rank.get(i); return r < k ? it : r === k ? Object.assign({}, it, { value: it.value > 0 ? part(it.value, t) : it.value }) : Object.assign({}, it, { _hide: true }); }) })); },
+      label: f => { const k = Math.floor(f / SG); return (desc ? '由低到高逐一畫出' : '逐一畫出') + '（第 ' + (k + 1) + '／' + n + ' 項：' + o.items[order[k]].name + '）'; }
+    };
+  }
+  function histSpec(fig, o) {
+    const B = o.counts.length, N = o.counts.reduce((a, b) => a + b, 0); if (B < 2 || N < 2) return null;
+    const ord = new Int32Array(N); let p = 0; o.counts.forEach((c, b) => { for (let k = 0; k < c; k++) ord[p++] = b; });
+    const R = BN.play.rng(20261121); for (let i = N - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)), t = ord[i]; ord[i] = ord[j]; ord[j] = t; }
+    const F = Math.min(N, 200), kOf = f => Math.round(N * (f + 1) / F), mx = Math.max(...o.counts);
+    let cur = new Array(B).fill(0), at = 0;
+    const upto = k => { if (k < at) { cur = new Array(B).fill(0); at = 0; } for (; at < k; at++) cur[ord[at]]++; return cur.slice(); };
+    return {
+      n: F, ms: 60,
+      frame: f => frameSvg('hist', fig, Object.assign({}, o, { counts: upto(kOf(f)), maxCount: mx })),
+      label: f => '依隨機順序把 ' + nf(N) + ' 組結果逐一加進分布（第 ' + nf(kOf(f)) + '／' + nf(N) + ' 組）'
+    };
+  }
+  function ringSpec(fig, o) {
+    const n = o.steps.length; if (n < 2) return null;
+    return { n, ms: 1100, frame: i => frameSvg('ring', fig, Object.assign({}, o, { active: i })), label: i => '第 ' + (i + 1) + '／' + n + ' 步：' + o.steps[i].t + '（' + o.steps[i].s + '）' };
+  }
+  const SPEC = { line: lineSpec, bars: barsSpec, hbars: hbarsSpec, hist: histSpec, ring: ringSpec };
+  function playable(kind) {
+    return function (host, o) {
+      const svg = RAW[kind](host, o);
+      if (svg && o && !o.noPlay && o.play !== false && window.BN && BN.play) {
+        try {
+          const fig = kind === 'ring' ? host : svg.closest('.fig'), sp = fig && SPEC[kind](fig, o);
+          if (sp) BN.play.attach(fig, Object.assign({ target: svg, onEnd: () => { if (fig._bnTmp) { fig._bnTmp.remove(); fig._bnTmp = null; } } }, sp));
+        } catch (e) { /* 播放功能出錯不影響原圖 */ }
+      }
+      return svg;
+    };
+  }
+  window.BN = window.BN || {}; BN.charts = Object.assign(BN.charts || {}, { line: playable('line'), bars: playable('bars'), hbars: playable('hbars'), hist: playable('hist'), ring: playable('ring') });
 })();

@@ -9,7 +9,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=dce4af95dc">
+<link rel="stylesheet" href="assets/site.css?v=cc9a3a764c">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 .dl-head{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 6px}
@@ -25,6 +25,7 @@
 .cause .p small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--muted);letter-spacing:.08em;font-weight:400}
 .cause h3{margin:0 0 6px;font-size:18px}
 .cause h3 .sw{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:8px;vertical-align:1px}
+.pie-leg li.pl-wait{opacity:.3}.pie-leg li{transition:opacity .25s ease}
 .pie-wrap{display:flex;flex-wrap:wrap;gap:18px 36px;align-items:center;margin:6px 0 20px;padding:18px 20px;background:var(--paper);border:1px solid var(--line)}
 .pie-wrap svg{width:230px;height:230px;flex:none;display:block}
 .pie-wrap svg path{stroke:var(--paper);stroke-width:2.5}
@@ -177,7 +178,7 @@
   <div class="wrap disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
   <div class="legal"><div class="wrap"><span>© 2026 BNASDAQ</span><span>回測資料終點 2026-09-30；過去績效不代表未來報酬。</span></div></div>
 </footer>
-<script src="assets/site.js?v=f307221e06"></script><script src="assets/auth.js?v=c7cf690bab"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/mh-core.js?v=fb75e07da9"></script><script src="assets/mychange.js?v=dfa7a7c184"></script>
+<script src="assets/site.js?v=53a18ee4d8"></script><script src="assets/auth.js?v=c7cf690bab"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/mh-core.js?v=fb75e07da9"></script><script src="assets/mychange.js?v=dfa7a7c184"></script>
 <script>
 (function(){
 'use strict';
@@ -187,33 +188,40 @@ const pct=(n,d=2)=>(n>0?'+':n<0?'−':'')+fmt(Math.abs(n),d)+'%';
 const cls=n=>n>0?'pos':n<0?'neg':'';
 const SERIES=['var(--s-fund)','var(--s-qqq)','var(--s-qld)','var(--s-tw)','var(--s-tsmc)','var(--s-shv)'];
 
-function barChart(items){ // items: [{name, chg}]
+// 2026-11-21 站主：網頁上所有圖表都要有「動態走勢」（同首頁走勢圖：按一下播放、再按暫停、播完回到原圖）。
+// 本頁的圖用字串組成：每張圖第一次畫時用 BN.play.reg 登記「每一格怎麼畫」，報告插進網頁後 BN.play.scan 接上按鈕。
+const PLAY=!!(window.BN&&BN.play), EASE=t=>1-Math.pow(1-t,3);
+function barChart(items,fr){ // items: [{name, chg}]；fr＝動態走勢的一格 {k, t}：第 k 根長到 t（0～1），後面的還沒畫
   const W=720,rowH=34,padL=118,padR=70,top=10;
   const H=top+items.length*rowH+10;
   const max=Math.max(1,...items.map(i=>Math.abs(i.chg)));
   const x0=padL+(W-padL-padR)/2, half=(W-padL-padR)/2;
-  const sc=v=>v/max*half;
-  let s=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="單日漲跌幅長條圖">`;
+  const sc=v=>v/max*half, SG=8;
+  const pk=fr||!PLAY||items.length<2?'':BN.play.reg({n:items.length*SG,ms:55,frame:f=>barChart(items,{k:Math.floor(f/SG),t:EASE((f%SG+1)/SG)}),label:f=>{const k=Math.floor(f/SG);return '逐一畫出（第 '+(k+1)+'／'+items.length+' 項：'+items[k].name+'）';}});
+  let s=`<svg class="viz"${pk} viewBox="0 0 ${W} ${H}" role="img" aria-label="單日漲跌幅長條圖">`;
   [-1,-.5,0,.5,1].forEach(k=>{const x=x0+sc(k*max);s+=`<line class="${k?'gl':'ax'}" x1="${x}" y1="${top}" x2="${x}" y2="${H-10}"/>`;});
-  items.forEach((it,i)=>{const y=top+i*rowH+6,h=rowH-12,w=Math.abs(sc(it.chg));const x=it.chg<0?x0-w:x0;
+  items.forEach((it,i)=>{const y=top+i*rowH+6,h=rowH-12;
     s+=`<text class="lbl" x="${padL-10}" y="${y+h/2+4}" text-anchor="end">${esc(it.name)}</text>`;
-    s+=`<rect class="${it.chg<0?'bar-neg':'bar-pos'}" x="${x}" y="${y}" width="${Math.max(w,1)}" height="${h}" rx="1"/>`;
+    if(fr&&i>fr.k)return;
+    const v=fr&&i===fr.k?it.chg*fr.t:it.chg,w=Math.abs(sc(v)),x=v<0?x0-w:x0;
+    s+=`<rect class="${v<0?'bar-neg':'bar-pos'}" x="${x}" y="${y}" width="${Math.max(w,1)}" height="${h}" rx="1"/>`;
     const inside=w>half*0.7;
-    if(inside) s+=`<text class="val" style="fill:#fff" x="${it.chg<0?x+6:x+w-6}" y="${y+h/2+4}" text-anchor="${it.chg<0?'start':'end'}">${pct(it.chg)}</text>`;
-    else s+=`<text class="val" x="${it.chg<0?x-6:x+w+6}" y="${y+h/2+4}" text-anchor="${it.chg<0?'end':'start'}">${pct(it.chg)}</text>`;});
+    if(inside) s+=`<text class="val" style="fill:#fff" x="${v<0?x+6:x+w-6}" y="${y+h/2+4}" text-anchor="${v<0?'start':'end'}">${pct(v)}</text>`;
+    else s+=`<text class="val" x="${v<0?x-6:x+w+6}" y="${y+h/2+4}" text-anchor="${v<0?'end':'start'}">${pct(v)}</text>`;});
   return s+'</svg>';
 }
-function lineChart(wp){ // cumulative path from 10/30 base
+function lineChart(wp,upto){ // cumulative path from 10/30 base；upto＝動態走勢畫到第幾天（含），座標軸固定
   const W=720,H=260,pl=48,pr=16,pt=14,pb=30;
   const n=wp.dates.length;
+  const pk=upto!=null||!PLAY||n<3?'':BN.play.reg({n,ms:800,frame:f=>lineChart(wp,f),label:f=>(f?wp.dates[0]+' → ':'')+wp.dates[f]+'（第 '+(f+1)+'／'+n+' 天）'});
   const cum=wp.series.map(se=>{let v=100,arr=[100];for(let i=1;i<se.chg.length;i++){v*=1+se.chg[i]/100;arr.push(v);}return arr;});
   const all=cum.flat(),mn=Math.min(...all),mx=Math.max(...all);
   const lo=Math.floor((mn-0.5)/1)*1,hi=Math.ceil((mx+0.5)/1)*1;
   const X=i=>pl+(W-pl-pr)*i/(n-1), Y=v=>pt+(H-pt-pb)*(hi-v)/(hi-lo);
-  let s=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="本週累積走勢">`;
+  let s=`<svg class="viz"${pk} viewBox="0 0 ${W} ${H}" role="img" aria-label="本週累積走勢">`;
   for(let g=lo;g<=hi;g+=1){const y=Y(g);s+=`<line class="${g===100?'ax':'gl'}" x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}"/><text class="viz-lbl" x="${pl-6}" y="${y+4}" text-anchor="end">${g}</text>`;}
   wp.dates.forEach((d,i)=>{s+=`<text class="viz-lbl" x="${X(i)}" y="${H-10}" text-anchor="middle">${esc(d)}</text>`;});
-  cum.forEach((arr,k)=>{const pts=arr.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');s+=`<polyline class="ln" style="stroke:${SERIES[k%SERIES.length]}" points="${pts}"/>`;
+  cum.forEach((full,k)=>{const arr=upto==null?full:full.slice(0,upto+1),pts=arr.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');s+=`<polyline class="ln" style="stroke:${SERIES[k%SERIES.length]}" points="${pts}"/>`;
     arr.forEach((v,i)=>{s+=`<circle cx="${X(i)}" cy="${Y(v)}" r="3" fill="${SERIES[k%SERIES.length]}"/>`;});});
   s+='</svg>';
   s+='<div class="legend">'+wp.series.map((se,k)=>`<span><i style="background:${SERIES[k%SERIES.length]}"></i>${esc(se.name)}</span>`).join('')+'</div>';
@@ -229,22 +237,35 @@ function ycPick(TC,session){ // 報告的美股交易日 → 最新／前一交�
   const m1=ld.toISOString().slice(0,10); let k=L; while(k>0&&rows[k][0]>m1) k--;
   return [at(L),at(L-1),rows[k][0]<=m1?at(k):null].filter(Boolean);
 }
-function ycChart(P){ // P: [{d,v}]，第 0 條＝最新
+function ycDays(TC,session){ // 動態走勢：約一個月前到最新，每個交易日一條曲線
+  const rows=(TC.rows||[]).filter(r=>r[0]<=session); if(rows.length<3) return null;
+  const L=rows.length-1, ld=new Date(rows[L][0]+'T00:00:00Z'); ld.setUTCMonth(ld.getUTCMonth()-1);
+  const m1=ld.toISOString().slice(0,10); let k=L; while(k>0&&rows[k][0]>m1) k--;
+  return rows.slice(k,L+1).map(r=>{const o={};TC.tenors.forEach((t,i)=>{o[t]=r[i+1];});return {d:r[0],v:o};});
+}
+function ycChart(P,fr,days){ // P: [{d,v}]，第 0 條＝最新；fr＝動態走勢的一格 {lo,hi}（只回傳圖，P[1] 可以是空的）；days＝動態走勢要播的每日曲線
   const W=760,H=300,pl=46,pr=58,pt=34,pb=34,n=YC_T.length;
-  const vals=P.flatMap(p=>YC_T.map(t=>p.v[t]).filter(v=>v!=null));
-  const lo=Math.floor((Math.min(...vals)-0.05)*4)/4, hi=Math.ceil((Math.max(...vals)+0.05)*4)/4;
+  const vals=P.filter(Boolean).flatMap(p=>YC_T.map(t=>p.v[t]).filter(v=>v!=null));
+  const lo=fr?fr.lo:Math.floor((Math.min(...vals)-0.05)*4)/4, hi=fr?fr.hi:Math.ceil((Math.max(...vals)+0.05)*4)/4;
+  let pk='';
+  if(!fr&&PLAY&&days&&days.length>=3){
+    const dv=days.flatMap(p=>YC_T.map(t=>p.v[t]).filter(v=>v!=null)), r={lo:Math.min(lo,Math.floor((Math.min(...dv)-0.05)*4)/4),hi:Math.max(hi,Math.ceil((Math.max(...dv)+0.05)*4)/4)}, D=days.length, md0=x=>x.slice(5).replace('-','/');
+    pk=BN.play.reg({n:D,ms:Math.max(450,Math.min(900,Math.round(16000/D))),fig:el=>el.closest('.yc'),frame:f=>ycChart([days[f],null,days[0]],r),
+      label:f=>md0(days[f].d)+' 的殖利率曲線（第 '+(f+1)+'／'+D+' 個交易日；虛線＝'+md0(days[0].d)+'）'});
+  }
   const X=i=>pl+(W-pl-pr)*i/(n-1), Y=v=>pt+(H-pt-pb)*(hi-v)/(hi-lo);
   const COL=[SERIES[0],SERIES[1],'var(--s-shv)'], md=x=>x.slice(5).replace('-','/');
-  let s=`<svg class="viz" viewBox="0 0 ${W} ${H}" role="img" aria-label="美國公債各天期殖利率曲線：${esc(P.map(p=>md(p.d)+' '+YC_T.map(t=>YC_L[t]+' '+(p.v[t]!=null?p.v[t].toFixed(2)+'%':'—')).join('、')).join('；'))}">`;
+  let s=`<svg class="viz"${pk} viewBox="0 0 ${W} ${H}" role="img" aria-label="美國公債各天期殖利率曲線：${esc(P.filter(Boolean).map(p=>md(p.d)+' '+YC_T.map(t=>YC_L[t]+' '+(p.v[t]!=null?p.v[t].toFixed(2)+'%':'—')).join('、')).join('；'))}">`;
   YC_BANDS.forEach(([nm,sub,a,b],k)=>{const x0=k?(X(a-1)+X(a))/2:pl-10,x1=k<2?(X(b)+X(b+1))/2:W-pr+10;
     if(k===1)s+=`<rect class="band" x="${x0}" y="${pt-26}" width="${x1-x0}" height="${H-pb-pt+26}"/>`;
     s+=`<text class="bl" x="${(x0+x1)/2}" y="${pt-14}" text-anchor="middle">${nm}</text><text class="bs" x="${(x0+x1)/2}" y="${pt-2}" text-anchor="middle">${sub}</text>`;});
   for(let g=lo;g<=hi+1e-9;g+=0.25){const y=Y(g);s+=`<line class="gl" x1="${pl}" y1="${y}" x2="${W-pr}" y2="${y}"/><text class="viz-lbl" x="${pl-6}" y="${y+4}" text-anchor="end">${g.toFixed(2)}%</text>`;}
   YC_T.forEach((t,i)=>{s+=`<text class="viz-lbl" x="${X(i)}" y="${H-12}" text-anchor="middle">${YC_L[t]}</text>`;});
-  P.slice().reverse().forEach(p=>{const k=P.indexOf(p);const pts=YC_T.map((t,i)=>p.v[t]==null?null:`${X(i).toFixed(1)},${Y(p.v[t]).toFixed(1)}`).filter(Boolean).join(' ');
+  P.slice().reverse().forEach(p=>{if(!p)return;const k=P.indexOf(p);const pts=YC_T.map((t,i)=>p.v[t]==null?null:`${X(i).toFixed(1)},${Y(p.v[t]).toFixed(1)}`).filter(Boolean).join(' ');
     s+=`<polyline class="ln${k===2?' ref':''}" style="stroke:${COL[k]}${k===0?';stroke-width:2.8':''}" points="${pts}"/>`;
     if(k<2)YC_T.forEach((t,i)=>{if(p.v[t]!=null)s+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(p.v[t]).toFixed(1)}" r="${k?3:4}" style="fill:${COL[k]};stroke:var(--paper);stroke-width:1.5"/>`;});});
   const v30=P[0].v['30y'];if(v30!=null)s+=`<text class="lab" x="${X(n-1)+8}" y="${Y(v30)+4}">${v30.toFixed(2)}%</text>`;
+  if(fr) return s+'</svg>';
   s+=`<line class="cx" id="yc-cx" x1="0" x2="0" y1="${pt}" y2="${H-pb}" visibility="hidden"/>`;
   YC_T.forEach((t,i)=>{const w=(W-pl-pr)/(n-1);s+=`<rect class="hit" data-i="${i}" x="${X(i)-w/2}" y="${pt-26}" width="${w}" height="${H-pb-pt+26}"/>`;});
   s+='</svg>';
@@ -282,9 +303,9 @@ function ycLoad(){
   fetch('data/treasury_curve.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json();}).then(TC=>{
     const P=ycPick(TC,box.dataset.session);
     if(!P){box.innerHTML='<p class="small" style="color:var(--muted)">這一天沒有財政部殖利率曲線資料。</p>';return;}
-    box.innerHTML='<div class="fsub">美國公債各天期殖利率曲線（財政部每日公布，'+esc(P[0].d)+'；短期 1 個月～1 年／中期 2～7 年／長期 10～30 年）</div>'+ycChart(P)+
+    box.innerHTML='<div class="fsub">美國公債各天期殖利率曲線（財政部每日公布，'+esc(P[0].d)+'；短期 1 個月～1 年／中期 2～7 年／長期 10～30 年）</div>'+ycChart(P,null,ycDays(TC,box.dataset.session))+
       '<p class="small" style="color:var(--muted);margin-top:6px">來源：<a href="'+esc(TC.u)+'" target="_blank" rel="noopener">'+esc(TC.source)+'</a>（par yield，年化）。下表週表為報告當時多來源收盤區間，與財政部官方值可能差 1～3 bp。</p>';
-    ycWire(box,P);
+    ycWire(box,P); if(PLAY) BN.play.scan(box);
   }).catch(()=>{box.innerHTML='<p class="small" style="color:var(--muted)">殖利率曲線暫時無法載入。</p>';});
 }
 function wkTable(sec,heads){
@@ -292,16 +313,25 @@ function wkTable(sec,heads){
     sec.rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===3&&/^[−-]/.test(c)?'neg':i===3&&/^\+/.test(c)?'pos':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+
     `</tbody></table></div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
 }
-function pieChart(items){ // items: [{p, t}]（p 為百分比，合計 100）→ 圓餅圖＋圖例（圖例同時是各主因的說明）
-  const R=100,C=115,tot=items.reduce((t,i)=>t+i.p,0)||1;let a0=-Math.PI/2,svg='';
-  items.forEach((it,k)=>{const f=it.p/tot,a1=a0+f*2*Math.PI,col=SERIES[k%SERIES.length];
-    if(f>=0.9999){svg+=`<circle cx="${C}" cy="${C}" r="${R}" style="fill:${col}"><title>${esc(it.t)}：${it.p}%</title></circle>`;}
+function pieChart(items,sw){ // items: [{p, t}]（p 為百分比，合計 100）→ 圓餅圖＋圖例（圖例同時是各主因的說明）；sw＝動態走勢的一格（0～1，自 12 點鐘方向順時針畫到哪裡）
+  const R=100,C=115,tot=items.reduce((t,i)=>t+i.p,0)||1,cut=sw==null?Infinity:-Math.PI/2+2*Math.PI*sw;let a0=-Math.PI/2,svg='';
+  items.forEach((it,k)=>{const f=it.p/tot,a1f=a0+f*2*Math.PI,col=SERIES[k%SERIES.length];
+    if(a0>=cut-1e-9){a0=a1f;return;}
+    const a1=Math.min(a1f,cut),part=a1<a1f-1e-9,ff=(a1-a0)/(2*Math.PI);
+    if(ff>=0.9999){svg+=`<circle cx="${C}" cy="${C}" r="${R}" style="fill:${col}"><title>${esc(it.t)}：${it.p}%</title></circle>`;}
     else{const x0=C+R*Math.cos(a0),y0=C+R*Math.sin(a0),x1=C+R*Math.cos(a1),y1=C+R*Math.sin(a1);
-      svg+=`<path d="M${C},${C} L${x0.toFixed(2)},${y0.toFixed(2)} A${R},${R} 0 ${f>.5?1:0},1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" style="fill:${col}"><title>${esc(it.t)}：${it.p}%</title></path>`;}
-    const am=(a0+a1)/2;if(f>=.07)svg+=`<text class="pl" x="${(C+R*.62*Math.cos(am)).toFixed(1)}" y="${(C+R*.62*Math.sin(am)+5).toFixed(1)}" text-anchor="middle">${it.p}%</text>`;
-    a0=a1;});
-  return `<div class="pie-wrap"><svg viewBox="0 0 ${2*C} ${2*C}" role="img" aria-label="主因可能性圓餅圖：${esc(items.map(i=>i.t+' '+i.p+'%').join('、'))}">${svg}</svg>`+
-    `<ol class="pie-leg">${items.map((it,k)=>`<li><i style="background:${SERIES[k%SERIES.length]}"></i><b>${it.p}%</b><span>${k+1}. ${esc(it.t)}</span></li>`).join('')}</ol></div>`;
+      svg+=`<path d="M${C},${C} L${x0.toFixed(2)},${y0.toFixed(2)} A${R},${R} 0 ${ff>.5?1:0},1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" style="fill:${col}"><title>${esc(it.t)}：${it.p}%</title></path>`;}
+    const am=(a0+a1)/2;if(!part&&f>=.07)svg+=`<text class="pl" x="${(C+R*.62*Math.cos(am)).toFixed(1)}" y="${(C+R*.62*Math.sin(am)+5).toFixed(1)}" text-anchor="middle">${it.p}%</text>`;
+    a0=a1f;});
+  const head=pk=>`<svg${pk} viewBox="0 0 ${2*C} ${2*C}" role="img" aria-label="主因可能性圓餅圖：${esc(items.map(i=>i.t+' '+i.p+'%').join('、'))}">${svg}</svg>`;
+  if(sw!=null) return head('');
+  let pk='';
+  if(PLAY&&items.length>=2){const F=Math.round(Math.max(2400,Math.min(6000,items.length*800))/40),sf=f=>{const t=(f+1)/F;return 1-(1-t)*(1-t);};
+    const at=f=>{const c=-Math.PI/2+2*Math.PI*sf(f);let a=-Math.PI/2,j=0;items.forEach((it,i)=>{if(a<c-1e-9)j=i;a+=it.p/tot*2*Math.PI;});return j;};
+    pk=BN.play.reg({n:F,ms:40,fig:el=>el.closest('.pie-fig'),frame:f=>pieChart(items,sf(f)),label:f=>{const j=at(f);return '依可能性畫出每一塊（第 '+(j+1)+'／'+items.length+' 塊：'+items[j].t+' '+items[j].p+'%）';},
+      onFrame:f=>{const j=at(f);document.querySelectorAll('.pie-fig .pie-leg li').forEach((li,i)=>li.classList.toggle('pl-wait',i>j));},onEnd:()=>document.querySelectorAll('.pie-fig .pie-leg li').forEach(li=>li.classList.remove('pl-wait'))});}
+  return `<div class="pie-fig"><div class="pie-wrap">${head(pk)}`+
+    `<ol class="pie-leg">${items.map((it,k)=>`<li><i style="background:${SERIES[k%SERIES.length]}"></i><b>${it.p}%</b><span>${k+1}. ${esc(it.t)}</span></li>`).join('')}</ol></div></div>`;
 }
 // generated 是 UTC；畫面一律顯示台北時間（固定 UTC+8，台灣沒有夏令時間）
 const tpeTime=g=>{const t=new Date(g);return isNaN(t)?String(g||''):new Date(t.getTime()+8*36e5).toISOString().slice(0,16).replace('T',' ');};
@@ -347,6 +377,7 @@ function render(d){
   // sources
   h+=`<h2 id="src">資料來源</h2><ol class="src">${d.sources.map(s=>`<li><a href="${esc(s.u)}" rel="noopener" target="_blank">${esc(s.t)}</a></li>`).join('')}</ol>`;
   el.innerHTML=h;
+  if(PLAY) BN.play.scan(el);
   ycLoad();
 }
 function pickDate(){const q=new URLSearchParams(location.search).get('d');return q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?q:null;}
@@ -374,9 +405,10 @@ const dCap=t=>t[4]==null||t[3]==null?null:t[3]*(t[4]/100)/(1+t[4]/100);
 const capAbs=b=>b>=1000?(b/1000).toFixed(2)+' 兆':b>=0.1?Math.round(b*10).toLocaleString('en-US')+' 億':(b*10).toFixed(2)+' 億';
 const dcapTxt=(d,S,unit)=>d==null?'—':(d>0?'+':d<0?'−':'')+capAbs(Math.abs(d))+(unit?(S&&S.cur==='TWD'?'台幣':'美元'):'');
 // 2026-11-20 使用者：市值增減下面加個股當日走勢（空間不夠就不畫）。資料＝盤中快照的 pp（scripts/heatmap_live.py 每 15 分鐘〔台股 10 分鐘〕一點，單位 0.01%）
-function spark(arr,pn,w,h){
+function spark(arr,pn,w,h,full){   // full＝動態走勢重播時用整天的資料決定上下範圍（線一路畫過去，刻度不跳動）
   const pts=[];arr.forEach((v,k)=>{if(v!=null&&isFinite(v))pts.push([k,v]);}); if(pts.length<2) return '';
-  let lo=Math.min(0,...pts.map(p=>p[1])), hi=Math.max(0,...pts.map(p=>p[1])); if(hi-lo<20){const m=(hi+lo)/2;lo=m-10;hi=m+10;}
+  const rg=(full||arr).filter(v=>v!=null&&isFinite(v));
+  let lo=Math.min(0,...rg), hi=Math.max(0,...rg); if(hi-lo<20){const m=(hi+lo)/2;lo=m-10;hi=m+10;}
   const X=k=>((k+1)/Math.max(pn,pts[pts.length-1][0]+1)*(w-2)+1).toFixed(1), Y=v=>(1+(hi-v)/(hi-lo)*(h-2)).toFixed(1);
   return '<svg class="spk" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><line x1="0" x2="'+w+'" y1="'+Y(0)+'" y2="'+Y(0)+'" stroke="#fff" stroke-opacity=".45" stroke-dasharray="2 2" stroke-width="1"/><polyline fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" points="'+pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')+'"/></svg>';
 }
@@ -464,7 +496,7 @@ function liveLoop(){clearTimeout(liveTimer); if(!D) return;   // 下一次讀的
   liveTimer=setTimeout(()=>{liveTick().catch(()=>{}).then(liveLoop);},Math.max(3,nb-t)*1000+Math.random()*2000);}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveTick().catch(()=>{});});
 function draw(){
-  if(!D) return; const S=D.sets[cur]; if(!S) return;
+  if(!D||RP) return; const S=D.sets[cur]; if(!S) return;   // RP：動態走勢重播中，盤中更新與版面重畫等播完再畫
   const V=view(S), T=V.T, L=V.L; shown=T; shownLive=!!L&&L.state!=='closed';
   const LL=LIVE[mkOf(S)], PP=(LL&&LL.pp&&typeof LL.pp==='object'&&LL.session===(L?L.session:(S.session||D.session)))?LL:null;   // 當日走勢只用同一個交易日的快照
   const W=box.clientWidth, H=Math.round(W<640?Math.max(420,W*1.25):Math.min(720,Math.max(380,W*0.5)));
@@ -499,6 +531,36 @@ function draw(){
   const cb=S.market==='US'?cbLevel(sumPct):0, cbC=cb<0?'cb-dn':cb>0?'cb-up':'', cbT=cb<0?'｜達熔斷第 '+(-cb)+' 級門檻':cb>0?'｜漲幅達 7%':'';
   $('hm-sum').innerHTML=has.length?S.name+'（'+has.length+' 家）市值合計'+(shownLive?'（盤中）':'')+' '+capAbs(sumNow)+(S.cur==='TWD'?'台幣':'美元')+'｜'+(shownLive?'今天':'單日')+'<b class="'+(sumD>0?'pos':sumD<0?'neg':'')+(cbC?' '+cbC:'')+'">'+(sumD>=0?'增加 ':'減少 ')+capAbs(Math.abs(sumD))+(S.cur==='TWD'?'台幣':'美元')+'（'+pct(sumPct)+'）'+cbT+'</b>':'';
   $('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th><th>'+(shownLive?'現價':'收盤')+'</th><th>單日漲跌</th><th>市值增減</th></tr></thead><tbody>'+T.map(t=>'<tr><td class="l"><a href="valuation.html#code='+encodeURIComponent(t[0])+'"><b>'+esc(t[0])+'</b></a></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3],S)+(t[6]?'（估）':'')+'</td><td>'+(t[5]==null?'—':t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+dcapTxt(dCap(t),S,true)+'</td></tr>').join('')+'</tbody>';
+  setupReplay(S,T,PP);
+}
+// 2026-11-21 站主：動態走勢——重播這個交易日盤中的漲跌（美股每 15 分鐘、台股每 10 分鐘一格，資料＝盤中快照的 pp）：
+// 方塊顏色、漲跌、市值增減、當日走勢線、列表標題的市值合計一起變；方塊大小（市值）維持最新。重播期間盤中更新先不重畫，播完畫回最新。
+// 沒有當日盤中走勢資料（例如盤中更新還沒開始）時不放按鈕。
+let RP=null, RPkey='';
+const hmSec=document.getElementById('heatmap');
+function setupReplay(S,T,PP){
+  if(!window.BN||!BN.play||!hmSec) return;
+  const n=PP?Math.max(0,...T.map(t=>(PP.pp[t[0]]||[]).length)):0;
+  if(!PP||n<2){RPkey='';BN.play.detach(hmSec);return;}
+  const key=cur+'|'+PP.session+'|'+PP.at+'|'+n+'|'+T.length; if(key===RPkey&&hmSec._bnPlay) return; RPkey=key;
+  const mk=mkOf(S),M=MKT[mk],ps=PP.ps>0?PP.ps:(mk==='TW'?600:900),two=v=>String(v).padStart(2,'0');
+  const tm=f=>{const m=Math.min(M.close,M.open+Math.round((f+1)*ps/60));return (mk==='TW'?'台北 ':'美東 ')+two(Math.floor(m/60))+':'+two(m%60);};
+  const val=(sym,f)=>{const a=PP.pp[sym];if(!a)return null;for(let k=Math.min(f,a.length-1);k>=0;k--)if(a[k]!=null&&isFinite(a[k]))return a[k]/100;return null;};
+  const byS=new Map(T.map(t=>[t[0],t])), cnt={up:0,dn:0};
+  BN.play.attach(hmSec,{n,ms:Math.max(350,Math.min(800,Math.round(16000/n))),target:box,sub:$('hm-meta'),place:b=>$('hm-meta').before(b),
+    onStart:()=>{RP={};if(tip)tip.hidden=true;box.querySelectorAll('.tl.lim-up,.tl.lim-dn').forEach(e=>e.classList.remove('lim-up','lim-dn'));$('hm-meta').classList.remove('live');},
+    frame:f=>{let up=0,dn=0,sD=0,sP=0;
+      box.querySelectorAll('.tl').forEach(el=>{const t=byS.get(el.dataset.s);if(!t)return;const c=val(t[0],f);el.style.background=col(c);
+        const u=el.querySelector('u');if(u)u.textContent=pct(c);
+        const prev=(t[3]!=null&&t[4]!=null)?t[3]/(1+t[4]/100):null,em=el.querySelector('em');if(em)em.textContent=c==null||prev==null?'—':dcapTxt(prev*c/100,S,false);
+        const sp=el.querySelector('svg.spk'),a=PP.pp[t[0]];
+        if(sp&&a){const nx=spark(a.slice(0,f+1),PP.pn,+sp.getAttribute('width'),+sp.getAttribute('height'),a);if(nx){const d=document.createElement('div');d.innerHTML=nx;sp.replaceWith(d.firstChild);}else sp.style.visibility='hidden';}
+        if(c!=null){if(c>0)up++;else if(c<0)dn++;if(prev!=null){sD+=prev*c/100;sP+=prev;}}});
+      cnt.up=up;cnt.dn=dn;
+      $('hm-sum').innerHTML=esc(S.name)+' 市值合計（'+tm(f)+'）｜<b class="'+(sD>0?'pos':sD<0?'neg':'')+'">'+(sD>=0?'增加 ':'減少 ')+capAbs(Math.abs(sD))+(S.cur==='TWD'?'台幣':'美元')+'（'+pct(sP>0?sD/sP*100:null)+'）</b>';
+      return null;},
+    label:f=>'重播 '+PP.session+' 盤中 '+tm(f)+'（第 '+(f+1)+'／'+n+' 格，每 '+Math.round(ps/60)+' 分鐘）｜上漲 '+cnt.up+'、下跌 '+cnt.dn,
+    onEnd:()=>{RP=null;RPkey='';draw();}});
 }
 function show(el,ev){
   if(!D) return; const t=shown.find(x=>x[0]===el.dataset.s); if(!t) return;
@@ -509,14 +571,14 @@ function show(el,ev){
   tip.style.left=Math.min(x+14, r.width-tip.offsetWidth-6)+'px'; tip.style.top=Math.min(y+14, r.height-tip.offsetHeight-6)+'px'; tip.hidden=false;
   box.querySelectorAll('.tl.on').forEach(e=>e.classList.remove('on')); el.classList.add('on');
 }
-box.addEventListener('mousemove',e=>{const el=e.target.closest('.tl');if(el)show(el,e);else if(tip)tip.hidden=true;});
+box.addEventListener('mousemove',e=>{if(RP){if(tip)tip.hidden=true;return;}const el=e.target.closest('.tl');if(el)show(el,e);else if(tip)tip.hidden=true;});   // 重播中不顯示提示（提示是最新的數字）
 box.addEventListener('mouseleave',()=>{if(tip)tip.hidden=true;box.querySelectorAll('.tl.on').forEach(e=>e.classList.remove('on'));});
 const go=sym=>{location.href='valuation.html#code='+encodeURIComponent(sym);};
 box.addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';},{passive:true});
 box.addEventListener('click',e=>{const el=e.target.closest('.tl');if(!el)return;   // 滑鼠：點一下就開個股分析；觸控：第一下看提示、同一格再點一下才開
   if(lastPT==='mouse'||armed===el.dataset.s){go(el.dataset.s);return;}
   armed=el.dataset.s;show(el,e);});
-document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();liveTick().catch(()=>{}).then(liveLoop);}));
+document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{if(RP&&window.BN&&BN.play)BN.play.detach(hmSec);cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();liveTick().catch(()=>{}).then(liveLoop);}));
 let rt=0; if('ResizeObserver' in window) new ResizeObserver(()=>{clearTimeout(rt);rt=setTimeout(draw,120);}).observe(box); else window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
 fetch('data/heatmap/latest.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);
   const sv=Date.parse(r.headers.get('date')||''); if(isFinite(sv)&&Math.abs(sv+500-Date.now())>2500) skew=sv+500-Date.now();   // 回應標頭的時間只到秒，差 2.5 秒以上才校正

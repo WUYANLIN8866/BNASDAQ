@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=dce4af95dc">
+<link rel="stylesheet" href="assets/site.css?v=cc9a3a764c">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -48,7 +48,7 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#ref">特別說明</a></li><li><a href="#quote">試算月費</a></li><li><a href="#how">計費方式</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="risk.html">風險與代價</a></li><li><a href="research.html">研究與回測</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=f307221e06"></script>
+<script src="assets/site.js?v=53a18ee4d8"></script>
 <script>
 (function(){
   var LV=['100 萬～300 萬元','300 萬～500 萬元','500 萬～1,000 萬元','1,000 萬～3,000 萬元','3,000 萬～1 億元','1 億元以上'];
@@ -79,6 +79,12 @@
   }
   sl.addEventListener('input',function(e){draw(+e.target.value);});
   draw(+sl.value);
+  // 動態走勢（2026-11-21 站主：所有功能都要）：從最低的資產級距依序播到最高（每格約 1.3 秒），看月費怎麼隨資產變化；播完回到原本選的級距
+  if(window.BN&&BN.play){var keep=null,tool=document.querySelector('.plan-tool');
+    BN.play.attach(tool,{n:LV.length,ms:1300,target:sl,onStart:function(){keep=sl.value;},
+      frame:function(i){sl.value=String(i);draw(i);return null;},
+      label:function(i){return '資產 '+LV[i]+'（第 '+(i+1)+'／'+LV.length+' 級）';},
+      onEnd:function(){if(keep!=null){sl.value=keep;draw(+keep);keep=null;}}});}
 })();
 </script>
 </main>

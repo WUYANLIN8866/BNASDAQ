@@ -17,6 +17,7 @@ const MAX = 1200;
     const rows = await p.evaluate(({ pg, MAX }) => {
       const clean = s => (s || '').replace(/\s+/g, ' ').trim();
       document.querySelectorAll('main details').forEach(d => { d.open = true; });   // 展開「常見問題」等摺疊段落，答案也要能搜尋
+      document.querySelectorAll('.fig-play').forEach(b => b.remove());   // 每張圖右上角的「動態走勢」按鈕不收進搜尋內容
       const name = pg === 'index' ? '首頁' : clean(document.title.split('｜')[0]);
       const res = [];
       const head = document.querySelector('.pagehead') || document.querySelector('.hero');

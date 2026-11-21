@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=dce4af95dc">
+<link rel="stylesheet" href="assets/site.css?v=cc9a3a764c">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -117,7 +117,7 @@
   </ul>
 </div></section>
 
-<script src="assets/site.js?v=f307221e06"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/bt-sat3-30.js?v=4e77b68d53"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=f4affab552"></script><script src="assets/charts.js?v=6f33da45ee"></script>
+<script src="assets/site.js?v=53a18ee4d8"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/bt-sat3-30.js?v=4e77b68d53"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=f4affab552"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function(){
   // 最新發布分頁與公告
@@ -189,7 +189,7 @@ function renderWorld(start){
   if(g){removed=series.filter(x=>x.isIdx&&!x.gidx&&x.end<g.end);series=series.filter(x=>removed.indexOf(x)<0);}
   const cg=x=>Math.pow(1+x.end,1/yrs)-1;
   $('c-world').innerHTML='';
-  WP.opt={title:'起點＝100 的累積走勢（對數刻度）',sub:W0+' 至 '+END+'，每月月底；ETF／個股含息，指數為價格指數；虛線＝全球股票指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',endVals:(()=>{const cw=$('c-world').clientWidth||1040,nw=cw<760,fmt=v=>(v>=100?'+':'')+Math.round(v-100).toLocaleString('zh-Hant-TW')+'%';let mx=0;try{const g=document.createElement('canvas').getContext('2d'),F='"BN Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';series.forEach(x=>{let v=null;for(let j=x.values.length-1;j>=0;j--)if(x.values[j]!=null){v=x.values[j];break;}if(v==null)return;g.font='700 12px '+F;let w=g.measureText(MOV(x.name)?'會員專屬':fmt(v)).width;if(!MOV(x.name)){g.font='400 12px '+F;w+=6+g.measureText(x.gidx?'MSCI ACWI':x.name).width;}if(w>mx)mx=w;});}catch(e){}return {W:Math.round(Math.min(1040,Math.max(520,cw))),height:nw?420:460,padR:Math.max(nw?170:210,Math.ceil(mx*1.12)+30),minWidth:520,fmt};})(),series:series.map(s=>({name:s.name,short:s.gidx?'MSCI ACWI':undefined,values:s.values,color:s.color,dash:s.dash||undefined,mask:MOV(s.name)?'會員專屬':undefined}))};wpReset();BN.charts.line($('c-world'),WP.opt);
+  WP.opt={noPlay:true,title:'起點＝100 的累積走勢（對數刻度）',sub:W0+' 至 '+END+'，每月月底；ETF／個股含息，指數為價格指數；虛線＝全球股票指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',endVals:(()=>{const cw=$('c-world').clientWidth||1040,nw=cw<760,fmt=v=>(v>=100?'+':'')+Math.round(v-100).toLocaleString('zh-Hant-TW')+'%';let mx=0;try{const g=document.createElement('canvas').getContext('2d'),F='"BN Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';series.forEach(x=>{let v=null;for(let j=x.values.length-1;j>=0;j--)if(x.values[j]!=null){v=x.values[j];break;}if(v==null)return;g.font='700 12px '+F;let w=g.measureText(MOV(x.name)?'會員專屬':fmt(v)).width;if(!MOV(x.name)){g.font='400 12px '+F;w+=6+g.measureText(x.gidx?'MSCI ACWI':x.name).width;}if(w>mx)mx=w;});}catch(e){}return {W:Math.round(Math.min(1040,Math.max(520,cw))),height:nw?420:460,padR:Math.max(nw?170:210,Math.ceil(mx*1.12)+30),minWidth:520,fmt};})(),series:series.map(s=>({name:s.name,short:s.gidx?'MSCI ACWI':undefined,values:s.values,color:s.color,dash:s.dash||undefined,mask:MOV(s.name)?'會員專屬':undefined}))};wpReset();BN.charts.line($('c-world'),WP.opt);
   const rows=series.slice().sort((a,b)=>b.end-a.end);
   $('t-world').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+W0+' 至 '+END+'（'+yrs.toFixed(1)+' 年）的累積報酬與年化</caption><thead><tr><th class=l>標的</th><th>累積報酬</th><th>年化</th><th class=l>幣別／口徑</th></tr></thead><tbody>'+rows.map(s=>{const cagr=Math.pow(1+s.end,1/yrs)-1;const mo=MOV(s.name);return '<tr'+(s.gidx?' class="hl"':'')+'><td class=l><span class="sw" style="background:'+s.color+'"></span>'+s.name+(s.gidx?' <small>（比較基準）</small>':'')+'</td><td>'+(mo?'會員專屬':(s.end>=0?'+':'')+(s.end*100).toLocaleString('zh-Hant-TW',{maximumFractionDigits:0})+'%')+'</td><td>'+(mo?'會員專屬':(cagr*100).toFixed(1)+'%')+'</td><td class=l>'+s.cur+'</td></tr>';}).join('')+'</tbody></table></div>';
   const px=B.proxyNote(start);
@@ -231,7 +231,7 @@ function renderCmp(start){
       note:'最深：BNASDAQ-26110 '+pct(a.mdd)+'（'+a.trough+'）、BNASDAQ-26111 '+pct(b.mdd)+'（'+b.trough+'）、BNASDAQ-26112 '+pct(c.mdd)+'（'+c.trough+'）、BNASDAQ-26113 '+pct(e.mdd)+'（'+e.trough+'）'});})();
   // 逐年報酬
   (()=>{const h=$('c-cmp-cal');h.innerHTML='';const rs=C.list;if(!rs.length)return;const last=rs[rs.length-1];
-    BN.charts.bars(h,{title:'逐年報酬：四個策略',sub:rs[0].y+'～'+last.y+' 曆年報酬'+(last.partial?'；'+last.y+' 年僅計至 '+END.slice(5,7)+' 月底（標 *）':''),groups:rs.map(r=>String(r.y).slice(2)+(r.partial?'*':'')),
+    BN.charts.bars(h,{title:'逐年報酬：四個策略',sub:rs[0].y+'～'+last.y+' 曆年報酬'+(last.partial?'；'+last.y+' 年僅計至 '+END.slice(5,7)+' 月底（標 *）':''),groups:rs.map(r=>String(r.y).slice(2)+(r.partial?'*':'')),play:{labels:rs.map(r=>r.y+' 年'+(r.partial?'（至 '+(+END.slice(5,7))+' 月底）':'')),unit:'年'},
       series:[{name:'BNASDAQ-26110',values:rs.map(r=>r.fund),color:'var(--s-fund)'},{name:'BNASDAQ-26111',values:rs.map(r=>r.sat),color:'var(--s-sat)'},{name:'BNASDAQ-26112',values:rs.map(r=>r.sat2),color:'var(--s-sat2)'},{name:'BNASDAQ-26113',values:rs.map(r=>r.sat3),color:'var(--s-sat3)'}],yfmt:v=>(v*100).toFixed(0)+'%',valfmt:v=>(v*100).toFixed(0)+'%',tipfmt:v=>(v*100).toFixed(1)+'%'});})();
   const px=B.proxyNote(s);
   $('cmp-note').textContent=(start<f0?'BNASDAQ-26111、BNASDAQ-26112、BNASDAQ-26113 的模型自 '+f0+' 起才有訊號，本區自 '+w0+' 起比較（其他區塊仍依所選起點）。':'')+'四個策略使用同一套逐日回測引擎與同一份資料：每月最後一個交易日收盤判斷、下一個交易日開盤調整、單邊成本 0.1%，QLD 與 SHV 皆以相同方式計算。'+(px?' '+px:'');

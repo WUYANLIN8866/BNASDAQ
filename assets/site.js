@@ -189,6 +189,102 @@
     if (document.readyState === 'complete') idle(start); else window.addEventListener('load', () => idle(start));
   })();
 
+  // ---- 動態走勢（2026-11-21 22:23 站主：網頁上所有圖表、所有功能都要能像首頁走勢圖一樣「動態走勢」） ----
+  // BN.play.attach(fig, spec)：在圖框右上角放「動態走勢」按鈕（同首頁：按一下播放、再按暫停、播完回到原圖）。
+  //   spec.n            幾格（至少 2 格）
+  //   spec.frame(i)     第 i 格要顯示的圖（SVG 節點或字串）；回傳 null＝這一格自己改畫面（例：滑桿），不換圖
+  //   spec.label(i)     副標題顯示的進度（例：2000-05 → 2013-04（第 156／317 個月））
+  //   spec.ms           每格毫秒（預設約 20 秒播完，每格 35～700 毫秒）
+  //   spec.target       要被換掉的圖（預設：圖框內第一個 svg）
+  //   spec.sub          放進度文字的元素（預設：圖框的副標題；沒有就暫時加一行）；false＝不顯示進度文字
+  //   spec.onFrame(i)／spec.onEnd()：每格畫完／回到原圖之後
+  // 同一時間只播一張圖：開始播另一張時，正在播的那張先回到原圖。圖被重畫、離開網頁時自動停止。
+  // 用字串組 SVG 的圖：<svg' + BN.play.reg(spec) + ' …>，插進網頁後呼叫 BN.play.scan(容器) 接上按鈕。
+  BN.play = (function () {
+    const REG = new Map(); let seq = 0, active = null;
+    const toNode = x => { if (x == null || typeof x !== 'string') return x || null; const t = document.createElement('template'); t.innerHTML = x.trim(); return t.content.firstElementChild; };
+    const msOf = n => Math.max(35, Math.min(700, Math.round(20000 / n)));
+    function text(P) {
+      const b = P.btn, on = !!P.t; b.textContent = on ? '暫停' : (P.orig ? '繼續播放' : '動態走勢'); b.setAttribute('aria-pressed', String(on));
+    }
+    function subEl(P) {
+      const s = P.spec.sub; if (s === false) return null; if (s) return s;
+      let el = P.fig.querySelector('.fsub');
+      if (!el) { el = document.createElement('p'); el.className = 'fsub fsub-play'; const t = P.fig.querySelector('.ftitle'); if (t) t.after(el); else P.btn.after(el); P.subNew = el; }
+      return el;
+    }
+    function draw(P, i) {
+      const node = toNode(P.spec.frame(i));
+      if (node && P.cur && P.cur.parentNode) { P.cur.replaceWith(node); P.cur = node; }
+      if (P.sub && P.spec.label) P.sub.textContent = '動態走勢：' + P.spec.label(i) + '；再按一次可暫停';
+      if (P.spec.onFrame) P.spec.onFrame(i);
+    }
+    function halt(P) { if (P.t) { clearInterval(P.t); P.t = null; } }
+    function end(P) {   // 回到原圖
+      halt(P);
+      if (P.orig && P.cur && P.cur !== P.orig && P.cur.parentNode) P.cur.replaceWith(P.orig);
+      if (P.subNew) { P.subNew.remove(); P.subNew = null; } else if (P.sub && P.subTxt != null) P.sub.textContent = P.subTxt;
+      P.orig = null; P.cur = null; P.sub = null; P.subTxt = null; P.i = 0; if (active === P) active = null;
+      text(P); if (P.spec.onEnd) P.spec.onEnd();
+    }
+    function tick(P) {
+      if (!P.fig.isConnected) { halt(P); if (active === P) active = null; return; }   // 圖已重畫：舊的播放器作廢
+      P.i++; if (P.i >= P.spec.n) { end(P); return; }
+      draw(P, P.i);
+    }
+    function toggle(P) {
+      if (P.t) { halt(P); if (active === P) active = null; text(P); return; }   // 暫停
+      if (active && active !== P) { if (active.fig.isConnected) end(active); else { halt(active); active = null; } }
+      if (!P.orig) {   // 從頭開始
+        const tg = typeof P.spec.target === 'function' ? P.spec.target() : P.spec.target;
+        P.orig = tg || P.fig.querySelector('svg') || P.fig; P.cur = P.orig; P.i = 0;
+        P.sub = subEl(P); P.subTxt = P.sub && !P.subNew ? P.sub.textContent : null;
+        if (P.spec.onStart) P.spec.onStart();
+        draw(P, 0);
+      }
+      active = P; P.t = setInterval(() => tick(P), P.spec.ms || msOf(P.spec.n)); text(P);
+    }
+    function attach(fig, spec) {
+      if (!fig || !spec || !(spec.n >= 2)) return null;
+      const prev = fig._bnPlay; if (prev) { if (prev.t || prev.orig) end(prev); if (prev.btn) prev.btn.remove(); }
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'bt-reset bt-play fig-play' + (spec.place ? ' inl' : '');
+      const P = { fig, spec, btn, i: 0, t: null, orig: null, cur: null, sub: null, subTxt: null, subNew: null };
+      if (spec.place) spec.place(btn); else fig.insertBefore(btn, fig.firstChild);   // spec.place(btn)：自己決定按鈕放哪裡（例：熱力圖放在分頁按鈕旁）
+      btn.addEventListener('click', () => toggle(P)); text(P); fig._bnPlay = P; btn._bnFig = fig;
+      return P;
+    }
+    function detach(fig) { const P = fig && fig._bnPlay; if (!P) return; if (P.t || P.orig) end(P); P.btn.remove(); fig._bnPlay = null; }
+    function reg(spec) { const k = 'pk' + (++seq); REG.set(k, spec); if (REG.size > 300) REG.delete(REG.keys().next().value); return ' data-pk="' + k + '"'; }
+    function scan(root) {
+      (root || document).querySelectorAll('[data-pk]').forEach(el => {
+        const k = el.getAttribute('data-pk'), spec = REG.get(k); el.removeAttribute('data-pk'); if (!spec) return; REG.delete(k);
+        const fig = (spec.fig && spec.fig(el)) || el.closest('.fig') || el.parentElement;
+        try { attach(fig, Object.assign({ target: el }, spec)); } catch (e) { /* 播放功能出錯不影響原圖 */ }
+      });
+    }
+    // 小工具：依「年份格式」判斷進度單位；隨機順序（固定種子，每次播放都一樣）
+    function unit(xs) {
+      const a = xs.map(String), all = re => a.every(s => re.test(s));
+      if (all(/^\d{4}$/)) return { u: '年' };
+      if (all(/^\d{4}-\d{2}$/)) {   // 月或季：看相鄰兩點差幾個月
+        const m = a.map(x => +x.slice(0, 4) * 12 + +x.slice(5, 7)), g = []; for (let i = 1; i < m.length; i++) g.push(m[i] - m[i - 1]);
+        g.sort((p, q) => p - q); const md = g.length ? g[g.length >> 1] : 1; return { u: md >= 12 ? '年' : md >= 3 ? '季' : '個月' };
+      }
+      if (all(/^\d{4}-\d{2}-\d{2}/)) {
+        const t = a.map(s => Date.parse(s.length > 10 ? s : s + 'T00:00:00Z')), g = []; for (let i = 1; i < t.length; i++) g.push((t[i] - t[i - 1]) / 864e5);
+        if (!t.every(isFinite)) return null;
+        g.sort((p, q) => p - q); const md = g.length ? g[g.length >> 1] : 0, span = (t[t.length - 1] - t[0]) / 864e5;
+        if (md >= 25 && md <= 35) return { u: '個月' };
+        if (md >= 300) return { u: '年' };
+        // 日線、抽樣或盤中紀錄：改用「已播多久」
+        return span >= 120 ? { t, k: 365.25 * 864e5, w: '年' } : span >= 3 ? { t, k: 864e5, w: '天' } : { t, k: 36e5, w: '小時' };
+      }
+      return null;
+    }
+    function rng(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+    return { attach, detach, reg, scan, unit, rng, msOf, stop: () => { if (active) end(active); }, busy: fig => !!(fig && fig._bnPlay && (fig._bnPlay.t || fig._bnPlay.orig)) };
+  })();
+
   // ---- tooltip ----
   let tip;
   BN.tip = {

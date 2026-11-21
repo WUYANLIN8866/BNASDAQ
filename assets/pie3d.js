@@ -36,7 +36,10 @@
     const P = (a, dy) => [cx + rx * Math.cos(a), cy + ry * Math.sin(a) + (dy || 0)];
     const f2 = v => v.toFixed(2);
     let a = -Math.PI / 2;
-    const parts = S.map((s, i) => { const a0 = a, a1 = a + 2 * Math.PI * s.w / tot; a = a1; return { s, i, a0, a1, mid: (a0 + a1) / 2 }; });
+    const parts0 = S.map((s, i) => { const a0 = a, a1 = a + 2 * Math.PI * s.w / tot; a = a1; return { s, i, a0, a1, mid: (a0 + a1) / 2 }; });
+    // o.sweep（0～1）：動態走勢的一格，只畫到 12 點鐘方向順時針轉過的角度；還沒轉到的切片不畫，轉到一半的切片畫一半、不標百分比
+    const cut = o.sweep == null ? null : -Math.PI / 2 + 2 * Math.PI * Math.max(0, Math.min(1, o.sweep));
+    const parts = cut == null ? parts0 : parts0.filter(p => p.a0 < cut - 1e-9).map(p => p.a1 <= cut + 1e-9 ? p : Object.assign({}, p, { a1: cut, mid: (p.a0 + cut) / 2, part: true }));
     const gWall = el('g', {}, svg), gTop = el('g', {}, svg), gLbl = el('g', { 'pointer-events': 'none' }, svg);
     const G = parts.map(p => {
       const g = { wall: el('g', {}, gWall), top: el('g', {}, gTop), lbl: el('g', {}, gLbl) };
@@ -56,7 +59,7 @@
       const top = el('path', { d, fill: p.s.color, stroke: 'var(--paper)', 'stroke-width': '1.5', 'stroke-linejoin': 'round', tabindex: '0', 'aria-label': p.s.name + ' ' + pctTxt(p.s.w / tot) }, g.top);
       top.style.cursor = 'pointer';
       // 百分比標籤：占比夠大才標
-      if (p.s.w / tot >= (o.label == null ? 0.05 : o.label)) {
+      if (!p.part && p.s.w / tot >= (o.label == null ? 0.05 : o.label)) {
         const [lx, ly] = [cx + rx * 0.62 * Math.cos(p.mid), cy + ry * 0.62 * Math.sin(p.mid)];
         const t = el('text', { x: f2(lx), y: f2(ly + 4), 'text-anchor': 'middle', 'font-size': '12.5', 'font-weight': '600', fill: lum(p.s.color, host) > 0.42 ? '#0b0b0b' : '#ffffff' }, g.lbl);
         t.textContent = pctTxt(p.s.w / tot);
@@ -82,7 +85,23 @@
     const off = () => { on(-1); if (BN.tip) BN.tip.hide(); };
     G.forEach((g, i) => { [g.top, g.wall].forEach(n => { n.addEventListener('mousemove', ev => on(i, ev)); n.addEventListener('mouseleave', off); }); g.top.firstChild.addEventListener('focus', () => on(i)); g.top.firstChild.addEventListener('blur', off); });
     trs.forEach((tr, i) => { tr.addEventListener('mouseenter', () => on(i)); tr.addEventListener('mouseleave', off); });
+    if (!o._frame && parts0.length >= 2 && window.BN && BN.play) { try { playable(fig, o, parts0, tot); } catch (e) { /* 播放功能出錯不影響原圖 */ } }
     return fig;
+  }
+  // 動態走勢（2026-11-21 站主：所有圖表都要能播放）：從 12 點鐘方向順時針，依占比由大到小一塊一塊轉出來（約 2.5～6 秒），
+  // 右邊的數字表同步亮起已畫出的項目；播完回到原圖
+  function playable(fig, o, parts, tot) {
+    const n = parts.length, ms = 40, F = Math.round(Math.max(2400, Math.min(6000, n * 650)) / ms), sw = f => { const t = (f + 1) / F; return 1 - (1 - t) * (1 - t); };
+    const k = f => { const c = -Math.PI / 2 + 2 * Math.PI * sw(f); let j = 0; parts.forEach((p, i) => { if (p.a0 < c - 1e-9) j = i; }); return j; };
+    const rows = () => [...fig.querySelectorAll('.p3-tbl tbody tr')];
+    const tmpOf = () => { let t = fig._bnTmp; if (!t || !t.isConnected) { t = document.createElement('div'); t.setAttribute('aria-hidden', 'true'); t.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:0;overflow:hidden;visibility:hidden;pointer-events:none'; fig.appendChild(t); fig._bnTmp = t; } return t; };
+    BN.play.attach(fig, {
+      n: F, ms, target: fig.querySelector('.p3-svg svg'),
+      frame: f => { const t = tmpOf(); pie3d(t, Object.assign({}, o, { _frame: true, sweep: sw(f), title: null, sub: null, note: null })); const s = t.querySelector('.p3-svg svg'); if (s) s.remove(); t.innerHTML = ''; return s; },
+      label: f => { const j = k(f), p = parts[j]; return '依占比畫出每一塊（第 ' + (j + 1) + '／' + n + ' 塊：' + p.s.name + ' ' + pctTxt(p.s.w / tot) + '）'; },
+      onFrame: f => { const j = k(f); rows().forEach((tr, i) => tr.classList.toggle('p3-wait', i > j)); },
+      onEnd: () => { rows().forEach(tr => tr.classList.remove('p3-wait')); if (fig._bnTmp) { fig._bnTmp.remove(); fig._bnTmp = null; } }
+    });
   }
   // 分類圓餅：前 max 名個別列出、其餘併成「其他」，顏色依上方規則自動配
   const SLOTS = n => n === 7 ? [1, 2, 3, 4, 5, 7, 8] : Array.from({ length: n }, (_, i) => i + 1);

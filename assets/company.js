@@ -65,51 +65,63 @@
   const nz = x => { const v = parseFloat(String(x == null ? '' : x).replace(/[,%+\s]/g, '')); return isFinite(v) ? v : null; };
 
   // ---------------------------------------------------------------- 圖
-  function radar(axes, series, size) {
+  // 2026-11-21 站主：網頁上所有圖表都要有「動態走勢」（同首頁走勢圖：按一下播放、再按暫停、播完回到原圖）。
+  // 本頁的圖用字串組成：fr／upto＝動態走勢的一格；第一次畫時用 BN.play.reg 登記每一格怎麼畫，插進網頁後 BN.play.scan 接上按鈕
+  const canPlay = () => !!(window.BN && BN.play), EASE = t => 1 - Math.pow(1 - t, 3), SG = 8;
+  const playCnt = (xs, k, n) => { const U = canPlay() && BN.play.unit(xs); return '（第 ' + (k + 1) + '／' + n + ' ' + (U && U.u ? U.u : '筆') + '）'; };
+  const syncRadar = () => { const box = document.getElementById('dCo'); if (box) box.querySelectorAll('.rleg input[data-k]').forEach(cb => box.querySelectorAll('.radar [data-k="' + cb.dataset.k + '"]').forEach(el => { el.style.display = cb.checked ? '' : 'none'; })); };
+  function radar(axes, series, size, fr) {   // fr＝{k, t}：第 k 家的多邊形從中心長到 t，後面幾家還沒畫
     const W = size || 520, C = W / 2, R = C - 95, n = axes.length, ang = i => -Math.PI / 2 + i * 2 * Math.PI / n;
-    const P = (i, v) => [C + R * (v / 100) * Math.cos(ang(i)), C + R * (v / 100) * Math.sin(ang(i))];
-    let s = '<svg class="radar" viewBox="0 0 ' + W + ' ' + W + '" role="img" aria-label="雷達圖：' + esc(series.map(se => se.name + ' ' + axes.map((a, i) => a + ' ' + sc(se.v[i])).join('、')).join('；')) + '">';
+    const P = (i, v) => [C + R * (v / 100) * Math.cos(ang(i)), C + R * (v / 100) * Math.sin(ang(i))], G = 12;
+    const pk = fr || !canPlay() ? '' : BN.play.reg({ n: series.length * G, ms: 45, fig: el => el.closest('.rbox'), frame: f => radar(axes, series, size, { k: Math.floor(f / G), t: EASE((f % G + 1) / G) }),
+      label: f => { const k = Math.floor(f / G); return '逐一畫出各家的分數（第 ' + (k + 1) + '／' + series.length + ' 家：' + series[k].name + '）'; }, onFrame: syncRadar, onEnd: syncRadar });
+    let s = '<svg class="radar"' + pk + ' viewBox="0 0 ' + W + ' ' + W + '" role="img" aria-label="雷達圖：' + esc(series.map(se => se.name + ' ' + axes.map((a, i) => a + ' ' + sc(se.v[i])).join('、')).join('；')) + '">';
     [25, 50, 75, 100].forEach(g => { s += '<polygon class="rg" points="' + axes.map((_, i) => P(i, g).map(x => x.toFixed(1)).join(',')).join(' ') + '"/>'; });
     axes.forEach((a, i) => { const [x, y] = P(i, 100), [lx, ly] = P(i, 118); s += '<line class="ra" x1="' + C + '" y1="' + C + '" x2="' + x.toFixed(1) + '" y2="' + y.toFixed(1) + '"/>' +
       '<text class="rl" x="' + lx.toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" text-anchor="' + (Math.abs(lx - C) < 8 ? 'middle' : lx > C ? 'start' : 'end') + '">' + esc(a) + '</text>'; });
     [50, 100].forEach(g => { const [x, y] = P(0, g); s += '<text class="rt" x="' + (x + 4).toFixed(1) + '" y="' + (y + 12).toFixed(1) + '">' + g + '</text>'; });
-    series.slice().reverse().forEach(se => { const k = series.indexOf(se); const pts = se.v.map((v, i) => P(i, v == null ? 0 : v).map(x => x.toFixed(1)).join(',')).join(' ');
+    series.slice().reverse().forEach(se => { const k = series.indexOf(se); if (fr && k > fr.k) return; const g = fr && k === fr.k ? fr.t : 1; const pts = se.v.map((v, i) => P(i, v == null ? 0 : v * g).map(x => x.toFixed(1)).join(',')).join(' ');
       s += '<polygon class="rp' + (k ? '' : ' me') + '" data-k="' + k + '" points="' + pts + '" style="stroke:' + se.c + ';fill:' + se.c + '"/>';
-      se.v.forEach((v, i) => { if (v != null) { const [x, y] = P(i, v); s += '<circle class="rd" data-k="' + k + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (k ? 2.6 : 3.6) + '" style="fill:' + se.c + '"><title>' + esc(se.name + '｜' + axes[i] + ' ' + sc(v)) + '</title></circle>'; } }); });
+      se.v.forEach((v, i) => { if (v != null) { const [x, y] = P(i, v * g); s += '<circle class="rd" data-k="' + k + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (k ? 2.6 : 3.6) + '" style="fill:' + se.c + '"><title>' + esc(se.name + '｜' + axes[i] + ' ' + sc(v)) + '</title></circle>'; } }); });
     return s + '</svg>';
   }
-  function hbars(items, opt) { // items: [{l, v, me, tip}]，v 為 0～1 或任意正數
+  function hbars(items, opt, fr) { // items: [{l, v, me, tip}]，v 為 0～1 或任意正數；fr＝{k, t}：第 k 條長到 t，後面的還沒畫
     const o = opt || {}, W = 760, bh = 26, L = o.L || 210, Rr = 74, H = 8 + items.length * bh, mx = o.max || Math.max(...items.map(i => Math.abs(i.v || 0)), 1e-9), X = v => L + (W - L - Rr) * v / mx;
-    let s = '<svg class="hb" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + items.map(i => i.l + ' ' + (o.fmt ? o.fmt(i.v) : i.v)).join('、')) + '">';
-    items.forEach((it, i) => { const y = 4 + i * bh, v = Math.max(0, it.v || 0);
-      s += '<text class="viz-lbl" x="' + (L - 8) + '" y="' + (y + bh / 2 + 4) + '" text-anchor="end" font-size="12.5"' + (it.me ? ' font-weight="700"' : '') + '>' + esc(it.l) + '</text>' +
-        '<rect x="' + L + '" y="' + (y + 5) + '" width="' + Math.max(1.5, X(v) - L).toFixed(1) + '" height="' + (bh - 10) + '" rx="2" style="fill:' + (it.me ? 'var(--gold)' : 'var(--s-shv)') + '"><title>' + esc(it.tip || it.l) + '</title></rect>' +
-        '<text class="viz-lbl" x="' + (X(v) + 6).toFixed(1) + '" y="' + (y + bh / 2 + 4) + '" font-size="12.5"' + (it.me ? ' font-weight="700"' : '') + '>' + esc(o.fmt ? o.fmt(it.v) : it.v) + '</text>'; });
+    const pk = fr || !canPlay() || items.length < 2 ? '' : BN.play.reg({ n: items.length * SG, ms: 45, frame: f => hbars(items, opt, { k: Math.floor(f / SG), t: EASE((f % SG + 1) / SG) }), label: f => { const k = Math.floor(f / SG); return '逐一畫出（第 ' + (k + 1) + '／' + items.length + ' 項：' + items[k].l + '）'; } });
+    let s = '<svg class="hb"' + pk + ' viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + items.map(i => i.l + ' ' + (o.fmt ? o.fmt(i.v) : i.v)).join('、')) + '">';
+    items.forEach((it, i) => { const y = 4 + i * bh, g = fr && i === fr.k ? fr.t : 1, v = Math.max(0, it.v || 0) * g;
+      s += '<text class="viz-lbl" x="' + (L - 8) + '" y="' + (y + bh / 2 + 4) + '" text-anchor="end" font-size="12.5"' + (it.me ? ' font-weight="700"' : '') + '>' + esc(it.l) + '</text>';
+      if (fr && i > fr.k) return;
+      s += '<rect x="' + L + '" y="' + (y + 5) + '" width="' + Math.max(1.5, X(v) - L).toFixed(1) + '" height="' + (bh - 10) + '" rx="2" style="fill:' + (it.me ? 'var(--gold)' : 'var(--s-shv)') + '"><title>' + esc(it.tip || it.l) + '</title></rect>' +
+        (g < 1 ? '' : '<text class="viz-lbl" x="' + (X(v) + 6).toFixed(1) + '" y="' + (y + bh / 2 + 4) + '" font-size="12.5"' + (it.me ? ' font-weight="700"' : '') + '>' + esc(o.fmt ? o.fmt(it.v) : it.v) + '</text>'); });
     return s + '</svg>';
   }
-  function lines(xs, series, opt) { // series: [{name, v:[...], c, me}]
+  function lines(xs, series, opt, upto) { // series: [{name, v:[...], c, me}]；upto＝動態走勢畫到第幾點（含），座標軸固定
     const o = opt || {}, W = 760, H = 250, pl = 56, pr = 18, pt = 14, pb = 30, n = xs.length;
     const all = series.flatMap(se => se.v.filter(v => v != null && isFinite(v)));
     if (!all.length || n < 2) return '';
     let lo = o.nozero ? Math.min(...all) : Math.min(0, ...all), hi = Math.max(...all); if (hi === lo) hi = lo + 1;
     const pad = (hi - lo) * 0.08; lo = (lo < 0 || o.nozero) ? lo - pad : lo; hi += pad;
     const X = i => pl + (W - pl - pr) * i / (n - 1), Y = v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
-    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + series.map(se => se.name + ' ' + se.v.filter(v => v != null && isFinite(v)).map(v => o.fmt(v)).join('、')).join('；')) + '">';
+    const PX = o.playX || xs, pc = (k) => o.playUnit ? '（第 ' + (k + 1) + '／' + n + ' ' + o.playUnit + '）' : playCnt(xs, k, n);   // o.playX：刻度只標部分日期時，進度用完整日期
+    const pk = upto != null || !canPlay() || n < 3 ? '' : BN.play.reg({ n, frame: f => lines(xs, series, opt, f), label: f => (f ? PX[0] + ' → ' : '') + PX[f] + pc(f) });
+    let s = '<svg class="viz"' + pk + ' viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + series.map(se => se.name + ' ' + se.v.filter(v => v != null && isFinite(v)).map(v => o.fmt(v)).join('、')).join('；')) + '">';
     for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11.5">' + esc(o.fmt(v)) + '</text>'; }
     if (lo < 0 && hi > 0) s += '<line class="ax" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(0).toFixed(1) + '" y2="' + Y(0).toFixed(1) + '"/>';
     xs.forEach((x, i) => { s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="11.5">' + esc(x) + '</text>'; });
-    series.slice().reverse().forEach(se => { const pts = se.v.map((v, i) => v == null || !isFinite(v) ? null : X(i).toFixed(1) + ',' + Y(v).toFixed(1)).filter(Boolean);
+    series.slice().reverse().forEach(se0 => { const se = upto == null ? se0 : Object.assign({}, se0, { v: se0.v.map((v, i) => i <= upto ? v : null) }); const pts = se.v.map((v, i) => v == null || !isFinite(v) ? null : X(i).toFixed(1) + ',' + Y(v).toFixed(1)).filter(Boolean);
       if (pts.length > 1) s += '<polyline fill="none" stroke-linejoin="round" stroke-linecap="round" style="stroke:' + se.c + ';stroke-width:' + (se.me ? 3 : 1.8) + '" points="' + pts.join(' ') + '"/>';
       if (!o.nodots) se.v.forEach((v, i) => { if (v != null && isFinite(v)) s += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="' + (se.me ? 3.6 : 2.6) + '" style="fill:' + se.c + '"><title>' + esc(se.name + '｜' + xs[i] + '｜' + o.fmt(v)) + '</title></circle>'; }); });
     s += '</svg><div class="legend">' + series.map(se => '<span><i style="background:' + se.c + '"></i>' + esc(se.name) + '</span>').join('') + '</div>';
     return s;
   }
-  function vbars(xs, vals, opt) { // 直條（營收、季營收）
+  function vbars(xs, vals, opt, fr) { // 直條（營收、季營收）；fr＝{k, t}：第 k 根長到 t，後面的還沒畫
     const o = opt || {}, W = 760, H = 230, pl = 74, pr = 12, pt = 18, pb = 30, n = xs.length, mx = Math.max(...vals.filter(v => v != null), 1e-9), bw = (W - pl - pr) / n * 0.62;
     const X = i => pl + (W - pl - pr) * (i + 0.5) / n, Y = v => pt + (H - pt - pb) * (1 - v / mx);
-    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + xs.map((x, i) => x + ' ' + (vals[i] == null ? '—' : o.fmt(vals[i]))).join('、')) + '">';
+    const pk = fr || !canPlay() || n < 2 ? '' : BN.play.reg({ n: n * SG, ms: Math.max(35, Math.min(90, Math.round(Math.max(3200, n * 600) / (n * SG)))), frame: f => vbars(xs, vals, opt, { k: Math.floor(f / SG), t: EASE((f % SG + 1) / SG) }), label: f => { const k = Math.floor(f / SG); return (k ? xs[0] + ' → ' : '') + xs[k] + '（第 ' + (k + 1) + '／' + n + ' 項）'; } });
+    let s = '<svg class="viz"' + pk + ' viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc((o.title || '') + '：' + xs.map((x, i) => x + ' ' + (vals[i] == null ? '—' : o.fmt(vals[i]))).join('、')) + '">';
     for (let k = 0; k <= 4; k++) { const v = mx * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11">' + esc(o.axis(v)) + '</text>'; }
-    xs.forEach((x, i) => { const v = vals[i]; if (v != null && v > 0) s += '<rect x="' + (X(i) - bw / 2).toFixed(1) + '" y="' + Y(v).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (H - pb - Y(v)).toFixed(1) + '" rx="3" style="fill:' + (i === n - 1 ? 'var(--s-fund)' : 'var(--s-shv)') + '"><title>' + esc(x + '｜' + o.fmt(v)) + '</title></rect><text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (Y(v) - 5).toFixed(1) + '" text-anchor="middle" font-size="11.5">' + esc(o.lab ? o.lab(i) : o.fmt(v)) + '</text>';
+    xs.forEach((x, i) => { const g = fr && i === fr.k ? fr.t : 1, v = fr && i > fr.k ? null : vals[i] == null ? null : vals[i] * g; if (v != null && v > 0) s += '<rect x="' + (X(i) - bw / 2).toFixed(1) + '" y="' + Y(v).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (H - pb - Y(v)).toFixed(1) + '" rx="3" style="fill:' + (i === n - 1 ? 'var(--s-fund)' : 'var(--s-shv)') + '"><title>' + esc(x + '｜' + o.fmt(v)) + '</title></rect>' + (g < 1 ? '' : '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (Y(v) - 5).toFixed(1) + '" text-anchor="middle" font-size="11.5">' + esc(o.lab ? o.lab(i) : o.fmt(v)) + '</text>');
       s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="11.5">' + esc(x) + '</text>'; });
     return s + '</svg>';
   }
@@ -124,44 +136,47 @@
     for (let i = n + 1; i < a.length; i++) { const d = a[i] - a[i - 1]; g = (g * (n - 1) + Math.max(d, 0)) / n; l = (l * (n - 1) + Math.max(-d, 0)) / n; }
     return l === 0 ? 100 : 100 - 100 / (1 + g / l);
   }
-  function pxChart(days, closes, mas, cur, mon) { // mas: [{v, name, c, w, dash}]；mon＝月線
+  function pxChart(days, closes, mas, cur, mon, upto) { // mas: [{v, name, c, w, dash}]；mon＝月線；upto＝動態走勢畫到第幾天（含），座標軸固定
     const W = 760, H = 260, pl = 56, pr = 64, pt = 12, pb = 28, n = closes.length;
     const all = closes.concat(...mas.map(a => a.v.filter(v => v != null))), lo = Math.min(...all) * 0.97, hi = Math.max(...all) * 1.03;
     const X = i => pl + (W - pl - pr) * i / Math.max(1, n - 1), Y = v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
     const path = a => a.map((v, i) => v == null ? null : X(i).toFixed(1) + ',' + Y(v).toFixed(1)).filter(Boolean).join(' ');
-    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="股價走勢：' + esc(days[0] + ' ' + closes[0].toFixed(2) + ' → ' + days[n - 1] + ' ' + closes[n - 1].toFixed(2)) + '">';
+    const pk = upto != null || !canPlay() || n < 3 ? '' : BN.play.reg({ n, frame: f => pxChart(days, closes, mas, cur, mon, f), label: f => (f ? days[0] + ' → ' : '') + days[f] + '（第 ' + (f + 1) + '／' + n + ' ' + (mon ? '個月' : '個交易日') + '）' });
+    const cut = a => upto == null ? a : a.slice(0, upto + 1), e = upto == null ? n - 1 : upto;
+    let s = '<svg class="viz"' + pk + ' viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="股價走勢：' + esc(days[0] + ' ' + closes[0].toFixed(2) + ' → ' + days[n - 1] + ' ' + closes[n - 1].toFixed(2)) + '">';
     for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11">' + v.toFixed(v >= 100 ? 0 : v >= 10 ? 1 : 2) + '</text>'; }
     const lab = d => !mon && n <= 70 ? d.slice(5).replace('-', '/') : d.slice(2, 7).replace('-', '/');
     [...new Set([0, Math.floor(n / 4), Math.floor(n / 2), Math.floor(3 * n / 4), n - 1])].forEach(i => { s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11">' + esc(lab(days[i])) + '</text>'; });
-    mas.forEach(a => { const p = path(a.v); if (p.indexOf(' ') > 0) s += '<polyline fill="none" style="stroke:' + a.c + ';stroke-width:' + a.w + (a.dash ? ';stroke-dasharray:5 4' : '') + '" points="' + p + '"/>'; });
-    s += '<polyline fill="none" style="stroke:var(--s-fund);stroke-width:2.2" points="' + path(closes) + '"/>';
-    const lv = closes[n - 1]; s += '<circle cx="' + X(n - 1).toFixed(1) + '" cy="' + Y(lv).toFixed(1) + '" r="3.5" style="fill:var(--s-fund)"/><text class="viz-lbl" x="' + (X(n - 1) + 6).toFixed(1) + '" y="' + (Y(lv) + 4).toFixed(1) + '" font-size="12" font-weight="700">' + lv.toFixed(2) + '</text>';
+    mas.forEach(a => { const p = path(cut(a.v)); if (p.indexOf(' ') > 0) s += '<polyline fill="none" style="stroke:' + a.c + ';stroke-width:' + a.w + (a.dash ? ';stroke-dasharray:5 4' : '') + '" points="' + p + '"/>'; });
+    s += '<polyline fill="none" style="stroke:var(--s-fund);stroke-width:2.2" points="' + path(cut(closes)) + '"/>';
+    const lv = closes[e]; s += '<circle cx="' + X(e).toFixed(1) + '" cy="' + Y(lv).toFixed(1) + '" r="3.5" style="fill:var(--s-fund)"/><text class="viz-lbl" x="' + (X(e) + 6).toFixed(1) + '" y="' + (Y(lv) + 4).toFixed(1) + '" font-size="12" font-weight="700">' + lv.toFixed(2) + '</text>';
     return s + '</svg><div class="legend"><span><i style="background:var(--s-fund)"></i>收盤（' + esc(cur) + '）</span>' + mas.filter(a => a.v.some(v => v != null)).map(a => '<span><i style="background:' + a.c + '"></i>' + esc(a.name) + '</span>').join('') + '</div>';
   }
-  function river(rows, mults, cur) { // 本益比河流圖：rows [{m, px, e}]；mults 由小到大
-    const W = 760, H = 290, pl = 56, pr = 70, pt = 12, pb = 28, n = rows.length;
+  function river(rows, mults, cur, upto) { // 本益比河流圖：rows [{m, px, e}]；mults 由小到大；upto＝動態走勢畫到第幾個月（含）
+    const W = 760, H = 290, pl = 56, pr = 70, pt = 12, pb = 28, n = rows.length, on = i => upto == null || i <= upto;
     const bands = mults.map(k => rows.map(r => r.e > 0 ? r.e * k : null));
     const pxs = rows.map(r => r.px), lo = Math.max(0, Math.min(...pxs) * 0.55), hi = Math.max(...pxs) * 1.5;   // 縱軸以股價為準，超出範圍的河道裁掉
     const X = i => pl + (W - pl - pr) * i / Math.max(1, n - 1), Y = v => pt + (H - pt - pb) * (hi - v) / (hi - lo);
-    let s = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="本益比河流圖：' + esc(rows[0].m + '～' + rows[n - 1].m + '，股價與 ' + mults.join('、') + ' 倍本益比') + '">' +
+    const pk = upto != null || !canPlay() || n < 3 ? '' : BN.play.reg({ n, frame: f => river(rows, mults, cur, f), label: f => (f ? rows[0].m + ' → ' : '') + rows[f].m + '（第 ' + (f + 1) + '／' + n + ' 個月）' });
+    let s = '<svg class="viz"' + pk + ' viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="本益比河流圖：' + esc(rows[0].m + '～' + rows[n - 1].m + '，股價與 ' + mults.join('、') + ' 倍本益比') + '">' +
       '<defs><clipPath id="rvclip"><rect x="' + pl + '" y="' + pt + '" width="' + (W - pl - pr) + '" height="' + (H - pt - pb) + '"/></clipPath></defs>';
     for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, y = Y(v); s += '<line class="gl" x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y.toFixed(1) + '" y2="' + y.toFixed(1) + '"/><text class="viz-lbl" x="' + (pl - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11">' + v.toFixed(v >= 100 ? 0 : v >= 10 ? 1 : 2) + '</text>'; }
     [...new Set([0, Math.floor(n / 4), Math.floor(n / 2), Math.floor(3 * n / 4), n - 1])].forEach(i => { s += '<text class="viz-lbl" x="' + X(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11">' + esc(rows[i].m.slice(2, 7).replace('-', '/')) + '</text>'; });
-    const runs = ok => { const out = []; let seg = []; rows.forEach((_, i) => { if (ok(i)) seg.push(i); else { if (seg.length > 1) out.push(seg); seg = []; } }); if (seg.length > 1) out.push(seg); return out; };
+    const runs = ok => { const out = []; let seg = []; rows.forEach((_, i) => { if (ok(i) && on(i)) seg.push(i); else { if (seg.length > 1) out.push(seg); seg = []; } }); if (seg.length > 1) out.push(seg); return out; };
     s += '<g clip-path="url(#rvclip)">';
     for (let j = 0; j < bands.length - 1; j++) runs(i => bands[j][i] != null && bands[j + 1][i] != null).forEach(seg => {
       const up = seg.map(i => X(i).toFixed(1) + ',' + Y(bands[j + 1][i]).toFixed(1)), dn = seg.slice().reverse().map(i => X(i).toFixed(1) + ',' + Y(bands[j][i]).toFixed(1));
       s += '<polygon points="' + up.concat(dn).join(' ') + '" style="fill:var(--s-qld);fill-opacity:' + (0.06 + 0.06 * j).toFixed(2) + ';stroke:none"/>'; });
     const labs = [], above = [], below = [];
     bands.forEach((b, j) => { runs(i => b[i] != null).forEach(seg => { s += '<polyline fill="none" style="stroke:var(--s-qld);stroke-width:1;stroke-opacity:.75" points="' + seg.map(i => X(i).toFixed(1) + ',' + Y(b[i]).toFixed(1)).join(' ') + '"/>'; });
-      const e = b[n - 1]; if (e == null) return; if (e > hi) above.push(mults[j]); else if (e < lo) below.push(mults[j]); else labs.push([Y(e), mults[j] + ' 倍']); });
+      const e = b[n - 1]; if (e == null || upto != null) return; if (e > hi) above.push(mults[j]); else if (e < lo) below.push(mults[j]); else labs.push([Y(e), mults[j] + ' 倍']); });
     s += '</g>';
     if (above.length) s += '<text class="viz-lbl" x="' + (W - pr - 6) + '" y="' + (pt + 14) + '" text-anchor="end" font-size="11">↑ 超出圖表：' + esc(above.join('、')) + ' 倍</text>';
     if (below.length) s += '<text class="viz-lbl" x="' + (W - pr - 6) + '" y="' + (H - pb - 6) + '" text-anchor="end" font-size="11">↓ 低於圖表：' + esc(below.join('、')) + ' 倍</text>';
     labs.sort((a, b) => a[0] - b[0]); for (let k = 1; k < labs.length; k++) if (labs[k][0] - labs[k - 1][0] < 12) labs[k][0] = labs[k - 1][0] + 12;
     labs.forEach(([y, t]) => { s += '<text class="viz-lbl" x="' + (W - pr + 6) + '" y="' + (y + 4).toFixed(1) + '" font-size="11">' + esc(t) + '</text>'; });
-    s += '<polyline fill="none" style="stroke:var(--s-fund);stroke-width:2.2" points="' + rows.map((r, i) => X(i).toFixed(1) + ',' + Y(r.px).toFixed(1)).join(' ') + '"/>';
-    rows.forEach((r, i) => { s += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(r.px).toFixed(1) + '" r="' + (i === n - 1 ? 3.6 : 2.2) + '" style="fill:var(--s-fund)"><title>' + esc(r.m + '｜收盤 ' + r.px.toFixed(2) + ' ' + cur + '｜EPS ' + r.e.toFixed(2) + '（' + r.src + '）｜本益比 ' + (r.e > 0 ? (r.px / r.e).toFixed(1) + ' 倍' : '—（EPS 為負）')) + '</title></circle>'; });
+    s += '<polyline fill="none" style="stroke:var(--s-fund);stroke-width:2.2" points="' + rows.filter((r, i) => on(i)).map((r, i) => X(i).toFixed(1) + ',' + Y(r.px).toFixed(1)).join(' ') + '"/>';
+    rows.forEach((r, i) => { if (!on(i)) return; s += '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(r.px).toFixed(1) + '" r="' + (i === n - 1 ? 3.6 : 2.2) + '" style="fill:var(--s-fund)"><title>' + esc(r.m + '｜收盤 ' + r.px.toFixed(2) + ' ' + cur + '｜EPS ' + r.e.toFixed(2) + '（' + r.src + '）｜本益比 ' + (r.e > 0 ? (r.px / r.e).toFixed(1) + ' 倍' : '—（EPS 為負）')) + '</title></circle>'; });
     return s + '</svg><div class="legend"><span><i style="background:var(--s-fund)"></i>月收盤（' + esc(cur) + '）</span><span><i style="background:var(--s-qld)"></i>EPS × 本益比倍數（顏色越深倍數越高）</span></div>';
   }
 
@@ -247,6 +262,7 @@
           const sl = a => a.slice(i0);
           box.innerHTML = '<p class="ftitle">' + esc(PER.find(p => p[0] === key)[1]) + '日收盤（' + esc(cur) + '）</p>' + pxChart(sl(days), sl(cl), [{ v: sl(m50), name: '50 日均線', c: 'var(--s-qqq)', w: 1.6 }, { v: sl(m200), name: '200 日均線（虛線）', c: 'var(--s-shv)', w: 1.4, dash: true }], cur) + tail(days[i0], cl[i0], days[N - 1], cl[N - 1]);
         }
+        if (canPlay()) BN.play.scan(box);
         host.querySelectorAll('.pxsel button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === key)));
       };
       const trend = a50 && a200 ? (lv > a50 && a50 > a200 ? '多頭排列（股價 > 50 日線 > 200 日線）' : lv < a50 && a50 < a200 ? '空頭排列（股價 < 50 日線 < 200 日線）' : '盤整（均線交錯）') : '資料不足';
@@ -266,7 +282,7 @@
       const wk = days.filter((_, i) => i % 5 === 0 || i === days.length - 1), base = new Map(p1);
       const relS = [{ name: D.code, m: base, c: COL[0], me: true }].concat(P.slice(0, 4).map((x, k) => ({ name: x.code, m: new Map((x.p1y || []).filter(y => y[1] != null)), c: COL[k + 1] })));
       const relV = relS.map(se => { let b0 = null; return { name: se.name, c: se.c, me: se.me, v: wk.map(d => { const v = se.m.get(d); if (v == null) return null; if (b0 == null) b0 = v; return v / b0 * 100; }) }; });
-      if (relV.filter(x => x.v.filter(v => v != null).length > 10).length >= 2) h += '<div class="fig"><p class="ftitle">近 1 年相對走勢（起點＝100，原始收盤、未含股利）</p>' + lines(wk.map(d => d.slice(2, 7).replace('-', '/')).map((x, i, a) => (i % Math.ceil(a.length / 6) === 0 || i === a.length - 1) ? x : ''), relV, { fmt: v => v.toFixed(0), title: '近 1 年相對走勢', nozero: true, nodots: true }) + '</div>';
+      if (relV.filter(x => x.v.filter(v => v != null).length > 10).length >= 2) h += '<div class="fig"><p class="ftitle">近 1 年相對走勢（起點＝100，原始收盤、未含股利）</p>' + lines(wk.map(d => d.slice(2, 7).replace('-', '/')).map((x, i, a) => (i % Math.ceil(a.length / 6) === 0 || i === a.length - 1) ? x : ''), relV, { fmt: v => v.toFixed(0), title: '近 1 年相對走勢', nozero: true, nodots: true, playX: wk, playUnit: '週' }) + '</div>';
     }
     // ---- 股東結構 ----
     h += '<h3 id="co-hold">股東結構：前 10 大持有股東</h3>';
@@ -524,6 +540,7 @@
       '<li>分數：每個面向由 1～4 個指標組成；每個指標先在同一市場的所有公司中排百分位（方向相反的指標先取負號），再取平均。資料更新：' + esc(String(D.updated).slice(0, 10)) + fxNote + '。</li></ul>' +
       '<details class="glos"><summary>算法總表：本頁每個指標怎麼算</summary><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">指標</th><th class="l">公式與規則</th></tr></thead><tbody>' + GLOS.map(g => '<tr><td class="l"><b>' + esc(g[0]) + '</b></td><td class="l">' + esc(g[1]) + '</td></tr>').join('') + '</tbody></table></div></details>';
     host.innerHTML = h;
+    if (canPlay()) BN.play.scan(host);
     if (pxDraw) { pxDraw('1y'); host.querySelectorAll('.pxsel button').forEach(b => b.addEventListener('click', () => pxDraw(b.dataset.p))); }
     const sh = document.getElementById('dCoSrc'); if (sh) sh.innerHTML = src;
     // CSV 下載（在瀏覽器產生，不經伺服器）
