@@ -1,0 +1,11 @@
+{
+ "schema": "bnasdaq-macro-status/1",
+ "checked": "2026-11-21T04:38:21Z",
+ "ok": false,
+ "n_series": 126,
+ "failed": [
+  "AMDMNO"
+ ],
+ "last_ok": null,
+ "note": "有數列抓不到，沿用舊檔"
+}
