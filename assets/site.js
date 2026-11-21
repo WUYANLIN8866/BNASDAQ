@@ -9,6 +9,43 @@
   function setTheme(t) { if (t) root.setAttribute('data-theme', t); else root.removeAttribute('data-theme'); try { if (t) localStorage.setItem('bn-theme', t); else localStorage.removeItem('bn-theme'); } catch (e) { } }
   try { const t = localStorage.getItem('bn-theme'); if (t) root.setAttribute('data-theme', t); } catch (e) { }
   window.BN = window.BN || {};
+
+  // ---- 會員專屬名稱（2026-11-21 站主）：BNASDAQ-26113 對沒登入的訪客一律顯示「會員專屬」，數字與圖表照常顯示；登入後顯示原名 ----
+  // 靜態文字：頁面原始碼就寫「會員專屬」並標 data-mo，登入後在這裡換回原名。
+  // 程式產生的文字（圖表、表格、提示框、下拉選單、公告…）：沒登入時由 MutationObserver 即時把原名換成「會員專屬」。
+  (function () {
+    const CODE = 'BNASDAQ-26113', LABEL = '會員專屬', ATTRS = ['title', 'aria-label', 'alt', 'placeholder'];
+    const member = () => { try { const s = JSON.parse(sessionStorage.getItem('bn-session') || 'null'); return !!(s && s.user); } catch (e) { return false; } };
+    BN.isMember = member;
+    BN.mname = c => (c === CODE && !member()) ? LABEL : c;
+    if (member()) {
+      const show = () => document.querySelectorAll('[data-mo]').forEach(el => {
+        const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
+        while ((n = w.nextNode())) if (n.nodeValue.indexOf(LABEL) >= 0) n.nodeValue = n.nodeValue.split(LABEL).join(CODE);
+      });
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show); else show();
+      return;
+    }
+    const RAW = /^(SCRIPT|STYLE|TEXTAREA|NOSCRIPT|TEMPLATE)$/;   // 程式碼本身不動（不然會改到還沒執行的程式）
+    const text = n => { const v = n.nodeValue; if (v && v.indexOf(CODE) >= 0 && !(n.parentNode && RAW.test(n.parentNode.nodeName))) n.nodeValue = v.split(CODE).join(LABEL); };
+    const attrs = el => { if (!el.getAttribute) return; for (const a of ATTRS) { const v = el.getAttribute(a); if (v && v.indexOf(CODE) >= 0) el.setAttribute(a, v.split(CODE).join(LABEL)); } };
+    const sweep = r => {
+      if (r.nodeType === 3) { text(r); return; }
+      if (r.nodeType !== 1 && r.nodeType !== 9 && r.nodeType !== 11) return;
+      if (r.nodeType === 1) { if (RAW.test(r.nodeName)) return; attrs(r); }
+      const w = document.createTreeWalker(r, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+        { acceptNode: n => (n.nodeType === 1 && RAW.test(n.nodeName)) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+      let n; while ((n = w.nextNode())) { if (n.nodeType === 3) text(n); else attrs(n); }
+    };
+    new MutationObserver(list => {
+      for (const m of list) {
+        if (m.type === 'characterData') text(m.target);
+        else if (m.type === 'attributes') attrs(m.target);
+        else m.addedNodes.forEach(sweep);
+      }
+    }).observe(document.documentElement, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+    sweep(document.documentElement);
+  })();
   BN.toggleTheme = function () {
     const cur = root.getAttribute('data-theme');
     const osDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;

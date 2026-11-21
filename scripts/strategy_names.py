@@ -60,6 +60,8 @@ def check():
         rel = os.path.relpath(f, ROOT)
         s = strip_comments(open(f, encoding='utf-8').read())
         found = set(CODE.findall(s))
+        if re.search(r'data-mo(?![\w-])', s):   # 會員專屬代號：原始碼顯示「會員專屬」（data-mo），登入後才換回代號，視同有出現
+            found |= set(x['code'].split('-')[1] for x in j['strategies'] if x.get('member_only'))
         for c in sorted(found - want):
             errs.append(f'{rel}：代號 BNASDAQ-{c} 不在 data/strategies.json（舊代號或打錯）')
         if found & want and not want <= found:

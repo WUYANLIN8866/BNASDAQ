@@ -26,6 +26,6 @@ if (sw3) { set(/(id="ind-sw3">)[^<]*(<)/, sw3[0] + ' 次'); set(/(id="ind-sw3-s"
 // BNASDAQ-26113：同一個 30 年起點（2000-03 前接 bt-sat3-30.js 延伸前段）
 const D4 = B.dca('sat3_30', s), sw4 = (B.T.sw || {}).sat3;
 HF('4', D4);
-if (sw4) { set(/(id="ind-sw4">)[^<]*(<)/, sw4[0] + ' 次'); set(/(id="ind-sw4-s">)[^<]*(<)/, 'BNASDAQ-26113 平均每年 ' + (sw4[0] / B.yrs('2000-05-31', END)).toFixed(2) + ' 次，皆為全進全出（不設半倉）'); }
+if (sw4) { set(/(id="ind-sw4">)[^<]*(<)/, sw4[0] + ' 次'); set(/(id="ind-sw4-s">)[\s\S]*?(<\/small>)/, '<span data-mo>會員專屬</span> 平均每年 ' + (sw4[0] / B.yrs('2000-05-31', END)).toFixed(2) + ' 次，皆為全進全出（不設半倉）'); }
 if (h !== h0) fs.writeFileSync(path.join(ROOT, 'index.html'), h);
 console.log('首頁靜態數字：終點 ' + END + '｜' + big + '｜' + sub + (h !== h0 ? '（已更新）' : '（不需更新）'));
