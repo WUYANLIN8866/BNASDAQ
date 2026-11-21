@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """BNASDAQ｜首頁回測每月延伸（每月初由排程任務執行；也可手動執行）。
-產生器（含 BNASDAQ-26110／26111／26112 的規則與基礎資料）存放在私人位置，不放在本公開 repo；排程任務執行前先下載到暫存資料夾。
+產生器（含 BNASDAQ-26110／26111／26112／26113 的規則與基礎資料）存放在私人位置，不放在本公開 repo；排程任務執行前先下載到暫存資料夾。
 1) 套件版本不符時安裝產生器 requirements.txt 指定的版本（scikit-learn 1.9.1、statsmodels 0.15.0）
-2) 執行產生器：assets/bt.js、assets/bt-sat.js、assets/bt-sat2.js 延伸到上個月最後一個交易日；歷史部分必須與現有檔案逐值相同，否則不寫檔；
+2) 執行產生器：assets/bt.js、assets/bt-sat.js、assets/bt-sat2.js、assets/bt-sat3.js 延伸到上個月最後一個交易日；歷史部分必須與現有檔案逐值相同，否則不寫檔；
    只輸出到上個月底，當月持倉不計算、不輸出
 3) 有更新時：同步首頁靜態備用數字（patch_home.js）與資源版本號（stamp_assets.py）
 結束碼：0＝已更新或已是最新；2＝公開資料還沒齊（稍後再跑）；1＝錯誤

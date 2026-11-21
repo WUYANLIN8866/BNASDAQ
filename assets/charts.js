@@ -158,7 +158,10 @@
     const body = wrapFig(host, o);
     const W = 820, H = o.height || 300, pad = { l: 56, r: 12, t: 20, b: 40 };
     const svg = frame(body, W, H);
-    const n = o.counts.length, max = Math.max(...o.counts); const x0 = o.edges[0], x1 = o.edges[n];
+    const n = o.counts.length, max = Math.max(...o.counts);
+    // 橫軸範圍：分布的兩端；標記線（例如主回測）落在分布之外時，把橫軸延伸到看得到那條線（2026-11-21：之前線與標籤會被切在圖外）
+    const mx = (o.marks || []).map(m => m.x).filter(v => v != null && isFinite(v)), e0 = o.edges[0], e1 = o.edges[n], span = Math.max(e1, ...mx) - Math.min(e0, ...mx);
+    const x0 = Math.min(e0, ...mx) < e0 ? Math.min(e0, ...mx) - span * 0.012 : e0, x1 = Math.max(e1, ...mx) > e1 ? Math.max(e1, ...mx) + span * 0.012 : e1;
     const xOf = v => pad.l + (W - pad.l - pad.r) * (v - x0) / (x1 - x0), yOf = c => H - pad.b - (H - pad.t - pad.b) * c / (max * 1.08);
     const g = el('g', { class: 'viz-grid' }, svg); niceTicks(0, max * 1.08, 4).forEach(c => { el('line', { x1: pad.l, x2: W - pad.r, y1: yOf(c), y2: yOf(c) }, g); text(svg, pad.l - 8, yOf(c) + 4, c.toLocaleString(), { 'text-anchor': 'end', class: 'viz-lbl' }); });
     const ax = el('g', { class: 'viz-axis' }, svg); el('line', { x1: pad.l, x2: W - pad.r, y1: yOf(0), y2: yOf(0) }, ax);

@@ -1,6 +1,6 @@
 /* BNASDAQ｜回測起點：讓每一張回測圖表都能自由改起點（年／月），同一頁的圖表、表格與關鍵數字同步重算。
    資料：assets/bt.js（window.BT）＝同一套引擎產出的月底權益與日權益（1986-09 起）：BNASDAQ-26110 fund（專案規則 B.2）、
-   BNASDAQ-26111 sat（B.3）、BNASDAQ-26112 sat2（B.4；兩者 2000-03 起才有訊號，之前為 null——用 first('sat')、first('sat2') 取得最早可用月份）。
+   BNASDAQ-26111 sat（B.3）、BNASDAQ-26112 sat2（B.4）、BNASDAQ-26113 sat3（B.5；三者 2000-03 起才有訊號，之前為 null——用 first('sat')、first('sat2')、first('sat3') 取得最早可用月份）。
    bt.js 每月初延伸到上個月最後一個交易日。終點：首頁（載入前設 window.BT_LIVE＝true）＝資料最新的月底；
    其他頁＝data.js 的研究區間終點（SITE.window.end），所以研究、定期定額、個股對比頁的數字與研究區間一致、不隨每月更新而變。
    口徑：月底收盤為起點；年數＝日曆日 ÷ 365.25；定期定額＝每月底扣款、每筆成本 0.1%、最後一個月底估值、IRR 以實際日期折算；最大回撤以日收盤計。
@@ -31,8 +31,8 @@
   const END = T.end, LAST = N - 1;
   const yrs = (a, b) => (Date.parse(b) - Date.parse(a)) / DAY / 365.25;
   const clamp = ym => { if (!/^\d{4}-\d{2}$/.test(String(ym))) return T.official; if (!IDX.has(ym)) { ym = ym < T.min_start ? T.min_start : (ym > T.max_start ? T.max_start : T.official); } return ym < T.min_start ? T.min_start : (ym > T.max_start ? T.max_start : ym); };
-  const KEYS = ['fund', 'sat', 'sat2', 'qqq', 'qld', 'shv'];
-  const NAME = { fund: 'BNASDAQ-26110', sat: 'BNASDAQ-26111', sat2: 'BNASDAQ-26112', qqq: 'QQQ', qld: 'QLD', shv: 'SHV' };
+  const KEYS = ['fund', 'sat', 'sat2', 'sat3', 'qqq', 'qld', 'shv'];
+  const NAME = { fund: 'BNASDAQ-26110', sat: 'BNASDAQ-26111', sat2: 'BNASDAQ-26112', sat3: 'BNASDAQ-26113', qqq: 'QQQ', qld: 'QLD', shv: 'SHV' };
   // 各序列最早可用的月份（BNASDAQ-26111 的模型自 2000-03 起才有訊號）；起點早於此月時，比較區塊自動改從此月開始
   const first = key => (T.first && T.first[key]) || T.min_start;
 
