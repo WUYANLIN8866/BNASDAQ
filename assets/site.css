@@ -622,3 +622,13 @@ ul.ind { max-width: none; }
 .site-foot .tools .search button:hover { background: #e0c48d; border-color: #e0c48d; color: #111; }
 .site-foot .foot-tools + .foot-grid { padding-top: 36px; }
 @media (max-width: 640px) { .site-foot .tools .search { max-width: none; } }
+
+/* 深／淺色切換放回頁首右上角，搜尋留在頁尾（2026-11-21） */
+.brand .wrap > .themebtn { justify-self: end; }
+@media (max-width: 1200px) {
+  .brand .wrap { grid-template-columns: minmax(0, 1fr) auto; }
+  .brand .wrap > .mark { grid-column: 1; grid-row: 1; }
+  .brand .wrap > .themebtn { grid-column: 2; grid-row: 1; }
+  .brand .wrap > div { grid-column: 1 / -1; }
+  .brand .wrap > div:empty { display: none; }
+}
