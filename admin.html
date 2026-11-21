@@ -113,7 +113,7 @@
   </div>
   <div class="note"><p>安全提醒：accounts.json 是公開檔案。登入只比對密碼雜湊（PBKDF2 310,000 次）；供管理員查看的密碼副本用 RSA-3072 加密，私鑰與網站寫入權杖都用管理員的個人金鑰加密，只有管理員登入後解得開。所以<b>管理員密碼要夠長、不要和其他網站共用</b>；會員密碼建議用「產生」的隨機密碼，避免會員把在別處使用的密碼交給本站。</p></div>
 </div></div>
-<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=9764066003"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=c7cf690bab"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;

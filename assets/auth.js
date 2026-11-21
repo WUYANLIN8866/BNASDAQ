@@ -65,12 +65,12 @@
   async function loadRules(sess) {
     if (window.BN_RULES) return window.BN_RULES;
     const r = await fetch('data/rules.enc.json?t=' + Date.now(), { cache: 'no-store' }); const j = await r.json();
-    let src;
+    let src, pk = null;
     if (j.ek) {
       // 第 2 版：規則用一次性 AES 金鑰加密，該金鑰再用「會員規則公鑰」（RSA-OAEP-SHA256）包裝；
       // 對應的私鑰以會員主金鑰（CK）加密後存在 data/rules-key.json，所以只有登入的會員能解開，而發布規則的一方不需要任何秘密
       const kf = await (await fetch('data/rules-key.json?t=' + Date.now(), { cache: 'no-store' })).json();
-      const pk = await crypto.subtle.importKey('pkcs8', await aesDec(b64.dec(sess.ck), kf.priv.iv, kf.priv.ct), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+      pk = await crypto.subtle.importKey('pkcs8', await aesDec(b64.dec(sess.ck), kf.priv.iv, kf.priv.ct), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
       const dk = new Uint8Array(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, pk, b64.dec(j.ek)));
       src = dec.decode(await aesDec(dk, j.iv, j.ct));
       // 規則用到的金融環境月資料（data/macro.enc.json，GitHub Actions 每天由 FRED 公開資料產生、用同一把會員規則公鑰加密）；
@@ -85,6 +85,22 @@
     }
     (new Function(src))();
     if (!window.BN_RULES) throw new Error('規則載入失敗');
+    // 第 2 版金融環境月資料（規則表示需要時才載入；同樣由 GitHub Actions 每天由 FRED 公開資料產生、用會員規則公鑰加密）：
+    //   data/macro2.enc.json＝最新；data/macro2/asof-YYYY-MM.enc.json＝各月月底定案檔（寫一次不再改，所以可以讓瀏覽器快取），清單在 data/macro2/index.json。
+    // 結果放在 window.BN_MACRO2＝{ ready, latest, asof }；某一份讀不到就是 null，清單讀不到 ready＝false，由規則決定怎麼處理（不會拿別的月份的資料頂替）
+    if (pk && window.BN_RULES.macroAfter) {
+      const dec2 = async (url, opt) => { const mj = await (await fetch(url, opt)).json(); const mk = new Uint8Array(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, pk, b64.dec(mj.ek.member))); return JSON.parse(dec.decode(await aesDec(mk, mj.iv, mj.ct))); };
+      const M2 = { ready: false, latest: null, asof: {} };
+      try { M2.latest = await dec2('data/macro2.enc.json?t=' + Date.now(), { cache: 'no-store' }); } catch (e) { M2.latest = null; }
+      try {
+        const r2 = await fetch('data/macro2/index.json?t=' + Date.now(), { cache: 'no-store' });
+        const months = r2.status === 404 ? [] : ((await r2.json()).months || []);
+        if (r2.status !== 404 && !r2.ok) throw new Error('index ' + r2.status);
+        await Promise.all(months.filter(m => m > window.BN_RULES.macroAfter).map(async m => { try { M2.asof[m] = await dec2('data/macro2/asof-' + m + '.enc.json'); } catch (e) { M2.asof[m] = null; } }));
+        M2.ready = true;
+      } catch (e) { M2.ready = false; }
+      window.BN_MACRO2 = M2;
+    }
     window.BN_RULES._src = src;
     return window.BN_RULES;
   }

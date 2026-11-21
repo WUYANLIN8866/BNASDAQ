@@ -86,7 +86,7 @@
   <div class="strat" id="cards"></div>
 </div>
 </div></div></div>
-<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=9764066003"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
+<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=c7cf690bab"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
 <script>
 (async function(){
   const sess=BN.auth.require(); if(!sess) return;
@@ -115,13 +115,14 @@
     // 目前持有
     $('#nowhd').textContent='本月持有（'+holdM+'）'; $('#prevhd').textContent='上月持有（'+prevM+'）';
     $('#nowbody').innerHTML=rules.STRATEGIES.map(st=>{const w=L.lastComplete.w[st.id], wp=L.prevComplete.w[st.id];
-      return '<tr><td class="l"><b>'+esc(st.id)+'</b></td><td class="l"><span class="badge '+cls(w)+'">'+T(w)+'</span></td><td class="l"><span class="badge '+cls(wp)+'">'+T(wp)+'</span></td><td class="l">'+(w!==wp?'<b style="color:var(--bad)">要換倉</b>（'+esc(L.lastComplete.month)+' 月底後的下一個交易日開盤）':'<span class="ok-dot"></span>不用動')+'</td></tr>';}).join('');
+      return '<tr><td class="l"><b>'+esc(st.id)+'</b></td><td class="l"><span class="badge '+cls(w)+'">'+T(w)+'</span></td><td class="l"><span class="badge '+cls(wp)+'">'+T(wp)+'</span></td><td class="l">'+(w==null||wp==null?'—':w!==wp?'<b style="color:var(--bad)">要換倉</b>（'+esc(L.lastComplete.month)+' 月底後的下一個交易日開盤）':'<span class="ok-dot"></span>不用動')+'</td></tr>';}).join('');
     // 下個月機率：先畫「用最新收盤推算」，再非同步跑模擬
     const isME=c&&left===0;
     $('#prob-head').innerHTML=isME?'最新收盤已是 '+esc(c.m)+' 最後一個交易日：下面的結果就是 '+esc(nextM)+' 的正式判斷。':'下個月＝<b>'+esc(nextM)+'</b>。'+esc(c.m)+' 還有 <b>'+left+'</b> 個交易日，月底收盤還沒出來，所以用模擬估計機率（計算中…）';
     const card=(st,F)=>{const pv=L.provisional.w[st.id], fl=L.flips[st.id]||{};
       let pr='';
-      if(F){const ps=F.probs[st.id]; const best=ps.slice().sort((a,b)=>b.p-a.p)[0];
+      if(!L.preps||!L.preps[st.id]) pr='<div class="small">這一條的資料暫時無法取得，請稍後重新整理。</div>';
+      else if(F){const ps=F.probs[st.id]; const best=ps.slice().sort((a,b)=>b.p-a.p)[0];
         pr='<div class="small">'+esc(nextM)+' 持有機率（模擬 '+F.n.toLocaleString('en-US')+' 次）</div><div class="pbar" role="img" aria-label="'+esc(ps.map(x=>T(x.w)+' '+pc(x.p)).join('，'))+'">'+ps.filter(x=>x.p>0).map(x=>'<span class="'+cls(x.w)+'" style="width:'+(x.p*100).toFixed(2)+'%"></span>').join('')+'</div>'
           +'<ul class="plist">'+ps.map(x=>'<li><span class="badge '+cls(x.w)+'">'+T(x.w)+'</span> <b>'+pc(x.p)+'</b></li>').join('')+'</ul>'
           +'<div class="hold" style="font-size:22px;margin-top:6px">最可能：'+T(best.w)+'（'+pc(best.p)+'）</div>';}
@@ -137,7 +138,7 @@
         $('#prob-head').innerHTML='下個月＝<b>'+esc(nextM)+'</b>。'+esc(c.m)+' 還有 <b>'+F.days+'</b> 個交易日。模擬方法：QQQ 自 '+esc(F.poolFrom)+' 起 '+F.poolN.toLocaleString('en-US')+' 個交易日的報酬與日內高低，依目前波動（EWMA λ＝'+F.lambda+'，日波動 '+(F.sigma*100).toFixed(2)+'%）重抽樣，模擬到月底 '+F.n.toLocaleString('en-US')+' 次，再用規則判斷每一次的月底結果。月底收盤 90% 落在 '+F.price.p5.toFixed(2)+'～'+F.price.p95.toFixed(2)+'（中位數 '+F.price.p50.toFixed(2)+'）。這是估計，不是保證；同一份資料每次結果相同。';
       }catch(e){$('#prob-head').innerHTML='<span class="msg err">機率計算失敗：'+esc(e.message||e)+'</span>';}},30);
     }
-    window.BN.memberTargets={month:holdM,list:rules.STRATEGIES.map(st=>({id:st.id,w:L.lastComplete.w[st.id],text:T(L.lastComplete.w[st.id])}))};
+    window.BN.memberTargets={month:holdM,list:rules.STRATEGIES.filter(st=>L.lastComplete.w[st.id]!=null).map(st=>({id:st.id,w:L.lastComplete.w[st.id],text:T(L.lastComplete.w[st.id])}))};
     document.dispatchEvent(new CustomEvent('bn:targets',{detail:window.BN.memberTargets}));
   }catch(err){$('#nowbody').innerHTML='<tr><td colspan="4"><span class="msg err">載入失敗：'+esc(err.message||err)+'</span></td></tr>';$('#cards').innerHTML='';$('#prob-head').textContent='';}
 })();
