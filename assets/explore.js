@@ -25,6 +25,35 @@
   const ageMin = iso => (Date.now() - Date.parse(iso)) / 60000;
   let DATA = null, lastKey = '';
 
+  // 2026-11-21 16:07 站主：過關門檻提高為「年化報酬率 > 56% 且日線最大回撤 < 27%」、五關過關數歸零、清除已達標候選，
+  // 之後只列符合新門檻的候選。第 1 台 AI Server 改好程式前送來的快照沒有 bar 欄位（裡面還是舊門檻），網頁先自己套新門檻：
+  //  - 已測過的組合裡最高的年化就是 d.best；d.best ≤ 56% → 新門檻下第 1 關全部不過 → 五關都是 0（精確值，不是估計）
+  //  - d.best > 56% 時，快照裡沒有足夠資料算出新門檻下的過關數 → 顯示「—」，等 AI Server 用新門檻重算
+  //  - 候選只留年化 > 56% 的；第 2 關用新的回撤門檻重新判定
+  // AI Server 送來帶 bar 欄位的快照（已用新門檻產生）時，這段不做任何事。
+  const BAR = { cagr: 0.56, mdd: -0.27 };
+  function applyBar(d) {
+    if (!d || d.bar) return d;
+    d.target = BAR.cagr; d.mdd_target = BAR.mdd;
+    d.gap_pp = d.best == null ? null : (BAR.cagr - d.best) * 100;
+    const clean = d.best != null && d.best <= BAR.cagr;
+    d.gates = clean ? [0, 0, 0, 0, 0] : null; d.gates_unknown = !clean; d.passed = clean ? 0 : null;
+    const mddOf = c => { const m = /回撤\s*([−–-]?\d+(?:\.\d+)?)%/.exec(String((c.nums || [])[1] || '')); return m ? parseFloat(m[1].replace(/[−–]/g, '-')) / 100 : null; };
+    d.cands = (Array.isArray(d.cands) ? d.cands : []).filter(c => c && c.cagr > BAR.cagr).map(c => {
+      const g = Array.isArray(c.g) ? c.g.slice() : c.g, m = mddOf(c), n = Array.isArray(c.nums) ? c.nums.slice() : c.nums;
+      if (Array.isArray(g) && g.length === 5 && m != null && !(m > BAR.mdd)) g[1] = 'fail';
+      if (Array.isArray(n)) {
+        n[0] = String(n[0] || '').replace(/（要 > [\d.]+%）/, `（要 > ${pct(BAR.cagr)}）`);
+        n[1] = String(n[1] || '').replace(/（要比 [−–-]?[\d.]+% 淺）/, `（要比 ${pct(BAR.mdd)} 淺）`);
+      }
+      const k = Array.isArray(g) ? g.indexOf('fail') : -1;
+      return Object.assign({}, c, { g, nums: n, verdict: k >= 0 ? `未過關（卡在第 ${k + 1} 關）` : c.verdict });
+    });
+    d.cands_note = '';
+    if (d.status === 'found' && !d.cands.length) d.status = 'running';
+    return d;
+  }
+
   // 2026-11-18 00:00 user（截圖圈起兩列：「移除圈起來的」）：階段表不列這兩列——
   //   「第 11 輪前 100 名，參數抽樣跑（延後，排到最後再跑）」、「第 12 輪前 1,000 名，參數全跑」。
   // 階段名單來自探索程式每分鐘覆寫的快照，沒有 id 欄位，所以用名稱開頭認列（後面的文字會變，例如括號裡的備註）。
@@ -127,16 +156,18 @@
     const key = d.updated_at + '|' + d.status + '|' + d.tested;
     if (key === lastKey) return;          // same snapshot: only the relative time above needs refreshing
     lastKey = key;
-    const gap = d.gap_pp == null ? null : d.gap_pp;
+    // 2026-11-21：差距一律由目標與最佳值現算（門檻改過時不依賴快照裡舊的 gap_pp）
+    const gap = d.best != null && d.target != null ? (d.target - d.best) * 100 : (d.gap_pp == null ? null : d.gap_pp);
     $('xp-kv').innerHTML = [
       tile('本階段進度', pct(d.stage_pct, 1), d.stage ? esc(d.stage) : '—'),
       tile('累計已回測組數', full(d.tested), `涵蓋 ${full(d.types_tested)} 種方法組合`, 'fit'),
       // 2026-11-18 15:50 user: 「還差 -4.50」看不懂 → 超過目標時改寫「已高出」；最佳值來自還沒驗證的新一輪搜尋時一併註明
-      tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap == null ? '' : gap > 0 ? `，還差 ${gap.toFixed(2)} 個百分點` : `，已高出 ${(-gap).toFixed(2)} 個百分點`}${pendingTop(d).length && pendingTop(d)[0].best >= d.best - 1e-12 ? `（第 ${pendingTop(d)[0].round} 輪搜尋中的數字，尚待驗證）` : ''}`),
+      tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${d.mdd_target != null ? `（最大回撤需小於 ${pct(-d.mdd_target)}）` : ''}${gap == null ? '' : gap > 0 ? `，還差 ${gap.toFixed(2)} 個百分點` : `，已高出 ${(-gap).toFixed(2)} 個百分點`}${pendingTop(d).length && pendingTop(d)[0].best >= d.best - 1e-12 ? `（第 ${pendingTop(d)[0].round} 輪搜尋中的數字，尚待驗證）` : ''}`),
       // 2026-11-13: pass count as a 5-tuple, one figure per gate in the order of the list at the foot of the page
       // (cumulative: the k-th figure = candidates that passed gates 1..k, so the last one = passed everything)
       // 2026-11-21：數字變長會撐破格子 → 字不縮小，只在五個數字之間換行（不會從數字中間斷開）
-      Array.isArray(d.gates) && d.gates.length === 5
+      d.gates_unknown ? tile('過關數（第 1 → 5 關）', '—', '門檻剛提高，等待 AI Server 用新門檻重新計算')
+      : Array.isArray(d.gates) && d.gates.length === 5
         ? tile('過關數（第 1 → 5 關）', '(' + d.gates.map(g => nf.format(g || 0)).join(',<wbr>') + ')', '依序為報酬、回撤、各時間窗、不使用未來資訊、參數穩健；每一格是連續通過到該關的候選數，最後一格才是全部通過', 'gates')
         : tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
       // tokens used by the AI session that runs the search on machine 1 (user request 2026-11-07), plain numbers
@@ -168,7 +199,7 @@
         yfmt: v => v.toFixed(1) + '%', tipfmt: v => v.toFixed(2) + '%',
         series: [
           { name: '目前最佳候選', short: '最佳候選', values: H.map(h => h[2] == null ? null : h[2] * 100), color: 'var(--s-fund)', width: 2.5 },
-          { name: '門檻（現行最佳模型＋5 個百分點）', short: '門檻', values: H.map(() => d.target * 100), color: 'var(--bad)', dash: '6 4' },
+          { name: '過關門檻（年化報酬率）', short: '門檻', values: H.map(() => d.target * 100), color: 'var(--bad)', dash: '6 4' },
           { name: '現行最佳模型', short: '現行', values: H.map(() => d.base * 100), color: 'var(--s-shv)', dash: '2 4' },
         ],
       });
@@ -259,7 +290,7 @@
 
   async function tick() {
     const d = await load();
-    if (d) { DATA = d; render(); $('xp-err').hidden = true; }
+    if (d) { DATA = applyBar(d); render(); $('xp-err').hidden = true; }
     else if (!DATA) { $('xp-err').hidden = false; }
   }
 
