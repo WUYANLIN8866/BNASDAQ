@@ -43,7 +43,7 @@
   <ol class="steps">
     <li><b>依模型分級。</b>長期年化報酬越高的模型，費用越高：BNASDAQ-26110 為入門方案，BNASDAQ-26111、BNASDAQ-26112 依序遞增，<span data-mo>會員專屬</span> 為旗艦方案，採邀請制、不公開報價。</li>
     <li><b>依資產等級。</b>資產越高，費用占資產的比例越低；同一級距內月費相同。</li>
-    <li><b>申請資格。</b>BNASDAQ-26110 適用資產 200 萬元以上；BNASDAQ-26112 適用資產 1,400 萬元以上；BNASDAQ-26111 暫不單獨開放；<span data-mo>會員專屬</span> 僅限受邀。</li>
+    <li><b>入門資產。</b>BNASDAQ-26110 資產 100 萬元起；BNASDAQ-26111 150 萬元起；BNASDAQ-26112 200 萬元起；<span data-mo>會員專屬</span> 僅限受邀，受邀資產 250 萬元起。</li>
   </ol>
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#ref">特別說明</a></li><li><a href="#quote">試算月費</a></li><li><a href="#how">計費方式</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="risk.html">風險與代價</a></li><li><a href="research.html">研究與回測</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
@@ -55,17 +55,17 @@
   var LO=[1e6,3e6,5e6,1e7,3e7,1e8], HI=[3e6,5e6,1e7,3e7,1e8,Infinity];
   var M=[
     {code:'BNASDAQ-26113',tier:'旗艦',color:'var(--s-sat3)',invite:true},
-    {code:'BNASDAQ-26112',tier:'專業',color:'var(--s-sat2)',min:1.4e7,f:[12000,13000,14000,16000,22000,41000]},
-    {code:'BNASDAQ-26111',tier:'進階',color:'var(--s-sat)',closed:true,f:[8000,8000,9000,10000,14000,26000]},
-    {code:'BNASDAQ-26110',tier:'入門',color:'var(--s-fund)',min:2e6,f:[5000,6000,6000,7000,10000,19000]}];
+    {code:'BNASDAQ-26112',tier:'專業',color:'var(--s-sat2)',min:2e6,f:[12000,13000,14000,16000,22000,41000]},
+    {code:'BNASDAQ-26111',tier:'進階',color:'var(--s-sat)',min:1.5e6,f:[8000,8000,9000,10000,14000,26000]},
+    {code:'BNASDAQ-26110',tier:'入門',color:'var(--s-fund)',min:1e6,f:[5000,6000,6000,7000,10000,19000]}];
   var box=document.getElementById('plan-rows'), out=document.getElementById('plan-lv-txt'), sl=document.getElementById('plan-lv');
   function wan(v){return v>=1e8?(v/1e8)+' 億':(v/1e4).toLocaleString('zh-TW')+' 萬';}
   function status(m,i){
     if(m.invite) return ['僅限受邀','var(--gold)',true];
     if(m.closed) return ['暫不單獨開放','var(--muted)',false];
-    if(LO[i]>=m.min) return ['符合申請資格','var(--good)',true];
+    if(LO[i]>=m.min) return ['達入門資產','var(--good)',true];
     if(HI[i]>m.min) return ['資產達 '+wan(m.min)+'元起可申請','var(--warn)',true];
-    return ['未達申請資格','var(--muted)',false];
+    return ['未達入門資產','var(--muted)',false];
   }
   function draw(i){
     out.textContent=LV[i]; sl.setAttribute('aria-valuetext','客戶資產 '+LV[i]);
