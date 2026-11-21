@@ -91,8 +91,8 @@
         el('circle', { cx: l.x0, cy: l.y0, r: 3, fill: l.s.color, stroke: 'var(--paper)', 'stroke-width': 1.5 }, evg);
         el('path', { d: 'M' + (l.x0 + 4).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (lx - 12).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (lx - 4).toFixed(1) + ' ' + l.y.toFixed(1), fill: 'none', stroke: l.s.color, 'stroke-width': 1, 'stroke-opacity': EV.leader != null ? EV.leader : .55, 'stroke-dasharray': EV.leaderDash || null }, evg);   // EV.leader／leaderDash：引線透明度與虛線（首頁動態走勢用淡虛線）
         const t = text(evg, lx, l.y + 4, '', { class: 'viz-txt' });
-        const a = el('tspan', { fill: l.s.color, 'font-weight': 700 }, t); a.textContent = EV.fmt(l.v);
-        const b = el('tspan', { dx: 6, class: 'viz-endname' }, t); b.textContent = l.s.short || l.s.name;
+        const a = el('tspan', { fill: l.s.color, 'font-weight': 700 }, t); a.textContent = l.s.mask || EV.fmt(l.v);   // s.mask：不顯示數值、只顯示這段文字（例：會員專屬）
+        const b = el('tspan', { dx: 6, class: 'viz-endname' }, t); b.textContent = l.s.mask ? '' : (l.s.short || l.s.name);
       });
     }
     (o.marks || []).forEach(m => { const x = xOf(m.i), y = yOf(m.v); el('circle', { cx: x, cy: y, r: 5, fill: 'var(--paper)', stroke: m.color || 'var(--ink)', 'stroke-width': 2 }, svg); if (m.label) text(svg, x + (m.dx || 8), y + (m.dy || -8), m.label, { class: 'viz-txt', 'font-weight': 600 }); });
@@ -102,7 +102,7 @@
       items.forEach(({ k, v }) => { if (v == null || !isFinite(v)) { dots[k].style.display = 'none'; return; } dots[k].setAttribute('cx', xOf(i)); dots[k].setAttribute('cy', yOf(v)); dots[k].style.display = ''; });
       // 提示框依該點數值由高到低排列（tipSort:false 可改回序列順序）
       const order = o.tipSort === false ? items : items.slice().sort((a, b) => ((b.v == null || !isFinite(b.v)) ? -Infinity : b.v) - ((a.v == null || !isFinite(a.v)) ? -Infinity : a.v));
-      order.forEach(({ s, v }) => { if (v == null || !isFinite(v)) return; h += '<br><span style="color:' + s.color + '">●</span> ' + s.name + '：' + (o.tipfmt || yfmt)(v); });
+      order.forEach(({ s, v }) => { if (v == null || !isFinite(v)) return; h += '<br><span style="color:' + s.color + '">●</span> ' + s.name + '：' + (s.mask || (o.tipfmt || yfmt)(v)); });
       BN.tip.show(h, cx, cy); if (evg) evg.style.display = 'none';
     }, () => { dots.forEach(d => d.style.display = 'none'); if (evg) evg.style.display = ''; });
     return svg;

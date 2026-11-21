@@ -117,7 +117,7 @@
   </ul>
 </div></section>
 
-<script src="assets/site.js?v=f307221e06"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/bt-sat3-30.js?v=4e77b68d53"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=f4affab552"></script><script src="assets/charts.js?v=c7662277ab"></script>
+<script src="assets/site.js?v=f307221e06"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/bt-sat3-30.js?v=4e77b68d53"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=f4affab552"></script><script src="assets/charts.js?v=6f33da45ee"></script>
 <script>
 (function(){
   // 最新發布分頁與公告
@@ -152,8 +152,9 @@ const GSYM='^892400-USD-STRD';   // 全球股票指數：MSCI ACWI（Yahoo 代�
 const WP={opt:null,t:null,i:0,lo:0,hi:0,btn:null};
 // 每個月持有什麼（2026-11-21 18:10 站主）：由公開的逐日淨值推回——月內第 2 個交易日起、QLD 單日漲跌超過 0.4% 的日子，
 // 「策略日報酬 ÷ QLD 日報酬」取中位數，再取最接近的 0／0.5／1。和回測產生器的實際持倉逐月比對：26110 481 個月、其他三個各 319 個月全部相同。
-// 只到上個月底（圖的最後一個月），現在的持有不在這裡。HOLD_PUBLIC＝false 時沒登入顯示「會員專屬」。
-const HOLD_PUBLIC=false;
+// 只到上個月底（圖的最後一個月），現在的持有不在這裡。
+// 站主 18:20：沒登入也能看動態走勢，只有 26113 的名稱、報酬率、持有顯示「會員專屬」；登入後沒有任何限制。
+const MOV=name=>name==='BNASDAQ-26113'&&!(BN.isMember&&BN.isMember());
 const HOLD=(()=>{const DD=B.DD,T=B.T,byM=new Map(),C={};DD.forEach((d,j)=>{const m=d.slice(0,7);let a=byM.get(m);if(!a)byM.set(m,a=[]);a.push(j);});
   return (k,m)=>{const key=k+'|'+m;if(key in C)return C[key];const js=byM.get(m),e=T.daily[k],q=T.daily.qld;let r=null;
     if(js&&e&&q){const ws=[];for(let t=1;t<js.length;t++){const j=js[t];if(e[j]==null||e[j-1]==null)continue;const rq=q[j]/q[j-1]-1;if(Math.abs(rq)<0.004)continue;ws.push((e[j]/e[j-1]-1)/rq);}
@@ -161,10 +162,10 @@ const HOLD=(()=>{const DD=B.DD,T=B.T,byM=new Map(),C={};DD.forEach((d,j)=>{const
     return C[key]=r;};})();
 const HK=[['fund','BNASDAQ-26110','var(--s-fund)'],['sat','BNASDAQ-26111','var(--s-sat)'],['sat2','BNASDAQ-26112','var(--s-sat2)'],['sat3','BNASDAQ-26113','var(--s-sat3)']];
 function wpHold(i){const box=$('world-hold'),o=WP.opt;if(!box||!o)return;if(i==null){box.hidden=true;box.innerHTML='';return;}
-  const m=o.x[i],pm=i>0?o.x[i-1]:null,show=HOLD_PUBLIC||(BN.isMember&&BN.isMember());
+  const m=o.x[i],pm=i>0?o.x[i-1]:null;
   const txt=w=>w==null?'尚無訊號':w===1?'100% QLD':w===0.5?'QLD、SHV 各半':'100% SHV';
   box.hidden=false;box.innerHTML='<span class="wh-k">'+m+(i>0?' 當月持有':' 起點')+'</span>'+HK.filter(h=>o.series.some(s=>s.name===h[1])).map(h=>{
-    const w=i>0?HOLD(h[0],m):null,pw=i>1?HOLD(h[0],pm):w,chg=i>1&&w!=null&&pw!=null&&w!==pw;
+    const show=!MOV(h[1]),w=i>0?HOLD(h[0],m):null,pw=i>1?HOLD(h[0],pm):w,chg=i>1&&w!=null&&pw!=null&&w!==pw;
     return '<span class="wh-i'+(chg&&show?' chg':'')+'"><span class="sw" style="background:'+h[2]+'"></span>'+h[1]+'<b>'+(i===0?'—':show?txt(w):'會員專屬')+'</b></span>';}).join('');}
 function wpLabel(){if(WP.btn){const p=!!WP.t;WP.btn.textContent=p?'暫停':(WP.i>0?'繼續播放':'動態走勢');WP.btn.setAttribute('aria-pressed',String(p));}}
 function wpStop(){if(WP.t){clearInterval(WP.t);WP.t=null;}wpLabel();}
@@ -188,9 +189,9 @@ function renderWorld(start){
   if(g){removed=series.filter(x=>x.isIdx&&!x.gidx&&x.end<g.end);series=series.filter(x=>removed.indexOf(x)<0);}
   const cg=x=>Math.pow(1+x.end,1/yrs)-1;
   $('c-world').innerHTML='';
-  WP.opt={title:'起點＝100 的累積走勢（對數刻度）',sub:W0+' 至 '+END+'，每月月底；ETF／個股含息，指數為價格指數；虛線＝全球股票指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',endVals:{W:1040,height:460,padR:210,fmt:v=>(v>=100?'+':'')+Math.round(v-100).toLocaleString('zh-Hant-TW')+'%'},series:series.map(s=>({name:s.name,short:s.gidx?'MSCI ACWI':undefined,values:s.values,color:s.color,dash:s.dash||undefined}))};wpReset();BN.charts.line($('c-world'),WP.opt);
+  WP.opt={title:'起點＝100 的累積走勢（對數刻度）',sub:W0+' 至 '+END+'，每月月底；ETF／個股含息，指數為價格指數；虛線＝全球股票指數',x:M,log:true,yfmt:v=>v.toFixed(0),tipfmt:v=>v.toFixed(1)+'（'+(v>=100?'+':'')+(v-100).toFixed(0)+'%）',endVals:(()=>{const cw=$('c-world').clientWidth||1040,nw=cw<760;return {W:Math.round(Math.min(1040,Math.max(520,cw))),height:nw?420:460,padR:nw?170:210,minWidth:520,fmt:v=>(v>=100?'+':'')+Math.round(v-100).toLocaleString('zh-Hant-TW')+'%'};})(),series:series.map(s=>({name:s.name,short:s.gidx?'MSCI ACWI':undefined,values:s.values,color:s.color,dash:s.dash||undefined,mask:MOV(s.name)?'會員專屬':undefined}))};wpReset();BN.charts.line($('c-world'),WP.opt);
   const rows=series.slice().sort((a,b)=>b.end-a.end);
-  $('t-world').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+W0+' 至 '+END+'（'+yrs.toFixed(1)+' 年）的累積報酬與年化</caption><thead><tr><th class=l>標的</th><th>累積報酬</th><th>年化</th><th class=l>幣別／口徑</th></tr></thead><tbody>'+rows.map(s=>{const cagr=Math.pow(1+s.end,1/yrs)-1;return '<tr'+(s.gidx?' class="hl"':'')+'><td class=l><span class="sw" style="background:'+s.color+'"></span>'+s.name+(s.gidx?' <small>（比較基準）</small>':'')+'</td><td>'+(s.end>=0?'+':'')+(s.end*100).toLocaleString('zh-Hant-TW',{maximumFractionDigits:0})+'%</td><td>'+(cagr*100).toFixed(1)+'%</td><td class=l>'+s.cur+'</td></tr>';}).join('')+'</tbody></table></div>';
+  $('t-world').innerHTML='<div class="tblwrap"><table class="tbl"><caption>'+W0+' 至 '+END+'（'+yrs.toFixed(1)+' 年）的累積報酬與年化</caption><thead><tr><th class=l>標的</th><th>累積報酬</th><th>年化</th><th class=l>幣別／口徑</th></tr></thead><tbody>'+rows.map(s=>{const cagr=Math.pow(1+s.end,1/yrs)-1;const mo=MOV(s.name);return '<tr'+(s.gidx?' class="hl"':'')+'><td class=l><span class="sw" style="background:'+s.color+'"></span>'+s.name+(s.gidx?' <small>（比較基準）</small>':'')+'</td><td>'+(mo?'會員專屬':(s.end>=0?'+':'')+(s.end*100).toLocaleString('zh-Hant-TW',{maximumFractionDigits:0})+'%')+'</td><td>'+(mo?'會員專屬':(cagr*100).toFixed(1)+'%')+'</td><td class=l>'+s.cur+'</td></tr>';}).join('')+'</tbody></table></div>';
   const px=B.proxyNote(start);
   $('world-note').textContent=(g?(removed.length?'已移除報酬率低於全球股票指數（MSCI ACWI，年化 '+pct(cg(g))+'）的國際指數：'+removed.map(x=>x.name+'（'+pct(cg(x))+'）').join('、')+'；依所選起點即時判斷，各自以本身幣別計。':'所有國際指數的報酬率都高於全球股票指數（MSCI ACWI）。'):(hasG?'全球股票指數（MSCI ACWI）在此期間沒有完整資料，暫不篩選國際指數。':''))+(skipped.length?'未列入：'+skipped.join('、')+'，選較晚的起點即可納入。':'')+(lag.length?'尚未更新到 '+END.slice(0,7)+'、暫不列入：'+lag.join('、')+'（每月初自動補上）。':'')+'BNASDAQ-26110、BNASDAQ-26111、BNASDAQ-26112、BNASDAQ-26113 與 QQQ、QLD 為本站回測序列（同一套引擎；美元、含息）；SPY、波克夏 BRK-B、0050、台積電為 Yahoo 還原收盤（含息；BRK-B 不配息）；國際指數為價格指數（不含息；MSCI ACWI 以美元計，其他為當地幣別），所以指數會比同市場的含息 ETF 略低。各自以本身幣別計，未換匯。'+(idxUpdated?' 指數資料更新：'+idxUpdated+'。':'')+(px?' '+px:'');
 }
