@@ -32,6 +32,29 @@
   //  - 候選只留年化 > 56% 的；第 2 關用新的回撤門檻重新判定
   // AI Server 送來帶 bar 欄位的快照（已用新門檻產生）時，這段不做任何事。
   const BAR = { cagr: 0.56, mdd: -0.27 };
+
+  // 2026-11-21 16:33 站主：「現行最佳模型」要跟著首頁最強的模型。用首頁同一套回測引擎（period.js，BT_LIVE）算各策略在首頁比較期間
+  // （T.official 起到最新月底）的年化報酬率，取最高者；每月延伸或新增策略都會自動跟著變。候選說明的「少跌 ×× 點」用同一個策略的日線最大回撤。
+  // 引擎沒載入或算不出來時，沿用快照裡的 base。
+  let HOME = undefined;
+  function homeBest() {
+    if (HOME !== undefined) return HOME;
+    HOME = null;
+    const B = window.BN && BN.bt; if (!B || !B.KEYS) return HOME;
+    for (const k of B.KEYS) {
+      if (k === 'qqq' || k === 'qld' || k === 'shv') continue;
+      try {
+        const L = B.lump(k, B.T.official), D = B.drawdown(k, B.T.official);
+        if (L && isFinite(L.cagr) && (!HOME || L.cagr > HOME.cagr)) HOME = { key: k, name: B.NAME[k], cagr: L.cagr, mdd: D.mdd, start: L.start };
+      } catch (e) { }
+    }
+    return HOME;
+  }
+  function applyBase(d) {
+    const h = d && homeBest();
+    if (h) { d.base = h.cagr; d.base_mdd = h.mdd; d.base_name = h.name; }
+    return d;
+  }
   function applyBar(d) {
     if (!d || d.bar) return d;
     d.target = BAR.cagr; d.mdd_target = BAR.mdd;
@@ -200,7 +223,7 @@
         series: [
           { name: '目前最佳候選', short: '最佳候選', values: H.map(h => h[2] == null ? null : h[2] * 100), color: 'var(--s-fund)', width: 2.5 },
           { name: '過關門檻（年化報酬率）', short: '門檻', values: H.map(() => d.target * 100), color: 'var(--bad)', dash: '6 4' },
-          { name: '現行最佳模型', short: '現行', values: H.map(() => d.base * 100), color: 'var(--s-shv)', dash: '2 4' },
+          { name: '現行最佳模型' + (d.base_name ? '（' + d.base_name + '）' : ''), short: '現行', values: H.map(() => d.base * 100), color: 'var(--s-shv)', dash: '2 4' },
         ],
       });
       BN.charts.line($('c-tested'), {   // plain numbers on the axis and in the tooltip (user request 2026-11-07)
@@ -290,7 +313,7 @@
 
   async function tick() {
     const d = await load();
-    if (d) { DATA = applyBar(d); render(); $('xp-err').hidden = true; }
+    if (d) { DATA = applyBase(applyBar(d)); render(); $('xp-err').hidden = true; }
     else if (!DATA) { $('xp-err').hidden = false; }
   }
 
