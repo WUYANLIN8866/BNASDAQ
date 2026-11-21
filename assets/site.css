@@ -603,3 +603,11 @@ ul.ind { max-width: none; }
 .mychg-bars .tr i.up { left: 50%; background: var(--good); }
 .mychg-bars .tr i.dn { right: 50%; background: var(--bad); }
 .mychg-bars .vv { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* 首頁頂部四張策略卡：點了跳到下方對應的模型說明（2026-11-21） */
+.hero a.hs { display: block; color: inherit; text-decoration: none; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.hero a.hs:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0, 0, 0, .28); }
+.hero a.hs:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.cmp-cards .card { scroll-margin-top: 104px; }
+.cmp-cards .card:target { box-shadow: 0 0 0 2px var(--gold-hi); }
+@media (prefers-reduced-motion: reduce) { .hero a.hs { transition: none; } .hero a.hs:hover { transform: none; } }
