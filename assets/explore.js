@@ -135,8 +135,9 @@
       tile('目前最佳候選年化報酬', pct(d.best), `目標 ${pct(d.target)}${gap == null ? '' : gap > 0 ? `，還差 ${gap.toFixed(2)} 個百分點` : `，已高出 ${(-gap).toFixed(2)} 個百分點`}${pendingTop(d).length && pendingTop(d)[0].best >= d.best - 1e-12 ? `（第 ${pendingTop(d)[0].round} 輪搜尋中的數字，尚待驗證）` : ''}`),
       // 2026-11-13: pass count as a 5-tuple, one figure per gate in the order of the list at the foot of the page
       // (cumulative: the k-th figure = candidates that passed gates 1..k, so the last one = passed everything)
+      // 2026-11-21：數字變長會撐破格子 → 字不縮小，只在五個數字之間換行（不會從數字中間斷開）
       Array.isArray(d.gates) && d.gates.length === 5
-        ? tile('過關數（第 1 → 5 關）', '(' + d.gates.map(g => nf.format(g || 0)).join(',') + ')', '依序為報酬、回撤、各時間窗、不使用未來資訊、參數穩健；每一格是連續通過到該關的候選數，最後一格才是全部通過')
+        ? tile('過關數（第 1 → 5 關）', '(' + d.gates.map(g => nf.format(g || 0)).join(',<wbr>') + ')', '依序為報酬、回撤、各時間窗、不使用未來資訊、參數穩健；每一格是連續通過到該關的候選數，最後一格才是全部通過', 'gates')
         : tile('通過全部門檻', nf.format(d.passed || 0) + ' 組', '需同時通過報酬、回撤、穩健性與時間窗檢驗'),
       // tokens used by the AI session that runs the search on machine 1 (user request 2026-11-07), plain numbers
       d.tokens && d.tokens.total != null ? `<div class="tile xp-tok"><div class="k">AI 已使用 token 數量（所有 AI Server 合計）</div>` +
