@@ -1,28 +1,107 @@
 #!/usr/bin/env python3
-"""BNASDAQ｜FRED 利率與匯率月資料（FRED-MD 第 6 組「Interest and Exchange Rates」中可直接下載的數列）→ data/macro.enc.json（加密）。
+"""BNASDAQ｜FRED 月資料 → 加密檔（會員專區與私人回測產生器每月更新策略用的金融環境數據）。
 
-用途：會員專區與私人回測產生器每月更新策略用的金融環境數據。整組數列一起抓、一起加密，檔案裡看不出哪個策略用了哪一個；
-      數列本身都是 FRED 的公開資料，本程式不含任何策略規則。
+抓哪些：FRED-MD 月資料庫（聖路易聯邦準備銀行）裡可在 FRED 直接下載的數列，加上幾個同來源的補充數列，整組一起抓、一起加密；
+        檔案裡看不出哪個策略用了哪一個。數列本身都是 FRED 的公開資料，本程式不含任何策略規則。
+輸出：
+  data/macro.enc.json            第 1 版（利率與匯率 19 個數列、2023-01 起；格式不變，既有程式照舊使用）
+  data/macro2.enc.json           第 2 版（全部數列、最近 KEEP_MONTHS 個月；月份軸＋各數列的數值陣列）
+  data/macro2/asof-YYYY-MM.enc.json  月底定案檔：每個月（美東時間）結束後第一次執行時，先把「上個月最後留下的」第 2 版檔原封不動複製一份，
+                                 之後永不改寫。用途：已經依月底資料做出的判斷，不會因為官方事後修正數字而改變。
+  data/macro2/index.json         已有哪些月底定案檔（公開清單）
+  data/macro-status.json         這次抓取的結果（公開；只有時間、成功與否、失敗的數列代號），給自動監控用
 加密：整份 JSON 用一次性 AES-256-GCM 金鑰加密；資料金鑰再用 RSA-OAEP-3072-SHA256 分別包裝給兩把公鑰：
       member＝data/rules-key.json（會員瀏覽器用同一把會員規則私鑰解開）、gen＝data/macro-key.json（私人回測產生器）。
       不需要任何秘密就能產生；只有持有私鑰的一方解得開。
-來源：https://fred.stlouisfed.org/graph/fredgraph.csv?id=<數列>（失敗改用 https://fred.stlouisfed.org/data/<數列>.txt）；保留 KEEP_FROM 起的月份。
-規則：任一數列抓不到就沿用不了舊值（檔案是加密的），所以「全部數列都抓到」才寫檔；內容（明文雜湊）沒變不重寫。
-用法：python3 scripts/fetch_macro.py
+來源：https://fred.stlouisfed.org/graph/fredgraph.csv?id=<數列>（失敗改用 https://fred.stlouisfed.org/data/<數列>.txt）。
+規則：舊檔是加密的、沿用不了舊值，所以「全部數列都抓到」才寫檔；內容（明文雜湊）沒變不重寫。
+      為了不對 FRED 造成負擔：距離上次成功抓取不到 20 小時、而且不是排程或手動啟動時，不重抓（月底定案檔的複製照做）。
+用法：python3 scripts/fetch_macro.py [--force]
 """
-import os, sys, json, csv, io, base64, hashlib, urllib.request, datetime as dt
+import os, sys, json, csv, io, time, base64, hashlib, shutil, urllib.request, datetime as dt
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(ROOT, 'data', 'macro.enc.json')
+OUT1 = os.path.join(ROOT, 'data', 'macro.enc.json')
+OUT2 = os.path.join(ROOT, 'data', 'macro2.enc.json')
+SNAP = os.path.join(ROOT, 'data', 'macro2')
+STATUS = os.path.join(ROOT, 'data', 'macro-status.json')
 KEYS = {'member': os.path.join(ROOT, 'data', 'rules-key.json'), 'gen': os.path.join(ROOT, 'data', 'macro-key.json')}
-KEEP_FROM = '2023-01'
-# FRED-MD 第 6 組（利率與匯率）：可在 FRED 直接下載的數列（FRED-MD 的 EXSZUSx、EXJPUSx、EXUSUKx、EXCAUSx＝FRED 的 EXSZUS、EXJPUS、EXUSUK、EXCAUS）
-SERIES = ['FEDFUNDS', 'TB3MS', 'TB6MS', 'GS1', 'GS5', 'GS10', 'AAA', 'BAA', 'TB3SMFFM', 'TB6SMFFM', 'T1YFFM', 'T5YFFM', 'T10YFFM',
-          'AAAFFM', 'BAAFFM', 'EXSZUS', 'EXJPUS', 'EXUSUK', 'EXCAUS']
+KEEP_FROM = '2023-01'      # 第 1 版
+KEEP_MONTHS = 96           # 第 2 版：最近幾個月
+MIN_GAP_H = 20
+RETRY_GAP_H = 2
+# 第 1 版：FRED-MD 第 6 組（利率與匯率）可直接下載的數列（FRED-MD 的 EXSZUSx、EXJPUSx、EXUSUKx、EXCAUSx＝FRED 的 EXSZUS、EXJPUS、EXUSUK、EXCAUS）
+SERIES1 = ['FEDFUNDS', 'TB3MS', 'TB6MS', 'GS1', 'GS5', 'GS10', 'AAA', 'BAA', 'TB3SMFFM', 'TB6SMFFM', 'T1YFFM', 'T5YFFM', 'T10YFFM',
+           'AAAFFM', 'BAAFFM', 'EXSZUS', 'EXJPUS', 'EXUSUK', 'EXCAUS']
+# 第 2 版：FRED-MD 八組裡在 FRED 有同名月資料的數列（FRED-MD 代號帶 x 的，用 FRED 的原始代號：CMRMTSPLx→CMRMTSPL、RETAILx→RSAFS、
+# AMDMNOx→AMDMNO、ANDENOx→ANDENO、AMDMUOx→AMDMUO、BUSINVx→BUSINV、ISRATIOx→ISRATIO、UMCSENTx→UMCSENT、CP3Mx→CPF3M、
+# TWEXAFEGSMTHx→TWEXAFEGSMTH、OILPRICEx→MCOILWTICO、匯率四個同上），再加同來源的補充數列
+SERIES2 = SERIES1 + [
+    # 產出與所得
+    'RPI', 'W875RX1', 'INDPRO', 'IPFPNSS', 'IPFINAL', 'IPCONGD', 'IPDCONGD', 'IPNCONGD', 'IPBUSEQ', 'IPMAT', 'IPDMAT', 'IPNMAT', 'IPMANSICS',
+    'IPB51222S', 'IPFUELS', 'CUMFNS',
+    # 就業
+    'CLF16OV', 'CE16OV', 'UNRATE', 'UEMPMEAN', 'UEMPLT5', 'UEMP5TO14', 'UEMP15OV', 'UEMP15T26', 'UEMP27OV', 'PAYEMS', 'USGOOD', 'CES1021000001',
+    'USCONS', 'MANEMP', 'DMANEMP', 'NDMANEMP', 'SRVPRD', 'USTPU', 'USWTRADE', 'USTRADE', 'USFIRE', 'USGOVT', 'CES0600000007', 'AWOTMAN', 'AWHMAN',
+    'CES0600000008', 'CES2000000008', 'CES3000000008',
+    # 房市
+    'HOUST', 'HOUSTNE', 'HOUSTMW', 'HOUSTS', 'HOUSTW', 'PERMIT', 'PERMITNE', 'PERMITMW', 'PERMITS', 'PERMITW',
+    # 消費、訂單與存貨
+    'DPCERA3M086SBEA', 'CMRMTSPL', 'RSAFS', 'ACOGNO', 'AMDMNO', 'ANDENO', 'AMDMUO', 'BUSINV', 'ISRATIO', 'UMCSENT',
+    # 貨幣與信用
+    'M1SL', 'M2SL', 'M2REAL', 'BOGMBASE', 'TOTRESNS', 'NONBORRES', 'BUSLOANS', 'REALLN', 'NONREVSL', 'DTCOLNVHFNM', 'DTCTHFNM', 'INVEST',
+    # 利率與匯率（第 1 版以外的）
+    'CPF3M', 'TWEXAFEGSMTH',
+    # 物價
+    'WPSFD49207', 'WPSFD49502', 'WPSID61', 'WPSID62', 'MCOILWTICO', 'PPICMM', 'CPIAUCSL', 'CPIAPPSL', 'CPITRNSL', 'CPIMEDSL', 'CUSR0000SAC',
+    'CUSR0000SAD', 'CUSR0000SAS', 'CPIULFSL', 'CUSR0000SA0L2', 'CUSR0000SA0L5', 'PCEPI', 'DDURRG3M086SBEA', 'DNDGRG3M086SBEA', 'DSERRG3M086SBEA',
+    # 補充數列
+    'CPIAUCNS', 'CPILFESL', 'CPILFENS', 'PCEPILFE', 'GS2', 'T10Y2YM', 'SAHMREALTIME', 'USEPUINDXM', 'MICH',
+]
+assert len(set(SERIES2)) == len(SERIES2)
 
 
 def log(*a):
     print('[fetch_macro]', *a, flush=True)
+
+
+def now_utc():
+    return dt.datetime.now(dt.timezone.utc)
+
+
+def month_et(t):
+    """美東時間的月份（YYYY-MM）；沒有時區資料庫時退回 UTC−5"""
+    try:
+        from zoneinfo import ZoneInfo
+        return t.astimezone(ZoneInfo('America/New_York')).strftime('%Y-%m')
+    except Exception:  # noqa
+        return (t - dt.timedelta(hours=5)).strftime('%Y-%m')
+
+
+def ym_add(m, k):
+    y, mo = int(m[:4]), int(m[5:7]); t = y * 12 + mo - 1 + k
+    return '%04d-%02d' % (t // 12, t % 12 + 1)
+
+
+def load_json(p):
+    try:
+        return json.load(open(p, encoding='utf-8'))
+    except Exception:  # noqa
+        return None
+
+
+def write_json(p, obj):
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    tmp = p + '.tmp'
+    open(tmp, 'w', encoding='utf-8').write(json.dumps(obj, ensure_ascii=False, indent=1) + '\n')
+    os.replace(tmp, p)
+
+
+def parse_ts(s):
+    try:
+        return dt.datetime.strptime(s, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=dt.timezone.utc)
+    except Exception:  # noqa
+        return None
 
 
 def _get(url):
@@ -56,15 +135,17 @@ def parse_txt(txt):
 
 
 def fetch(sid):
-    for url, parse in (('https://fred.stlouisfed.org/graph/fredgraph.csv?id=' + sid, parse_csv), ('https://fred.stlouisfed.org/data/%s.txt' % sid, parse_txt)):
-        try:
-            d = parse(_get(url))
-            d = {m: v for m, v in d.items() if m >= KEEP_FROM}
-            if len(d) >= 12:
-                return d
-            log(sid, 'too few rows from', url, len(d))
-        except Exception as e:  # noqa
-            log(sid, 'failed', url, repr(e))
+    """回傳 {YYYY-MM: 值}（全部月份）；抓不到回傳 None"""
+    for attempt in range(3):
+        for url, parse in (('https://fred.stlouisfed.org/graph/fredgraph.csv?id=' + sid, parse_csv), ('https://fred.stlouisfed.org/data/%s.txt' % sid, parse_txt)):
+            try:
+                d = parse(_get(url))
+                if len(d) >= 12:
+                    return d
+                log(sid, 'too few rows from', url, len(d))
+            except Exception as e:  # noqa
+                log(sid, 'failed', url, repr(e))
+        time.sleep(3 * (attempt + 1))
     return None
 
 
@@ -84,34 +165,90 @@ def encrypt(plain, pubs):
     return ek, b(iv), b(ct)
 
 
+def write_enc(path, schema, payload, pubs, n_series, last_month):
+    plain = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')
+    sha = hashlib.sha256(plain).hexdigest()
+    old = load_json(path)
+    if old and old.get('pt_sha') == sha and set((old.get('ek') or {})) == set(pubs):
+        log('unchanged', os.path.basename(path), sha[:12]); return False
+    ek, iv, ct = encrypt(plain, pubs)
+    write_json(path, dict(schema=schema, alg='RSA-OAEP-3072-SHA256+AES-256-GCM', updated=now_utc().strftime('%Y-%m-%dT%H:%M:%SZ'),
+                          n_series=n_series, last_month=last_month, pt_sha=sha, ek=ek, iv=iv, ct=ct))
+    log('written', os.path.basename(path), n_series, 'series; last month', last_month, 'sha', sha[:12], 'bytes', os.path.getsize(path))
+    return True
+
+
+def snapshot(now):
+    """月底定案檔：本月（美東）第一次執行時，把上個月最後留下的第 2 版檔原封不動複製成 asof-<上個月>；已存在就不動。"""
+    cur = month_et(now); prev = ym_add(cur, -1)
+    dst = os.path.join(SNAP, 'asof-%s.enc.json' % prev)
+    old = load_json(OUT2)
+    if old and not os.path.exists(dst):
+        t = parse_ts(old.get('updated') or '')
+        if t is not None and month_et(t) < cur:
+            os.makedirs(SNAP, exist_ok=True)
+            shutil.copyfile(OUT2, dst)
+            log('month-end snapshot', os.path.basename(dst), '<- macro2.enc.json written', old.get('updated'))
+    months = sorted(f[5:12] for f in (os.listdir(SNAP) if os.path.isdir(SNAP) else []) if f.startswith('asof-') and f.endswith('.enc.json'))
+    idx = dict(schema='bnasdaq-macro-index/1', months=months)
+    if months and load_json(os.path.join(SNAP, 'index.json')) != idx:
+        write_json(os.path.join(SNAP, 'index.json'), idx)
+
+
+def status(now, ok, failed, note):
+    old = load_json(STATUS) or {}
+    ts = now.strftime('%Y-%m-%dT%H:%M:%SZ')
+    write_json(STATUS, dict(schema='bnasdaq-macro-status/1', checked=ts, ok=bool(ok), n_series=len(SERIES2), failed=sorted(failed),
+                            last_ok=(ts if ok else old.get('last_ok')), note=note))
+
+
 def main():
+    now = now_utc()
+    force = '--force' in sys.argv or os.environ.get('GITHUB_EVENT_NAME') in ('schedule', 'workflow_dispatch')
+    try:
+        snapshot(now)
+    except Exception as e:  # noqa
+        log('snapshot step failed', repr(e))
     pubs = {}
     for name, p in KEYS.items():
         try:
             pubs[name] = json.load(open(p, encoding='utf-8'))['pub']
         except Exception as e:  # noqa
             log('no public key', p, repr(e)); return 0
-    series = {}
-    for sid in SERIES:
+    st = load_json(STATUS) or {}
+    chk = parse_ts(st.get('checked') or '')
+    gap = MIN_GAP_H if st.get('ok') else RETRY_GAP_H     # 上次失敗：隔 RETRY_GAP_H 小時就再試
+    if not force and chk and (now - chk).total_seconds() < gap * 3600 and os.path.exists(OUT1) and (os.path.exists(OUT2) or not st.get('ok')):
+        log('checked %.1f h ago (ok=%s); skip' % ((now - chk).total_seconds() / 3600, st.get('ok'))); return 0
+    raw, failed = {}, []
+    for sid in SERIES2:
         d = fetch(sid)
         if d is None:
-            log('missing', sid, '; keeping the existing file'); return 0
-        series[sid] = {m: d[m] for m in sorted(d)}
-    last = {k: max(v) for k, v in series.items()}
-    payload = dict(schema='bnasdaq-macro-plain/1', source='FRED（https://fred.stlouisfed.org/graph/fredgraph.csv?id=…；月平均）', keep_from=KEEP_FROM, series=series)
-    plain = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf-8')
-    sha = hashlib.sha256(plain).hexdigest()
-    try:
-        old = json.load(open(OUT, encoding='utf-8'))
-    except Exception:
-        old = None
-    if old and old.get('pt_sha') == sha and set((old.get('ek') or {})) == set(pubs):
-        log('unchanged', sha[:12]); return 0
-    ek, iv, ct = encrypt(plain, pubs)
-    out = dict(schema='bnasdaq-macro/1', alg='RSA-OAEP-3072-SHA256+AES-256-GCM', updated=dt.datetime.now(dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-               n_series=len(series), last_month=max(last.values()), pt_sha=sha, ek=ek, iv=iv, ct=ct)
-    open(OUT, 'w', encoding='utf-8').write(json.dumps(out, ensure_ascii=False, indent=1) + '\n')
-    log('written', OUT, len(series), 'series; last months', sorted(set(last.values())), 'sha', sha[:12])
+            failed.append(sid)
+        else:
+            raw[sid] = d
+        time.sleep(0.15)
+    if failed:
+        log('missing', len(failed), 'series:', ' '.join(failed), '; keeping the existing files')
+        status(now, False, failed, '有數列抓不到，沿用舊檔'); return 0
+    # 第 1 版（格式不變）
+    s1 = {sid: {m: raw[sid][m] for m in sorted(raw[sid]) if m >= KEEP_FROM} for sid in SERIES1}
+    short = [sid for sid, d in s1.items() if len(d) < 12]
+    if short:
+        log('too short in v1 window:', short); status(now, False, short, '第 1 版視窗內資料太少'); return 0
+    last1 = {k: max(v) for k, v in s1.items()}
+    write_enc(OUT1, 'bnasdaq-macro/1', dict(schema='bnasdaq-macro-plain/1', source='FRED（https://fred.stlouisfed.org/graph/fredgraph.csv?id=…；月平均）',
+                                            keep_from=KEEP_FROM, series=s1), pubs, len(s1), max(last1.values()))
+    # 第 2 版：月份軸＝最近 KEEP_MONTHS 個月（到所有數列最新的月份為止）；沒有觀測值的月份是 null
+    last = max(max(d) for d in raw.values())
+    months = [ym_add(last, -k) for k in range(KEEP_MONTHS - 1, -1, -1)]
+    s2 = {sid: [raw[sid].get(m) for m in months] for sid in SERIES2}
+    empty = [sid for sid, v in s2.items() if sum(x is not None for x in v) < 12]
+    if empty:
+        log('too short in v2 window:', empty); status(now, False, empty, '第 2 版視窗內資料太少'); return 0
+    write_enc(OUT2, 'bnasdaq-macro/2', dict(schema='bnasdaq-macro-plain/2', source='FRED（https://fred.stlouisfed.org/graph/fredgraph.csv?id=…；月資料）',
+                                            months=months, series=s2), pubs, len(s2), last)
+    status(now, True, [], '')
     return 0
 
 
