@@ -89,7 +89,7 @@
       if (L.length && L[L.length - 1].y > bot) { L[L.length - 1].y = bot; for (let i = L.length - 2; i >= 0; i--) if (L[i].y > L[i + 1].y - gap) L[i].y = L[i + 1].y - gap; }   // 超出底部就整串往上收
       L.forEach(l => {
         el('circle', { cx: l.x0, cy: l.y0, r: 3, fill: l.s.color, stroke: 'var(--paper)', 'stroke-width': 1.5 }, evg);
-        el('path', { d: 'M' + (l.x0 + 4).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (lx - 12).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (lx - 4).toFixed(1) + ' ' + l.y.toFixed(1), fill: 'none', stroke: l.s.color, 'stroke-width': 1, 'stroke-opacity': .55 }, evg);
+        el('path', { d: 'M' + (l.x0 + 4).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (lx - 12).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (lx - 4).toFixed(1) + ' ' + l.y.toFixed(1), fill: 'none', stroke: l.s.color, 'stroke-width': 1, 'stroke-opacity': EV.leader != null ? EV.leader : .55, 'stroke-dasharray': EV.leaderDash || null }, evg);   // EV.leader／leaderDash：引線透明度與虛線（首頁動態走勢用淡虛線）
         const t = text(evg, lx, l.y + 4, '', { class: 'viz-txt' });
         const a = el('tspan', { fill: l.s.color, 'font-weight': 700 }, t); a.textContent = EV.fmt(l.v);
         const b = el('tspan', { dx: 6, class: 'viz-endname' }, t); b.textContent = l.s.short || l.s.name;

@@ -34,6 +34,8 @@ const PAGES = ['index', 'about', 'daily', 'research', 'dca', 'taiwan', 'valuatio
   // 搜尋結果以粗體（sans700）顯示段落標題，任何段落都可能出現：把搜尋索引裡全部的段落標題補進 sans700
   try { const w = {}; new Function('window', fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'search-index.js'), 'utf8'))(w); merge({ sans700: w.SEARCH_INDEX.map(e => e.title).join('') }); }
   catch (e) { console.log('（略過搜尋索引：' + e.message + '）'); }
+  // 互動後才出現、爬頁時看不到的字（2026-11-21 首頁「動態走勢」：按鈕的暫停／繼續播放、播放時的當月持有列；持有文字只有會員看得到）
+  merge({ sans400: '動態走勢暫停繼續播放當月持有起點尚無訊號各半會員專屬', sans500: '動態走勢暫停繼續播放', sans700: '動態走勢暫停繼續播放當月持有起點尚無訊號各半會員專屬QLDSHV%0123456789—' });
   const res = {}; for (const [k, s] of Object.entries(sets)) if (k !== 'other') res[k] = [...s].filter(c => c.codePointAt(0) > 32).sort().join('');
   const out = path.join(__dirname, 'observed.json'); fs.writeFileSync(out, JSON.stringify(res, null, 1));
   for (const [k, v] of Object.entries(res)) console.log(k.padEnd(9), '字數', [...v].length);
