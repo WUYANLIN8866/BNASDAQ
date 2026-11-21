@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=299d22f8df">
+<link rel="stylesheet" href="assets/site.css?v=df4cbcac9e">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
@@ -28,7 +28,7 @@
 <header class="brand"><div class="wrap">
   <a class="mark" href="index.html"><span><span class="word">B<b>NASDAQ</b></span></span></a>
   <div></div>
-  <button type="button" class="themebtn" onclick="BN.toggleTheme()" data-theme-label>深色模式</button>
+  <div class="htools"><a class="hlogin" href="login.html" data-hlogin>會員登入</a><button type="button" class="themebtn" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></div>
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
@@ -113,7 +113,7 @@
   </div>
   <div class="note"><p>安全提醒：accounts.json 是公開檔案。登入只比對密碼雜湊（PBKDF2 310,000 次）；供管理員查看的密碼副本用 RSA-3072 加密，私鑰與網站寫入權杖都用管理員的個人金鑰加密，只有管理員登入後解得開。所以<b>管理員密碼要夠長、不要和其他網站共用</b>；會員密碼建議用「產生」的隨機密碼，避免會員把在別處使用的密碼交給本站。</p></div>
 </div></div>
-<script src="assets/site.js?v=1c6fda6a3e"></script><script src="assets/auth.js?v=c7cf690bab"></script>
+<script src="assets/site.js?v=c0f8a5a64d"></script><script src="assets/auth.js?v=c7cf690bab"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;

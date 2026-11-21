@@ -624,11 +624,17 @@ ul.ind { max-width: none; }
 @media (max-width: 640px) { .site-foot .tools .search { max-width: none; } }
 
 /* 深／淺色切換放回頁首右上角，搜尋留在頁尾（2026-11-21） */
-.brand .wrap > .themebtn { justify-self: end; }
+/* 2026-11-21 16:12：深／淺色切換左邊多一個「會員登入」入口（和選單裡的登入連結一樣到 login.html；登入後隱藏，改由商標旁的「會員專區」進入） */
+.brand .wrap > .htools { justify-self: end; display: flex; gap: 10px; align-items: center; }
+.brand .hlogin { display: inline-flex; align-items: center; color: var(--gold-hi); border: 1px solid rgba(205, 174, 112, .55); border-radius: 2px; font-size: 13.5px; font-weight: 500; line-height: 1.8; padding: 8px 12px; text-decoration: none; white-space: nowrap; }
+.brand .hlogin:hover { background: var(--gold-hi); color: #111; border-color: var(--gold-hi); }
+.brand .hlogin:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.brand .hlogin[hidden] { display: none; }
 @media (max-width: 1200px) {
   .brand .wrap { grid-template-columns: minmax(0, 1fr) auto; }
   .brand .wrap > .mark { grid-column: 1; grid-row: 1; }
-  .brand .wrap > .themebtn { grid-column: 2; grid-row: 1; }
-  .brand .wrap > div { grid-column: 1 / -1; }
-  .brand .wrap > div:empty { display: none; }
+  .brand .wrap > .htools { grid-column: 2; grid-row: 1; }
+  .brand .wrap > .mark + div { grid-column: 1 / -1; }
+  .brand .wrap > .mark + div:empty { display: none; }
 }
+@media print { .hlogin { display: none !important; } }

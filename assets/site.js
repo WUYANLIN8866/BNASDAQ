@@ -52,6 +52,8 @@
     // account link
     try {
       const s = JSON.parse(sessionStorage.getItem('bn-session') || 'null');
+      // 頁首「會員登入」入口（2026-11-21）：登入後隱藏，頁首改顯示商標旁的「會員專區」
+      $$('[data-hlogin]').forEach(a => { a.hidden = !!(s && s.user); });
       $$('[data-acct]').forEach(a => { if (s && s.user) { a.textContent = (s.role === 'admin' ? '管理後台' : '會員專區') + '（' + s.user + '）'; a.href = s.role === 'admin' ? 'admin.html' : 'member.html'; } });
     } catch (e) { }
     // data as-of from market.json

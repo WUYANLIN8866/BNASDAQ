@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=299d22f8df">
+<link rel="stylesheet" href="assets/site.css?v=df4cbcac9e">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -19,14 +19,14 @@
 <header class="brand"><div class="wrap">
   <a class="mark" href="index.html"><span><span class="word">B<b>NASDAQ</b></span></span></a>
   <div></div>
-  <button type="button" class="themebtn" onclick="BN.toggleTheme()" data-theme-label>深色模式</button>
+  <div class="htools"><a class="hlogin" href="login.html" data-hlogin>會員登入</a><button type="button" class="themebtn" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></div>
 </div></header>
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html" aria-current=page>常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 常見問題</div><h1>常見問題</h1><p class="lede">關於 BNASDAQ-26110、BNASDAQ-26111、BNASDAQ-26112 與 BNASDAQ-26113、資訊揭露原則、會員與帳號，以及資料與回測口徑的常見問題。</p></div></div>
 <div class="main"><div class="wrap"><div class="cols"><div>
 <h2 id="faq-strategy">策略概要</h2>
-<details><summary>BNASDAQ 是什麼？</summary><div class="ans"><p>BNASDAQ-26110 以 QQQ 月線為訊號，僅在 QLD（追求 Nasdaq-100 指數單日報酬 2 倍的槓桿型 ETF）與 SHV（短期美國公債 ETF）之間配置。交易規則由 AI 模型探勘、驗證與回測，經實際資金執行後再回饋優化，無限循環。</p><p>BNASDAQ-26111 同樣只在 QLD 與 SHV 之間配置，但只有全倉或全數避險兩種狀態（不設半倉），由六個量化模型共同判斷；模型自 2000 年 3 月起每 24 個月只用當時已知的資料重新訓練。</p><p>BNASDAQ-26112 同樣只在 QLD 與 SHV 之間配置、只有全倉或全數避險兩種狀態，由六項條件共同判斷：除了價格走勢的量化模型，也納入公開的金融環境數據（只用判斷當時已公布的數值）。</p><p>BNASDAQ-26113 同樣只在 QLD 與 SHV 之間配置、只有全倉或全數避險兩種狀態，由二十項條件共同判斷：除了價格走勢的量化模型，也納入公開的總體經濟與金融環境數據（只用判斷當時已公布的數值，官方日後修正也不回頭更改已做的判斷）。</p><p>2000 年 5 月底至 2026 年 9 月底的回測年化報酬率：BNASDAQ-26110 38.3%、BNASDAQ-26111 43.2%、BNASDAQ-26112 48.9%、BNASDAQ-26113 53.0%。考量參數的不確定性，較務實的預期區間為 BNASDAQ-26110 25.4%～33.8%（參數 ±10% 鄰域第 5～95 百分位）、BNASDAQ-26111 25.5%～37.2%、BNASDAQ-26112 27.7%～40.0%、BNASDAQ-26113 30.9%～42.1%（三者皆為參數隨機抖動 300 次第 5～95 百分位）。</p></div></details>
+<details><summary>BNASDAQ 是什麼？</summary><div class="ans"><p>BNASDAQ-26110 以 QQQ 月線為訊號，僅在 QLD（追求 Nasdaq-100 指數單日報酬 2 倍的槓桿型 ETF）與 SHV（短期美國公債 ETF）之間配置。交易規則由 AI 模型探勘、驗證與回測，經實際資金執行後再回饋優化，無限循環。</p><p>BNASDAQ-26111 同樣只在 QLD 與 SHV 之間配置，但只有全倉或全數避險兩種狀態（不設半倉），由六個神經網路模型共同判斷；模型自 2000 年 3 月起每 24 個月只用當時已知的資料重新訓練。</p><p>BNASDAQ-26112 同樣只在 QLD 與 SHV 之間配置、只有全倉或全數避險兩種狀態，由六個神經網路模型共同判斷：除了價格走勢，也納入公開的金融環境數據（只用判斷當時已公布的數值）。</p><p>BNASDAQ-26113 同樣只在 QLD 與 SHV 之間配置、只有全倉或全數避險兩種狀態，由二十個神經網路模型共同判斷：除了價格走勢，也納入公開的總體經濟與金融環境數據（只用判斷當時已公布的數值，官方日後修正也不回頭更改已做的判斷）。</p><p>2000 年 5 月底至 2026 年 9 月底的回測年化報酬率：BNASDAQ-26110 38.3%、BNASDAQ-26111 43.2%、BNASDAQ-26112 48.9%、BNASDAQ-26113 53.0%。考量參數的不確定性，較務實的預期區間為 BNASDAQ-26110 25.4%～33.8%（參數 ±10% 鄰域第 5～95 百分位）、BNASDAQ-26111 25.5%～37.2%、BNASDAQ-26112 27.7%～40.0%、BNASDAQ-26113 30.9%～42.1%（三者皆為參數隨機抖動 300 次第 5～95 百分位）。</p></div></details>
 <details id="why-rules"><summary>為什麼不公開買進與賣出的規則？</summary><div class="ans"><p>本站不公開策略的買賣邏輯，BNASDAQ 統一依 AI 模型找出的交易規則自行交易。我們公開交易商品、檢查頻率、配置狀態（BNASDAQ-26110 三種、BNASDAQ-26111、BNASDAQ-26112 與 BNASDAQ-26113 各兩種）、全部回測結果與驗證方法（參數穩健性、決策日偏移、逐步前推），讓讀者據以判斷策略是否穩健，而不是複製一組特定數字。</p></div></details>
 <details><summary>「統一依 AI 模型找出的交易規則自行交易」是什麼意思？</summary><div class="ans"><p>意指交易規則由 AI 模型在歷史資料上探勘並持續優化，BNASDAQ 依照這套規則執行交易。本站不提供個別化的買賣建議，所有績效數字皆為歷史回測。</p></div></details>
 <details><summary>多久調整一次配置？需要每天看盤嗎？</summary><div class="ans"><p>不需要。四個策略都是每月最後一個交易日收盤後判斷一次，次一交易日開盤執行，其餘交易日不操作。2000-05-31～2026-09-30 共調整：BNASDAQ-26110 59 次（平均每年 2.24 次）、BNASDAQ-26111 73 次（平均每年 2.77 次，皆為全進全出）、BNASDAQ-26112 75 次（平均每年 2.85 次，皆為全進全出）、BNASDAQ-26113 61 次（平均每年 2.32 次，皆為全進全出）。</p></div></details>
@@ -56,6 +56,6 @@
   <div class="wrap disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
   <div class="legal"><div class="wrap"><span>© 2026 BNASDAQ</span><span>回測資料終點 2026-09-30；過去績效不代表未來報酬。</span></div></div>
 </footer>
-<script src="assets/site.js?v=1c6fda6a3e"></script>
+<script src="assets/site.js?v=c0f8a5a64d"></script>
 </body>
 </html>
