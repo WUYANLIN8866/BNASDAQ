@@ -611,3 +611,14 @@ ul.ind { max-width: none; }
 .cmp-cards .card { scroll-margin-top: 104px; }
 .cmp-cards .card:target { box-shadow: 0 0 0 2px var(--gold-hi); }
 @media (prefers-reduced-motion: reduce) { .hero a.hs { transition: none; } .hero a.hs:hover { transform: none; } }
+
+/* 搜尋與深／淺色切換：從頁首移到頁尾最上面（2026-11-21） */
+.site-foot .foot-tools { padding-top: 28px; }
+.site-foot .tools { display: flex; gap: 10px; align-items: center; min-width: 0; padding-bottom: 24px; border-bottom: 1px solid #26282c; }
+.site-foot .tools .search { flex: 1; max-width: 560px; }
+.site-foot .tools .search input { width: 100%; min-width: 0; background: #17181b; border-color: #34363b; color: var(--head-ink); }
+.site-foot .tools .search input::placeholder { color: #8b877f; }
+.site-foot .tools .search button { background: var(--gold-hi); border-color: var(--gold-hi); color: #111; font-weight: 600; }
+.site-foot .tools .search button:hover { background: #e0c48d; border-color: #e0c48d; color: #111; }
+.site-foot .foot-tools + .foot-grid { padding-top: 36px; }
+@media (max-width: 640px) { .site-foot .tools .search { max-width: none; } }
