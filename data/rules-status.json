@@ -1,13 +1,14 @@
 {
  "schema": "bnasdaq-rules-status/1",
  "state": "ok",
- "b_ver": "890c62e561fa978e",
+ "b_ver": "43c1595ced58afd1",
  "strategies": [
   "BNASDAQ-26110",
   "BNASDAQ-26111",
-  "BNASDAQ-26112"
+  "BNASDAQ-26112",
+  "BNASDAQ-26113"
  ],
- "rules_built": "2026-11-18",
- "since": "2026-11-18",
+ "rules_built": "2026-11-21",
+ "since": "2026-11-21",
  "note": ""
 }
