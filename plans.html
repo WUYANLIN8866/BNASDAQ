@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0b0c">
+<title>會員方案｜BNASDAQ</title>
+<meta name="description" content="BNASDAQ 會員方案：依模型分級與客戶資產等級試算月費；會員專屬 採邀請制，不公開報價。本頁費用試算僅供參考，實際費用請以正式報價為準。">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/site.css?v=dce4af95dc">
+<link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
+<script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到主要內容</a>
+<header class="brand"><div class="wrap">
+  <a class="mark" href="index.html"><span><span class="word">B<b>NASDAQ</b></span></span></a>
+  <div></div>
+  <div class="htools"><a class="hlogin" href="login.html" data-hlogin>會員登入</a><button type="button" class="themebtn" onclick="BN.toggleTheme()" data-theme-label>深色模式</button></div>
+</div></header>
+<nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="plans.html" aria-current=page>會員方案</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
+<main id="main">
+<div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 會員方案</div><h1>會員方案</h1><p class="lede">BNASDAQ 依模型分級與客戶資產等級計費：BNASDAQ-26110、BNASDAQ-26111、BNASDAQ-26112 可依資產級距試算月費；<span data-mo>會員專屬</span> 採邀請制，不公開報價。</p></div></div>
+<div class="main"><div class="wrap"><div class="cols">
+<div>
+  <div class="note warn" id="ref"><p><b>特別說明：本頁的費用試算功能僅供參考，實際費用請以正式報價為準。</b></p></div>
+  <h2 id="quote">依資產等級試算月費</h2>
+  <p>拖曳滑桿選擇客戶資產等級，即可查看各模型的月費與相當的年費率。</p>
+  <div class="plan-tool" style="background:var(--paper);border:1px solid var(--line);border-top:2px solid var(--gold-hi);padding:20px 22px;margin:18px 0 22px;">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px;">
+      <label for="plan-lv" style="font-size:15px;color:var(--ink-2);">客戶資產</label>
+      <input type="range" id="plan-lv" min="0" max="5" step="1" value="1" style="flex:1;min-width:180px;accent-color:var(--gold);">
+      <output id="plan-lv-txt" for="plan-lv" style="font-size:17px;font-weight:600;min-width:150px;text-align:right;color:var(--ink);">300 萬～500 萬元</output>
+    </div>
+    <div id="plan-rows" aria-live="polite"></div>
+    <p style="font-size:13.5px;color:var(--muted);margin:16px 0 0;line-height:1.7;">月費為年繳折算，年繳＝月費 × 12；價格已四捨五入至千元；年費率以各級距的資產下限計算。</p>
+  </div>
+  <div class="note warn"><p>以上試算僅供參考，不構成要約；實際費用、方案內容與申請資格，請以 BNASDAQ 提供的正式報價與合約為準。</p></div>
+  <h2 id="how">計費方式</h2>
+  <ol class="steps">
+    <li><b>依模型分級。</b>長期年化報酬越高的模型，費用越高：BNASDAQ-26110 為入門方案，BNASDAQ-26111、BNASDAQ-26112 依序遞增，<span data-mo>會員專屬</span> 為旗艦方案，採邀請制、不公開報價。</li>
+    <li><b>依資產等級。</b>資產越高，費用占資產的比例越低；同一級距內月費相同。</li>
+    <li><b>申請資格。</b>BNASDAQ-26110 適用資產 200 萬元以上；BNASDAQ-26112 適用資產 1,400 萬元以上；BNASDAQ-26111 暫不單獨開放；<span data-mo>會員專屬</span> 僅限受邀。</li>
+  </ol>
+</div>
+<aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#ref">特別說明</a></li><li><a href="#quote">試算月費</a></li><li><a href="#how">計費方式</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="risk.html">風險與代價</a></li><li><a href="research.html">研究與回測</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
+</div></div></div>
+<script src="assets/site.js?v=f307221e06"></script>
+<script>
+(function(){
+  var LV=['100 萬～300 萬元','300 萬～500 萬元','500 萬～1,000 萬元','1,000 萬～3,000 萬元','3,000 萬～1 億元','1 億元以上'];
+  var LO=[1e6,3e6,5e6,1e7,3e7,1e8], HI=[3e6,5e6,1e7,3e7,1e8,Infinity];
+  var M=[
+    {code:'BNASDAQ-26113',tier:'旗艦',color:'var(--s-sat3)',invite:true},
+    {code:'BNASDAQ-26112',tier:'專業',color:'var(--s-sat2)',min:1.4e7,f:[12000,13000,14000,16000,22000,41000]},
+    {code:'BNASDAQ-26111',tier:'進階',color:'var(--s-sat)',closed:true,f:[8000,8000,9000,10000,14000,26000]},
+    {code:'BNASDAQ-26110',tier:'入門',color:'var(--s-fund)',min:2e6,f:[5000,6000,6000,7000,10000,19000]}];
+  var box=document.getElementById('plan-rows'), out=document.getElementById('plan-lv-txt'), sl=document.getElementById('plan-lv');
+  function wan(v){return v>=1e8?(v/1e8)+' 億':(v/1e4).toLocaleString('zh-TW')+' 萬';}
+  function status(m,i){
+    if(m.invite) return ['僅限受邀','var(--gold)',true];
+    if(m.closed) return ['暫不單獨開放','var(--muted)',false];
+    if(LO[i]>=m.min) return ['符合申請資格','var(--good)',true];
+    if(HI[i]>m.min) return ['資產達 '+wan(m.min)+'元起可申請','var(--warn)',true];
+    return ['未達申請資格','var(--muted)',false];
+  }
+  function draw(i){
+    out.textContent=LV[i]; sl.setAttribute('aria-valuetext','客戶資產 '+LV[i]);
+    var mx=0; M.forEach(function(m){ if(m.f) mx=Math.max(mx,m.f[i]); });
+    box.innerHTML=M.map(function(m){
+      var s=status(m,i), head='<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;font-size:15px;"><span style="color:var(--ink);font-weight:600;">'+m.code+' <span style="font-weight:400;color:var(--ink-2);">'+m.tier+'</span></span><span style="font-size:13.5px;color:'+s[1]+';">'+s[0]+'</span></div>';
+      if(m.invite) return '<div style="margin:0 0 16px;">'+head+'<div style="display:flex;align-items:center;gap:10px;"><div style="height:20px;flex:1;border:1px dashed var(--line);"></div><span style="font-size:16px;font-weight:600;white-space:nowrap;color:var(--ink);">邀請制・不公開報價</span></div></div>';
+      var w=Math.max(8,Math.round(m.f[i]/mx*100)), rate=(m.f[i]*12/LO[i]*100).toFixed(2);
+      return '<div style="margin:0 0 16px;">'+head+'<div style="display:flex;align-items:center;gap:10px;"><div style="height:20px;width:'+w+'%;max-width:70%;background:'+m.color+';opacity:'+(s[2]?1:.4)+';"></div><span style="font-size:16px;font-weight:600;white-space:nowrap;color:var(--ink);">NT$'+m.f[i].toLocaleString('en-US')+'／月</span><span style="font-size:13.5px;color:var(--muted);white-space:nowrap;">年費率約 '+rate+'%</span></div></div>';
+    }).join('');
+  }
+  sl.addEventListener('input',function(e){draw(+e.target.value);});
+  draw(+sl.value);
+})();
+</script>
+</main>
+<footer class="site-foot">
+  <div class="wrap foot-tools"><div class="tools"><form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form></div></div>
+  <div class="wrap foot-grid">
+    <div class="foot-brand"><a class="mark" href="index.html" aria-label="BNASDAQ 首頁"><span class="word">B<b>NASDAQ</b></span></a></div>
+    <nav class="foot-col" aria-label="策略與研究"><h4>策略與研究</h4><ul><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="research.html">研究與回測</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="plans.html">會員方案</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></nav>
+    <nav class="foot-col" aria-label="分析工具"><h4>分析工具</h4><ul><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html">個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li></ul></nav>
+    <nav class="foot-col" aria-label="資訊與帳戶"><h4>資訊與帳戶</h4><ul><li><a href="news.html">最新發布</a></li><li><a href="faq.html">常見問題</a></li><li><a href="search.html">站內搜尋</a></li><li><a href="login.html" data-acct>登入／會員專區</a></li></ul></nav>
+  </div>
+  <div class="wrap disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
+  <div class="legal"><div class="wrap"><span>© 2026 BNASDAQ</span><span>回測資料終點 2026-09-30；過去績效不代表未來報酬。</span></div></div>
+</footer>
+</body>
+</html>

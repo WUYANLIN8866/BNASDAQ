@@ -5,10 +5,10 @@
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
 const BASE = (process.argv[2] || 'http://127.0.0.1:8765/').replace(/\/?$/, '/');
-const PAGES = ['index', 'about', 'research', 'dca', 'taiwan', 'calculator', 'valuation', 'lookthrough', 'risk', 'news', 'faq', 'data'];
+const PAGES = ['index', 'about', 'research', 'dca', 'taiwan', 'calculator', 'valuation', 'lookthrough', 'risk', 'plans', 'news', 'faq', 'data'];
 const MAX = 1200;
 (async () => {
-  const b = await chromium.launch(), out = [];
+  const b = await chromium.launch(process.env.BN_CHROME ? { executablePath: process.env.BN_CHROME } : {}), out = [];  // BN_CHROME：指定本機 Chrome（沙盒環境無法下載 Playwright 瀏覽器時用）
   for (const pg of PAGES) {
     const p = await b.newPage({ viewport: { width: 1280, height: 900 } }); const errs = [];
     p.on('pageerror', e => errs.push(e.message));
