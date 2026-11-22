@@ -36,6 +36,9 @@ const PAGES = ['index', 'about', 'daily', 'research', 'dca', 'taiwan', 'valuatio
   catch (e) { console.log('（略過搜尋索引：' + e.message + '）'); }
   // 互動後才出現、爬頁時看不到的字（2026-11-21 首頁「動態走勢」：按鈕的暫停／繼續播放、播放時的當月持有列；持有文字只有會員看得到）
   merge({ sans400: '動態走勢暫停繼續播放當月持有起點尚無訊號各半會員專屬', sans500: '動態走勢暫停繼續播放', sans700: '動態走勢暫停繼續播放當月持有起點尚無訊號各半會員專屬QLDSHV%0123456789—' });
+  // 每日市場分析「模型影響」（2026-11-22；assets/daily-models.js）：登入後才出現的字（會員的一句說明與四個步驟；管理員專區的標題與欄名）
+  merge({ sans400: '模型影響四大模型能力已可自動處理此訊息造成的影響本頁每一則消息後面都標示不需要人工解讀在每月最後個交易日收盤後完成判斷次開盤執行其餘操作怎麼步驟國際大事與企業新聞各目前持有下機率請看會員專區管理員判斷條件主題直接對應沒有只經價格數據關鍵字比對可能準合計推算翻轉位距最新',
+    sans500: '模型怎麼處理消息四個步驟', sans700: '模型影響消息發生自動處理月底判斷次日開盤執行判斷條件管理員直接對應成立不數據價格只經', serif600: '消息對模型的影響管理員專區四大判斷條件1234' });
   const res = {}; for (const [k, s] of Object.entries(sets)) if (k !== 'other') res[k] = [...s].filter(c => c.codePointAt(0) > 32).sort().join('');
   const out = path.join(__dirname, 'observed.json'); fs.writeFileSync(out, JSON.stringify(res, null, 1));
   for (const [k, v] of Object.entries(res)) console.log(k.padEnd(9), '字數', [...v].length);

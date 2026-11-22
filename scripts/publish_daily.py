@@ -14,6 +14,13 @@ date、generated 不用填，填了也會被覆寫——日期由本程式決定
   - 缺少必要欄位、schema 不對，或 session 不是 YYYY-MM-DD、晚於今天、早於前一份報告的 session
   - data/daily/<今天>.json 已存在但不是今天（台北）產出的，或它的 session 比這次新
 --now 只給測試用（模擬執行時間，例 2026-11-11T22:46:00Z）。
+
+主題標記（2026-11-22 起；網頁每一則消息後面的「模型影響」用）：每一則消息標上 data/daily-topics.json 的主題代碼——
+  big_move.causes[] 每一項加 "tags": ["代碼", …]
+  events[] 每一組加 "tags": [[…], […], …]（和 items 一一對應，第 i 個是第 i 則的代碼）
+  mega.rows[] 每一列加 "tags": ["代碼", …]
+本程式只檢查、不擋發布：沒標、代碼不在表內、或 events 的 tags 和 items 數目對不上，都會列出 ⚠️（對不上的那一組標記會被拿掉，免得標到別則消息），
+報告照樣發布成功；修正後重跑一次本程式即可更新。沒有標記的消息，網頁改用關鍵字比對。
 """
 import argparse, datetime as dt, json, os, sys
 
@@ -23,6 +30,53 @@ import check_daily as cd  # noqa: E402
 
 SCHEMA = 'bnasdaq-daily/1'
 REQUIRED = ['session', 'headline', 'summary', 'indices', 'sources']
+
+
+TOPICS = os.path.join(cd.ROOT, 'data', 'daily-topics.json')
+
+
+def check_tags(rep):
+    """主題標記檢查（不擋發布）。回傳 (消息總數, 有標記的則數, 問題清單)；events 的 tags 和 items 對不上時，直接拿掉那一組的 tags。"""
+    try:
+        codes = {t['code'] for t in cd.load(TOPICS)['topics']}
+    except Exception as e:  # 讀不到代碼表：不檢查
+        return 0, 0, [f'讀不到主題代碼表 data/daily-topics.json（{e}），這次不檢查主題標記']
+    warns, total, tagged = [], 0, 0
+
+    def one(where, tags):
+        nonlocal total, tagged
+        total += 1
+        if tags is None:
+            warns.append(f'{where}：沒有主題標記')
+            return
+        if not (isinstance(tags, list) and tags and all(isinstance(x, str) for x in tags)):
+            warns.append(f'{where}：tags 應為代碼陣列（例 ["rate", "bond"]），收到 {tags!r}')
+            return
+        bad = [x for x in tags if x not in codes]
+        if bad:
+            warns.append(f'{where}：代碼 {"、".join(bad)} 不在 data/daily-topics.json')
+        if len(bad) < len(tags):
+            tagged += 1
+
+    bm = rep.get('big_move') if isinstance(rep.get('big_move'), dict) else {}
+    for i, c in enumerate(bm.get('causes') or []):
+        if isinstance(c, dict):
+            one(f'big_move.causes[{i}]', c.get('tags'))
+    for gi, g in enumerate(rep.get('events') or []):
+        if not isinstance(g, dict):
+            continue
+        items, tags = g.get('items') or [], g.get('tags')
+        if tags is not None and not (isinstance(tags, list) and len(tags) == len(items)):
+            warns.append(f'events[{gi}]（{g.get("cat")}）：tags 要和 items 一一對應（{len(items)} 則），收到 {len(tags) if isinstance(tags, list) else type(tags).__name__}；這一組的標記已拿掉')
+            del g['tags']
+            tags = None
+        for i in range(len(items)):
+            one(f'events[{gi}].tags[{i}]', None if tags is None else tags[i])
+    mega = rep.get('mega') if isinstance(rep.get('mega'), dict) else {}
+    for r in mega.get('rows') or []:
+        if isinstance(r, dict):
+            one(f'mega.rows[{r.get("t")}]', r.get('tags'))
+    return total, tagged, warns
 
 
 def dump(obj, path, indent):
@@ -71,6 +125,7 @@ def main():
             print('  ❌ ' + e)
         sys.exit(1)
 
+    n_news, n_tagged, tag_warns = check_tags(rep)   # 可能拿掉對不上的 events tags，所以要在寫檔之前
     out = {'schema': SCHEMA, 'date': day, 'session': s, 'generated': now.strftime('%Y-%m-%dT%H:%M:%SZ')}
     out.update({k: v for k, v in rep.items() if k not in out})
     idx_raw = open(cd.INDEX, encoding='utf-8').read()
@@ -95,6 +150,13 @@ def main():
         sys.exit(1)
     act = '更新' if old_raw is not None else '新增'
     print(f'已{act} data/daily/{day}.json（台北日期 {day}，美股 {s} 收盤，generated {out["generated"]}）；index.json latest＝{day}；檢查 0 問題')
+    print(f'主題標記：{n_tagged}／{n_news} 則消息有標記' + ('' if tag_warns else '，全部在代碼表內'))
+    if tag_warns:
+        for w in tag_warns[:40]:
+            print('  ⚠️ ' + w)
+        if len(tag_warns) > 40:
+            print(f'  ⚠️ …另有 {len(tag_warns) - 40} 項')
+        print('  （主題標記不影響發布；請照 data/daily-topics.json 補上或修正後，重跑一次本程式更新。）')
 
 
 if __name__ == '__main__':

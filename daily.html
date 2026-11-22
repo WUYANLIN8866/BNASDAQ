@@ -127,6 +127,66 @@
 .hm details table{font-size:13px}
 @media (max-width:640px){.hm{padding-top:20px}.hm-tabs{flex-wrap:wrap;max-width:100%}.hm-tabs button{padding:5px 10px}.hm-head h2{font-size:20px}.hm-legend .bar span,.hm-legend .ticks span{width:28px}}
 @media (max-width:640px){.cause .ph{grid-template-columns:60px 1fr}.cause .p{font-size:26px}}
+/* 每則消息後面的「模型影響」（assets/daily-models.js）：沒登入只顯示「會員專屬」；會員一句簡單說明；管理員另有判斷條件 */
+.dm{min-width:0;display:flex;flex-wrap:wrap;gap:3px 10px;align-items:baseline;margin:8px 0 0;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.dm .dm-k{font-size:11.5px;letter-spacing:.1em;color:var(--gold);font-weight:600;white-space:nowrap}
+.dm-mo{display:inline-block;font-size:12px;line-height:1.7;border:1px solid var(--line);padding:0 9px;border-radius:2px;color:var(--muted);text-decoration:none;white-space:nowrap;letter-spacing:.06em}
+a.dm-mo:hover{border-color:var(--gold);color:var(--gold)}
+.dm .dm-s i{font-style:normal;font-weight:700;color:var(--good);margin-right:6px}
+.cause .ph>div{min-width:0}
+.cause .dm{border-top:1px dashed var(--line);padding-top:8px}
+.evt li .dm{margin-top:4px}
+.mcard .dm{border-top:1px solid var(--line-2);padding-top:8px;margin-top:10px}
+.dm-lockp{margin:6px 0 22px}
+.dm-fig .fsub{margin-bottom:12px}
+.dm-flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:none}
+.dm-flow li{position:relative;margin:0;padding:12px 12px 12px 14px;border:1px solid var(--line);border-top:2px solid var(--gold-hi);background:var(--band-2);display:grid;gap:2px;transition:opacity .3s ease,border-color .3s ease,background .3s ease}
+.dm-flow li b{font-family:var(--serif);font-size:20px;line-height:1.2;color:var(--gold)}
+.dm-flow li span{font-weight:600;color:var(--ink);font-size:15px}
+.dm-flow li small{font-size:12.5px;color:var(--muted)}
+.dm-flow li+li::before{content:"›";position:absolute;left:-10px;top:50%;width:10px;text-align:center;transform:translateY(-50%);color:var(--gold);font-size:16px;line-height:1}
+.dm-flow li.wait{opacity:.28}
+.dm-flow li.on{border-color:var(--gold);background:var(--gold-tint)}
+@media (max-width:640px){.dm-flow{grid-template-columns:1fr 1fr}.dm-flow li:nth-child(odd)::before{content:none}}
+@media (prefers-reduced-motion:reduce){.dm-flow li{transition:none}}
+.dm details.dm-adm{flex:1 0 100%;min-width:0;max-width:100%;border:0;border-left:2px solid var(--gold-hi);background:var(--band-2);margin:4px 0 0}
+.dm details.dm-adm>summary{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:2px 12px;padding:6px 10px;font-weight:400;font-size:13px;color:var(--ink-2)}
+.dm details.dm-adm>summary::after{margin-left:auto}
+.dm-ak{font-size:11.5px;letter-spacing:.08em;font-weight:600;color:var(--ink);white-space:nowrap}
+.dm-hit.on{color:var(--ink);font-weight:600}
+.dm-body{padding:2px 10px 10px}
+.dm-m{border-top:1px solid var(--line);padding:8px 0 2px}
+.dm-mh{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.dm-path{font-size:11.5px;border:1px solid var(--line);border-radius:2px;padding:0 7px;color:var(--muted);white-space:nowrap}
+.dm-path.on{border-color:var(--gold);color:var(--gold);font-weight:600}
+.tbl.dm-t,.tbl.dm-ov{font-size:13px;margin:6px 0 8px}
+.tbl.dm-t th,.tbl.dm-t td,.tbl.dm-ov th,.tbl.dm-ov td{padding:6px 9px}
+.tbl.dm-t td.l{white-space:normal;min-width:180px}
+.dm-rows{margin:6px 0 4px;border-top:1px solid var(--line-2)}
+.dm-r{display:flex;flex-wrap:wrap;gap:1px 14px;align-items:baseline;padding:5px 2px;border-bottom:1px solid var(--line-2);font-size:13px;color:var(--ink)}
+.dm-rows .c{flex:1 1 210px;min-width:0;overflow-wrap:anywhere}
+.dm-rows .v{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink-2)}
+.dm-rows .s{white-space:nowrap;min-width:3.6em;text-align:right;margin-left:auto}
+.dm .pos{color:var(--good)}.dm .neg{color:var(--bad)}
+.dm-n{font-size:12.5px;color:var(--muted);margin:4px 0 6px;max-width:none}
+.dm-admin{border:1px solid var(--line);border-top:2px solid var(--ink);background:var(--paper);padding:16px 18px;margin:18px 0 26px}
+.dm-admin h3{margin:0 0 6px;font-size:17px}
+.dm-admin details.dm-all>summary{padding:10px 14px;font-size:14px}
+.dm-admin details.dm-all .ans{padding:0 14px 10px}
+.dm-notes{margin:10px 0 0 18px;padding:0;font-size:13px;color:var(--ink-2);max-width:none}
+.dm-notes li{margin:3px 0}
+.dm-ov .badge{white-space:nowrap}
+@media (max-width:640px){
+  .tbl.dm-ov thead,.tbl.dm-full thead{display:none}
+  .tbl.dm-ov tbody tr,.tbl.dm-full tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;padding:10px 0;border-bottom:1px solid var(--line-2)}
+  .tbl.dm-full tbody tr{grid-template-columns:1fr auto}
+  .tbl.dm-ov td,.tbl.dm-full td{display:block;border:0;padding:0;text-align:left;min-width:0;white-space:normal}
+  .tbl.dm-ov td[data-l]::before,.tbl.dm-full td[data-l]::before{content:attr(data-l);display:block;font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+  .tbl.dm-ov td:first-child,.tbl.dm-ov td:last-child,.tbl.dm-full td:first-child,.tbl.dm-full td:last-child{grid-column:1/-1}
+  .tbl.dm-full td:first-child{font-weight:600;overflow-wrap:anywhere}
+  .tbl.dm-full td.c{text-align:right}
+  .dm-admin{padding:14px 14px}
+}
 </style>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -154,6 +214,7 @@
     <li><a href="#idx">1. 美股主要指數</a></li>
     <li><a href="#why">2. 大漲大跌主因</a></li>
     <li><a href="#week">3. 股匯債一週趨勢</a></li>
+    <li><a href="#models">消息對模型的影響</a></li>
     <li><a href="#events">4. 24 小時國際大事</a></li>
     <li><a href="#mega">5. 兆元企業新聞與影響</a></li>
     <li><a href="#src">資料來源</a></li>
@@ -161,7 +222,7 @@
   <div class="side"><h3>說明</h3><ul>
     <li>指數為美東時間收盤值；一週變化＝與上週五收盤比較。</li>
     <li>「主因機率」是依新聞證據權重的主觀估計，不是統計推論。</li>
-    <li>本頁不含任何策略訊號或持倉；會員請至<a href="login.html">會員專區</a>。</li>
+    <li>每則消息後面的「模型影響」登入後顯示；訪客與會員在本頁看不到任何策略訊號或持倉，持有狀態請至<a href="login.html">會員專區</a>。</li>
   </ul></div>
   <div class="side"><h3>相關頁面</h3><ul><li><a href="research.html">研究與回測</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與驗證方法</a></li></ul></div>
 </aside>
@@ -178,7 +239,7 @@
   <div class="wrap disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
   <div class="legal"><div class="wrap"><span>© 2026 BNASDAQ</span><span>回測資料終點 2026-09-30；過去績效不代表未來報酬。</span></div></div>
 </footer>
-<script src="assets/site.js?v=53a18ee4d8"></script><script src="assets/auth.js?v=c7cf690bab"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/mh-core.js?v=fb75e07da9"></script><script src="assets/mychange.js?v=dfa7a7c184"></script>
+<script src="assets/site.js?v=53a18ee4d8"></script><script src="assets/auth.js?v=c7cf690bab"></script><script src="assets/daily-models.js?v=75ff378c33"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/mh-core.js?v=fb75e07da9"></script><script src="assets/mychange.js?v=dfa7a7c184"></script>
 <script>
 (function(){
 'use strict';
@@ -335,9 +396,12 @@ function pieChart(items,sw){ // items: [{p, t}]（p 為百分比，合計 100）
 }
 // generated 是 UTC；畫面一律顯示台北時間（固定 UTC+8，台灣沒有夏令時間）
 const tpeTime=g=>{const t=new Date(g);return isNaN(t)?String(g||''):new Date(t.getTime()+8*36e5).toISOString().slice(0,16).replace('T',' ');};
+// 每一則消息後面的「模型影響」（assets/daily-models.js）：沒登入只顯示「會員專屬」；會員一句簡單說明；管理員另有判斷條件
+const DM=window.BN&&BN.dm, dmLine=(t,g)=>DM?DM.line(t,g):'';
 function render(d){
   const el=document.getElementById('report');
   let h='';
+  if(DM) DM.begin();
   h+=`<div class="dl-head"><span class="date">${esc(d.date)}</span><span class="tag">美股 ${esc(d.session)} 收盤</span><span class="tag">台北 ${esc(tpeTime(d.generated))} 產出</span><span id="pick"></span></div>`;
   h+=`<h2 style="margin-top:.4em">${esc(d.headline)}</h2><p class="dl-sum">${esc(d.summary)}</p>`;
   // 1. indices
@@ -353,7 +417,7 @@ function render(d){
   if(d.big_move.triggered){
     h+=`<p class="lead">${esc(d.big_move.intro)}</p>`;
     h+=pieChart(d.big_move.causes.map(c=>({p:+c.p,t:c.title})));
-    d.big_move.causes.forEach((c,i)=>{h+=`<div class="cause"><div class="ph"><div class="p">${c.p}%<small>可能性</small></div><div><h3><i class="sw" style="background:${SERIES[i%SERIES.length]}"></i>${i+1}. ${esc(c.title)}</h3><ul>${c.evidence.map(e=>`<li>${esc(e)}</li>`).join('')}</ul><p class="ct">為何不給更高：${esc(c.counter)}</p></div></div></div>`;});
+    d.big_move.causes.forEach((c,i)=>{h+=`<div class="cause"><div class="ph"><div class="p">${c.p}%<small>可能性</small></div><div><h3><i class="sw" style="background:${SERIES[i%SERIES.length]}"></i>${i+1}. ${esc(c.title)}</h3><ul>${c.evidence.map(e=>`<li>${esc(e)}</li>`).join('')}</ul><p class="ct">為何不給更高：${esc(c.counter)}</p>${dmLine(c.title+'；'+(c.evidence||[]).join('；'),c.tags)}</div></div></div>`;});
   } else { h+=`<p class="lead">${esc(d.big_move.intro||'當日五大指數漲跌皆未超過 2%，本節不啟用。')}</p>`; }
   // 3. weekly
   h+=`<h2 id="week">3. 美國股市、匯市、債市近一週趨勢（${esc(d.weekly.range)}）</h2>`;
@@ -364,27 +428,30 @@ function render(d){
   h+=bondPanel(d.weekly.bond,['期限',WC[0],WC[1],'變化'],d.session);
   h+=wkTable(d.weekly.other,['商品',WC[0],WC[1],'一週']);
   // 4. events
+  if(DM) h+=DM.sect();
   h+=`<h2 id="events">4. 最近 24 小時國際大事</h2><div class="evt">`;
-  d.events.forEach(g=>{h+=`<h3>${esc(g.cat)}</h3><ul>${g.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;});
+  d.events.forEach(g=>{h+=`<h3>${esc(g.cat)}</h3><ul>${g.items.map((x,i)=>`<li>${esc(x)}${dmLine(x,g.tags&&g.tags[i])}</li>`).join('')}</ul>`;});
   h+=`</div>`;
   // 5. mega
   h+=`<h2 id="mega">5. 市值逾一兆美元企業：新聞、影響、受惠／受害</h2><p class="lead">${esc(d.mega.intro)}</p>`;
   h+=`<div class="tblwrap"><table class="tbl"><caption>一覽：市值、股價、${esc(d.mega.wk_label||'一週')}變化</caption><thead><tr><th>代號</th><th class="l">公司</th><th>市值（美元）</th><th>股價</th><th>${esc(d.mega.wk_label||'一週')}</th><th class="l">一句話</th></tr></thead><tbody>`;
   d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<tr><td><a href="#m-${esc(r.t).replace(/\W/g,'')}">${esc(r.t)}</a></td><td class="l">${esc(r.n)}</td><td>${esc(r.cap)}</td><td>${esc(r.px)}</td><td class="${isNaN(w)?'':cls(w)}">${esc(r.wk)}</td><td class="l" style="white-space:normal;min-width:220px">${esc(r.impact)}</td></tr>`;});
   h+=`</tbody></table></div><div class="mega">`;
-  d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm"><span>市值 ${esc(r.cap)}</span><span>股價 ${esc(r.px)}</span><span class="${isNaN(w)?'':cls(w)}">${esc(d.mega.wk_label||'一週')} ${esc(r.wk)}</span></div></div><p class="mn"><b>新聞</b>${esc(r.news)}</p><p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div></div>`;});
+  d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm"><span>市值 ${esc(r.cap)}</span><span>股價 ${esc(r.px)}</span><span class="${isNaN(w)?'':cls(w)}">${esc(d.mega.wk_label||'一週')} ${esc(r.wk)}</span></div></div><p class="mn"><b>新聞</b>${esc(r.news)}</p><p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div>${dmLine(r.n+'：'+r.news+'；'+r.impact,r.tags)}</div>`;});
   h+=`</div><p class="small" style="color:var(--muted);font-size:13px">受惠／受害為依新聞內容推論的方向性判斷，不是投資建議；「—」代表無明確對象。</p>`;
   // sources
   h+=`<h2 id="src">資料來源</h2><ol class="src">${d.sources.map(s=>`<li><a href="${esc(s.u)}" rel="noopener" target="_blank">${esc(s.t)}</a></li>`).join('')}</ol>`;
   el.innerHTML=h;
   if(PLAY) BN.play.scan(el);
+  if(DM) DM.mount(el,d);
   ycLoad();
 }
 function pickDate(){const q=new URLSearchParams(location.search).get('d');return q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?q:null;}
 const nc='?t='+Date.now();   // 加時間參數：GitHub Pages 的 CDN 快取最多 10 分鐘，報告一上線就要看得到
+const dmReady=DM?DM.ready().catch(()=>{}):Promise.resolve();   // 登入後要先知道模型名稱才畫得出「模型影響」；沒登入不用等
 fetch('data/daily/index.json'+nc,{cache:'no-store'}).then(r=>r.json()).then(idx=>{
   const want=pickDate()||idx.latest;
-  return fetch('data/daily/'+want+'.json'+nc,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('no report');return r.json();}).then(d=>{render(d);
+  return Promise.all([fetch('data/daily/'+want+'.json'+nc,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('no report');return r.json();}),dmReady]).then(([d])=>{render(d);
     if(idx.items&&idx.items.length>1){const sel=document.createElement('select');sel.setAttribute('aria-label','選擇日期');idx.items.forEach(it=>{const o=document.createElement('option');o.value=it.date;o.textContent=it.date+'（美股 '+it.session+'）';if(it.date===want)o.selected=true;sel.appendChild(o);});sel.onchange=()=>{location.search='?d='+sel.value;};document.getElementById('pick').appendChild(sel);}
   });
 }).catch(()=>{document.getElementById('report').innerHTML='<p class="note warn">目前沒有可顯示的市場分析，請稍後再試。</p>';});
