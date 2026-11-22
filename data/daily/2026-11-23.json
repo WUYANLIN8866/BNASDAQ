@@ -1,0 +1,924 @@
+{
+ "schema": "bnasdaq-daily/1",
+ "date": "2026-11-23",
+ "session": "2026-11-20",
+ "generated": "2026-11-22T22:50:07Z",
+ "headline": "週一盤前版：財長貝森特週日稱輝達須在 11/25 前答覆是否以空殼公司規避出口管制、尚未收到回覆，並改口「黃仁勳現在就是外部人選」，Kalshi 回任機率 7%→12%；週末荷莫茲再傳油輪受損、伊朗襲擊巴林工業設施；本週焦點 11/23 威廉斯談話、11/24 Dell 財報、11/25 PCE＋GDP、11/26 感恩節休市；指數沿用 11/20：那指 100 −5.63%、費半 −10.73%",
+ "summary": "美股尚未開盤（台北週一清晨＝美東週日傍晚，期貨美東 18:00 才開盤），指數沿用 11/20（週五）收盤：那指 100 25,028.98（−5.63%，週 −10.43%）、費半 8,408.59（−10.73%，週 −17.13%）、標普 6,910.39（−3.70%，週 −8.61%）、道瓊 48,147.33（−1.93%，週 −8.02%）、羅素 2000 2,581.79（−2.76%，週 −7.48%）；10 年期殖利率 4.912%、VIX 35.89（Yahoo Finance 報價框、FXEmpire）。週變化＝收盤÷11/13 收盤現算。過去 24 小時重點：①輝達：財長貝森特 11/22 上 CBS《Face the Nation》稱輝達須在 11/25 前向政府說明是否設立空殼公司規避出口管制、把先進晶片賣給中國企業，財政部尚未收到答覆；先前主張新領導人應「找外部」，週日改稱「他（黃仁勳）現在就在外部」，Kalshi 黃仁勳回任機率由 11/20 的 7% 升至 12%；川普支持其回任，但董事會表示無意請回（Motley Fool 11/22）。SEC 調查仍未獲官方證實。②Anthropic：路透 11/22 報導其要求 22 家承銷商的交易團隊 6 個月內不得服務 OpenAI、Cursor、DeepSeek、Hugging Face，承銷費逾 5 億美元（Fox News 引路透）。③地緣：UKMTO 11/22 再報阿曼外海第二艘油輪受損；伊朗 11/21 攻擊巴林民用工業設施、2 人受傷，沙國警告伊朗「將承擔後果」；沙國聯軍 11/22 擊落飛向利雅德的胡塞無人機；伊朗外長稱若滿足 7 項條件「數小時內」可重開荷莫茲（Investing.com、Iran International、The National）。④本週行事曆：11/23 標普全球 PMI 初值、紐約 Fed 威廉斯談話、HPE 盤後財報；11/24 經濟諮商會消費者信心（預期 92.1）、ADI 盤前、Dell／Workday 盤後；11/25 核心 PCE 月增預期 0.3%、Q3 GDP、耐久財、初領失業金、褐皮書；11/26 感恩節休市、11/27 13:00 提早收盤（FXEmpire、TradingKey）。",
+ "indices": [
+  {
+   "key": "NDX",
+   "name": "那斯達克 100",
+   "close": 25028.98,
+   "chg": -5.63,
+   "prev_week": 27943.74,
+   "wk": -10.43,
+   "note": "週末版改用指數官方收盤 25,028.98（CappNotes、The Glass Desk；前一版以 QQQ 換算 25,016.88）；÷11/19 收盤 26,521.31 現算 −5.63%（CappNotes 標示 −5.61%，口徑差 0.02 個百分點）；÷11/13 收盤 27,943.74 現算週 −10.43%（與 The Glass Desk 一致）；盤中一度觸及熊市區（較高點跌逾 20%，CappNotes）"
+  },
+  {
+   "key": "SOX",
+   "name": "費城半導體",
+   "close": 8408.59,
+   "chg": -10.73,
+   "prev_week": 10146.32,
+   "wk": -17.13,
+   "note": "−1,011.13 點（鉅亨網、三立；9,419.72−1,011.13＝8,408.59 驗算一致）；SOXX −10.55%、SMH −10.60%（本站 us-close）交叉印證；輝達 −14.01%、美光 −13.89%、AMD −13.25%、博通 −12.19%；本週 −17.13%"
+  },
+  {
+   "key": "SPX",
+   "name": "標普 500",
+   "close": 6910.39,
+   "chg": -3.7,
+   "prev_week": 7561.67,
+   "wk": -8.61,
+   "note": "−265.44 點（鉅亨網、Motley Fool；FX168 報 6,910.54／−265.29）；連七黑、較 10/6 高點跌逾 10% 進入修正；SPY −3.55%；本週 −8.61%"
+  },
+  {
+   "key": "DJI",
+   "name": "道瓊工業",
+   "close": 48147.33,
+   "chg": -1.93,
+   "prev_week": 52347.55,
+   "wk": -8.02,
+   "note": "−949.73 點（鉅亨網、Motley Fool、三立；FX168 報 −950.03）；進入修正；本週 −8.02%，2025 年 4 月以來最差單週（優分析）"
+  },
+  {
+   "key": "RUT",
+   "name": "羅素 2000",
+   "close": 2581.79,
+   "chg": -2.76,
+   "prev_week": 2790.49,
+   "wk": -7.48,
+   "note": "−73.32 點（ad-hoc-news；其前一日收盤 2,655.11，與前一版採用的 2,654.67 差 0.44 點，以本版漲跌點計 −2.76%）；IWM −2.85%（本站 us-close）交叉驗證；本週 −7.48%"
+  },
+  {
+   "key": "IXIC",
+   "name": "那斯達克綜合",
+   "close": 22617.73,
+   "chg": -5.28,
+   "prev_week": 25136.27,
+   "wk": -10.02,
+   "note": "−1,261.47 點（鉅亨網、三立、FX168 一致）；今年以來轉為下跌；本週 −10.02%，2020 年 3 月以來最大單週跌幅（優分析）"
+  }
+ ],
+ "week_path": {
+  "dates": [
+   "11/06",
+   "11/09",
+   "11/10",
+   "11/11",
+   "11/12",
+   "11/13",
+   "11/16",
+   "11/17",
+   "11/18",
+   "11/19",
+   "11/20"
+  ],
+  "note": "11/06 為基期（＝100），延伸到週五 11/20，呈現「上週強彈 → 本週一晶片股崩、週二軟體股接棒、週三那指止跌、週四 Anthropic 掛牌後開高走低、週五輝達傳 SEC 會計調查引爆 AI 股崩跌（費半 −10.73%）」。11/20 取本版收盤漲跌。六條線逐日漲跌累乘 11/06→11/20：那斯達克 100 約 -7.27%、費城半導體 -10.45%、標普 500 -6.31%、道瓊 -6.10%、那斯達克綜合 -7.97%、羅素 2000 -6.22%（逐日漲跌四捨五入，與收盤直接相除可能差 ≤0.05 個百分點）。 週末版：那指 100 的 11/20 改用指數官方收盤 −5.63%。",
+  "series": [
+   {
+    "name": "那斯達克 100",
+    "chg": [
+     0,
+     3.4,
+     -0.6,
+     2.28,
+     -0.3,
+     -1.22,
+     -2.67,
+     -0.72,
+     0.42,
+     -2.19,
+     -5.63
+    ]
+   },
+   {
+    "name": "費城半導體",
+    "chg": [
+     0,
+     6.85,
+     -0.36,
+     5.66,
+     -0.54,
+     -3.43,
+     -5.28,
+     0.34,
+     0.1,
+     -2.41,
+     -10.73
+    ]
+   },
+   {
+    "name": "標普 500",
+    "chg": [
+     0,
+     2.35,
+     -0.38,
+     1.31,
+     -0.35,
+     -0.4,
+     -1.92,
+     -1.03,
+     -0.23,
+     -2.02,
+     -3.7
+    ]
+   },
+   {
+    "name": "道瓊",
+    "chg": [
+     0,
+     2.15,
+     -0.3,
+     0.49,
+     -0.36,
+     0.1,
+     -1.41,
+     -1.64,
+     -1.11,
+     -2.19,
+     -1.93
+    ]
+   },
+   {
+    "name": "那斯達克綜合",
+    "chg": [
+     0,
+     2.74,
+     -0.74,
+     1.6,
+     -0.39,
+     -0.91,
+     -2.49,
+     -0.74,
+     0.42,
+     -2.25,
+     -5.28
+    ]
+   },
+   {
+    "name": "羅素 2000",
+    "chg": [
+     0,
+     3.15,
+     -0.68,
+     0.88,
+     -1.66,
+     -0.31,
+     -1.7,
+     -1.5,
+     0.52,
+     -2.2,
+     -2.76
+    ]
+   }
+  ]
+ },
+ "big_move": {
+  "triggered": true,
+  "threshold": 2,
+  "intro": "最近一個交易日（11/20）五項指數跌逾 2%：費半 −10.73%、那指 100 −5.63%、那斯達克綜合 −5.28%、標普 −3.70%、羅素 −2.76%；道瓊 −1.93% 未達門檻。週一盤前版依週末新資訊檢視、權重不變：貝森特要求輝達 11/25 前答覆出口管制疑問（第一項證據加強，但同時出現黃仁勳回任的可能，方向不明）；FXEmpire 指輝達財報優於預期、上調 2028 年營收成長預估至 75% 仍未能恢復 AI 信心（支持第二項）；Fed 12 月升息預期未變（第三項不變）。期貨尚未開盤，無新價格可驗證。機率為本站依新聞證據權重所作的主觀估計（合計 100%），不是統計推論。",
+  "causes": [
+   {
+    "p": 40,
+    "title": "輝達領導與會計風暴：傳 SEC 調查會計作業，龍頭股單日 −14%",
+    "evidence": [
+     "路透引兩名知情人士：SEC 執法人員正檢視輝達可能的會計問題；SEC、輝達不予置評（中央社轉路透）",
+     "輝達收 125.53（−14.01%），連七黑，本週約 −23%、7 週約 −46%，市值約 3.03 兆、2024 年 4 月以來首度被 Alphabet 超車（鉅亨網、Motley Fool）",
+     "黃仁勳 11/12 因涉中國間諜疑雲的私人關係辭職，紐約時報續報董事會調查國安風險；加州檢察長發傳票（中央社標題、鉅亨網）",
+     "財長貝森特 11/22（CBS）：輝達須在 11/25 前答覆是否以空殼公司規避出口管制，財政部尚未收到；Kalshi 黃仁勳回任機率 7%→12%（Motley Fool 11/22）"
+    ],
+    "counter": "輝達本週二財報優於預期、本益比僅約 8.4 倍（鉅亨網），且 SEC 調查細節未證實、接受調查不代表違法；單一公司消息難以完全解釋羅素 2000 與加密資產同步下跌。",
+    "tags": [
+     "corp",
+     "pol"
+    ]
+   },
+   {
+    "p": 35,
+    "title": "AI 交易全面平倉：資料中心政策風險＋AI 資本支出回收疑慮",
+    "evidence": [
+     "川普揚言對到海外建資料中心的企業課「巨額稅負」，並稱只賣舊款晶片給中國；民主黨期中大勝增添反資料中心政策風險（鉅亨網、路透經 Yahoo）",
+     "Anthropic 上市第二天 −8.5%（88.91），開盤後回吐首日大半漲幅（Motley Fool、鉅亨網）",
+     "資料中心電力與設備同步重挫：卡特彼勒 −5.01%、GE Vernova −7.57%、Vistra −7.21%、Applied Digital −17.81%、IREN −17.97%、Nebius −16.11%（本站 us-close）",
+     "花旗 11 月將美股與全球科技股降至中性、瑞銀調降美股評級；BNP 稱「恐慌性賣壓」（Beinsure、StockTitan）"
+    ],
+    "counter": "非 AI 的消費、醫療股上漲（Gap +11.44%、聯合健康 +2.91%），大型雲端商跌幅相對小（蘋果 −1.90%、微軟 −2.77%），顯示並非所有 AI 受益股被同等看壞。",
+    "tags": [
+     "tech",
+     "pol",
+     "mkt"
+    ]
+   },
+   {
+    "p": 25,
+    "title": "鷹派 Fed＋跨資產去槓桿：升息預期與比特幣、貴金屬同步下跌",
+    "evidence": [
+     "Fed 理事庫克：通膨壓力擴散、等待恐落後曲線；費城 Fed 總裁保爾森：可接受連續升息（Investing.com、鉅亨網）",
+     "CME FedWatch 一度顯示 12 月升 1 碼機率約 97.5%（Yahoo Finance）",
+     "比特幣跌破 6 萬（11 月約 −23%）、Strategy −9.67%、Robinhood −9.44%；白銀 −6.79%（SLV）、黃金期貨約 −4%（Yahoo Finance、本站 us-close、Investing.com）",
+     "日經 −5.06%、KOSPI −5.21%、台股 −5.65%，亞洲先跌再傳導至美股（StockTitan）"
+    ],
+    "counter": "10 年期殖利率反降 12 bp 至 4.92%、密大 1 年通膨預期降至 3.7%（Investing.com），利率面其實在放鬆；鉅亨網指交易員已不再完全計入 12 月升息，Fed 本身不是當天新增的衝擊。",
+    "tags": [
+     "rate",
+     "crypto",
+     "cmdty"
+    ]
+   }
+  ]
+ },
+ "weekly": {
+  "range": "2026-11-13 → 2026-11-20（本週一至週五；收盤÷上週五 11/13 收盤現算）",
+  "cols": [
+   "11/13",
+   "11/20"
+  ],
+  "stock": {
+   "title": "股市：本週五大指數全跌 7.5%～17.1%，道瓊、標普進入修正，那指創 2020 年 3 月以來最差單週",
+   "rows": [
+    [
+     "那斯達克 100",
+     "27,943.74",
+     "25,028.98",
+     "−10.43%（11/16 −2.67%、11/17 −0.72%、11/18 +0.42%、11/19 −2.19%、11/20 −5.63%）"
+    ],
+    [
+     "費城半導體",
+     "10,146.32",
+     "8,408.59",
+     "−17.13%（11/16 −5.28%、11/17 +0.34%、11/18 +0.10%、11/19 −2.41%、11/20 −10.73%）"
+    ],
+    [
+     "標普 500",
+     "7,561.67",
+     "6,910.39",
+     "−8.61%（11/16 −1.92%、11/17 −1.03%、11/18 −0.23%、11/19 −2.02%、11/20 −3.70%）"
+    ],
+    [
+     "道瓊工業",
+     "52,347.55",
+     "48,147.33",
+     "−8.02%（11/16 −1.41%、11/17 −1.64%、11/18 −1.11%、11/19 −2.19%、11/20 −1.93%）"
+    ],
+    [
+     "羅素 2000",
+     "2,790.49",
+     "2,581.79",
+     "−7.48%（11/16 −1.70%、11/17 −1.50%、11/18 +0.52%、11/19 −2.20%、11/20 −2.76%）"
+    ],
+    [
+     "VIX",
+     "19.30",
+     "35.89",
+     "+85.96%（35.89÷19.30 現算；11/20 +26.20%、盤中高 40.03，CappNotes、The Closing Print、The Glass Desk）"
+    ]
+   ],
+   "text": "一週趨勢：上週強彈後本週五天全面下跌，週五輝達 SEC 會計調查傳聞引爆 AI 鏈崩跌，費半單日 −10.73%。標普連七黑為 2020 年以來最長，道瓊、標普較高點跌逾 10% 進入修正，那斯達克今年以來轉為下跌（鉅亨網、優分析）。三大指數跌破 200 日均線（鉅亨網引 BTIG）。防禦類股（必需消費、醫療）相對抗跌。下週焦點：10 月 PCE 物價、感恩節短週、Fed 12/8～9 會議前官員談話。"
+  },
+  "fx": {
+   "title": "匯市：美元指數守在 19 個月高點附近，股災中日圓、瑞郎走強",
+   "rows": [
+    [
+     "美元指數 DXY",
+     "103.412",
+     "103.84",
+     "+0.41%（103.84÷103.412 現算；11/20 −0.06%～−0.07%，自週四 19 個月高點回落；The Closing Print、CappNotes）"
+    ],
+    [
+     "USD/JPY",
+     "159.78",
+     "未取得收盤",
+     "11/20 日圓避險走強：Barchart 經 CappNotes 標示 USD/JPY −0.74%、StockTwits 稱日圓 +0.7%、瑞郎 +0.4%"
+    ],
+    [
+     "EUR/USD",
+     "1.1023",
+     "未取得收盤",
+     "週末仍未取得 11/20 收盤值（11/19 為 1.0969，investinglive）"
+    ]
+   ],
+   "text": "一週趨勢：FOMC 紀要偏鷹、華勒與庫克、保爾森接連主張升息，美元指數本週升至 2025 年 4 月以來最強（路透經 Yahoo）。週五股災時避險資金流向日圓與瑞郎（鉅亨網），美元兌日圓自 160 附近回落。口徑說明：11/13 欄沿用前一版，11/20 欄為盤中報價。"
+  },
+  "bond": {
+   "title": "債市：股災引爆避險買盤，10 年期跌破 5% 至 4.92%，一週全線下降 16～25 bp",
+   "rows": [
+    [
+     "2 年",
+     "4.88%",
+     "4.63%",
+     "−25 bp（11/20 −13 bp）"
+    ],
+    [
+     "10 年",
+     "5.15%",
+     "4.92%",
+     "−23 bp（11/20 −12 bp）"
+    ],
+    [
+     "30 年",
+     "5.47%",
+     "5.31%",
+     "−16 bp（11/20 −9 bp）"
+    ]
+   ],
+   "text": "一週趨勢：財政部 Daily Treasury Par Yield：11/20 2 年 4.63%、10 年 4.92%、30 年 5.31%（本站 data/treasury.json）；11/19 為 4.76%／5.04%／5.40%。殖利率下降主要反映避險需求（Beinsure）；密大 11 月消費者信心終值 51.5、1 年通膨預期降至 3.7%（Investing.com）。Fed 官員仍鷹，12 月升息 1 碼仍是基本情境，但交易員已不再完全計入（鉅亨網）。 週末補充：StockTwits 指 SHY 創 2024 年 8 月以來最佳單週、TLT 週 +2.6%；其表列 10 年 4.95%、2 年 4.66% 與財政部數字口徑不同，本表以財政部為準。"
+  },
+  "other": {
+   "title": "商品與加密：黃金單週約 −9%、比特幣跌破 6 萬，油價小漲",
+   "rows": [
+    [
+     "WTI 原油",
+     "88.56",
+     "82.40",
+     "約 −6.95%（Investing.com 報價，11/20 +1.12%；Yahoo 報 12 月合約 82.92）"
+    ],
+    [
+     "黃金",
+     "3,887.60",
+     "3,539.00",
+     "約 −8.97%（Investing.com 12 月期貨 −3.98%；鉅亨網現貨 3,525.25）"
+    ],
+    [
+     "比特幣",
+     "約 68,323",
+     "約 59,100",
+     "約 −13.5%（Motley Fool；11 月約 −23%，2022 年 6 月以來最差月份，Yahoo Finance）"
+    ]
+   ],
+   "text": "油價：荷莫茲海峽油輪受擾、葉門胡塞威脅沙國港口（路透、FXNX），WTI 小漲。黃金：美元強、實質升息預期與跨資產去槓桿，本週走向 8 個月來最差（mlq.ai 標題）；白銀 SLV −6.79%。比特幣：IBIT 創單日最大流出（FXNX 引 Cointelegraph）。口徑說明：11/13 欄沿用前一版；11/20 欄為收盤前後報價，一週變化可能有 ±0.5 個百分點口徑差。 週末補充：WTI 結算約 83.62～83.98（週 −5.58%）、Brent 約 89.87（週 −6.23%）、黃金 12 月期貨約 3,539（週 −8.94%）、比特幣 Yahoo 日收 58,798.98（週 −13.85%）（The Glass Desk、CappNotes）。"
+  }
+ },
+ "events": [
+  {
+   "cat": "科技與那斯達克",
+   "items": [
+    "財長貝森特 11/22 上 CBS《Face the Nation》：輝達須在 11/25 前向政府說明是否設立空殼公司規避出口管制、將先進晶片售予中國企業，財政部尚未收到答覆；並稱輝達內部委員會「動作很快」（Motley Fool 11/22）",
+    "貝森特先前主張輝達新領導人應來自外部，週日改稱黃仁勳「現在就在外部」；Kalshi 回任機率由 7% 升至 12%；川普支持回任、董事會表示無意請回（Motley Fool 11/22）",
+    "路透 11/22：Anthropic 要求 22 家承銷銀行交易團隊 6 個月內不得服務 OpenAI、Cursor、DeepSeek、Hugging Face，承銷費逾 5 億美元；Anthropic、高盛、摩根士丹利不予置評（Fox News 引路透）",
+    "Yahoo Finance：H100 租金一年上漲約 60% 至每小時約 3.11 美元（Silicon Data），CoreWeave 稱 Ampere／Hopper 定價季增 30%～50%，與輝達股價自 10 月高點腰斬背離",
+    "本週財報：11/23 盤後 HPE、Zoom；11/24 盤前 ADI，盤後 Dell（預期營收約 492 億、年增 82%）、HP、Workday、Autodesk（FXEmpire）"
+   ],
+   "tags": [
+    [
+     "corp",
+     "trade",
+     "pol"
+    ],
+    [
+     "corp",
+     "pol"
+    ],
+    [
+     "corp"
+    ],
+    [
+     "tech",
+     "corp"
+    ],
+    [
+     "corp"
+    ]
+   ]
+  },
+  {
+   "cat": "貨幣政策與央行",
+   "items": [
+    "11/23 美東 16:00 紐約 Fed 總裁威廉斯談話；11/25 美東 14:00 公布褐皮書（FXEmpire）",
+    "11/25 10 月核心 PCE 月增預期 0.3%（前值 0.3%）、個人所得 0.4%、支出 0.4%；Q3 GDP 第二次估算預期 3.4%～3.5%（FXEmpire、BK Preview 口徑不一）",
+    "Fox News：市場預期 Fed 12 月將升息（12/8～9 FOMC）；FXEmpire 稱交易員正評估進一步升息風險"
+   ],
+   "tags": [
+    [
+     "rate"
+    ],
+    [
+     "pce",
+     "gdp"
+    ],
+    [
+     "rate"
+    ]
+   ]
+  },
+  {
+   "cat": "美國政治與政策",
+   "items": [
+    "美國財政部制裁 4 名協助伊朗收取石油收入的伊朗人，國務院稱經濟壓力將加大；川普稱美軍控制荷莫茲海峽（Investing.com 11/21）",
+    "Fox News：期中選後民主黨國會與德州、喬治亞州新任州長誓言阻止資料中心建設，被列為 AI 股賣壓原因之一"
+   ],
+   "tags": [
+    [
+     "pol",
+     "geo",
+     "oil"
+    ],
+    [
+     "pol",
+     "tech"
+    ]
+   ]
+  },
+  {
+   "cat": "國際情勢",
+   "items": [
+    "UKMTO 11/22：阿曼外海再有第二艘油輪受損；11/21 一艘油輪駛出荷莫茲時在 Khasab 北方 11 浬船尾中彈，無人傷亡；海峽航運量較戰前低約 65%（The National、Investing.com）",
+    "伊朗 11/21 攻擊巴林一處民用工業設施引發火災，2 人受傷（1 人危急）；IRGC 稱擊中巴林基地 2 套愛國者雷達、美軍中央司令部否認 F-16 被擊中；沙國警告伊朗若持續攻擊「將承擔後果」（Iran International、The National）",
+    "沙國聯軍 11/21 摧毀 3 枚飛向利雅德的胡塞彈道飛彈，11/22 再擊落一架飛向利雅德的無人機（Investing.com、Iran International）",
+    "伊朗外長阿拉格齊：與美方先前協議「不再適用」，若滿足含解除封鎖與制裁在內的 7 項條件可「數小時內」重開荷莫茲，但拒絕將 60% 濃縮鈾移出境（Investing.com）",
+    "Bloomberg（經 Iran International）：英國首相與內閣數週來為美國可能恢復空襲伊朗預作準備，英方認為談判解決可能性低"
+   ],
+   "tags": [
+    [
+     "geo",
+     "oil"
+    ],
+    [
+     "geo"
+    ],
+    [
+     "geo"
+    ],
+    [
+     "geo",
+     "oil"
+    ],
+    [
+     "geo",
+     "intl"
+    ]
+   ]
+  },
+  {
+   "cat": "金融環境",
+   "items": [
+    "11/20 收盤：10 年期殖利率 4.912%、VIX 35.89（+26.20%）、黃金 12 月期貨 3,515.40（−4.62%）（Yahoo Finance 報價框）",
+    "油價 11 月約 −20%：WTI 10/15～11/19 跌 20.36 美元（−19.6%），汽油由每加侖 4.15 降至 3.72 美元（BK Preview 引白宮圖表、EIA／AAA，概略值）",
+    "週一美股有標普全球 PMI 初值：製造業預期 54.5（前值 54.9）、服務業 55.6（前值 56.1）；11/26 感恩節休市、11/27 美東 13:00 提早收盤（FXEmpire、TradingKey）"
+   ],
+   "tags": [
+    [
+     "bond",
+     "mkt",
+     "cmdty"
+    ],
+    [
+     "oil",
+     "energy"
+    ],
+    [
+     "mfg",
+     "mkt"
+    ]
+   ]
+  }
+ ],
+ "mega": {
+  "intro": "依 11/20 收盤市值排名。收盤價與單日漲跌取自本站 data/lt/us-close.json（Yahoo Finance，asof 2026-11-20）；市值＝前一版 11/19 市值 × 11/20 收盤 ÷ 11/19 收盤現算（輝達 3.03 兆、Alphabet 3.26 兆與鉅亨網一致）。Anthropic 市值取鉅亨網約 1.18 兆。波克夏為 B 股市值口徑。沙烏地阿美未取得最新收盤，沿用前一版。 週一盤前版：股價與市值沿用 11/20 收盤，新聞欄更新為 11/21～11/22 的最新消息；未查得新消息者標示〔週末無重大新公司公告〕。",
+  "wk_label": "11/20 單日",
+  "rows": [
+   {
+    "t": "AAPL",
+    "n": "Apple",
+    "cap": "4.97 兆",
+    "px": "342.56",
+    "wk": "−1.90%",
+    "news": "Bloomberg 報導開發自主 AI 代理（CappNotes）；Epic 請最高法院維持對蘋果的藐視判決（9to5Mac 經 BitDigest）〔週末無重大新公司公告〕。",
+    "impact": "AI 硬體賣壓下成相對避風港；App Store 抽成訴訟仍是長期風險。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "MSFT",
+    "n": "Microsoft",
+    "cap": "3.60 兆",
+    "px": "484.52",
+    "wk": "−2.77%",
+    "news": "調整雲端部門薪酬、提高績效連動（鉅亨網）；隨 AI 權值股下跌〔週末無重大新公司公告〕。",
+    "impact": "AI 資本支出回收期受檢視，但雲端軟體跌幅遠小於晶片。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "ORCL（−8.50%，AI 雲端資本支出壓力）"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "GOOGL",
+    "n": "Alphabet",
+    "cap": "3.26 兆",
+    "px": "265.29",
+    "wk": "−2.70%",
+    "news": "Google 選定 Blue Origin 約 2029 年 Q1 發射 Suncatcher 計畫（BitDigest）；本週 −10.31%（The Glass Desk）〔週末無重大新公司公告〕。",
+    "impact": "市值仍居輝達之上，自有 TPU 被視為 AI 鏈相對穩健者。",
+    "win": [
+     "GOOGL（相對抗跌）"
+    ],
+    "lose": [
+     "NVDA"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "NVDA",
+    "n": "Nvidia",
+    "cap": "3.03 兆",
+    "px": "125.53",
+    "wk": "−14.01%",
+    "news": "週一盤前：財長貝森特 11/22（CBS）要求輝達 11/25 前答覆是否以空殼公司規避出口管制、財政部尚未收到；改稱黃仁勳「現在就在外部」，Kalshi 回任機率 7%→12%，川普支持回任、董事會表示無意請回（Motley Fool 11/22）；H100 租金一年漲約 60%（Yahoo Finance）。SEC 調查仍未獲官方證實。",
+    "impact": "11/25 答覆期限是本週最大個股事件：若涉規避出口管制屬實，可能面臨制裁與重編財報；若澄清或黃仁勳回任，低本益比（約 8 倍）可能引發強彈。舊款 GPU 租金上漲顯示 AI 算力需求仍強。",
+    "win": [
+     "GOOGL（TPU 替代）",
+     "AMZN（自研 Trainium）",
+     "AMD（若客戶分散採購）"
+    ],
+    "lose": [
+     "NVDA",
+     "SMCI",
+     "DELL",
+     "CRWV",
+     "TSM"
+    ],
+    "tags": [
+     "corp",
+     "trade",
+     "pol"
+    ]
+   },
+   {
+    "t": "AMZN",
+    "n": "Amazon",
+    "cap": "2.67 兆",
+    "px": "246.82",
+    "wk": "−4.10%",
+    "news": "Anthropic 主要股東，ANT 上市第二天 −8.5%；推動 App 遊說反對紐約市配送法案（FXNX 引 CNBC 標題）〔週末無重大新公司公告〕。",
+    "impact": "Anthropic 股價回落降低帳面利得預期。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "AMZN"
+    ],
+    "tags": [
+     "corp",
+     "pol"
+    ]
+   },
+   {
+    "t": "SPCX",
+    "n": "SpaceX",
+    "cap": "1.74 兆",
+    "px": "127.79",
+    "wk": "−7.69%",
+    "news": "星艦二級船首度以塔臂回收（WSJ 經 BitDigest，屬前週事件）；新浪稱川普帳戶 9 月買進 SpaceX（單一來源）〔週末無重大新公司公告〕。",
+    "impact": "技術里程碑利多長期，但短線跟隨高估值成長股。",
+    "win": [
+     "RKLB"
+    ],
+    "lose": [
+     "SPCX"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "TSM",
+    "n": "台積電",
+    "cap": "1.66 兆",
+    "px": "319.33",
+    "wk": "−9.30%",
+    "news": "台灣金管會再收緊放空、11/23 起提高融券保證金（中央社經 Specterworks）〔週末無重大新公司公告〕。",
+    "impact": "可減輕台股週一融券追殺壓力，但 ADR 已反映輝達利空。",
+    "win": [
+     "2330.TW（放空受限）"
+    ],
+    "lose": [
+     "TSM",
+     "ASX",
+     "UMC"
+    ],
+    "tags": [
+     "cb",
+     "mkt"
+    ]
+   },
+   {
+    "t": "AVGO",
+    "n": "Broadcom",
+    "cap": "1.45 兆",
+    "px": "304.41",
+    "wk": "−12.19%",
+    "news": "CISA 將 Broadcom VMware vCenter 漏洞列入已遭利用清單，聯邦修補期限 11/23（Specterworks）；本週 −12.28%。〔週末無重大新公司公告〕",
+    "impact": "資安修補成本有限，主要壓力仍是 AI 客製晶片估值。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "AVGO",
+     "MRVL",
+     "ANET"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "META",
+    "n": "Meta",
+    "cap": "1.43 兆",
+    "px": "560.84",
+    "wk": "−5.93%",
+    "news": "暫停發行 C 類股以因應股東訴訟（The Information 經 BitDigest）；推出獨立訊息 App「Direct」；本週 −12.60%（The Glass Desk）。〔週末無重大新公司公告〕",
+    "impact": "股東訴訟暫緩股權融資，但不影響現金流；高資本支出仍被市場折價。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "META"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "TSLA",
+    "n": "Tesla",
+    "cap": "1.37 兆",
+    "px": "345.82",
+    "wk": "−7.64%",
+    "news": "無重大公司新聞；高 β 成長股跟跌（Motley Fool）〔週末無重大新公司公告〕。",
+    "impact": "風險偏好降溫時評價壓縮較大。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "TSLA"
+    ],
+    "tags": [
+     "mkt"
+    ]
+   },
+   {
+    "t": "LLY",
+    "n": "禮來",
+    "cap": "1.27 兆",
+    "px": "1,350.40",
+    "wk": "−0.05%",
+    "news": "無重大公司新聞；醫療股抗跌（本站 us-close）〔週末無重大新公司公告〕。",
+    "impact": "資金輪動至防禦性醫療股。",
+    "win": [
+     "UNH（+2.91%）",
+     "JNJ（+1.32%）"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "mkt"
+    ]
+   },
+   {
+    "t": "BRK.B",
+    "n": "波克夏",
+    "cap": "1.25 兆",
+    "px": "569.88",
+    "wk": "−0.38%",
+    "news": "無重大公司新聞（本站 us-close）〔週末無重大新公司公告〕。",
+    "impact": "價值型、現金充裕，股災中相對抗跌。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "mkt"
+    ]
+   },
+   {
+    "t": "ANT",
+    "n": "Anthropic",
+    "cap": "約 1.18 兆",
+    "px": "88.91",
+    "wk": "−8.50%",
+    "news": "路透 11/22：IPO 時要求 22 家承銷商交易團隊 6 個月內不得服務 OpenAI、Cursor、DeepSeek、Hugging Face，承銷費逾 5 億美元（Fox News 引路透）；上市第二天 −8.5%，本週為上市後第一個完整交易週（TradingKey）。",
+    "impact": "顯示 Anthropic 議價力強，但銀行利益衝突限制屬罕見條款；股價接近 83 美元承銷價，跌破可能壓抑後續 AI IPO。",
+    "win": [
+     "AMZN（主要股東，若股價穩定）",
+     "GOOGL（股東）"
+    ],
+    "lose": [
+     "GS、MS（承銷團隊受限，單一來源）"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "WMT",
+    "n": "沃爾瑪",
+    "cap": "約 1.02 兆",
+    "px": "127.95",
+    "wk": "+1.52%",
+    "news": "防禦股逆勢上漲（Beinsure、本站 us-close）〔週末無重大新公司公告〕。",
+    "impact": "資金由 AI 轉向必需消費。",
+    "win": [
+     "WMT",
+     "COST（+0.76%）",
+     "PG（+0.97%）"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "mkt"
+    ]
+   },
+   {
+    "t": "2222.SR",
+    "n": "沙烏地阿美",
+    "cap": "約 1.69 兆（11/4）",
+    "px": "—",
+    "wk": "—",
+    "news": "胡塞襲擊利雅德 KAEC 金融中心、PIF 大樓受損並威脅吉達港（ABC News）；未取得最新收盤。",
+    "impact": "中東航運與設施風險升溫，油價風險溢價上升。",
+    "win": [
+     "XOM",
+     "CVX"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "geo",
+     "oil"
+    ]
+   }
+  ]
+ },
+ "sources": [
+  {
+   "t": "Motley Fool（11/22）：Bessent Just Delivered Great News to Former Nvidia CEO Jensen Huang（11/25 期限、Kalshi 回任機率）",
+   "u": "https://www.fool.com/investing/2026/11/22/u-s-treasury-secretary-scott-bessent-just-delivered-great-news-to-former-nvidia-ceo-jensen-huang-should-you-buy-nvidia-stock-before-nov-25/"
+  },
+  {
+   "t": "Fox News 直播（11/22）：Tech sell-off hits Nvidia, Anthropic and Nasdaq（路透 Anthropic 承銷條款）",
+   "u": "https://www.foxnews.com/live-news/ai-news-markets-correction-11-22-26"
+  },
+  {
+   "t": "Yahoo Finance（11/22）：GPU prices are rising for Nvidia's older chips（報價框：殖利率、VIX、黃金）",
+   "u": "https://finance.yahoo.com/markets/article/gpu-prices-are-rising-for-nvidias-older-chips-even-as-the-stock-keeps-going-down-chart-of-the-day-123721121.html"
+  },
+  {
+   "t": "FXEmpire（11/22）：The Week Ahead: PCE in Focus After AI Sell-Off in Holiday-Shortened Week",
+   "u": "https://www.fxempire.com/forecasts/article/the-week-ahead-pce-in-focus-after-ai-sell-off-in-holiday-shortened-week-1646337"
+  },
+  {
+   "t": "TradingKey（11/22）：The Week Ahead: US Q3 GDP and October PCE Due on Same Day, Dell and HPE Report Earnings",
+   "u": "https://www.tradingkey.com/analysis/stocks/us-stocks/262316778-week-ahead-us-gdp-pce-dell-hpe-report-anthropic-tradingkey"
+  },
+  {
+   "t": "BK Preview（11/21）：Investing Preview 23Nov2026（油價、汽油、行事曆）",
+   "u": "https://bkobog.substack.com/p/investing-preview-23nov2026"
+  },
+  {
+   "t": "Investing.com 經 Yahoo（11/21）：Iran war sees tanker hit near Hormuz as Saudi Arabia intercepts Houthi missiles",
+   "u": "https://www.yahoo.com/news/world/articles/iran-war-sees-tanker-hit-084308407.html"
+  },
+  {
+   "t": "The National（11/22）：Middle East latest — Tanker incident reported in Gulf",
+   "u": "https://www.thenationalnews.com/news/mena/2026/11/22/live-bahrain-attack-iran-war/"
+  },
+  {
+   "t": "Iran International 直播（11/21～11/22）",
+   "u": "https://www.iranintl.com/en/liveblog/202611214578"
+  },
+  {
+   "t": "Khaleej Times 直播（11/22）",
+   "u": "https://www.khaleejtimes.com/world/mena/us-israel-iran-saudi-arabia-yemen-war-live-updates-november-22-2026"
+  },
+  {
+   "t": "Motley Fool（11/21）：After Its Worst Week in 18 Years, Nvidia Now Faces an SEC Investigation",
+   "u": "https://www.fool.com/investing/2026/11/21/after-its-worst-week-in-18-years-nvidia-now-faces-an-sec-investigation-what-it-means-for-investors/"
+  },
+  {
+   "t": "CappNotes：Closing Look — Friday, November 20, 2026（那指 100 25,028.98、VIX 35.89、殖利率、Kalshi、下週行事曆）",
+   "u": "https://cappnotes.substack.com/p/closing-look-friday-november-20-2026"
+  },
+  {
+   "t": "The Closing Print：Post-Market & Weekly Summary 2026-11-20（週漲跌、類股、DXY）",
+   "u": "https://www.theclosingprint.net/2026/11/post-market-and-weekly-summary-2026-11-20/"
+  },
+  {
+   "t": "The Glass Desk：Weekly Market Review Nov 20, 2026（週表、VIX 期限結構、商品、超大型股週漲跌）",
+   "u": "https://theglassdesk.substack.com/p/weekly-market-review-nov-20-2026"
+  },
+  {
+   "t": "StockTwits：The Weekly Spread — Treasury yields and the dollar this week",
+   "u": "https://stocktwits.com/news-articles/markets/equity/the-weekly-spread-what-shaped-us-treasury-yields-and-the-dollar-this-week-1/cNbmPyOR91X"
+  },
+  {
+   "t": "Business Today（11/21）：US SEC launches probe into potential accounting issues at Nvidia",
+   "u": "https://www.businesstoday.in/latest/corporate/story/us-sec-launches-probe-into-potential-accounting-issues-at-nvidia-scrutiny-over-china-ties-widen-568860-2026-11-21"
+  },
+  {
+   "t": "新浪美股熱點小時報 2026-11-21 19 時（貝瑞、OGE 申報）",
+   "u": "https://k.sina.com.cn/article_7857201856_1d45362c001908vqcm.html"
+  },
+  {
+   "t": "Specterworks：The Morning Brief 2026-11-21（UKMTO 油輪、台灣放空新規、ECB、CISA）",
+   "u": "https://specterworks.substack.com/p/the-morning-brief-2026-11-21"
+  },
+  {
+   "t": "BitDigest：Saturday November 21, 2026（Meta、Anthropic、Google、Apple 週回顧）",
+   "u": "https://bitdigest.substack.com/p/saturday-november-21-2026"
+  },
+  {
+   "t": "ABC News：Iran live updates（川普談伊朗、胡塞襲擊利雅德）",
+   "u": "https://abcnews.com/International/live-updates/iran-live-updates-tanker-attacked-strait-hormuz-ukmto/?id=138171071"
+  },
+  {
+   "t": "鉅亨網：〈美股盤後〉美股大屠殺！道瓊標普陷修正區 費半瀉逾10%（四大指數、費半 8,408.59、個股、Fed 官員、川普）",
+   "u": "https://news.cnyes.com/news/id/6669311"
+  },
+  {
+   "t": "鉅亨網：輝達連七黑 市值遭 Alphabet 超車跌至第四",
+   "u": "https://news.cnyes.com/news/id/6668153"
+  },
+  {
+   "t": "中央社：路透 輝達再陷法律風暴 SEC 調查會計作業",
+   "u": "https://www.cna.com.tw/news/aopl/202611210010.aspx"
+  },
+  {
+   "t": "Motley Fool：Stock Market Today Nov 20 — Nvidia rout deepens as SEC accounting probe（收盤、個股、比特幣）",
+   "u": "https://www.fool.com/coverage/stock-market-today/2026/11/20/stock-market-today-nov-20-nvidia-s-usd2-5-trillion-rout-deepens-as-sec-accounting-probe-adds-to-wall-street-s-ai-sell-off/"
+  },
+  {
+   "t": "三立 iNEWS：美股收盤4大指數狂崩 道瓊跌949點 費半重挫逾10%",
+   "u": "https://inews.setn.com/news/1942548"
+  },
+  {
+   "t": "優分析：輝達重挫近14%、費半跌約11% 那斯達克創2020年來最大單週跌幅",
+   "u": "https://uanalyze.com.tw/articles/1259860684"
+  },
+  {
+   "t": "FX168：道瓊、標普、那斯達克 11/20 收盤",
+   "u": "https://www.fx168news.com/express/fastnews/1473623"
+  },
+  {
+   "t": "ad-hoc-news：Russell 2000 falls 2.8% to 2,581.79",
+   "u": "https://www.ad-hoc-news.de/boerse/news/marktberichte/russell-2000-falls-2-8-prozent-to-2-581-79-as-ai-sell-off-hits-small-caps/70541176"
+  },
+  {
+   "t": "Yahoo Finance：Stock market today Nov 20 live（盤中、FedWatch、庫克、密大信心、亞股）",
+   "u": "https://sg.finance.yahoo.com/news/live/stock-market-today-friday-november-19-dow-sp-500-nasdaq-anthropic-nvidia-141644188.html"
+  },
+  {
+   "t": "StockTitan：Stock Market Today Live Nov 20（個股、亞股、10 年期盤中）",
+   "u": "https://www.stocktitan.net/articles/stock-market-today-live-november-20-2026"
+  },
+  {
+   "t": "Investing.com：Fed signals and data — week of Nov 16–20（經濟數據、Fed 官員、VIX、DXY、油金報價 15:01）",
+   "u": "https://www.investing.com/news/stock-market-news/fed-signals-and-data-what-happened-the-week-of-nov-1620-2026-93CH-5042523"
+  },
+  {
+   "t": "Reuters 經 Yahoo：Stocks slide as AI selloff deepens, Asia has worst week since 2020（DXY、Brent、黃金）",
+   "u": "https://finance.yahoo.com/markets/world-indices/articles/asian-shares-head-worst-week-014854250.html"
+  },
+  {
+   "t": "FXNX：Market notes 20 Nov 2026（日本 CPI、英國零售、地緣政治）",
+   "u": "https://fxnx.com/en/analysis/archive/2026-11-20"
+  },
+  {
+   "t": "Beinsure：Nasdaq stock market today — 2026 gains erased（VIX、券商評等）",
+   "u": "https://beinsure.com/news/nasdaq-stock-market-today-ai-selloff-erases-2026-gains/"
+  },
+  {
+   "t": "美國財政部 Daily Treasury Par Yield Curve（本站 data/treasury.json，asof 2026-11-20）",
+   "u": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"
+  },
+  {
+   "t": "本站 data/lt/us-close.json（Yahoo Finance 11/20 收盤：QQQ 608.45、IWM、SOXX、兆元企業與個股漲跌）",
+   "u": "https://wuyanlin8866.github.io/BNASDAQ/daily.html"
+  }
+ ]
+}
