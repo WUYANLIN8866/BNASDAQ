@@ -217,6 +217,7 @@
     const { L, H, lv, hv, sl } = stratParts(R);
     if (!sl) return '<p class="small">你的持有中沒有策略使用的商品（多方 QLD 或台股 00670L、避險 SHV），所以不計算差額。</p>';
     if (!targets) return '<div id="mh-p-strat"></div><p class="small">策略部位（' + [...L, ...H].map(a => a.code).join('、') + '）共 ' + twd(sl) + '，其中多方 ' + pc(lv / sl) + '。會員規則載入後，這裡會算出和本月目標的差額。</p>';
+    if (!targets.list || !targets.list.length) return '<p class="small">這個帳號目前沒有開通任何模型，所以不計算和策略目標的差額。</p>';
     const ref = L.find(a => a.code === 'QLD') || L[0] || null, refPx = ref ? ref.px * (ref.cur === 'USD' ? FX : 1) : (U.get('QLD') && U.get('QLD').p ? U.get('QLD').p * FX : null), refCode = ref ? ref.code : 'QLD';
     let h = '<div id="mh-p-strat"></div><p class="small">策略部位＝' + [...L, ...H].map(a => a.code).join('＋') + '，共 ' + twd(sl) + '；目前多方 ' + pc(lv / sl) + '、避險 ' + pc(hv / sl) + '（' + esc(targets.month) + ' 持有）。</p><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">策略</th><th class="l">本月目標</th><th>多方應有</th><th>多方目前</th><th>差額</th></tr></thead><tbody>';
     targets.list.forEach(t => { const want = t.w * sl, d = want - lv, sh = refPx ? d / refPx : null;

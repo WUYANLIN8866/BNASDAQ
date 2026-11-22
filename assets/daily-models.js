@@ -1,7 +1,8 @@
 /* BNASDAQ｜每日市場分析：每一則消息後面的「模型影響」（2026-11-22 站主）
    誰看得到什麼：
      沒登入 → 只顯示「會員專屬」
-     會員   → 只有一句簡單說明：模型能力已可自動處理此訊息造成的影響（不提任何模型的判斷指標）
+     會員   → 只有一句簡單說明：模型能力已可自動處理此訊息造成的影響（不提任何模型的判斷指標）；
+              只提這個帳號開通的模型（2026-11-22 站主：每個帳號可看的模型由管理後台設定，預設只有入門模型；見 assets/auth.js「模型權限」）
      管理員 → 另外看得到這則消息對應到每個模型的哪些判斷條件（條件、目前數值、是否成立）
    本檔是公開的，不含任何策略規則、門檻，也沒有「哪個模型用哪些資料」的對照表。
    管理員看到的判斷條件全部來自登入後才解得開的會員規則（data/rules.enc.json，在瀏覽器解密、執行）；
@@ -18,20 +19,28 @@
   // who＝這次瀏覽的身分；'admin' 只是「登入身分寫著管理員」，要通過 verifyAdmin 才會顯示判斷條件
   const ST = { who: !S0 ? 'visitor' : S0.role === 'admin' ? 'admin' : 'member', codes: null, items: [], adm: null, session: '' };
   const LOCK = '<a class="dm-mo" href="login.html?next=daily.html" data-mo-val>會員專屬</a>';
-  const group = () => { const n = ST.codes && ST.codes.length; return n ? (n <= 10 ? NUM[n] : n) + '大模型' : '各模型'; };
+  // 這個帳號看得到幾個模型就怎麼稱呼：1 個＝直接寫代號、2 個＝兩大模型、3 個以上＝三大模型、四大模型…
+  const group = () => { const n = ST.codes && ST.codes.length; return n === 1 ? ST.codes[0] : n === 2 ? '兩大模型' : n ? (n <= 10 ? NUM[n] : n) + '大模型' : '各模型'; };
+  const none = () => !!ST.codes && ST.codes.length === 0;   // 登入了，但這個帳號沒有開通任何模型
+  const NONE = '<span class="dm-mo">尚未開通模型</span>';
   const SAY = '模型能力已可自動處理此訊息造成的影響';
 
   let readyP = null;
   function ready() {   // 畫報告前先知道有幾個模型、叫什麼（只有登入後才需要）
     if (readyP) return readyP;
     if (ST.who === 'visitor') return (readyP = Promise.resolve());
-    return (readyP = getJSON('data/strategies.json').then(j => { ST.codes = (j.strategies || []).map(x => x.code).filter(Boolean); }).catch(() => { ST.codes = null; }));
+    // 這個帳號開通的模型：每次都重讀帳號檔（管理員改過權限、帳號被停用，重新整理就生效）；讀不到時用登入當時記下的那一份
+    return (readyP = (async () => {
+      try { ST.codes = (await BN.auth.grants(S0)).codes; }
+      catch (e) { ST.codes = Array.isArray(S0.codes) ? S0.codes : null; }
+    })());
   }
   function begin() { ST.items = []; }
 
   // ---------- 每一則消息後面的那一行 ----------
   function line(text, tags) {
     if (ST.who === 'visitor') return '<div class="dm lock"><b class="dm-k">模型影響</b>' + LOCK + '</div>';
+    if (none()) return '<div class="dm lock"><b class="dm-k">模型影響</b>' + NONE + '</div>';
     const i = ST.items.push({ text: String(text || ''), tags: Array.isArray(tags) ? tags : null }) - 1;
     return '<div class="dm ok" data-dm="' + i + '"><b class="dm-k">模型影響</b><span class="dm-s"><i aria-hidden="true">✓</i>' + esc(group()) + '：' + SAY + '</span></div>';
   }
@@ -41,6 +50,7 @@
   function sect() {
     let h = '<h2 id="models">消息對模型的影響</h2>';
     if (ST.who === 'visitor') return h + '<p class="dm-lockp">' + LOCK + '</p>';
+    if (none()) return h + '<p class="dm-lockp">' + NONE + '</p><p class="small">這個帳號目前沒有開通任何模型；需要開通請聯絡管理員。</p>';
     const names = ST.codes && ST.codes.length ? ST.codes.join('、') : '各模型';
     h += '<p class="lead">本頁每一則消息後面都標示「模型影響」。</p>';
     h += '<p>' + esc(names) + ' 都不需要人工解讀消息：每一則消息造成的影響，' + SAY.replace('此訊息造成的影響', '') + '。模型在每月最後一個交易日收盤後自動完成判斷，次一交易日開盤執行，其餘交易日不操作。</p>';
@@ -51,7 +61,7 @@
   }
 
   function mount(root, report) {
-    if (ST.who === 'visitor' || !root) return;
+    if (ST.who === 'visitor' || !root || none()) return;
     ST.session = (report && report.session) || '';
     const fig = root.querySelector('.dm-fig');
     if (fig && BN.play) {   // 動態走勢：四個步驟依序亮起

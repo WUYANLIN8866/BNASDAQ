@@ -117,7 +117,7 @@
   </ul>
 </div></section>
 
-<script src="assets/site.js?v=53a18ee4d8"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/bt-sat3-30.js?v=4e77b68d53"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=f4affab552"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/bt-sat3-30.js?v=4e77b68d53"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=f4affab552"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function(){
   // 最新發布分頁與公告
@@ -154,7 +154,8 @@ const WP={opt:null,t:null,i:0,lo:0,hi:0,btn:null};
 // 「策略日報酬 ÷ QLD 日報酬」取中位數，再取最接近的 0／0.5／1。和回測產生器的實際持倉逐月比對：26110 481 個月、其他三個各 319 個月全部相同。
 // 只到上個月底（圖的最後一個月），現在的持有不在這裡。
 // 站主 18:20：沒登入也能看動態走勢，只有 26113 的名稱、報酬率、持有顯示「會員專屬」；登入後沒有任何限制。
-const MOV=name=>name==='BNASDAQ-26113'&&!(BN.isMember&&BN.isMember());
+// 站主 2026-11-22：每個帳號可看的模型由管理後台設定；登入但沒開通 26113 的會員，和沒登入一樣顯示「會員專屬」（BN.canSee，見 assets/site.js）。
+const MOV=name=>name==='BNASDAQ-26113'&&!(BN.canSee&&BN.canSee(name));
 const HOLD=(()=>{const DD=B.DD,T=B.T,byM=new Map(),C={};DD.forEach((d,j)=>{const m=d.slice(0,7);let a=byM.get(m);if(!a)byM.set(m,a=[]);a.push(j);});
   return (k,m)=>{const key=k+'|'+m;if(key in C)return C[key];const js=byM.get(m),e=T.daily[k],q=T.daily.qld;let r=null;
     if(js&&e&&q){const ws=[];for(let t=1;t<js.length;t++){const j=js[t];if(e[j]==null||e[j-1]==null)continue;const rq=q[j]/q[j-1]-1;if(Math.abs(rq)<0.004)continue;ws.push((e[j]/e[j-1]-1)/rq);}
@@ -217,7 +218,7 @@ function renderCmp(start){
   ];
   const head='<thead><tr><th class=l>指標</th><th><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-26110</th><th><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-26111</th><th><span class="sw" style="background:var(--s-sat2)"></span>BNASDAQ-26112</th><th><span class="sw" style="background:var(--s-sat3)"></span>BNASDAQ-26113</th><th>QQQ</th><th>QLD</th></tr></thead>';
   // 手機版表頭隱藏，改在每格上方顯示欄名（.mth；桌機不顯示）
-  const MTH={fund:'<span class="mth"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-<wbr>26110</span>',sat:'<span class="mth"><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-<wbr>26111</span>',sat2:'<span class="mth"><span class="sw" style="background:var(--s-sat2)"></span>BNASDAQ-<wbr>26112</span>',sat3:'<span class="mth"><span class="sw" style="background:var(--s-sat3)"></span>'+(BN.isMember&&BN.isMember()?'BNASDAQ-<wbr>26113':'會員專屬')+'</span>',qqq:'<span class="mth">QQQ</span>',qld:'<span class="mth">QLD</span>'};
+  const MTH={fund:'<span class="mth"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-<wbr>26110</span>',sat:'<span class="mth"><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-<wbr>26111</span>',sat2:'<span class="mth"><span class="sw" style="background:var(--s-sat2)"></span>BNASDAQ-<wbr>26112</span>',sat3:'<span class="mth"><span class="sw" style="background:var(--s-sat3)"></span>'+(BN.canSee&&BN.canSee('BNASDAQ-26113')?'BNASDAQ-<wbr>26113':'會員專屬')+'</span>',qqq:'<span class="mth">QQQ</span>',qld:'<span class="mth">QLD</span>'};
   // 粗體＝四個策略中最佳者（同分不標）
   const body=rows.map(r=>{const vv=ST.map(k=>r[1](k));let win=null;if(vv.every(v=>v!=null)){const b=r[3]>0?Math.max(...vv):Math.min(...vv);if(vv.filter(v=>v===b).length===1)win=ST[vv.indexOf(b)];}
     return '<tr><td class=l>'+r[0]+'</td>'+K.map(k=>{const v=r[1](k),t=v==null?'—':r[2](v),sub=(r[4]&&v!=null)?'<small>'+r[4](k)+'</small>':'';return '<td>'+MTH[k]+(win===k?'<b>'+t+'</b>':t)+sub+'</td>';}).join('')+'</tr>';}).join('')

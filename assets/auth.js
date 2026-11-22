@@ -53,9 +53,56 @@
     // 用途：加密要跨裝置同步的個人資料（會員持有資產，見 assets/mh-core.js）。密碼被重設或更改後，UK 會換一把。
     const lab = enc.encode('bnasdaq-user-key-v1|'), buf = new Uint8Array(lab.length + wk.length); buf.set(lab); buf.set(wk, lab.length);
     const uk = new Uint8Array(await crypto.subtle.digest('SHA-256', buf));
-    const sess = { user: rec.user, role: rec.role, ck: b64.enc(ck), uk: b64.enc(uk), ts: Date.now() };
+    // 模型權限（見下方「模型權限」）：這個帳號可以看到哪些模型，登入時先記在 session；會員專區、每日市場分析每次開啟都會重讀帳號檔更新
+    const models = modelsOf(rec); let codes = null;
+    try { codes = codesOf(models, await strategies()); } catch (e) { codes = null; }
+    const sess = { user: rec.user, role: rec.role, ck: b64.enc(ck), uk: b64.enc(uk), ts: Date.now(), models, codes };
     sessionStorage.setItem('bn-session', JSON.stringify(sess));
     return sess;
+  }
+
+  // ---------- 模型權限（2026-11-22 站主：在管理後台控制每個帳號可以看到哪幾個模型的資訊，預設只看得到入門模型） ----------
+  // data/accounts.json 每個帳號的 models＝這個帳號可以看到的模型，存的是 data/strategies.json 的 role（fund、sat、sat2、sat3…），
+  //   不是策略代號：代號改名時授權不用跟著改。沒有 models 欄位＝預設 DEFAULT_MODELS（只有 fund＝入門模型）；管理員固定可以看全部。
+  // session 裡：models＝role 清單（管理員是 '*'）、codes＝對應的策略代號（給 assets/site.js 判斷「會員專屬」名稱要不要顯示）。
+  // 範圍：會員登入後才看得到的模型資訊（會員專區的本月持有、下月機率、翻轉價位、策略差額；每日市場分析的模型影響；會員專屬模型的名稱與數字）。
+  //   公開頁面本來就對所有訪客公開的回測，不受這個設定影響。
+  // 這一層是顯示權限（決定畫面顯示哪些模型）；會員規則仍以會員共用的主金鑰（CK）加密，每個模型各自加密屬於另一階段的工作。
+  const DEFAULT_MODELS = ['fund'];
+  let STRATP = null;
+  function strategies() {   // 公開的策略登記：[{ role, code, section, … }]
+    if (!STRATP) STRATP = fetch('data/strategies.json?t=' + Date.now(), { cache: 'no-store' }).then(r => { if (!r.ok) throw new Error('無法讀取模型清單（' + r.status + '）'); return r.json(); })
+      .then(j => (j.strategies || []).filter(x => x && x.role && x.code)).catch(e => { STRATP = null; throw e; });
+    return STRATP;
+  }
+  function modelsOf(rec) { return rec.role === 'admin' ? '*' : Array.isArray(rec.models) ? rec.models.filter(x => typeof x === 'string') : DEFAULT_MODELS.slice(); }
+  function codesOf(models, list) { return list.filter(x => models === '*' || models.indexOf(x.role) >= 0).map(x => x.code); }
+  // g＝grants() 的結果；st＝規則裡的一條策略（{ id：策略代號, ref：專案節次 }）。代號對不上時（規則與公開頁改名的時間差）改用節次對照
+  function allowed(g, st) {
+    if (!g) return false; if (g.models === '*') return true;
+    const x = g.list.find(s => s.code === st.id) || g.list.find(s => s.section && s.section === st.ref);
+    return !!x && g.models.indexOf(x.role) >= 0;
+  }
+  // 重讀帳號檔，確認這次登入的帳號現在可以看到哪些模型：回傳 { models, codes, list }。
+  //   帳號已被刪除或停用 → 清掉這次登入並重新載入（會員頁會回到登入頁，公開頁變回訪客畫面）。
+  //   權限和登入時記下的不同（管理員剛改過；或是這次改版前就登入的舊 session）→ 更新 session 後重新載入一次，讓整頁用同一份權限重畫。
+  async function grants(sess) {
+    const [db, list] = await Promise.all([fetchAccounts(), strategies()]);
+    const rec = (db.accounts || []).find(a => a.user === sess.user);
+    const hold = () => new Promise(() => { });   // 頁面正在重新載入：不再往下畫
+    if (!rec || rec.active === false) { sessionStorage.removeItem('bn-session'); location.reload(); return hold(); }
+    const models = modelsOf(rec), codes = codesOf(models, list), g = { models, codes, list };
+    if (JSON.stringify([sess.role, sess.models, sess.codes]) !== JSON.stringify([rec.role, models, codes])) {
+      sess.role = rec.role; sess.models = models; sess.codes = codes;
+      let again = false;
+      try {
+        sessionStorage.setItem('bn-session', JSON.stringify(sess));
+        const last = +sessionStorage.getItem('bn-grants-reload') || 0;   // 保險：10 秒內最多重新載入一次，避免任何意外造成一直重整
+        if (Date.now() - last > 10000) { sessionStorage.setItem('bn-grants-reload', String(Date.now())); again = true; }
+      } catch (e) { again = false; }
+      if (again) { location.reload(); return hold(); }
+    }
+    return g;
   }
   function session() { try { return JSON.parse(sessionStorage.getItem('bn-session') || 'null'); } catch (e) { return null; } }
   function logout() { sessionStorage.removeItem('bn-session'); location.href = 'login.html'; }
@@ -193,5 +240,5 @@
   async function ghDispatch(pat) { const r = await fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/site.yml/dispatches', { method: 'POST', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + pat, 'Content-Type': 'application/json' }, body: JSON.stringify({ ref: 'main' }) }); if (r.status !== 204) throw new Error('無法觸發更新（' + r.status + '）；PAT 需要 Actions: Read and write'); }
 
   window.BN = window.BN || {};
-  BN.auth = { REPO, ITER, patBox, ukFrom, viewSetup, sealPw, openPw, rewrapView, login, session, logout, require, loadRules, fetchJSON, fetchAccounts, makeRecord, genPassword, savePAT, loadPAT, clearPAT, ghGet, ghPut, ghPutB64, ghDelete, ghTest, ghDispatch, aesEnc, aesDec, pbkdf2, b64, rnd };
+  BN.auth = { REPO, ITER, DEFAULT_MODELS, strategies, modelsOf, codesOf, allowed, grants, patBox, ukFrom, viewSetup, sealPw, openPw, rewrapView, login, session, logout, require, loadRules, fetchJSON, fetchAccounts, makeRecord, genPassword, savePAT, loadPAT, clearPAT, ghGet, ghPut, ghPutB64, ghDelete, ghTest, ghDispatch, aesEnc, aesDec, pbkdf2, b64, rnd };
 })();

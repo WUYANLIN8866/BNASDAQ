@@ -20,6 +20,14 @@
 ## 管理
 管理員登入後台後，貼一次 fine-grained PAT（Contents: Read and write；Actions: Read and write 可手動觸發更新）即可新增／停用／刪除帳號、重設密碼、發布公告。
 
+### 模型權限（2026-11-22）
+- 管理後台「模型權限」設定每個帳號可以看到哪些模型：勾選後按「儲存模型權限」一次寫回 `data/accounts.json`；新增會員時也可以勾選。管理員固定可以看全部。
+- 資料：每個帳號的 `models`＝可看的模型，存 `data/strategies.json` 的 `role`（fund、sat、sat2、sat3…，不是策略代號，代號改名不影響授權）。沒有 `models` 欄位＝預設只有 `fund`（入門模型）；預設值在 `assets/auth.js` 的 `DEFAULT_MODELS`。
+- 範圍：會員登入後才看得到的資訊——會員專區（本月持有、下月持有機率、翻轉價位、策略差額）、每日市場分析的「模型影響」、會員專屬模型的名稱與數字（`BN.canSee`，`assets/site.js`）。公開頁面上對所有訪客公開的回測不受影響。
+- 生效：登入時記在 session；會員專區、每日市場分析、管理後台每次開啟都重讀帳號檔（`BN.auth.grants`），權限、身分有變或帳號被停用，重新整理就生效。
+- 這是顯示權限；會員規則 `data/rules.enc.json` 仍以全體會員共用的主金鑰加密（每個模型各自加密尚未實作）。
+- 新增模型：在 `data/strategies.json` 登記新的 role 後，後台會自動多一欄；沒有勾選的帳號看不到新模型。
+
 ## 載入速度（2026-11-06）
 - **字型**：不再向 Google Fonts 載入完整 Noto Sans TC／Noto Serif TC（每頁 1.2–1.8MB），改用 `assets/fonts/` 的本站精簡版（整站約 0.4MB，字形相同）。
   改了網頁文字後：開本機伺服器 → `node scripts/fonts/collect_chars.js http://127.0.0.1:8765/` → `python3 scripts/build_fonts.py`（需要 `pip install fonttools brotli`）。

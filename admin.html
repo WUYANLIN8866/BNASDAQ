@@ -21,6 +21,23 @@
 #acct-table .pw { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 #acct-table td { vertical-align: middle; }
 .btn.danger, button.danger { color: var(--bad); }
+/* 模型權限：每個帳號一列，模型做成可勾選的標籤；手機上帳號在上、標籤排成兩欄（太窄時自動變一欄） */
+.mp-list { margin: 10px 0 12px; border-top: 1px solid var(--line); }
+.mp-row { display: grid; grid-template-columns: minmax(130px, 220px) 1fr; gap: 8px 18px; align-items: center; padding: 11px 8px; border-bottom: 1px solid var(--line); }
+.mp-row.dirty { background: var(--gold-tint); }
+.mp-who b { overflow-wrap: anywhere; }
+.mp-who small { display: block; color: var(--muted); font-size: 12.5px; }
+.mp-chips { display: flex; flex-wrap: wrap; gap: 7px 8px; }
+.mp-chips .mp-chip { display: inline-flex; align-items: center; gap: 7px; margin: 0; border: 1px solid var(--line); border-radius: 2px; padding: 6px 11px; font-size: 13.5px; font-weight: 400; letter-spacing: 0; line-height: 1.3; cursor: pointer; white-space: nowrap; user-select: none; background: var(--paper); color: var(--ink-2); }
+.mp-chips .mp-chip input { margin: 0; width: 15px; height: 15px; flex: none; accent-color: var(--gold); }
+.mp-chips .mp-chip.on { border-color: var(--gold); color: var(--ink); }
+.mp-chips .mp-chip:focus-within { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.mp-chips .mp-chip.fixed { cursor: default; opacity: .62; }
+@media (max-width: 640px) {
+  .mp-row { grid-template-columns: 1fr; padding: 12px 6px; }
+  .mp-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 8px; }
+  .mp-chips .mp-chip { padding: 11px 8px; font-size: 13px; gap: 6px; }
+}
 </style>
 </head>
 <body>
@@ -34,7 +51,7 @@
 <main id="main">
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 管理後台</div><h1>管理後台</h1><p class="lede">管理員可以看到一切資訊、管理一切帳號與公告。</p></div></div>
 <div class="main"><div class="wrap">
-  <div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>管理員：<b id="who">—</b></div><div class="actions"><a class="btn line" href="member.html">會員專區畫面</a><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div></div>
+  <div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>管理員：<b id="who">—</b></div><div class="actions"><a class="btn line" href="#mperm">模型權限</a><a class="btn line" href="member.html">會員專區畫面</a><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div></div>
 
   <h2 id="signals">訊號明細（所有策略）</h2>
   <p class="small" id="mstat">載入中…</p>
@@ -74,6 +91,13 @@
     <div id="ms-msg"></div>
     <p class="small muted">這把 token 會先用會員主金鑰加密才放到網站上，登入的會員才解得開，而且只能讀寫那個私人 repo。限制：會員共用同一把，所以惡意的會員可以刪掉或覆寫 repo 裡的密文（解不開內容；每台裝置都留有自己的一份，會自動補傳）。token 到期或想換一把時，回來這裡重新貼一次即可，會員的資料不受影響。</p>
   </div>
+  <div class="panel" id="mperm">
+    <h3>模型權限 <span class="small">（每個帳號可以看到哪些模型）</span></h3>
+    <p class="small" id="mp-intro">載入中…</p>
+    <div class="mp-list" id="mp-list"></div>
+    <div class="actions"><button class="btn navy" type="button" id="mp-save" disabled>儲存模型權限</button><button class="btn line" type="button" id="mp-reset" disabled>還原</button></div>
+    <div id="mp-msg"></div>
+  </div>
   <div class="panel">
     <h3>帳號清單 <span class="small">（最後更新 <span id="acct-updated">—</span>）</span></h3>
     <div id="pv-setup"></div>
@@ -81,7 +105,7 @@
     <div class="tblwrap"><table class="tbl" id="acct-table"><thead><tr><th class="l">帳號</th><th class="l">密碼</th><th class="l">角色</th><th class="l">建立</th><th class="l">狀態</th><th class="l">備註</th><th class="l">操作</th></tr></thead><tbody id="acct-body"><tr><td colspan="7">載入中…</td></tr></tbody></table></div>
     <dialog id="acct-edit" class="acct-dlg"><form method="dialog" class="form" id="ae-form">
       <h3 id="ae-title">編輯帳號</h3>
-      <div class="field"><label for="ae-user">帳號</label><input id="ae-user" type="text" pattern="[A-Za-z0-9_.-]{3,32}" required><p class="small" id="ae-user-note"></p></div>
+      <div class="field"><label for="ae-user">帳號</label><input id="ae-user" type="text" pattern="[A-Za-z0-9_.\-]{3,32}" required><p class="small" id="ae-user-note"></p></div>
       <div class="field"><label for="ae-pw">密碼</label><div class="ae-pwrow"><input id="ae-pw" type="text" autocomplete="off" spellcheck="false"><button class="btn line sm" type="button" id="ae-gen">產生</button></div><p class="small" id="ae-pw-note"></p></div>
       <div class="row2"><div class="field"><label for="ae-role">角色</label><select id="ae-role"><option value="member">會員</option><option value="admin">管理員</option></select></div>
         <div class="field"><label for="ae-active">狀態</label><select id="ae-active"><option value="1">啟用</option><option value="0">停用</option></select></div></div>
@@ -91,7 +115,7 @@
     </form></dialog>
     <div id="acct-msg"></div><a id="dl" class="btn line" download="accounts.json" hidden>下載 accounts.json（手動上傳用）</a>
     <h3>新增會員</h3>
-    <form class="form" id="add"><div class="row2"><div class="field"><label for="nu">帳號</label><input id="nu" type="text" required pattern="[A-Za-z0-9_.-]{3,32}"></div><div class="field"><label for="np">密碼（留空＝自動產生）</label><input id="np" type="text" autocomplete="off"></div></div><div class="field"><label for="nn">備註（例：姓名、來源）</label><input id="nn" type="text"></div><div class="actions"><button class="btn navy" type="submit">建立帳號</button></div></form>
+    <form class="form" id="add"><div class="row2"><div class="field"><label for="nu">帳號</label><input id="nu" type="text" required pattern="[A-Za-z0-9_.\-]{3,32}"></div><div class="field"><label for="np">密碼（留空＝自動產生）</label><input id="np" type="text" autocomplete="off"></div></div><div class="field"><label for="nn">備註（例：姓名、來源）</label><input id="nn" type="text"></div><div class="field"><label id="nm-label">可以看的模型</label><div class="mp-chips" id="nm-chips" role="group" aria-labelledby="nm-label"></div></div><div class="actions"><button class="btn navy" type="submit">建立帳號</button></div></form>
     <h3>更改管理員密碼</h3>
     <form class="form" id="chpw"><div class="row2"><div class="field"><label for="pw1">新密碼（至少 10 碼）</label><input id="pw1" type="password" autocomplete="new-password"></div><div class="field"><label for="pw2">再輸入一次</label><input id="pw2" type="password" autocomplete="new-password"></div></div><div class="actions"><button class="btn line" type="submit">更改密碼</button></div></form>
   </div>
@@ -113,10 +137,14 @@
   </div>
   <div class="note"><p>安全提醒：accounts.json 是公開檔案。登入只比對密碼雜湊（PBKDF2 310,000 次）；供管理員查看的密碼副本用 RSA-3072 加密，私鑰與網站寫入權杖都用管理員的個人金鑰加密，只有管理員登入後解得開。所以<b>管理員密碼要夠長、不要和其他網站共用</b>；會員密碼建議用「產生」的隨機密碼，避免會員把在別處使用的密碼交給本站。</p></div>
 </div></div>
-<script src="assets/site.js?v=53a18ee4d8"></script><script src="assets/auth.js?v=c7cf690bab"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=08f8247a38"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
+  // 2026-11-22：身分以帳號檔（data/accounts.json）為準。重讀帳號檔確認這次登入現在仍是管理員；session 和帳號檔不一致（已被改成會員、被停用，或 session 被改過）時，
+  // BN.auth.grants 會更新 session 並重新載入，接著就進不了本頁。讀不到帳號檔時照舊繼續（下方各區塊會各自顯示錯誤）。
+  try{await BN.auth.grants(sess);}catch(e){}
+  if(sess.role!=='admin'){location.replace('member.html');return;}
   const $=s=>document.querySelector(s); const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   $('#who').textContent=sess.user;
   const msg=(id,t,cls)=>{$(id).innerHTML=t?'<p class="msg '+(cls||'info')+'">'+esc(t)+'</p>':'';};
@@ -235,7 +263,8 @@
       const pwc=canView()&&a.pv?'<span class="pw" data-u="'+esc(a.user)+'">'+(showAll&&PV[a.user]!=null?esc(PV[a.user]):'••••••••')+'</span> <button class="sm" data-act="show" data-i="'+i+'">'+(showAll?'隱藏':'顯示')+'</button> <button class="sm" data-act="copy" data-i="'+i+'">複製</button>':'<span class="small">'+(DB.view?'未保存（按「編輯」設新密碼後可查看）':'—')+'</span>';
       return '<tr><td class="l"><b>'+esc(a.user)+'</b>'+(me?' <span class="small">（你）</span>':'')+'</td><td class="l">'+pwc+'</td><td class="l">'+(a.role==='admin'?'管理員':'會員')+'</td><td class="l">'+esc(a.created||'')+'</td><td class="l">'+(a.active===false?'<span style="color:var(--bad)">停用</span>':'啟用')+'</td><td class="l">'+esc(a.note||'')+'</td><td class="l"><button class="sm" data-act="edit" data-i="'+i+'">編輯</button> '+(me?'':'<button class="sm" data-act="toggle" data-i="'+i+'">'+(a.active===false?'啟用':'停用')+'</button> <button class="sm danger" data-act="del" data-i="'+i+'">刪除</button>')+'</td></tr>';}).join('');
     $('#acct-body').innerHTML=rows||'<tr><td colspan="7">沒有帳號</td></tr>';$('#acct-updated').textContent=DB.updated||'—';$('#pv-all').textContent=showAll?'全部隱藏密碼':'全部顯示密碼';
-    if(showAll)(DB.accounts||[]).forEach(async a=>{const p=await pwOf(a);const el=document.querySelector('#acct-table .pw[data-u="'+CSS.escape(a.user)+'"]');if(el&&p!=null)el.textContent=p;});}
+    if(showAll)(DB.accounts||[]).forEach(async a=>{const p=await pwOf(a);const el=document.querySelector('#acct-table .pw[data-u="'+CSS.escape(a.user)+'"]');if(el&&p!=null)el.textContent=p;});
+    renderModels();}
   $('#pv-all').addEventListener('click',()=>{showAll=!showAll;renderAccounts();});
   async function saveDB(message){DB.updated=new Date().toISOString();
     if(pat&&(!DB.adminPat||DB.adminPat.owner!==sess.user||DB.adminPat._v!==pat.length+':'+pat.slice(-4))){try{DB.adminPat=await BN.auth.patBox(sess.uk,pat,sess.user);}catch(e){}}
@@ -246,6 +275,41 @@
   // 管理員改自己的密碼：查看密碼的私鑰與寫入權杖都用新的個人金鑰重新加密，存好後請重新登入
   async function rekeyOwn(newPw,newRec){if(DB.view&&DB.view.owner===sess.user)DB.view=await BN.auth.rewrapView(DB.view,sess,newPw,newRec);
     if(pat){DB.adminPat=await BN.auth.patBox(await BN.auth.ukFrom(newPw,newRec.wrap),pat,sess.user);DB.adminPat._v=pat.length+':'+pat.slice(-4);}}
+  // ---------- 模型權限（2026-11-22 站主：在管理後台控制每個帳號可以看到哪幾個模型的資訊；預設只看得到入門模型） ----------
+  // 每個帳號的 models＝可以看的模型（存 data/strategies.json 的 role；判斷方式與範圍見 assets/auth.js「模型權限」）。
+  // 這裡先在畫面上勾選（MP[帳號]＝還沒儲存的勾選結果），按「儲存模型權限」才一次寫回 data/accounts.json；模型清單與代號一律讀 data/strategies.json，本頁不寫死任何代號。
+  let STRATS=null;const MP={};
+  const sameSet=(a,b)=>a.length===b.length&&a.every(x=>b.indexOf(x)>=0);
+  const inOrder=roles=>STRATS.filter(x=>roles.indexOf(x.role)>=0).map(x=>x.role);   // 依模型清單的順序排好，並丟掉已經不存在的模型
+  const savedOf=a=>inOrder(BN.auth.modelsOf(a));   // 已儲存的權限（沒設定過＝預設）
+  const mpDirty=()=>(DB.accounts||[]).filter(a=>a.role!=='admin'&&MP[a.user]&&!sameSet(MP[a.user],savedOf(a)));
+  const chip=(x,on,attrs,fixed)=>'<label class="mp-chip'+(on?' on':'')+(fixed?' fixed':'')+'"><input type="checkbox"'+(on?' checked':'')+(fixed?' disabled':'')+' '+attrs+'>'+esc(x.code)+'</label>';
+  function renderModels(){if(!DB||!$('#mp-list'))return;
+    if(!STRATS){$('#mp-intro').textContent='讀不到模型清單（data/strategies.json），請重新整理。';return;}
+    Object.keys(MP).forEach(u=>{if(!(DB.accounts||[]).some(a=>a.user===u))delete MP[u];});
+    const defs=inOrder(BN.auth.DEFAULT_MODELS).map(r=>STRATS.find(x=>x.role===r).code);
+    $('#mp-intro').innerHTML='勾選＝這個帳號登入後看得到該模型的本月持有、下月持有機率、翻轉價位、策略差額，以及每日市場分析的模型影響。新帳號和還沒設定過的帳號，預設只開通 <b>'+esc(defs.join('、')||'—')+'</b>；管理員固定可以看全部。儲存後立即生效，會員重新整理頁面就會套用。這裡設定的是顯示權限；公開頁面上對所有訪客公開的回測不受影響。';
+    $('#mp-list').innerHTML=(DB.accounts||[]).map((a,i)=>{const adm=a.role==='admin',cur=adm?STRATS.map(x=>x.role):(MP[a.user]||savedOf(a)),dirty=!adm&&MP[a.user]&&!sameSet(MP[a.user],savedOf(a));
+      const sub=adm?'管理員：固定可以看全部':(a.active===false?'會員（已停用）':'會員')+'｜開通 '+cur.length+'／'+STRATS.length+(dirty?'｜<b>尚未儲存</b>':'')+(Array.isArray(a.models)||dirty?'':'｜預設');
+      return '<div class="mp-row'+(dirty?' dirty':'')+'"><div class="mp-who"><b>'+esc(a.user)+'</b>'+(a.note&&a.note!==a.user?' <span class="small">'+esc(a.note)+'</span>':'')+'<small>'+sub+'</small></div><div class="mp-chips" role="group" aria-label="'+esc(a.user)+' 可以看的模型">'
+        +STRATS.map(x=>chip(x,cur.indexOf(x.role)>=0,'data-i="'+i+'" data-r="'+esc(x.role)+'"',adm)).join('')+'</div></div>';}).join('')||'<p class="small">沒有帳號</p>';
+    const n=mpDirty().length;$('#mp-save').disabled=!n;$('#mp-reset').disabled=!n;$('#mp-save').textContent=n?'儲存模型權限（'+n+' 個帳號有變更）':'儲存模型權限';}
+  function renderNewChips(){const el=$('#nm-chips');if(!el)return;if(!STRATS){el.innerHTML='<span class="small">讀不到模型清單</span>';return;}
+    const on=el.dataset.sel?el.dataset.sel.split(','):BN.auth.DEFAULT_MODELS;el.innerHTML=STRATS.map(x=>chip(x,on.indexOf(x.role)>=0,'data-r="'+esc(x.role)+'"',false)).join('');}
+  const newModels=()=>STRATS?inOrder(Array.from(document.querySelectorAll('#nm-chips input:checked')).map(x=>x.dataset.r)):BN.auth.DEFAULT_MODELS.slice();
+  $('#nm-chips').addEventListener('change',e=>{const c=e.target;if(c&&c.dataset.r)c.parentElement.classList.toggle('on',c.checked);});
+  $('#mp-list').addEventListener('change',e=>{const c=e.target;if(!c||!c.dataset.r)return;const a=DB.accounts[+c.dataset.i];if(!a||a.role==='admin')return;
+    const cur=(MP[a.user]||savedOf(a)).filter(r=>r!==c.dataset.r);if(c.checked)cur.push(c.dataset.r);MP[a.user]=inOrder(cur);msg('#mp-msg','');renderModels();});
+  $('#mp-reset').addEventListener('click',()=>{Object.keys(MP).forEach(u=>delete MP[u]);msg('#mp-msg','已還原成上次儲存的設定。','ok');renderModels();});
+  $('#mp-save').addEventListener('click',async()=>{const list=mpDirty();if(!list.length)return;
+    const none=list.filter(a=>!MP[a.user].length).map(a=>a.user);
+    if(none.length&&!confirm(none.join('、')+' 沒有勾選任何模型：儲存後登入會員專區不會顯示任何模型。確定？'))return;
+    const old=list.map(a=>[a,a.models]);list.forEach(a=>{a.models=MP[a.user].slice();});
+    $('#mp-save').disabled=true;msg('#mp-msg','儲存中…');
+    const ok=await saveDB('admin: model access '+list.map(a=>a.user+'='+(a.models.join('+')||'none')).join(', '));
+    if(ok){list.forEach(a=>delete MP[a.user]);msg('#mp-msg','已儲存（'+list.map(a=>a.user).join('、')+'），立即生效：會員重新整理頁面就會套用。','ok');}
+    else{old.forEach(([a,m])=>{if(m===undefined)delete a.models;else a.models=m;});msg('#mp-msg',($('#acct-msg').textContent||'沒有存成功')+'（模型權限維持原狀，勾選的內容還在，可以再按一次儲存）','err');}
+    renderModels();});
   // ---------- 編輯對話框 ----------
   let EI=-1,EPW0='';
   async function openEdit(i){EI=i;const a=DB.accounts[i],me=a.user===sess.user;msg('#ae-msg','');
@@ -263,7 +327,7 @@
     if(nu.toLowerCase()!==a.user.toLowerCase()&&DB.accounts.some((x,j)=>j!==EI&&x.user.toLowerCase()===nu.toLowerCase())){msg('#ae-msg','這個帳號名稱已經有人用了。','err');return;}
     const pwChanged=np!==''&&np!==EPW0;if(pwChanged&&np.length<(role==='admin'?10:8)){msg('#ae-msg',(role==='admin'?'管理員':'會員')+'密碼至少 '+(role==='admin'?10:8)+' 碼。','err');return;}
     const old=JSON.parse(JSON.stringify(a)),oldView=DB.view,oldBox=DB.adminPat;let rec=a;msg('#ae-msg','處理中…');
-    if(pwChanged){rec=await BN.auth.makeRecord(nu,np,role,BN.auth.b64.dec(sess.ck),note);rec.created=a.created;rec.active=act;if(me)await rekeyOwn(np,rec);await sealInto(rec,np);}
+    if(pwChanged){rec=await BN.auth.makeRecord(nu,np,role,BN.auth.b64.dec(sess.ck),note);rec.created=a.created;rec.active=act;if(Array.isArray(a.models))rec.models=a.models;if(me)await rekeyOwn(np,rec);await sealInto(rec,np);}
     else{rec.user=nu;rec.role=role;rec.active=act;rec.note=note;if(PV[old.user]!=null){PV[nu]=PV[old.user];}}
     if(nu!==old.user)delete PV[old.user];DB.accounts[EI]=rec;
     const ok=await saveDB('admin: edit account '+(nu!==old.user?old.user+' → ':'')+nu+(pwChanged?'（密碼更新）':''));
@@ -278,8 +342,8 @@
     if(b.dataset.act==='toggle'){a.active=(a.active===false);await saveDB('admin: '+(a.active?'enable ':'disable ')+a.user);}});
   $('#add').addEventListener('submit',async e=>{e.preventDefault();const u=$('#nu').value.trim(),note=$('#nn').value.trim();let p=$('#np').value;if(!/^[A-Za-z0-9_.-]{3,32}$/.test(u)){msg('#acct-msg','帳號只能用英數、底線、點、減號，3～32 字。','err');return;}
     if(DB.accounts.some(a=>a.user.toLowerCase()===u.toLowerCase())){msg('#acct-msg','帳號已存在。','err');return;}if(!p)p=BN.auth.genPassword();if(p.length<8){msg('#acct-msg','密碼至少 8 碼。','err');return;}
-    const rec=await sealInto(await BN.auth.makeRecord(u,p,'member',BN.auth.b64.dec(sess.ck),note),p);DB.accounts.push(rec);const ok=await saveDB('admin: add account '+u);
-    if(ok){alert('帳號已建立：\n'+u+' / '+p+(DB.view?'\n（之後可在帳號清單隨時查看）':''));$('#nu').value='';$('#np').value='';$('#nn').value='';}else{DB.accounts.pop();}});
+    const rec=await sealInto(await BN.auth.makeRecord(u,p,'member',BN.auth.b64.dec(sess.ck),note),p);rec.models=newModels();DB.accounts.push(rec);const ok=await saveDB('admin: add account '+u);
+    if(ok){const mc=STRATS?STRATS.filter(x=>rec.models.indexOf(x.role)>=0).map(x=>x.code):[];alert('帳號已建立：\n'+u+' / '+p+'\n可以看的模型：'+(mc.join('、')||'（沒有）')+(DB.view?'\n（之後可在帳號清單隨時查看）':''));$('#nu').value='';$('#np').value='';$('#nn').value='';renderNewChips();}else{DB.accounts.pop();renderModels();}});
   $('#chpw').addEventListener('submit',async e=>{e.preventDefault();const p1=$('#pw1').value,p2=$('#pw2').value;if(p1.length<10){msg('#acct-msg','管理員密碼至少 10 碼。','err');return;}if(p1!==p2){msg('#acct-msg','兩次輸入不同。','err');return;}
     const i=DB.accounts.findIndex(a=>a.user===sess.user);const a=DB.accounts[i];const oldView=DB.view,oldBox=DB.adminPat;
     const rec=await BN.auth.makeRecord(a.user,p1,a.role,BN.auth.b64.dec(sess.ck),a.note);rec.created=a.created;await rekeyOwn(p1,rec);await sealInto(rec,p1);DB.accounts[i]=rec;
@@ -324,6 +388,8 @@
     $('#hist-body').innerHTML=hist.join('');}
   function nextMonth(m){const [y,mm]=m.split('-').map(Number);const d=new Date(y,mm,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
   $('#dispatch').addEventListener('click',async()=>{if(!pat){msg('#data-msg','需要 PAT（Actions: Read and write）。','err');return;}msg('#data-msg','觸發中…');try{await BN.auth.ghDispatch(pat);msg('#data-msg','已觸發，約 2～3 分鐘後重新整理本頁。','ok');}catch(e){msg('#data-msg',e.message,'err');}});
+  try{STRATS=await BN.auth.strategies();}catch(e){STRATS=null;}
+  renderNewChips();
   try{await loadDB();if(pat)await syncPatToAccount();}catch(e){msg('#acct-msg',e.message,'err');}
   await loadSite();
   try{await loadSignals();}catch(e){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">'+(e&&e.name==='OperationError'?'規則無法用目前的會員主金鑰解密：多半是剛重新建立會員規則金鑰，規則還沒用新金鑰重新發布（每日同步檢查會自動重新發布）。':esc(e.message||e))+'</p>';}

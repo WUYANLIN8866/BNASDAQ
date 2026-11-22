@@ -15,10 +15,15 @@
   // 程式產生的文字（圖表、表格、提示框、下拉選單、公告…）：沒登入時由 MutationObserver 即時把原名換成「會員專屬」。
   (function () {
     const CODE = 'BNASDAQ-26113', LABEL = '會員專屬', ATTRS = ['title', 'aria-label', 'alt', 'placeholder'];
-    const member = () => { try { const s = JSON.parse(sessionStorage.getItem('bn-session') || 'null'); return !!(s && s.user); } catch (e) { return false; } };
+    const sessNow = () => { try { const s = JSON.parse(sessionStorage.getItem('bn-session') || 'null'); return s && s.user ? s : null; } catch (e) { return null; } };
+    const member = () => !!sessNow();
+    // 2026-11-22 站主：每個帳號可以看到哪些模型由管理後台設定（預設只有入門模型）。登入但沒有開通這個模型的會員，和沒登入的訪客看到的一樣（「會員專屬」）。
+    // 這次登入可看的策略代號記在 session 的 codes（assets/auth.js「模型權限」）；管理員可以看全部。
+    const can = c => { const s = sessNow(); return !!(s && (s.role === 'admin' || (Array.isArray(s.codes) && s.codes.indexOf(c) >= 0))); };
     BN.isMember = member;
-    BN.mname = c => (c === CODE && !member()) ? LABEL : c;
-    if (member()) {
+    BN.canSee = can;
+    BN.mname = c => (c === CODE && !can(CODE)) ? LABEL : c;
+    if (can(CODE)) {
       const show = () => document.querySelectorAll('[data-mo]').forEach(el => {
         const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT); let n;
         while ((n = w.nextNode())) if (n.nodeValue.indexOf(LABEL) >= 0) n.nodeValue = n.nodeValue.split(LABEL).join(CODE);
