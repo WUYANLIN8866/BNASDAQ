@@ -1,6 +1,6 @@
 {
  "schema": "bnasdaq-accounts/1",
- "updated": "2026-11-22T16:28:26.632Z",
+ "updated": "2026-11-22T16:51:02.671Z",
  "view": {
   "schema": "bnasdaq-pwview/1",
   "alg": "RSA-OAEP-3072-SHA256",
@@ -15,8 +15,8 @@
  "adminPat": {
   "owner": "BNASDAQ",
   "saved": "2026-11-22",
-  "iv": "OEt6RwQP4TEPkRW4",
-  "ct": "yhYG/9KeggnrRCgyOslUJiX05aYyae3sDHAXXw4Y92XV2UEOBOfsrzaNaS/AazWZ/N6KYLlsqbrUjk01N2UqBknJPTOQPowSu78Dt1+8f0DgwPqwOm/NpC3kuEwE08t2T6XyRxIgVOeGfTlJVw=="
+  "iv": "T0o0W9E6SYPpFSAh",
+  "ct": "Q5qCjNzcUT3rh0S2qWPB3QvMsWE5OrzMUmH+mjwcEjPdUt+mfv6JuzSqqTQ2O8G+/aW6/apYOEbAuc4C9KThZFPMHu1bNkvC97LKv4nMXw67au4oBzq9nIzLLQ84zgiqLvgnq6veUEZEG/JJGg=="
  },
  "accounts": [
   {
@@ -57,10 +57,7 @@
    },
    "pv": "HevmRktiiU7cLVwbt0bbVxPyHSUThSteaNaEpYgboetPu4D6lff7yWAuc504qjKbrLlEtMkZhk++K0/PtPAtcmJ4F+yL2DDaEWAS4D7dIxxXTegbJ8r2Xv8qPxHAImfRjrydozaQm9mBvMv6Y2iWFBzi8jP63kjyUK4GCLgwK5OrVjfdMY7Rv9Fj+/TVOK4GW7zkFodqrAqA/LAGTenzMeyMQmWxiNFzhrcP2/zXO4Kw8wR+Jk9oORRstfC5aar+BLMyPRRnDfGdMxjL6pn+V+nUwmb2eq5XhF2F1YOogzdMoYRDZlECkPotmJaiuK3Ts+O9+0uG+fTl9iJ9shfS8mS6tt5JeKco0Pavbii9xEMusrJ1lE1IRsLBRa9Nh5gzfBlp5r0I8PMlnerqr21+51SX3Irfo+hX41AvajDgDWf/k2GT41eLgRfuYsPNmQ35EKpcLzm6wRyOuQGJyN+li4J/1VdUuDyY57S5Tv6mBHUYCffEol1moGjiGjOgMJ30",
    "models": [
-    "fund",
-    "sat",
-    "sat2",
-    "sat3"
+    "fund"
    ]
   },
   {
@@ -82,10 +79,7 @@
    },
    "pv": "odM/RHK3LSNwYzp1fTy5bS9XJVkxHBKRxo2rt/X6rac6eNYmiTHeIzQsglO/IqoiCEEY5cgW+hWxwg1lAu8X1ydo3tEXwp5PLmly+UD35EyDGAlpWyC4+VsclVqJDcip3fCbuiGZYElxWkwjeCUu+1j5x+be8plE/gvCTVUKaWVQTF9D+xqoM87MbZuTGak+hs0pBkTDhUhJTmszwAMfIdxEWNAF51QLbUOYYl2P4460DcDpytdHvn68JMVSa4xVHN53zHrOPKU2hEC+lme3W+rVpRWnQeB7YYW77Kcq9GqkX8M2Bm4u0NvOhYqXyMR0BqJUF5jf18y147nSTGurgzR8+0JhQyn7gcjihbEs+sy4CO0pS7EXhCKoqQzZppyfpJ7uxl4IzTJRVfSaGUSK3QeaK0rHBdV7tAgwRRmuf7nnI0t0iKKIhOZA/XOYPmzZI+QxkbxwosiMBTLVDHklmCDbLIwEUvltAH9VHxTkcf1La5aGWmNi/wpYlBJxUmmv",
    "models": [
-    "fund",
-    "sat",
-    "sat2",
-    "sat3"
+    "fund"
    ]
   },
   {
@@ -107,10 +101,7 @@
    },
    "pv": "NnoNRX+nQj8DePUxM+DI7PwzwG+yd4xpk6v8Vcnwikg7UixJz3v3cXPL/34KW2651NIagjYqjsZyGMeUtFPM0o7r+MsTzdYFGLpbdd8MnOj1y4NyNDiDJBzZEzwrRQ7kRwEBXZPRBQSFRBcc5T5aH6R45pul0+QkHvcRNBCLRRJKrhMqmQe673Qkc3k9Jl1iSokQd722X8lupHTRKTT2B5Qqm5EHWjNnehW8P7h2T+NRtTTf3NnNb9ipVLLfEsqPnJUI2kQg39FDFbw80YPBi05+OmJ8XrHt2uC3EZvitRgsZYC63KwyWFvnzM1XFrFyu4kWTfqctGe5VgOqpDCGzNQYBWjxogogMIC4Tr48ONQmNfcDCokbkpjqkkCQdww3TKcqZhSg2P2Bs/KEQn4Ll2xyOZfKJxpv6FncJaHQGlbvsxT49r/mdubejY6cxBeYThOKmbVyb8mejpMycYaXIV0c6tMLr/utOYX6ArXNyrV1/vY0v3QLg7I8UnddHUgH",
    "models": [
-    "fund",
-    "sat",
-    "sat2",
-    "sat3"
+    "fund"
    ]
   }
  ]
