@@ -13,6 +13,21 @@
         盤中實測（11-16 22:40～22:53）：522 檔全有報價、沒有被限流；同一網址會被快取 5 分鐘，所以每輪要帶不同的參數（見 yahoo_batch）。
         不用 Nasdaq 篩選器：實測回的是前一天的價格，而且會擋雲端主機。
 
+美股盤前／盤後（2026-11-23 使用者：美股盤前開盤時顯示盤前股價，盤後開盤時顯示盤後股價）：
+  美股的時段延長為 盤前 04:00 → 正規 09:30～16:00 → 盤後 16:00～20:00（美東時間；提早收盤日依行情來源改成 13:00、盤後到 17:00）。
+  盤前、盤後每 60 秒抓一次 Yahoo Finance spark（range=1d、interval=5m、includePrePost=true；當天含盤前盤後的 5 分 K），
+  最後一點＝最新成交（時間是那筆成交的時間，不是 K 棒開始時間）；基準價＝同一份回應的 regularMarketPrice（盤前＝前一個交易日收盤、盤後＝當天收盤）。
+  2026-11-23 03:50～04:13 美東從 GitHub runner 實測（scripts 外的暫時性實測，紀錄在專案文件 claude/heatmap-extended-hours-20261123.md）：
+    · 04:00 一過就回當天的盤前 K 棒（04:13 時 522 檔已有 297 檔有盤前成交）；04:00 以前回的是前一個交易日的整天（含盤後），所以一定要用時段過濾。
+    · regularMarketPrice 盤前＝前一交易日收盤（AAPL 342.56，和正式收盤檔一致）、regularMarketTime＝前一交易日 16:00。
+    · 1 分 K 與 5 分 K 的最後一點完全相同（20/20 檔）；522 檔一輪 27 個請求約 0.6 秒，5 分 K 整天約 1.7 MB、1 分 K 約 4.9 MB → 用 5 分 K。
+    · v7/finance/quote（有 preMarketPrice 欄位）不帶 crumb 回 401、取 crumb 回 429 → 不用。
+  盤前漲跌＝盤前價 ÷ 前一交易日收盤 − 1；盤後漲跌＝盤後價 ÷ 當天收盤 − 1（和 Yahoo、券商 App 的盤前盤後漲跌同一個算法）。
+  快照另外放 ext（'pre'／'post'）、xstate（'open'／'closed'）、x（{代號: [盤前或盤後價, 漲跌%, 報價幾秒前]}）、
+  xopen／xclose（該時段起訖）、xps／xpn／xpp（該時段每 15 分鐘一點的走勢）。盤前那幾份的 state＝'pre'（正規時段還沒開始，q 是空的）。
+  正規時段的欄位（q、pp、state）意義不變；舊版網頁看不懂 'pre' 會直接改顯示正式收盤，不會出錯。
+  一個交易日 16 小時要 4 棒（320 分鐘交棒）；盤後還在跑時台股可能已經開始準備，所以兩個市場可以同時各跑一個 session（job 名稱帶市場代碼）。
+
 放哪裡（heatmap-live 分支，只留最新一筆 commit，不會越積越多）：
   tw.json、us.json                 各市場「最新一份」；收盤後就是收盤那一份
   tw-<時間格>.json、us-<時間格>.json   時間格＝UNIX 秒 ÷ 該市場的間隔（台股 30、美股 60）取整數；每個時間格一個不會再變的檔名，只留最近 8 個。
@@ -22,10 +37,13 @@
   每分鐘不超過 80 次（secondary rate limit）；30 秒一次＝每小時 360 次，20 秒一次＝540 次就超過了。
 
 怎麼啟動（.github/workflows/heatmap-live.yml）：
-  gate     判斷現在要不要跑：90 分鐘內有開盤（或正在盤中）、而且沒有別的 run 正在跑 → go
-  session  等到開盤 → 每一格更新一次 → 收盤後多抓幾分鐘（收盤價到齊）→ 標成 closed 結束。
-           一個 job 最多跑 320 分鐘，超過就自己啟動下一棒接手（美股一個交易日 6.5 小時，要兩棒）。
-  開盤後 25 分鐘都沒有當天的報價＝休市，直接結束、不發布。
+  gate     判斷現在要不要跑：90 分鐘內有開盤（美股從盤前 04:00 算、120 分鐘內）或正在交易時段內、而且「這個市場」沒有別的 run 正在跑 → go
+           兩個市場都需要、又都沒有人在跑時：這個 run 跑第一個，另外啟動一個 run 專跑第二個。
+  session  美股：等到盤前 04:00 → 盤前每分鐘更新 → 09:30 起正規時段（同以前）→ 收盤後多抓幾分鐘、標成 closed
+                 → 盤後每分鐘更新到 20:00 → 再多抓幾分鐘，標成盤後結束（xstate＝closed）。
+           台股：等到開盤 → 每一格更新一次 → 收盤後多抓幾分鐘（收盤價到齊）→ 標成 closed 結束。
+           一個 job 最多跑 320 分鐘，超過就自己啟動下一棒接手（美股含盤前盤後約 16 小時，要四棒）。
+  開盤後 25 分鐘都沒有當天的報價＝休市，直接結束、不發布。美股從盤前算：盤前開始 25 分鐘，Yahoo 有回應、卻沒有任何一檔有當天的盤前成交＝休市。
   收盤後（台股 +150 秒、美股 +10 分鐘）session 會啟動 tw-latest.yml，把全站的最新收盤價更新到當天並重新部署；
   gate 被外部準時啟動時另外檢查一次：有市場已收盤但收盤價還落後，就補啟動 tw-latest.yml。
 
@@ -65,7 +83,10 @@ MARKETS = {
     # pstep＝當日走勢（2026-11-20 使用者：熱力圖每格加當日走勢圖）幾秒一點；美股 6.5 小時 26 點、台股 4.5 小時 27 點，快照多約 60 KB
     'TW': dict(tz='Asia/Taipei', open=(9, 0), close=(13, 30), tail=6 * 60, after=150, sets=('tw50', 'twse', 'tpex'), file='tw', step=30, pstep=600, src='Yahoo奇摩股市'),
     # step＝一個時間格幾秒（＝多久發布一次）。美股一輪要對 Yahoo 發 27 個請求，先維持 60 秒
-    'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, after=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', step=60, pstep=900, src='Yahoo Finance'),
+    # pre／post＝盤前開始、盤後結束（2026-11-23 起美股加盤前盤後）；xtail＝盤後結束後再抓幾秒（最後幾筆成交到齊）；xpstep＝盤前盤後走勢幾秒一點
+    # lead＝最多提早多久進場等（沒寫用 LEAD）：排程固定台北 15:10 啟動，冬令是美東 02:10、離盤前 04:00 有 110 分鐘
+    'US': dict(tz='America/New_York', open=(9, 30), close=(16, 0), tail=10 * 60, after=10 * 60, sets=('ndx', 'spx', 'sox'), file='us', step=60, pstep=900, src='Yahoo Finance',
+               pre=(4, 0), post=(20, 0), xtail=6 * 60, xpstep=900, lead=120 * 60),
 }
 README = ('# heatmap-live\n\n這個分支由 `.github/workflows/heatmap-live.yml` 在開盤期間定時自動覆寫（只留最新一筆 commit），'
           '內容是市值熱力圖的盤中報價。請勿手動修改；程式在 main 分支的 `scripts/heatmap_live.py`。\n')
@@ -84,20 +105,32 @@ def note(*a):
 
 # ---------- 交易時段 ----------
 def session(mk, now):
-    """now 所在的當地日期那一天的交易時段（週一到週五）；週末回 None。休市日由「開盤後沒有當天報價」判斷。"""
+    """now 所在的當地日期那一天的交易時段（週一到週五）；週末回 None。休市日由「開盤後沒有當天報價」判斷。
+    美股另外有 pre（盤前開始）、post（盤後結束）。"""
     c = MARKETS[mk]
     d = dt.datetime.fromtimestamp(now, ZoneInfo(c['tz']))
     if d.weekday() >= 5:
         return None
-    o = d.replace(hour=c['open'][0], minute=c['open'][1], second=0, microsecond=0)
-    e = d.replace(hour=c['close'][0], minute=c['close'][1], second=0, microsecond=0)
-    return {'date': d.strftime('%Y-%m-%d'), 'open': int(o.timestamp()), 'close': int(e.timestamp())}
+    at = lambda hm: int(d.replace(hour=hm[0], minute=hm[1], second=0, microsecond=0).timestamp())
+    s = {'date': d.strftime('%Y-%m-%d'), 'open': at(c['open']), 'close': at(c['close'])}
+    if c.get('pre'):
+        s['pre'], s['post'] = at(c['pre']), at(c['post'])
+    return s
+
+
+def span(mk, s):
+    """這個時段要跑的範圍：(開始, 結束)。開始＝盤前開始（沒有盤前就是開盤）；結束＝盤後結束＋xtail（沒有盤後就是收盤＋tail）。"""
+    c = MARKETS[mk]
+    return s.get('pre', s['open']), (s['post'] + c['xtail']) if 'post' in s else (s['close'] + c['tail'])
 
 
 def active(mk, now):
-    """開盤前 LEAD 秒到收盤後 tail 秒之間 → 回傳時段；否則 None。"""
+    """開始前 lead（沒寫用 LEAD）秒到結束之間 → 回傳時段；否則 None。"""
     s = session(mk, now)
-    return s if s and s['open'] - LEAD <= now < s['close'] + MARKETS[mk]['tail'] else None
+    if not s:
+        return None
+    a, b = span(mk, s)
+    return s if a - MARKETS[mk].get('lead', LEAD) <= now < b else None
 
 
 # ---------- HTTP ----------
@@ -215,14 +248,54 @@ def yahoo_intraday(batch, ysym=lambda s: s):
     return {}
 
 
-def fetch_us(syms, nonce=None):
+def fetch_us(syms, nonce=None, f=None):
     batches = [syms[i:i + 20] for i in range(0, len(syms), 20)]
     out, stat = {}, {'ok': 0, '429': 0, 'fail': 0}
     with cf.ThreadPoolExecutor(4) as ex:
-        for st, got in ex.map(lambda b: yahoo_batch(b, nonce), batches):
+        for st, got in ex.map(lambda b: (f or yahoo_batch)(b, nonce), batches):
             stat['ok' if st == 200 else '429' if st == 429 else 'fail'] += 1
             out.update(got)
     return out, stat
+
+
+EXT_IV = '5m'   # 盤前盤後用幾分 K：最後一點就是最新成交、時間是成交時間（見檔頭；2026-11-23 從 GitHub runner 實測，5 分 K 與 1 分 K 最後一點相同、資料量約 1/3）
+
+
+def yahoo_ext(batch, nonce=None):
+    """美股盤前／盤後：回傳 (狀態碼, {代號: (regularMarketPrice, regularMarketTime, 交易時段 (盤前開始, 正規開始, 正規結束, 盤後結束) 或 None, [(時間, 收盤), …])})。
+    regularMarketPrice 在盤前是前一個交易日的收盤、盤後是當天收盤（正規時段的最後價格，盤前盤後的成交不會改它）；K 棒只留有收盤價的。"""
+    last = 0
+    for host in ('query2', 'query1'):
+        url = f'https://{host}.finance.yahoo.com/v7/finance/spark?symbols={",".join(batch)}&range=1d&interval={EXT_IV}&includePrePost=true' + (f'&_={nonce}' if nonce else '')
+        try:
+            st, body = http(url, timeout=12)
+            j = json.loads(body)
+        except urllib.error.HTTPError as e:
+            last = e.code
+            if e.code == 429:
+                return 429, {}
+            continue
+        except Exception:
+            continue
+        out = {}
+        for r in ((j.get('spark') or {}).get('result') or []):
+            try:
+                resp = r['response'][0]; m = resp['meta']
+                p, t = num(m.get('regularMarketPrice')), num(m.get('regularMarketTime'))
+                if not (p and t and p > 0):
+                    continue
+                ctp = m.get('currentTradingPeriod') or {}
+                g = lambda k, e: num((ctp.get(k) or {}).get(e))
+                per = (int(g('pre', 'start')), int(g('regular', 'start')), int(g('regular', 'end')), int(g('post', 'end'))) \
+                    if all(g(k, e) for k, e in (('pre', 'start'), ('regular', 'start'), ('regular', 'end'), ('post', 'end'))) else None
+                ts = resp.get('timestamp') or []
+                cl = (((resp.get('indicators') or {}).get('quote') or [{}])[0].get('close')) or []
+                bars = [(int(e), float(c)) for e, c in zip(ts, cl) if c is not None and num(e) is not None and num(c) and num(c) > 0]
+                out[str(r['symbol']).upper()] = (p, int(t), per, bars)
+            except Exception:
+                pass
+        return 200, out
+    return last, {}
 
 
 # ---------- 台股：Yahoo奇摩股市（主要）、鉅亨網（備援）----------
@@ -322,14 +395,32 @@ class Pub:
 
     def load(self):
         st, j = self.call('GET', f'/git/trees/{self.branch}')
-        self.keep = {e['path']: e['sha'] for e in (j.get('tree') or []) if e.get('type') == 'blob'} if st == 200 else {}
+        if st == 200:
+            self.keep = {e['path']: e['sha'] for e in (j.get('tree') or []) if e.get('type') == 'blob'}
+        elif st == 404:   # 分支還不存在
+            self.keep = {}
+        # 其他錯誤（暫時讀不到）：沿用上一次記得的檔案清單，不要因為一次讀取失敗就把另一個市場的檔案從分支上拿掉
         return st
 
     def publish(self, mk, slot, text, message):
-        """寫 <file>.json 與 <file>-<slot>.json；其餘檔案沿用舊的 blob。成功回 True。"""
+        """寫 <file>.json 與 <file>-<slot>.json；其餘檔案沿用分支上現有的 blob。成功回 True。
+        2026-11-23 起美股盤後（到台北 08:00／09:00）和台股的準備時間會重疊、兩個市場可能同時在發布：
+        每次發布前重讀分支（另一個市場剛發布的檔案才不會被這裡記得的舊版本蓋回去），別的市場的時間格檔只刪 10 分鐘以前的。"""
+        if self.load() != 200 and not self.keep:
+            log('讀不到 heatmap-live 分支（第一次發布或暫時讀不到），照樣發布')
         f = MARKETS[mk]['file']
         mine = sorted((p for p in self.keep if p.startswith(f + '-')), key=lambda p: p)   # 這個市場的時間格檔
-        other = [p for p in self.keep if any(p.startswith(MARKETS[m]['file'] + '-') for m in MARKETS if m != mk)]   # 別的市場的時間格檔：早就過期
+        now = time.time()
+
+        def old(p):   # 別的市場的時間格檔是不是 10 分鐘以前的（時間格＝UNIX 秒 ÷ 該市場的間隔）
+            for m in MARKETS:
+                if m != mk and p.startswith(MARKETS[m]['file'] + '-'):
+                    try:
+                        return now - int(p[len(MARKETS[m]['file']) + 1:].split('.')[0]) * MARKETS[m]['step'] > 600
+                    except ValueError:
+                        return True
+            return False
+        other = [p for p in self.keep if old(p)]
         drop = set(other) | set(mine[:-(KEEP - 1)] if KEEP > 1 else mine)
         tree = [{'path': p, 'mode': '100644', 'type': 'blob', 'content': c} for p, c in ((f + '.json', text), (f'{f}-{slot}.json', text))]
         if 'README.md' not in self.keep:
@@ -355,15 +446,23 @@ class Pub:
         return st in (200, 204), st, r
 
     def others(self, me):
-        """別的 run 的狀況：回傳 [(run 編號, session job 狀態, gate job 狀態)]（只看還沒結束的 run）。"""
+        """別的 run 的狀況：回傳 [(run 編號, session job 狀態, gate job 狀態, session 跑哪個市場)]（只看還沒結束的 run）。
+        session job 的名稱是「session TW」／「session US」（2026-11-23 起）；舊格式「session」或名稱還沒決定的，市場回 None（當成兩個市場都可能）。"""
         st, j = self.call('GET', f'/actions/workflows/{WORKFLOW}/runs?per_page=30')
         out = []
         for r in (j.get('workflow_runs') or []) if st == 200 else []:
             if str(r.get('id')) == str(me) or r.get('status') == 'completed':
                 continue
             st2, jj = self.call('GET', f'/actions/runs/{r["id"]}/jobs?per_page=20')
-            names = {x.get('name'): x.get('status') for x in (jj.get('jobs') or [])} if st2 == 200 else {}
-            out.append((int(r['id']), names.get('session'), names.get('gate')))
+            sess, gate_st, mk = None, None, None
+            for x in (jj.get('jobs') or []) if st2 == 200 else []:
+                nm = str(x.get('name') or '')
+                if nm == 'gate':
+                    gate_st = x.get('status')
+                elif nm.startswith('session'):
+                    sess = x.get('status'); tail = nm[len('session'):].strip().upper()
+                    mk = tail if tail in MARKETS else None
+            out.append((int(r['id']), sess, gate_st, mk))
         return out
 
 
@@ -410,6 +509,14 @@ class Session:
         self.after_done = False
         self.pstep = MARKETS[mk]['pstep']
         self.path = {}       # 代號 → {時間格: 漲跌（0.01%）}；時間格＝(報價時間 − 開盤) ÷ pstep，同一格留最後一筆
+        # 美股盤前／盤後（2026-11-23）
+        self.ext = 'pre' in self.sess        # 這個市場有沒有盤前盤後
+        self.xkind = None    # 目前在哪個延長時段：'pre'／'post'；None＝正規時段
+        self.xstate = 'open'
+        self.x = {}          # 代號 → [盤前或盤後價, 基準價（盤前＝前收、盤後＝當天收盤）, 報價時間]
+        self.xpath = {}      # 代號 → {時間格: 漲跌（0.01%）}；時間格＝(K 棒時間 − 該時段開始) ÷ xpstep
+        self.xpstep = MARKETS[mk].get('xpstep') or 900
+        self.xok = 0         # 盤前盤後抓到 Yahoo 正常回應的輪數（判斷休市用：有回應卻沒有當天成交＝休市）
 
     def track(self):
         """把這一輪的報價記進當日走勢（只收開盤後到收盤前的報價）。"""
@@ -483,6 +590,17 @@ class Session:
                 if isinstance(arr, list):
                     self.path[s_] = {k: int(v) for k, v in enumerate(arr) if isinstance(v, (int, float))}
             log('接續當日走勢：', len(self.path), '檔')
+            # 美股盤後交棒：正規時段的收盤報價也接著用（盤後那幾份快照的 q 仍是當天收盤；前收由漲跌反推，誤差在四捨五入以內）
+            if self.ext and isinstance(j.get('q'), dict) and isinstance(j.get('at'), (int, float)):
+                for s_, v in j['q'].items():
+                    try:
+                        p, c, age = float(v[0]), float(v[1]), float(v[2])
+                        if p > 0 and c > -100:
+                            self.q[s_] = [p, p / (1 + c / 100), int(j['at'] - age)]
+                    except Exception:
+                        pass
+                if self.q:
+                    log('接續當天正規時段報價：', len(self.q), '檔')
         except Exception as e:  # noqa
             log('接續當日走勢失敗（從這一刻開始記）', repr(e)[:100])
 
@@ -513,6 +631,11 @@ class Session:
             if n >= 20 and end != self.sess['close'] and 3600 <= end - start <= 8 * 3600:
                 log('依行情來源調整收盤時間', self.sess['close'], '→', end)
                 self.sess['close'] = end
+        self.pace(stat)
+        return stat['ok'] > 0
+
+    def pace(self, stat):
+        """Yahoo 回 429 → 發布間隔加倍（最多 5 分鐘）；連續 10 輪正常 → 減半，回到原本的間隔。"""
         if stat['429']:
             self.every, self.clean = min(300, self.every * 2), 0
             log('Yahoo 回 429，更新間隔拉長到', self.every, '秒')
@@ -521,6 +644,41 @@ class Session:
             if self.clean >= 10 and self.every > self.step:
                 self.every, self.clean = max(self.step, self.every // 2), 0
                 log('更新間隔縮回', self.every, '秒')
+
+    def poll_ext(self, kind):
+        """美股盤前（kind='pre'）／盤後（'post'）抓一輪。每一檔：該時段內最後一根有成交的 K 棒＝最新價；
+        基準＝regularMarketPrice（盤前必須是前一個交易日的收盤、盤後必須是當天的收盤，不符就不收）；
+        同一份回應順便算出該時段每 xpstep 秒一點的走勢（每輪整段重算，交棒或重啟都不會缺前段）。回傳 Yahoo 有沒有正常回應。"""
+        self.poll_n += 1
+        got, stat = fetch_us(self.syms, int(self.clock()), f=yahoo_ext)   # 每一輪不同的參數：避開 Yahoo 的 5 分鐘快取
+        s = self.sess
+        votes = {}
+        for p, t, per, bars in got.values():   # 當天實際的時段（提早收盤日：正規到 13:00、盤後到 17:00）；正規開盤時間對得上才算，多數決
+            if per and per[1] == s['open'] and s['open'] - 6 * 3600 <= per[0] <= s['open'] and s['open'] + 3600 <= per[2] < per[3] <= per[2] + 5 * 3600:
+                votes[per] = votes.get(per, 0) + 1
+        if votes:
+            per, n = max(votes.items(), key=lambda kv: kv[1])
+            if n >= 20:
+                for k, v in (('pre', per[0]), ('close', per[2]), ('post', per[3])):
+                    if s.get(k) != v:
+                        log('依行情來源調整', {'pre': '盤前開始', 'close': '收盤', 'post': '盤後結束'}[k], s.get(k), '→', v)
+                        s[k] = v
+        lo, hi = (s['pre'], s['open']) if kind == 'pre' else (s['close'], s['post'])
+        for sym, (p, t, per, bars) in got.items():
+            if (kind == 'pre' and t >= s['pre']) or (kind == 'post' and t < s['open'] - 60):
+                continue   # 盤前：基準不是前一個交易日的收盤；盤後：今天正規時段沒有成交（停牌等），沒有盤後的基準
+            pts = [(e, c) for e, c in bars if lo <= e < hi]
+            if not pts:
+                continue   # 這個時段還沒有成交
+            e, c = pts[-1]
+            self.x[sym] = [c, p, e]
+            d = {}
+            for e2, c2 in pts:
+                d[int((e2 - lo) // self.xpstep)] = int(round((c2 / p - 1) * 10000))
+            self.xpath[sym] = d
+        if stat['ok']:
+            self.xok += 1
+        self.pace(stat)
         return stat['ok'] > 0
 
     def poll_tw(self):
@@ -553,9 +711,21 @@ class Session:
             v = self.q.get(s)
             if v:
                 q[s] = [round(v[0], 4), round((v[0] / v[1] - 1) * 100, 2), max(0, int(now - v[2]))]
-        return {'schema': SCHEMA, 'market': self.mk, 'session': self.sess['date'], 'state': state, 'at': int(now), 'slot': slot, 'every': self.every,
+        snap = {'schema': SCHEMA, 'market': self.mk, 'session': self.sess['date'], 'state': state, 'at': int(now), 'slot': slot, 'every': self.every,
                 'step': self.step, 'open': self.sess['open'], 'close': self.sess['close'], 'src': self.src, 'n': len(self.syms), 'have': len(q), 'q': q,
                 'ps': self.pstep, 'pn': pn, 'pp': pp}
+        if self.xkind:   # 美股盤前／盤後
+            s = self.sess
+            lo, hi = (s['pre'], s['open']) if self.xkind == 'pre' else (s['close'], s['post'])
+            x = {}
+            for sym in self.syms:
+                v = self.x.get(sym)
+                if v:
+                    x[sym] = [round(v[0], 4), round((v[0] / v[1] - 1) * 100, 2), max(0, int(now - v[2]))]
+            xpp = {sym: [d.get(k) for k in range(0, max(d) + 1)] for sym, d in self.xpath.items() if d and sym in x}
+            snap.update({'ext': self.xkind, 'xstate': self.xstate, 'xopen': lo, 'xclose': hi, 'xsrc': 'Yahoo Finance', 'xn': len(x), 'x': x,
+                         'xps': self.xpstep, 'xpn': max(1, int(-(-(hi - lo) // self.xpstep))), 'xpp': xpp})
+        return snap
 
     def publish(self, state, slot, now):
         snap = self.snapshot(state, slot, now)
@@ -566,10 +736,90 @@ class Session:
 
     # --- 主迴圈 ---
     def run(self):
-        mk, tail, step = self.mk, MARKETS[self.mk]['tail'], self.step
-        log(f'{mk} 時段 {self.sess["date"]}：開盤', self.sess['open'], '收盤', self.sess['close'], f'；{len(self.syms)} 檔')
+        """台股：正規時段。美股：盤前 → 正規時段 → 盤後。回傳 'closed'／'done'／'relay'／'holiday'／'failed'。"""
+        s = self.sess
+        log(f'{self.mk} 時段 {s["date"]}：' + (f'盤前 {s["pre"]}、' if self.ext else '') + f'開盤 {s["open"]}、收盤 {s["close"]}' +
+            (f'、盤後到 {s["post"]}' if self.ext else '') + f'；{len(self.syms)} 檔')
         self.pub.load()
         self.resume()
+        if self.ext:
+            r = self.run_ext('pre')
+            if r != 'done':
+                return r
+        r = self.run_regular()
+        if not self.ext or r != 'closed':
+            return r
+        return self.run_ext('post')
+
+    def relay(self):
+        """這個 job 跑滿了：啟動下一棒（同一個市場）。成功回 True；失敗 10 分鐘後再試（離 6 小時上限還有餘裕）。"""
+        ok2, st, r = self.pub.dispatch(os.environ.get('GITHUB_REF_NAME') or 'main', {'relay': str(os.environ.get('GITHUB_RUN_ID') or '1'), 'market': self.mk})
+        log('這個 job 跑滿了，交棒給下一個 run：', '已啟動' if ok2 else f'啟動失敗 {st} {str((r or {}).get("message"))[:100]}')
+        if not ok2:
+            self.t0 += 600
+        return ok2
+
+    def run_ext(self, kind):
+        """美股盤前（kind='pre'：盤前開始 → 開盤，之後交給正規時段）或盤後（'post'：收盤 → 盤後結束＋xtail）。
+        每一格抓一次、發布一次；回傳 'done'（這個時段結束）／'relay'／'holiday'／'failed'。"""
+        s, step, xtail, name = self.sess, self.step, MARKETS[self.mk]['xtail'], '盤前' if kind == 'pre' else '盤後'
+        stop = lambda: s['open'] if kind == 'pre' else s['post'] + xtail   # 行情來源可能調整時段（提早收盤日），每次重算
+        if self.clock() >= stop():
+            return 'done'
+        self.xkind, self.xstate, self.x, self.xpath, self.xok, fails = kind, 'open', {}, {}, 0, 0
+        if kind == 'post':
+            self.every = step
+            if self.poll_us():   # 正規時段的收盤價再抓一次：交棒、或上一棒沒發布到收盤那一份時，快照的 q 才會是當天收盤
+                self.track()
+        lo = lambda: s['pre'] if kind == 'pre' else s['close']
+        wait = lo() - self.clock()
+        if wait > 0:
+            log(f'離{name}開始還有 {wait / 60:.1f} 分鐘，等待中')
+        while lo() - self.clock() > 0:
+            self.sleep(min(30, max(0.5, lo() - self.clock())))
+        nxt = (int(self.clock()) // step) * step   # 現在這一格立刻做
+        while True:
+            now = self.clock()
+            if now < nxt:
+                self.sleep(min(30, max(0.2, nxt - now))); continue
+            slot = nxt // step
+            ok = self.poll_ext(kind)
+            now = self.clock()
+            if kind == 'pre' and now >= s['open']:   # 開盤了：盤前最後一份標成結束，交給正規時段（正規時段同一格馬上會再發布一份）
+                self.xstate = 'closed'
+                if self.x:
+                    done, snap = self.publish('pre', slot, now)
+                    log(f'盤前結束：{snap["xn"]}/{snap["n"]} 檔有盤前成交，發布{"成功" if done else "失敗"}；交給正規時段')
+                return 'done'
+            fin = now >= stop()
+            if not self.x:
+                if kind == 'pre' and now - lo() > HOLIDAY and self.xok >= 3:
+                    log('盤前開始後一直沒有任何一檔有當天的盤前成交（Yahoo 有正常回應）：休市，結束（不發布）'); return 'holiday'
+                if fin:
+                    log(f'{name}一直沒有抓到成交，結束（不發布）'); return 'done'
+                if self.poll_n % 10 == 1:
+                    log(f'{name}這一輪還沒有任何成交' if ok else '這一輪抓不到資料，跳過')
+            elif ok or fin:
+                self.xstate = 'closed' if fin else 'open'
+                done, snap = self.publish('pre' if kind == 'pre' else 'closed', slot, now)
+                fails = 0 if done else fails + 1
+                if self.poll_n % 10 == 1 or fin or not done:
+                    log(f'{name} 第 {slot} 格：{snap["xn"]}/{snap["n"]} 檔有成交，來源 Yahoo Finance，發布{"成功" if done else "失敗"}')
+                if fin and done:
+                    log(f'{name}結束'); return 'done'
+                if fin and fails >= 5:
+                    log(f'{name}最後一份發布不出去，放棄'); return 'failed'
+            elif self.poll_n % 10 == 1:
+                log('這一輪抓不到資料，跳過')
+            if now - self.t0 > self.budget and now < stop() - 180 and self.relay():
+                return 'relay'
+            nxt = (int(now) // step) * step + max(step, (self.every // step) * step)
+
+    def run_regular(self):
+        mk, tail, step = self.mk, MARKETS[self.mk]['tail'], self.step
+        if self.ext and self.clock() >= self.sess['close'] + tail:
+            return 'closed'   # 美股交棒時已經過了正規時段：收盤那一份與收盤後更新由上一棒做過，直接進盤後
+        self.xkind = None
         wait = self.sess['open'] - self.clock()
         if wait > 0:
             log(f'離開盤還有 {wait / 60:.1f} 分鐘，等待中')
@@ -598,19 +848,15 @@ class Session:
                     if state == 'closed' and (done or self.fails >= 5):
                         self.after_close()
                     if state == 'closed' and done:
-                        log('提早收盤（報價不再更新），結束' if frozen else '收盤，結束'); return 'closed'
+                        log(('提早收盤（報價不再更新）' if frozen else '收盤') + ('，接著盤後' if self.ext else '，結束')); return 'closed'
                     if state == 'closed' and self.fails >= 5:
                         log('收盤那一份發布不出去，放棄'); return 'failed'
                 elif self.poll_n % 10 == 1:
                     log('這一輪抓不到資料，跳過')
                 if now >= self.sess['close'] + MARKETS[mk]['after']:   # 收盤後過了這麼久（收盤價到齊）→ 更新全站的最新收盤價
                     self.after_close()
-            if now - self.t0 > self.budget and now < self.sess['close'] - 180:
-                ok2, st, r = self.pub.dispatch(os.environ.get('GITHUB_REF_NAME') or 'main', {'relay': str(os.environ.get('GITHUB_RUN_ID') or '1'), 'market': mk})
-                log('這個 job 跑滿了，交棒給下一個 run：', '已啟動' if ok2 else f'啟動失敗 {st} {str((r or {}).get("message"))[:100]}')
-                if ok2:
-                    return 'relay'
-                self.t0 += 600   # 啟動失敗：10 分鐘後再試（離 6 小時上限還有餘裕）
+            if now - self.t0 > self.budget and now < self.sess['close'] - 180 and self.relay():
+                return 'relay'
             every = self.every if now < self.sess['close'] else step
             nxt = (int(now) // step) * step + max(step, (every // step) * step)
 
@@ -665,18 +911,26 @@ def gate():
             note('補救檢查失敗：', repr(e)[:120])
     cands = [m for m in MARKETS if (not want or m == want) and active(m, now)]
     if not cands:
-        note('gate：90 分鐘內沒有要開盤或正在進行的交易時段（週末或時間還沒到）→ 不跑'); out(go='false', market=''); return 0
-    mk = cands[0]
+        note('gate：90 分鐘內（美股盤前 120 分鐘內）沒有要開始或正在進行的交易時段（週末或時間還沒到）→ 不跑'); out(go='false', market=''); return 0
     if relay:
-        note(f'gate：接力，接手 run {relay} 的 {mk} 時段'); out(go='true', market=mk); return 0
+        note(f'gate：接力，接手 run {relay} 的 {cands[0]} 時段'); out(go='true', market=cands[0]); return 0
+    # 2026-11-23 起美股盤後（到台北 08:00／09:00）和台股的準備時間重疊：兩個市場各自最多一個 session，看的是「這個市場」有沒有人在跑
     me = os.environ.get('GITHUB_RUN_ID') or '0'
     pub = Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN'])
-    for rid, sess_st, gate_st in pub.others(me):
+    others, busy = pub.others(me), set()
+    for rid, sess_st, gate_st, omk in others:
+        if not want and rid < int(me) and gate_st != 'completed':   # 指定市場的 run（手動或下面另外啟動的）不必等
+            note(f'gate：較早的 run {rid} 還在判斷中，讓它先 → 不跑'); out(go='false', market=''); return 0
         if sess_st in ('queued', 'in_progress', 'waiting', 'pending', 'requested'):
-            note(f'gate：run {rid} 已經在跑這個時段 → 不重複跑'); out(go='false', market=mk); return 0
-        if rid < int(me) and gate_st != 'completed':
-            note(f'gate：較早的 run {rid} 還在判斷中，讓它先 → 不跑'); out(go='false', market=mk); return 0
-    note(f'gate：啟動 {mk} 時段'); out(go='true', market=mk); return 0
+            busy |= {omk} if omk else set(MARKETS)   # 舊格式（job 名稱沒有市場）：當成兩個市場都在跑
+            note(f'gate：run {rid} 已經在跑 {omk or "（市場不明）"} 時段')
+    free = [m for m in cands if m not in busy]
+    if not free:
+        note(f'gate：{"、".join(cands)} 都已經有 run 在跑 → 不重複跑'); out(go='false', market=''); return 0
+    if len(free) > 1:   # 兩個市場都需要、又都沒有人跑：這個 run 跑第一個，另外啟動一個 run 專跑第二個
+        ok, st, r = pub.dispatch(os.environ.get('GITHUB_REF_NAME') or 'main', {'market': free[1]})
+        note(f'gate：{free[1]} 也需要 → 另外啟動一個 run：', '已啟動' if ok else f'啟動失敗 {st} {str((r or {}).get("message"))[:100]}')
+    note(f'gate：啟動 {free[0]} 時段'); out(go='true', market=free[0]); return 0
 
 
 def main():
@@ -698,12 +952,20 @@ def main():
         syms = universe(mk)
         if cmd == 'once':
             s = Session(mk, sess, syms, None)
+            kind = a[a.index('--ext') + 1] if '--ext' in a else ''   # 檢查盤前盤後來源：once --market US --ext pre｜post
+            if kind in ('pre', 'post') and s.ext:
+                s.xkind = kind; ok = s.poll_ext(kind); snap = s.snapshot('pre' if kind == 'pre' else 'closed', int(time.time()) // s.step, time.time())
+                ages = sorted(v[2] for v in snap['x'].values())
+                print(json.dumps({'ok': ok, 'ext': kind, 'xn': snap['xn'], 'n': snap['n'], 'window': [snap['xopen'], snap['xclose']],
+                                  'quote_age_sec_min_med_max': [ages[0], ages[len(ages) // 2], ages[-1]] if ages else None,
+                                  'path_points_max': max((len(v) for v in snap['xpp'].values()), default=0), 'sample': dict(list(snap['x'].items())[:5])}, ensure_ascii=False))
+                return 0
             ok = s.poll(); snap = s.snapshot('open', int(time.time()) // s.step, time.time())
             ages = sorted(v[2] for v in snap['q'].values())
             print(json.dumps({'ok': ok, 'src': s.src, 'have': snap['have'], 'n': snap['n'], 'quote_age_sec_min_med_max': [ages[0], ages[len(ages) // 2], ages[-1]] if ages else None,
                               'sample': dict(list(snap['q'].items())[:5])}, ensure_ascii=False))
             return 0
-        if now >= sess['close'] + MARKETS[mk]['tail']:
+        if now >= span(mk, sess)[1]:
             log(mk, '今天的時段已經結束'); return 0
         pub = Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN'])
         res = Session(mk, sess, syms, pub).run()

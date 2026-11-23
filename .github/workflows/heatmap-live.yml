@@ -1,14 +1,16 @@
 name: Heatmap live quotes (intraday)
 
 # 市值熱力圖盤中更新：開盤期間定時（台股每 30 秒、美股每 60 秒）把成分股最新價寫到 heatmap-live 分支，網頁用同樣的間隔讀。
+# 美股另外更新盤前（04:00～09:30）、盤後（16:00～20:00）價格（美東時間；2026-11-23 起）。
 # 說明在 scripts/heatmap_live.py 檔頭。這個流程不部署網站、不動 main 分支。
 #
 # 怎麼啟動：
-#   1. 主要：Claude 的排程「BNASDAQ 熱力圖盤中啟動」平日台北 08:10、21:10 各執行一次 workflow_dispatch（台股、美股開盤前）。
+#   1. 主要：Claude 的排程「BNASDAQ 熱力圖盤中啟動」平日台北 08:10（台股）、15:10（美股盤前）、21:10（美股備援）各執行一次 workflow_dispatch。
 #   2. 備援：下面的 schedule。GitHub 的排程在這個 repo 實測會晚 3～10 小時才啟動（2026-10-29～11-15 的紀錄），
-#      所以不能當主要啟動方式；每 2 小時排一次，剛好落在盤中、而且沒有別的 run 在跑時才會接手。
-#   3. 接力：一個 job 最多 6 小時，美股一個交易日 6.5 小時，所以跑滿 320 分鐘會自己啟動下一棒（relay）。
-# gate 只花十幾秒：不在「開盤前 90 分鐘～收盤後幾分鐘」之內，或已經有人在跑，就直接結束。
+#      所以不能當主要啟動方式；每 2 小時排一次，剛好落在交易時段內、而且那個市場沒有 run 在跑時才會接手。
+#   3. 接力：一個 job 最多 6 小時；美股含盤前盤後約 16 小時，所以跑滿 320 分鐘會自己啟動下一棒（relay）。
+# gate 只花十幾秒：不在「開始前 90 分鐘（美股盤前 120 分鐘）～結束後幾分鐘」之內，或那個市場已經有人在跑，就直接結束。
+# 台股和美股盤後在台北早上會重疊：session job 的名稱與 concurrency 都帶市場代碼，兩個市場可以同時各跑一個。
 
 on:
   workflow_dispatch:
@@ -26,7 +28,7 @@ on:
         required: false
         default: ''
   schedule:
-    - cron: '23 */2 * * 0-5'
+    - cron: '23 */2 * * *'   # 每天（美股週五盤後跨到 UTC 週六；週末 gate 十幾秒就結束）
 
 permissions:
   contents: write   # 寫 heatmap-live 分支
@@ -56,13 +58,13 @@ jobs:
         run: python3 scripts/heatmap_live.py gate
 
   session:
-    name: session
+    name: session ${{ needs.gate.outputs.market }}
     needs: gate
     if: needs.gate.outputs.go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 350
     concurrency:
-      group: heatmap-live-session
+      group: heatmap-live-session-${{ needs.gate.outputs.market }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +73,7 @@ jobs:
           sparse-checkout: |
             scripts
             data/heatmap
-      - name: Publish intraday quotes until the close (Taiwan every 30 s, US every 60 s)
+      - name: Publish quotes until the session ends (Taiwan every 30 s; US every 60 s incl. pre-market and after-hours)
         env:
           GITHUB_TOKEN: ${{ github.token }}
           MARKET: ${{ needs.gate.outputs.market }}
