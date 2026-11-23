@@ -1,0 +1,23 @@
+name: Probe extended hours (temporary)
+
+# 暫時性實測：只在 probe-ext-hours 分支被推送時執行，測完會刪掉這個分支。
+on:
+  push:
+    branches: [probe-ext-hours]
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts
+            data/heatmap
+      - name: Probe Yahoo pre/post market sources
+        run: python3 scripts/probe_ext.py
