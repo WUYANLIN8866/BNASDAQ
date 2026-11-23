@@ -98,6 +98,14 @@
     <div class="actions"><button class="btn navy" type="button" id="mp-save" disabled>儲存模型權限</button><button class="btn line" type="button" id="mp-reset" disabled>還原</button></div>
     <div id="mp-msg"></div>
   </div>
+  <div class="panel" id="pwcp">
+    <h3>會員自行更改密碼 <span class="small">（自動套用）</span></h3>
+    <p class="small">會員在會員專區「登出」旁按「更改密碼」送出後，你以管理員身分登入時會自動套用（開啟這一頁、會員專區或每日市場分析都會檢查），不需要你動手；套用後所有裝置立即生效。</p>
+    <p class="small muted">申請內容已加密，只有你的管理員金鑰解得開；套用前會驗證對方知道目前的密碼，並把新的驗證資料重算一次。管理員自己的密碼在會員專區的「更改密碼」或本頁下方更改，立即生效。</p>
+    <p class="small" id="pwcp-status">檢查中…</p>
+    <div class="actions"><button class="btn line" type="button" id="pwcp-run">立即檢查</button></div>
+    <div id="pwcp-log"></div>
+  </div>
   <div class="panel">
     <h3>帳號清單 <span class="small">（最後更新 <span id="acct-updated">—</span>）</span></h3>
     <div id="pv-setup"></div>
@@ -137,7 +145,7 @@
   </div>
   <div class="note"><p>安全提醒：accounts.json 是公開檔案。登入只比對密碼雜湊（PBKDF2 310,000 次）；供管理員查看的密碼副本用 RSA-3072 加密，私鑰與網站寫入權杖都用管理員的個人金鑰加密，只有管理員登入後解得開。所以<b>管理員密碼要夠長、不要和其他網站共用</b>；會員密碼建議用「產生」的隨機密碼，避免會員把在別處使用的密碼交給本站。</p></div>
 </div></div>
-<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=08f8247a38"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=286770f832"></script><script src="assets/pwchange.js?v=93b3525f42"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -241,7 +249,7 @@
   msStatus();
 
   // ---------- accounts ----------
-  async function loadDB(){DB=await BN.auth.fetchAccounts();renderAccounts();}
+  async function loadDB(){DB=await BN.auth.fetchAccounts(pat);renderAccounts();}
   // 2026-11-19 使用者：管理員要能看到、編輯、刪除所有帳號的帳號密碼；全部在網頁完成，不用開 GitHub。
   // 密碼另存一份「只有管理員解得開」的加密副本（BN.auth.sealPw／openPw）；PAT 跟著管理員帳號（adminPat）。
   const PV={};let showAll=false;
@@ -271,7 +279,12 @@
     const out={schema:DB.schema||'bnasdaq-accounts/1',updated:DB.updated};if(DB.view)out.view=DB.view;if(DB.adminPat){const{_v,...b}=DB.adminPat;out.adminPat=b;}out.accounts=DB.accounts;
     const text=JSON.stringify(out,null,1);
     if(!pat){msg('#acct-msg','還沒設定網站寫入權限（上方「只需設定一次」），所以存不回網站。已產生檔案內容，可用「下載 JSON」手動上傳到 data/accounts.json。','err');$('#dl').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#dl').hidden=false;return false;}
-    msg('#acct-msg','儲存中…');try{await BN.auth.ghPut(pat,'data/accounts.json',text,message);msg('#acct-msg','已儲存（'+message+'），立即生效：登入頁直接讀最新資料。','ok');renderAccounts();return true;}catch(e){msg('#acct-msg',e.message,'err');return false;}}
+    // 2026-11-23：帶著「載入當時的版本」寫入（DB._sha）。帳號檔在那之後被別處改過（會員更改密碼被自動套用、另一個分頁或另一台裝置的後台）→ GitHub 拒絕，
+    //   這次不存、改為重新載入最新資料，避免把別處的修改蓋掉。重新載入排在呼叫端還原畫面資料之後（setTimeout），整份換新。
+    msg('#acct-msg','儲存中…');try{const r=await BN.auth.ghPutAt(pat,'data/accounts.json',text,message,DB._sha);
+      if(r.conflict){msg('#acct-msg','帳號資料剛被其他地方更新過（例如會員更改了密碼，或另一個分頁、另一台裝置的管理後台）。這次沒有存入；已重新載入最新資料，請再操作一次。','err');try{$('#acct-edit').close();}catch(e){}setTimeout(reloadDB,0);return false;}
+      if(r.sha)DB._sha=r.sha;msg('#acct-msg','已儲存（'+message+'），立即生效：登入頁直接讀最新資料。','ok');renderAccounts();return true;}catch(e){msg('#acct-msg',e.message,'err');return false;}}
+  async function reloadDB(){Object.keys(PV).forEach(k=>delete PV[k]);const keep=$('#acct-msg').innerHTML;try{await loadDB();}catch(e){}$('#acct-msg').innerHTML=keep;runPwc();}
   // 管理員改自己的密碼：查看密碼的私鑰與寫入權杖都用新的個人金鑰重新加密，存好後請重新登入
   async function rekeyOwn(newPw,newRec){if(DB.view&&DB.view.owner===sess.user)DB.view=await BN.auth.rewrapView(DB.view,sess,newPw,newRec);
     if(pat){DB.adminPat=await BN.auth.patBox(await BN.auth.ukFrom(newPw,newRec.wrap),pat,sess.user);DB.adminPat._v=pat.length+':'+pat.slice(-4);}}
@@ -348,6 +361,28 @@
     const i=DB.accounts.findIndex(a=>a.user===sess.user);const a=DB.accounts[i];const oldView=DB.view,oldBox=DB.adminPat;
     const rec=await BN.auth.makeRecord(a.user,p1,a.role,BN.auth.b64.dec(sess.ck),a.note);rec.created=a.created;await rekeyOwn(p1,rec);await sealInto(rec,p1);DB.accounts[i]=rec;
     const ok=await saveDB('admin: change admin password');if(ok){$('#pw1').value='';$('#pw2').value='';alert('管理員密碼已更改，請用新密碼重新登入。');BN.auth.logout();}else{DB.accounts[i]=a;DB.view=oldView;DB.adminPat=oldBox;}});
+  // ---------- 會員自行更改密碼（2026-11-23；流程與驗證規則在 assets/pwchange.js）----------
+  // 會員送出的申請放在同步用的私人 repo。這一頁用畫面上這份帳號資料（DB）逐項驗證，通過的換上新的驗證資料後用 saveDB 存檔（帶版本寫入）。
+  const pwcWhen=iso=>{const d=new Date(iso);return isNaN(d)?'':d.toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});};
+  function pwcLog(){const L=BN.pwc.log();$('#pwcp-log').innerHTML=L.length?'<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">時間</th><th class="l">帳號</th><th class="l">結果</th></tr></thead><tbody>'+L.map(x=>'<tr><td class="l">'+esc(pwcWhen(x.at))+'</td><td class="l">'+esc(x.user||'（無法辨識）')+'</td><td class="l">'+esc(BN.pwc.RES[x.res]||x.res)+'</td></tr>').join('')+'</tbody></table></div><p class="small muted">以上是這台裝置的處理紀錄（最多 30 筆）。</p>':'';}
+  let pwcBusy=false,pwcRetry=0;
+  async function runPwc(){const el=$('#pwcp-status'),bad=t=>'<span style="color:var(--bad)">'+t+'</span>';if(!window.BN.pwc||pwcBusy)return;if(!DB){el.textContent='讀不到帳號資料，暫時無法檢查。';return;}pwcBusy=true;
+    try{const r=await BN.pwc.applyPending(sess,{pat:()=>pat,store:{load:async()=>DB,save:async(db,m)=>db!==DB?'conflict':(await saveDB(m))?'ok':'fail'},onApplied:u=>{delete PV[u];}});   // db!==DB＝驗證期間整份資料已重新載入：這次不存，稍後用新資料重來
+      const n=r.pending||0,ok=(r.results||[]).filter(x=>x.res==='applied').map(x=>x.user),no=(r.results||[]).length-ok.length;
+      const T={skip:null,idle:'<span class="ok-dot"></span>運作中：目前沒有待套用的申請。',
+        done:(ok.length?'<span class="ok-dot"></span>剛套用了 '+ok.map(esc).join('、')+' 的密碼變更（立即生效）。':'<span class="ok-dot"></span>運作中。')+(no?'另有 '+no+' 筆沒有通過驗證，已略過（見下方紀錄）。':'')+(r.later?'還有 '+r.later+' 筆暫時讀不到，稍後再試。':''),
+        nopat:bad('有 '+n+' 筆申請待套用，但還沒設定網站寫入權限')+'（本頁上方「網站寫入權限」），所以存不回網站。',
+        noview:bad('有 '+n+' 筆申請待套用，但這個管理員帳號解不開')+'：申請是用「密碼查看」的金鑰加密的，請先在下方帳號清單啟用密碼查看（或改用啟用它的管理員帳號登入）。如果剛在別的地方改過管理員密碼，請登出後用新密碼重新登入。',
+        off:bad('會員目前無法送出申請')+'：申請經由「會員資產跨裝置同步」的私人 repo 傳遞，請先在上方啟用它。在那之前，會員按「更改密碼」會看到「請聯絡管理員」。',
+        auth:bad('同步用的 token 已失效')+'，會員送不出申請、這裡也讀不到：請在上方「會員資產跨裝置同步」換一把新的。',
+        conflict:'有 '+n+' 筆申請待套用；帳號資料剛被別處更新，已重新載入，稍後會自動再試。',error:bad('檢查時發生錯誤')+'：'+esc(r.why||'')+'。稍後會自動再試。',savefail:bad('有 '+n+' 筆申請待套用，這次沒有存成功')+'（原因見下方帳號清單的訊息），稍後會自動再試。'};
+      if(T[r.state]!==null)el.innerHTML=T[r.state]||'暫時連不上 GitHub，稍後會自動再檢查。';
+      pwcLog();
+      if((r.state==='conflict'||r.state==='savefail')&&pwcRetry<3){pwcRetry++;setTimeout(runPwc,15000);}else if(r.state!=='skip')pwcRetry=0;   // 沒存成功：15 秒後再試（最多連續 3 次，之後等每 5 分鐘的例行檢查）
+    }catch(e){el.textContent='檢查時發生錯誤：'+((e&&e.message)||e);}
+    pwcBusy=false;}
+  $('#pwcp-run').addEventListener('click',()=>{$('#pwcp-status').textContent='檢查中…';runPwc();});
+  setInterval(()=>{if(document.visibilityState==='visible')runPwc();},300000);
   // PAT 存好後，馬上把它存進管理員帳號（任何裝置登入都能用）
   async function syncPatToAccount(){if(!pat||!DB)return;if(DB.adminPat&&DB.adminPat.owner===sess.user){try{const cur=new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:BN.auth.b64.dec(DB.adminPat.iv)},await crypto.subtle.importKey('raw',BN.auth.b64.dec(sess.uk),'AES-GCM',false,['decrypt']),BN.auth.b64.dec(DB.adminPat.ct)));if(cur===pat)return;}catch(e){}}
     DB.adminPat=await BN.auth.patBox(sess.uk,pat,sess.user);DB.adminPat._v=pat.length+':'+pat.slice(-4);await saveDB('admin: store write token in admin account');}
@@ -391,6 +426,7 @@
   try{STRATS=await BN.auth.strategies();}catch(e){STRATS=null;}
   renderNewChips();
   try{await loadDB();if(pat)await syncPatToAccount();}catch(e){msg('#acct-msg',e.message,'err');}
+  runPwc();   // 會員送出的密碼變更：進後台就自動驗證並套用（不等下面的訊號計算）
   await loadSite();
   try{await loadSignals();}catch(e){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">'+(e&&e.name==='OperationError'?'規則無法用目前的會員主金鑰解密：多半是剛重新建立會員規則金鑰，規則還沒用新金鑰重新發布（每日同步檢查會自動重新發布）。':esc(e.message||e))+'</p>';}
 })();

@@ -34,6 +34,15 @@
 .mh-in .tog input:checked+.tr::after{transform:translateX(16px)}
 .mh-in .tog input:focus-visible+.tr{outline:2px solid var(--gold-hi);outline-offset:2px}
 .mh-in tr.off td:not(.c){opacity:.45}
+/* 更改密碼（assets/pwchange.js）：對話框與狀態列 */
+.pwc-dlg{max-width:520px;width:calc(100% - 32px);border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:22px 24px}
+.pwc-dlg::backdrop{background:rgba(0,0,0,.55)}
+.pwc-dlg h3{margin-top:0}.pwc-dlg .form{max-width:none}.pwc-dlg .field input{font-size:16px}
+.pwc-row{display:flex;gap:8px}.pwc-row input{flex:1;min-width:0}.pwc-row .btn{padding:8px 12px;font-size:13.5px;white-space:nowrap}
+#pwc-status{margin:14px 0 0;max-width:none}
+#pwc-status button{font:inherit;font-size:13px;padding:3px 12px;margin-left:10px;border:1px solid var(--ink-2);background:var(--paper);color:var(--ink);border-radius:2px;cursor:pointer;white-space:nowrap}
+#pwc-status button:hover{border-color:var(--ink)}
+@media (max-width:420px){.pwc-dlg{padding:18px 16px}.pwc-row{flex-wrap:wrap}.pwc-row input{flex-basis:100%}}
 @media (max-width:760px){.mh-two{grid-template-columns:1fr}.mh-in .tbl td.info{min-width:140px}}
 /* 手機：輸入表一列一張卡（代號／股數／成本排一行，名稱與價格在下一行，再來是「不列入計算」和刪除）；原本六欄擠在一起，輸入框窄到看不到自己打的字 */
 @media (max-width:640px){
@@ -65,7 +74,17 @@
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 會員專區</div><h1>會員專區</h1><p class="lede">這個帳號已開通的策略目前持有的資產，以及下個月持有各種資產的機率。所有策略依專案 B 區規則即時計算。</p></div></div>
 <div class="main"><div class="wrap"><div>
 <div>
-  <div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>歡迎，<b id="who">—</b></div><div class="actions"><a class="btn line" id="adminlink" href="admin.html" hidden>管理後台</a><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div><p class="small" id="status" style="margin:10px 0 0">載入市場資料…</p></div>
+  <div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>歡迎，<b id="who">—</b></div><div class="actions"><a class="btn line" id="adminlink" href="admin.html" hidden>管理後台</a><button class="btn line" type="button" id="pwc-open">更改密碼</button><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div><p class="msg info" id="pwc-status" role="status" aria-live="polite" hidden></p><p class="small" id="status" style="margin:10px 0 0">載入市場資料…</p></div>
+  <dialog id="pwc" class="pwc-dlg" aria-labelledby="pwc-title"><form method="dialog" class="form" id="pwc-form">
+    <h3 id="pwc-title">更改密碼</h3>
+    <p class="small" id="pwc-intro"></p>
+    <input id="pwc-user" type="text" name="username" autocomplete="username" readonly hidden>
+    <div class="field"><label for="pwc-cur">目前的密碼</label><input id="pwc-cur" type="password" autocomplete="current-password" required></div>
+    <div class="field"><label for="pwc-new">新密碼</label><div class="pwc-row"><input id="pwc-new" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" required><button class="btn line" type="button" id="pwc-show" aria-pressed="false">顯示</button><button class="btn line" type="button" id="pwc-gen">產生</button></div><p class="help" id="pwc-help"></p></div>
+    <div class="field"><label for="pwc-new2">再輸入一次新密碼</label><input id="pwc-new2" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" required></div>
+    <div id="pwc-msg" role="status" aria-live="polite"></div>
+    <div class="actions"><button class="btn navy" type="submit" id="pwc-go">送出</button><button class="btn line" type="button" id="pwc-cancel">取消</button></div>
+  </form></dialog>
   <p class="msg err" id="stale" hidden></p>
   <h2 id="mine" style="margin-top:0">會員持有資產</h2>
   <details class="mh-fold" id="mh-fold" open><summary><span><b>持有輸入表</b><span class="small" id="mh-sum"></span> <span class="small muted mh-hint">（點這裡收起／展開）</span></span></summary>
@@ -87,7 +106,7 @@
   <div class="strat" id="cards"></div>
 </div>
 </div></div></div>
-<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=08f8247a38"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=286770f832"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
 <script>
 (async function(){
   const sess=BN.auth.require(); if(!sess) return;

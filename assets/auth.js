@@ -3,7 +3,8 @@
    - 規則金鑰 CK：以「密碼派生金鑰（另一個 salt）」用 AES-GCM 包裝，存在每個帳號的 wrap 欄位；登入後解開 CK → 解密 data/rules.enc.json → 在瀏覽器執行規則
   - 第 2 版規則（rules.enc.json 有 ek 欄位）：CK 先解開 data/rules-key.json 的 RSA 私鑰，再解開規則的一次性金鑰；發布規則只需要公鑰
    - 管理員寫入：GitHub Contents API（fine-grained PAT，只存在管理員自己的瀏覽器，且以 CK 加密）
-   - 個人金鑰 UK：登入時由密碼導出、只放在這次登入的 session；會員持有資產跨裝置同步用它加密（assets/mh-core.js） */
+   - 個人金鑰 UK：登入時由密碼導出、只放在這次登入的 session；會員持有資產跨裝置同步用它加密（assets/mh-core.js）
+   - 更改密碼（2026-11-23）：流程在 assets/pwchange.js；這裡提供帶版本寫入（ghPutAt）與「等待生效的新密碼」登入（pendingCred） */
 (function () {
   'use strict';
   const REPO = 'WUYANLIN8866/BNASDAQ';
@@ -30,13 +31,33 @@
     if (!r.ok) throw new Error('無法讀取 ' + path);
     const j = await r.json(); return JSON.parse(b64utf8.dec(j.content));
   }
-  async function fetchAccounts() {
+  // pat（選填，管理後台用）：帶權杖讀 GitHub 那一份——不受未登入每小時 60 次的限制，一定拿得到檔案版本（_sha；存檔時用來確認沒有蓋掉別人的修改）
+  async function fetchAccounts(pat) {
     // prefer the API copy when it is newer (the Pages copy may lag a deploy)
     let site = null, api = null;
     try { const r = await fetch('data/accounts.json?t=' + Date.now(), { cache: 'no-store' }); if (r.ok) site = await r.json(); } catch (e) { }
-    try { const r = await fetch(API + 'data/accounts.json?ref=main&t=' + Date.now(), { headers: { Accept: 'application/vnd.github+json' } }); if (r.ok) { const j = await r.json(); api = JSON.parse(b64utf8.dec(j.content)); api._sha = j.sha; } } catch (e) { }
-    if (site && api) return (api.updated || '') >= (site.updated || '') ? api : Object.assign(site, { _sha: api._sha });
+    for (const auth of pat ? [true, false] : [false]) {   // 帶權杖讀不到（例如權杖過期）就照舊不帶權杖讀
+      try { const r = await fetch(API + 'data/accounts.json?ref=main&t=' + Date.now(), { headers: Object.assign({ Accept: 'application/vnd.github+json' }, auth ? { Authorization: 'Bearer ' + pat } : {}), cache: 'no-store' }); if (r.ok) { const j = await r.json(); api = JSON.parse(b64utf8.dec(j.content)); api._sha = j.sha; break; } } catch (e) { }
+    }
+    // GitHub 那一份讀得到就用它：它是 main 分支的最新版本，網站那一份只會一樣或較舊（部署需要時間）。
+    //   （2026-11-23 以前是比兩份的「更新時間」；那個時間是寫入端裝置的時鐘，兩台裝置時鐘有落差時可能誤選到較舊的網站那一份，再存檔就會把別人的修改蓋掉。）
     if (api) return api; if (site) return site; throw new Error('無法讀取帳號資料，請稍後再試。');
+  }
+
+  // ---------- 等待生效的新密碼（2026-11-23「更改密碼」；assets/pwchange.js） ----------
+  // 會員送出更改密碼後，新密碼要等管理員登入、由管理員的瀏覽器寫進帳號檔，才會在所有裝置生效（本站沒有伺服器，會員自己寫不進帳號檔）。
+  // 送出的那台裝置會把新的驗證資料記在 localStorage 'bn-pwc:' + 帳號＝{ base, at, rec: { auth, wrap } }——內容和之後公開在帳號檔裡的一樣
+  //   （密碼雜湊＋用新密碼包裝的主金鑰），所以在那台裝置上新密碼馬上就能登入；瀏覽器的密碼管理員先換成新密碼也不會被擋在門外。
+  // 只在「帳號檔還是送出當時那一份」（base＝當時的 auth.salt）時採用：帳號檔一變（新密碼已生效，或管理員另外重設）這份就作廢。
+  // 帳號不存在、已停用時走不到這裡；管理員帳號不走這條路（管理員改密碼是直接寫入）。超過 30 天沒生效也作廢。
+  const PEND = 'bn-pwc:', PEND_MS = 30 * 864e5;
+  function pendingCred(rec) {
+    try {
+      const p = JSON.parse(localStorage.getItem(PEND + rec.user) || 'null'), a = p && p.rec && p.rec.auth, w = p && p.rec && p.rec.wrap;
+      if (!a || !w || rec.role === 'admin' || p.base !== rec.auth.salt || !(Date.now() - Date.parse(p.at) < PEND_MS)) return null;
+      if (![a.salt, a.hash, w.salt, w.iv, w.ct].every(x => typeof x === 'string' && x)) return null;
+      return { auth: { salt: a.salt, iter: ITER, hash: a.hash }, wrap: { salt: w.salt, iter: ITER, iv: w.iv, ct: w.ct } };
+    } catch (e) { return null; }
   }
 
   // ---------- login ----------
@@ -46,9 +67,16 @@
     if (!rec) throw new Error('帳號或密碼錯誤。');
     if (rec.active === false) throw new Error('此帳號已停用，請聯絡管理員。');
     const h = b64.enc(await pbkdf2(password, b64.dec(rec.auth.salt), rec.auth.iter || ITER, 256));
-    if (h !== rec.auth.hash) throw new Error('帳號或密碼錯誤。');
-    const wk = await pbkdf2(password, b64.dec(rec.wrap.salt), rec.wrap.iter || ITER, 256);
-    const ck = await aesDec(wk, rec.wrap.iv, rec.wrap.ct);
+    let cred = rec;   // 用哪一份驗證資料登入：帳號檔那一份，或這台裝置上「等待生效的新密碼」（見下方 pendingCred）
+    if (h !== rec.auth.hash) {
+      const p = pendingCred(rec);
+      if (!p || b64.enc(await pbkdf2(password, b64.dec(p.auth.salt), ITER, 256)) !== p.auth.hash) throw new Error('帳號或密碼錯誤。');
+      cred = p;
+    }
+    const wk = await pbkdf2(password, b64.dec(cred.wrap.salt), cred.wrap.iter || ITER, 256);
+    let ck;
+    try { ck = await aesDec(wk, cred.wrap.iv, cred.wrap.ct); }
+    catch (e) { if (cred === rec) throw e; try { localStorage.removeItem(PEND + rec.user); } catch (e2) { } throw new Error('帳號或密碼錯誤。'); }
     // 個人金鑰 UK＝SHA-256('bnasdaq-user-key-v1|' ‖ 包裝金鑰)：只能由這個帳號的密碼導出，其他會員算不出來（CK 是全體會員共用的，UK 不是）。
     // 用途：加密要跨裝置同步的個人資料（會員持有資產，見 assets/mh-core.js）。密碼被重設或更改後，UK 會換一把。
     const lab = enc.encode('bnasdaq-user-key-v1|'), buf = new Uint8Array(lab.length + wk.length); buf.set(lab); buf.set(wk, lab.length);
@@ -222,6 +250,18 @@
     if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch (e) { } throw new Error('GitHub 寫入失敗（' + r.status + '）' + (m ? '：' + m : '')); }
     return await r.json();
   }
+  // 帶版本寫入（2026-11-23）：sha＝讀取當時的檔案版本。檔案在那之後被別處改過 → GitHub 拒絕（409），回傳 { conflict: true }，不會蓋掉別人的修改。
+  //   沒給 sha（讀取當時拿不到版本）→ 和 ghPut 一樣先查目前版本再寫。成功回傳 { sha：寫入後的新版本 }。
+  //   用在帳號檔：會員更改密碼由管理員的瀏覽器自動套用，可能和管理後台的其他修改同時發生（admin.html 的 saveDB、assets/pwchange.js）。
+  async function ghPutAt(pat, path, text, message, sha) {
+    let at = sha; if (!at) { const cur = await ghGet(pat, path); at = cur && cur.sha; }
+    const body = { message, content: b64utf8.enc(text), branch: 'main' }; if (at) body.sha = at;
+    const r = await fetch(API + path, { method: 'PUT', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + pat, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (r.status === 409) return { conflict: true };
+    if (!r.ok) { let m = ''; try { m = (await r.json()).message; } catch (e) { } if (r.status === 422 && /sha|does not match/i.test(m || '')) return { conflict: true }; throw new Error('GitHub 寫入失敗（' + r.status + '）' + (m ? '：' + m : '')); }
+    let j = null; try { j = await r.json(); } catch (e) { }
+    return { sha: (j && j.content && j.content.sha) || '' };
+  }
   // 二進位檔（圖片）：content 為 base64（不經 UTF-8 轉換）
   async function ghPutB64(pat, path, b64content, message) {
     const cur = await ghGet(pat, path);
@@ -240,5 +280,5 @@
   async function ghDispatch(pat) { const r = await fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/site.yml/dispatches', { method: 'POST', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + pat, 'Content-Type': 'application/json' }, body: JSON.stringify({ ref: 'main' }) }); if (r.status !== 204) throw new Error('無法觸發更新（' + r.status + '）；PAT 需要 Actions: Read and write'); }
 
   window.BN = window.BN || {};
-  BN.auth = { REPO, ITER, DEFAULT_MODELS, strategies, modelsOf, codesOf, allowed, grants, patBox, ukFrom, viewSetup, sealPw, openPw, rewrapView, login, session, logout, require, loadRules, fetchJSON, fetchAccounts, makeRecord, genPassword, savePAT, loadPAT, clearPAT, ghGet, ghPut, ghPutB64, ghDelete, ghTest, ghDispatch, aesEnc, aesDec, pbkdf2, b64, rnd };
+  BN.auth = { REPO, ITER, DEFAULT_MODELS, strategies, modelsOf, codesOf, allowed, grants, patBox, ukFrom, viewSetup, sealPw, openPw, rewrapView, login, session, logout, require, loadRules, fetchJSON, fetchAccounts, makeRecord, genPassword, savePAT, loadPAT, clearPAT, ghGet, ghPut, ghPutAt, ghPutB64, ghDelete, ghTest, ghDispatch, aesEnc, aesDec, pbkdf2, b64, rnd };
 })();
