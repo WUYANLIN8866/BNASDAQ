@@ -391,7 +391,7 @@ def test_news_co(hm, fails):
     check(set(f2) == {hm.NEWS_FILE}, '沒有成分股資料（舊格式）時只寫 news.json', fails)
     # 標題比對：模擬 Google 新聞回應
     rss = lambda titles: ('<rss><channel>' + ''.join(f'<item><title>{x} - 媒體</title><link>https://n/{i}</link><pubDate>Mon, 23 Nov 2026 12:00:00 GMT</pubDate><source url="https://m">媒體</source></item>' for i, x in enumerate(titles)) + '</channel></rss>').encode()
-    pages = {'KLAC': ['KLA beats estimates', 'Oklahoma weather update', 'KLA-Tencor history'], 'AMD': ['AMD unveils MI500', 'Advanced Micro Devices raises guidance', 'Lamda news'], '3665': ['貿聯-KY 營收創高', '貿聯 擴產', '其他公司新聞']}
+    pages = {'KLAC': ['KLA beats estimates', 'Oklahoma weather update', 'KLA-Tencor history'], 'AMD': ['AMD unveils MI500', 'Advanced Micro Devices raises guidance', 'Lamda news'], '3665': ['貿聯-KY 營收創高', '貿聯 擴產', '其他公司新聞', '貿聯合作社年度活動', '3665 貿聯- 明天會漲嗎- 股市爆料同學會']}
     def fake_http(url, **kw):
         qs = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)['q'][0]
         key = 'KLAC' if 'KLA' in qs else 'AMD' if 'AMD' in qs else '3665' if '貿聯' in qs else None

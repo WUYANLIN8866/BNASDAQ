@@ -405,6 +405,10 @@ NEWS_CO_MAX, NEWS_CO_AGE = 3, 48 * 3600
 # 兆元企業之外，熱力圖的那斯達克 100、台灣 50 成分股每小時各抓最多 3 則（48 小時內），寫到 news-co.json（每日市場分析頁照舊只讀較小的 news.json）。
 # 台股用中文名稱搜中文新聞；美股用英文公司名稱（去掉 Inc.、Corporation 等法律字尾）搜英文新聞，標題必須含整個名稱，避免同名誤判。
 NEWS_CO_FILE, NEWS_WATCH = 'news-co.json', ('ndx', 'tw50')
+# 不收的來源與標題（2026-11-24 實際抓一輪檢查：CMoney「股市爆料同學會」與 LINE TODAY「討論牆」是網友討論串，247Sports 是運動新聞的同名誤判）
+NEWS_BAD_SRC = ('CMoney', '247Sports')
+NEWS_BAD_TITLE = ('股市爆料同學', '討論牆', 'Stock Price Prediction')
+NEWS_CTX = ('股', '營收', '法說', '董事', '漲', '跌', '獲利', 'EPS', '目標價', '公司', '集團', '企業', '財報', '訂單', '外資', '投信', '法人', '擴產', '產能', '出貨', '接單', '市值', '併購', '新廠', '配息', '除息', '增資')   # 兩個字的台股名稱（統一、南亞…）還要有這些字才算
 NEWS_SUFFIX = re.compile(r'[,\s]+(Inc\.?|Incorporated|Corporation|Corp\.?|Co\.?|Company|Ltd\.?|Limited|plc|PLC|N\.?V\.?|S\.?A\.?|AG|SE|ADR|Class [A-C]|Cl [A-C]|\(The\)|\(DE\)|Holdings|Group|Wholesale)$')
 # 新聞標題常用的簡稱（標題要出現這些字之一才算；英文字以整個單字比對，避免 KLA 對到 Oklahoma 之類）
 NEWS_ALIAS = {'AMD': ('AMD', 'Advanced Micro Devices'), 'MU': ('Micron',), 'CSCO': ('Cisco',), 'PLTR': ('Palantir',), 'TMUS': ('T-Mobile',), 'QCOM': ('Qualcomm',),
@@ -465,6 +469,9 @@ def mega_list():
     return [(k, k) for k in NEWS_CO_Q]
 
 
+TWNAMES = []   # 台股成分股名稱（fetch_co_news 每次重抓）
+
+
 def watch_list(skip=()):
     """個股頁即時新聞的公司 [(代號, 名稱, 'TW'｜'US')]：熱力圖 NEWS_WATCH 分頁的成分股（skip＝已經另外抓的兆元企業）。"""
     try:
@@ -509,7 +516,8 @@ def fetch_co_news(now, extra=False):
                 nm = re.sub(r'[-－]?KY$|\*', '', nm).strip()
                 names = [nm] + ([nm[:-2]] if nm.endswith('投控') and len(nm) > 3 else []) + ([nm[:-1]] if nm.endswith('電子') and len(nm) > 3 else [])
                 q = ' OR '.join('intitle:' + x for x in names)
-                wre = re.compile('|'.join(re.escape(x) for x in names) + '|' + re.escape(tk))
+                longer = [x for x in TWNAMES if any(n in x and n != x for n in names)]   # 名稱是別家公司名稱的一部分（南亞→南亞科、台塑→台塑化）：先把別家拿掉再比對
+                wre = (names, longer)
             need, bad = (), ()
         else:
             q, need, bad = 'intitle:' + nm, (nm.lower(),), ()
@@ -520,15 +528,30 @@ def fetch_co_news(now, extra=False):
             items = news_items('rss', 'Google 新聞', body)
         except Exception:
             return tk, None
+        def hit(title, low):
+            if wre is None:
+                return any(w in low for w in need)
+            if not isinstance(wre, tuple):
+                return bool(wre.search(low))
+            names, longer = wre
+            t2 = title
+            for x in sorted(longer, key=len, reverse=True):
+                t2 = t2.replace(x, '')
+            if tk in t2:
+                return True
+            return any(n in t2 and (len(n) > 2 or any(c in t2 for c in NEWS_CTX)) for n in names)
         seen, keep = set(), []
         for it in sorted(items, key=lambda x: -x['at']):
             k, low = news_key(it['t']), it['t'].lower()
-            if k in seen or now - it['at'] > NEWS_CO_AGE or it['at'] > now + 600 or not (wre.search(low) if wre else any(w in low for w in need)) or any(w in low for w in bad):
+            if k in seen or now - it['at'] > NEWS_CO_AGE or it['at'] > now + 600 or it['s'] in NEWS_BAD_SRC or any(w in it['t'] for w in NEWS_BAD_TITLE) \
+                    or not hit(it['t'], low) or any(w in low for w in bad):
                 continue
             seen.add(k); keep.append(it)
         return tk, keep[:NEWS_CO_MAX]
+    global TWNAMES
     out, more = {}, {}
     mega = mega_list()
+    TWNAMES = [re.sub(r'[-－]?KY$|\*', '', n).strip() for _, n, m in watch_list() if m == 'TW']
     with cf.ThreadPoolExecutor(4) as ex:
         for tk, items in ex.map(one, mega):
             if items:
