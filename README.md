@@ -38,7 +38,7 @@
 - 帳號檔一律帶版本寫入（`BN.auth.ghPutAt`）：後台存檔時若帳號檔已被別處改過，這次不存、重新載入，不會互相覆蓋。
 - 密碼規則（`BN.pwc.policy`）：至少 10 碼、四種字元至少兩種、不含帳號名稱與本站名稱、不含常見字串；管理員端套用前會再檢查一次。
 - 前提：已啟用「會員資產跨裝置同步」與「密碼查看」，管理員已設定寫入權杖；缺任何一項時會員會看到「請聯絡管理員」，後台會寫出缺哪一項。
-- 測試方式：本機測試站（測試金鑰與帳號）＋模擬 GitHub API，腳本與結果見專案文件 `claude/member-password-change-20261123.md`。
+- 測試：`scripts/tests/pwchange/`（本機測試站＋模擬 GitHub API，6 支腳本共 155 項；用法見該資料夾的 README）。改到 `assets/auth.js`、`assets/pwchange.js`、`admin.html` 的帳號存檔或 `member.html` 的對話框時請重跑。
 
 ## 載入速度（2026-11-06）
 - **字型**：不再向 Google Fonts 載入完整 Noto Sans TC／Noto Serif TC（每頁 1.2–1.8MB），改用 `assets/fonts/` 的本站精簡版（整站約 0.4MB，字形相同）。
