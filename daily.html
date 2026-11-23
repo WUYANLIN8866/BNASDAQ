@@ -97,6 +97,8 @@ td .lvs{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
 .mcard .mnews{margin:4px 0 8px;padding:6px 10px;background:var(--band);border:1px solid var(--line-2)}
 .mcard .mnews p{margin:0}.mcard .mnews .nmu{font-size:11.5px;color:var(--muted)}
 .mcard .mnews .nl li{font-size:14px;padding:5px 0}
+.rpt-new{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;max-width:760px;margin:0 auto;background:var(--ink);color:var(--paper);padding:10px 14px;border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:14.5px;line-height:1.5}
+.rpt-new button{background:var(--gold-hi);color:#121314;border:0;border-radius:3px;padding:6px 12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .bm-live{background:var(--gold-tint);border:1px solid var(--gold-hi);border-left:3px solid var(--gold-hi);padding:10px 14px;margin:0 0 14px;font-size:15px;line-height:1.75}
 .bm-live.done{background:var(--band);border-color:var(--line);border-left-color:var(--gold-hi)}
 .bm-live b.pos{color:var(--good)}.bm-live b.neg{color:var(--bad)}
@@ -430,7 +432,7 @@ const DM=window.BN&&BN.dm, dmLine=(t,g)=>DM?DM.line(t,g):'';
 //   指數本身沒有盤前盤後報價 → 推估點位＝收盤 ×（1＋追蹤 ETF 的盤前／盤後漲跌），畫面標「推估」。
 // 新聞：heatmap-live 分支的 news.json（伺服器每小時抓一次：鉅亨網、Google 新聞、CNBC、MarketWatch＋兆元企業各自的 Google 新聞），只顯示標題、來源、時間與連結。
 // 只有看「最新一份」報告時才換成即時數字、顯示即時新聞；看舊日期的報告照原樣。
-let RPT=null, LVOK=false, NEWS=null, WKH={};
+let RPT=null, LVOK=false, NEWS=null, WKH={}, PICK=null, NEWRPT=null;
 const RAWL='https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/';
 const IXS={NDX:['^NDX',['QQQ']],SOX:['^SOX',['SOXQ','SOXX']],SPX:['^GSPC',['SPY']],DJI:['^DJI',['DIA']],RUT:['^RUT',['IWM']],IXIC:['^IXIC',['ONEQ','QQQ']]};
 const ROWS=[[/那斯達克綜合/,'IXIC'],[/那斯達克\s*100|那指/,'NDX'],[/費城半導體|費半/,'SOX'],[/標普/,'SPX'],[/道瓊/,'DJI'],[/羅素/,'RUT'],[/^VIX/i,'^VIX'],
@@ -597,14 +599,36 @@ function render(d){
   if(DM) DM.mount(el,d);
   ycLoad();
   RPT=d; lvApply(); newsLoad();
+  const pk=document.getElementById('pick'); if(pk&&PICK) pk.appendChild(PICK);   // 重畫報告時把日期選單放回去
 }
+// 2026-11-23 使用者開著網頁時，AI 改寫了分析（盤前版、盤中大漲大跌版），網頁卻還是開啟當時的舊分析 → 每 5 分鐘看一次有沒有新版：
+// 報告還在畫面下方（正在看熱力圖）就直接換；正在讀報告就在畫面底部提示「分析已更新」，按一下才換，不會讀到一半跳掉。換成隔天的新報告時整頁重新載入。
+function rptApply(){const d=NEWRPT;NEWRPT=null;const b=document.getElementById('rpt-new');if(b)b.remove();if(!d||!RPT)return;
+  if(d.date!==RPT.date){location.href='daily.html';return;}
+  render(d);}
+function rptNotice(){const el=document.getElementById('report');if(!el||!NEWRPT)return;
+  if(el.getBoundingClientRect().top>80){rptApply();return;}
+  let b=document.getElementById('rpt-new');
+  if(!b){b=document.createElement('div');b.id='rpt-new';b.className='rpt-new';b.setAttribute('role','status');document.body.appendChild(b);}
+  b.innerHTML=`<span><b>分析已更新</b>（台北 ${esc(tpeTime(NEWRPT.generated))} 產出）：${esc(String(NEWRPT.headline||'').slice(0,46))}…</span><button type="button" class="bt-reset">立即更新</button>`;
+  b.querySelector('button').onclick=()=>{rptApply();const r=document.getElementById('report');if(r)r.scrollIntoView();};}
+async function rptCheck(){if(document.hidden||!RPT||!LVOK)return;
+  try{const idx=await (await fetch('data/daily/index.json?t='+Date.now(),{cache:'no-store'})).json();
+    const it=(idx.items||[]).find(x=>x.date===idx.latest)||{};
+    if(idx.latest===RPT.date&&it.headline===RPT.headline&&!NEWRPT)return;
+    const r=await fetch('data/daily/'+idx.latest+'.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+    const d=await r.json();
+    if(!d||d.schema!=='bnasdaq-daily/1'||(d.date===RPT.date&&!(String(d.generated)>String(RPT.generated))))return;
+    NEWRPT=d;rptNotice();
+  }catch(e){}}
 function pickDate(){const q=new URLSearchParams(location.search).get('d');return q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?q:null;}
 const nc='?t='+Date.now();   // 加時間參數：GitHub Pages 的 CDN 快取最多 10 分鐘，報告一上線就要看得到
 const dmReady=DM?DM.ready().catch(()=>{}):Promise.resolve();   // 登入後要先知道模型名稱才畫得出「模型影響」；沒登入不用等
 fetch('data/daily/index.json'+nc,{cache:'no-store'}).then(r=>r.json()).then(idx=>{
   const want=pickDate()||idx.latest; LVOK=want===idx.latest;   // 只有最新一份報告換成即時報價、顯示即時新聞
   return Promise.all([fetch('data/daily/'+want+'.json'+nc,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('no report');return r.json();}),dmReady]).then(([d])=>{render(d);
-    if(idx.items&&idx.items.length>1){const sel=document.createElement('select');sel.setAttribute('aria-label','選擇日期');idx.items.forEach(it=>{const o=document.createElement('option');o.value=it.date;o.textContent=it.date+'（美股 '+it.session+'）';if(it.date===want)o.selected=true;sel.appendChild(o);});sel.onchange=()=>{location.search='?d='+sel.value;};document.getElementById('pick').appendChild(sel);}
+    if(idx.items&&idx.items.length>1){const sel=document.createElement('select');sel.setAttribute('aria-label','選擇日期');idx.items.forEach(it=>{const o=document.createElement('option');o.value=it.date;o.textContent=it.date+'（美股 '+it.session+'）';if(it.date===want)o.selected=true;sel.appendChild(o);});sel.onchange=()=>{location.search='?d='+sel.value;};PICK=sel;document.getElementById('pick').appendChild(sel);}
+    if(LVOK){setInterval(rptCheck,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)rptCheck();});}
   });
 }).catch(()=>{document.getElementById('report').innerHTML='<p class="note warn">目前沒有可顯示的市場分析，請稍後再試。</p>';});
 })();
