@@ -97,6 +97,9 @@ td .lvs{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
 .mcard .mnews{margin:4px 0 8px;padding:6px 10px;background:var(--band);border:1px solid var(--line-2)}
 .mcard .mnews p{margin:0}.mcard .mnews .nmu{font-size:11.5px;color:var(--muted)}
 .mcard .mnews .nl li{font-size:14px;padding:5px 0}
+.bm-live{background:var(--gold-tint);border:1px solid var(--gold-hi);border-left:3px solid var(--gold-hi);padding:10px 14px;margin:0 0 14px;font-size:15px;line-height:1.75}
+.bm-live.done{background:var(--band);border-color:var(--line);border-left-color:var(--gold-hi)}
+.bm-live b.pos{color:var(--good)}.bm-live b.neg{color:var(--bad)}
 .viz .bar-neg{fill:var(--bad)}.viz .bar-pos{fill:var(--good)}
 .viz .lbl{fill:var(--ink);font-size:12.5px;font-weight:500}
 .viz .val{font-size:12px;font-weight:600;fill:var(--ink)}
@@ -505,12 +508,23 @@ function megaTbl(d,L){const wl=esc(d.mega.wk_label||'一週'),lv=L?d.mega.rows.m
   return h+`</tbody></table>`;}
 function mmHTML(d,r,L){const w=parseFloat(String(r.wk).replace('−','-')),wl=esc(d.mega.wk_label||'一週'),v=L&&megaLive(r,L);
   return `<span>市值 ${esc(v&&v.cap||r.cap)}</span>`+(v?`<span>最新 <b>${valTxt(v)}</b> <span class="${cls(v.c)}">${pct(v.c)}</span> ${badge(v)}<span class="lvt">${esc(tpeAt(v.t))}</span></span>`:`<span>股價 ${esc(r.px)}</span>`)+`<span class="${isNaN(w)?'':cls(w)}">${wl} ${esc(r.wk)}</span>`;}
+// 第 2 節最上面的即時提示（2026-11-23 使用者：大漲大跌時主因要跟著更新）：即時漲跌超過門檻、而下面的分析還不是這個交易日的 → 先提示；已經是這個交易日的盤中分析 → 標出分析時間與最新漲跌
+function bmLive(d,L){const th=+((d.big_move||{}).threshold)||2,bl=(d.big_move||{}).live;
+  if(!(L.session>d.session)) return '';
+  const lv=d.indices.map(ix=>({ix,v:ixLive(L,ix.key)})).filter(o=>o.v).map(o=>Object.assign(o,{c:o.v.ph==='post'&&o.v.ref&&isFinite(o.v.ref.c)?o.v.ref.c:o.v.c}));   // 盤後看當天正規時段漲跌
+  if(!lv.length) return '';
+  const ph=lvPh(L),list=lv.map(o=>`${esc(o.ix.name)} <b class="${cls(o.c)}">${pct(o.c)}</b>`).join('、'),big=lv.filter(o=>Math.abs(o.c)>=th);
+  if(bl&&bl.session===L.session){const at=Date.parse(bl.asof||'');
+    return `<div class="bm-live done"><b>下面是美股 ${esc(mdd(bl.session))} ${esc(bl.phase||'盤中')}的主因分析</b>${isFinite(at)?'（台北 '+esc(tpeAt(at/1000))+' 分析）':''}。最新漲跌：${list}（${esc(lvWhat(L))}）。</div>`;}
+  if(!big.length) return '';
+  const up=big.filter(o=>o.c>0).length*2>=big.length,nm=ph==='pre'?'盤前':ph==='open'||ph==='settle'?'盤中':'';
+  return `<div class="bm-live"><b>美股 ${esc(mdd(L.session))} ${nm}${up?'大漲':'大跌'}</b>：${list}（${esc(lvWhat(L))}，對前一交易日收盤${ph==='pre'||ph==='post'?'；盤前盤後的指數以追蹤 ETF 推估':''}）。<br>下面的主因分析還是美股 ${esc(mdd(d.session))} 收盤的；這個交易日的主因分析會自動更新（平日台北 20:46 盤前版；盤中台北 23:16、02:16 檢查漲跌是否超過 ±${th}%）。</div>`;}
 function lvHead(){const el=document.getElementById('lv-tag');if(!el)return;const L=lvSnap();if(!L){el.hidden=true;return;}
   el.hidden=false;el.classList.toggle('on',lvActive(L)&&!lvStale(L));el.innerHTML='<i></i>即時報價：'+esc(lvWhat(L));}
 function lvApply(){if(!RPT)return;lvHead();const L=lvSnap(),d=RPT;if(!L)return;
   const put=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
   const fig=(id,fn)=>{const el=document.getElementById(id);if(!el||(PLAY&&BN.play.busy(el)))return;el.innerHTML=fn();if(PLAY)BN.play.scan(el);};   // 動態走勢播放中先不換圖
-  put('ix-tiles',ixTiles(d,L)); fig('ix-bar',()=>ixBar(d,L)); put('ix-tbl',ixTbl(d,L)); fig('wk-line',()=>wkLine(d,L));
+  put('ix-tiles',ixTiles(d,L)); put('bm-live',bmLive(d,L)); fig('ix-bar',()=>ixBar(d,L)); put('ix-tbl',ixTbl(d,L)); fig('wk-line',()=>wkLine(d,L));
   document.querySelectorAll('[data-wk]').forEach(el=>{const k=el.dataset.wk;if(d.weekly[k]&&WKH[k])el.innerHTML=wkTbl(d.weekly[k],WKH[k],L);});
   put('mega-tbl',megaTbl(d,L));
   document.querySelectorAll('.mcard .mm[data-i]').forEach(el=>{const r=d.mega.rows[+el.dataset.i];if(r)el.innerHTML=mmHTML(d,r,L);});}
@@ -547,7 +561,9 @@ function render(d){
   h+=`<div class="fig" id="ix-bar">${ixBar(d,null)}</div>`;
   h+=`<div class="tblwrap" id="ix-tbl">${ixTbl(d,null)}</div>`;
   // 2. big move
-  h+=`<h2 id="why">2. 大漲大跌主因（單日 ±${d.big_move.threshold}% 以上才啟用）</h2>`;
+  const BL=(d.big_move||{}).live;   // 盤中／盤前版的主因分析（2026-11-23 起）：{session 美股交易日, phase 盤前／盤中／盤後, asof 分析時間}
+  h+=`<h2 id="why">2. 大漲大跌主因（單日 ±${d.big_move.threshold}% 以上才啟用${BL&&BL.session?'；美股 '+esc(mdd(BL.session))+' '+esc(BL.phase||'盤中')+'分析':''}）</h2>`;
+  if(LVOK) h+=`<div id="bm-live"></div>`;
   if(d.big_move.triggered){
     h+=`<p class="lead">${esc(d.big_move.intro)}</p>`;
     h+=pieChart(d.big_move.causes.map(c=>({p:+c.p,t:c.title})));

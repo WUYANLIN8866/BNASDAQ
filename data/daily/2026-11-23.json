@@ -2,9 +2,9 @@
  "schema": "bnasdaq-daily/1",
  "date": "2026-11-23",
  "session": "2026-11-20",
- "generated": "2026-11-22T22:50:07Z",
- "headline": "週一盤前版：財長貝森特週日稱輝達須在 11/25 前答覆是否以空殼公司規避出口管制、尚未收到回覆，並改口「黃仁勳現在就是外部人選」，Kalshi 回任機率 7%→12%；週末荷莫茲再傳油輪受損、伊朗襲擊巴林工業設施；本週焦點 11/23 威廉斯談話、11/24 Dell 財報、11/25 PCE＋GDP、11/26 感恩節休市；指數沿用 11/20：那指 100 −5.63%、費半 −10.73%",
- "summary": "美股尚未開盤（台北週一清晨＝美東週日傍晚，期貨美東 18:00 才開盤），指數沿用 11/20（週五）收盤：那指 100 25,028.98（−5.63%，週 −10.43%）、費半 8,408.59（−10.73%，週 −17.13%）、標普 6,910.39（−3.70%，週 −8.61%）、道瓊 48,147.33（−1.93%，週 −8.02%）、羅素 2000 2,581.79（−2.76%，週 −7.48%）；10 年期殖利率 4.912%、VIX 35.89（Yahoo Finance 報價框、FXEmpire）。週變化＝收盤÷11/13 收盤現算。過去 24 小時重點：①輝達：財長貝森特 11/22 上 CBS《Face the Nation》稱輝達須在 11/25 前向政府說明是否設立空殼公司規避出口管制、把先進晶片賣給中國企業，財政部尚未收到答覆；先前主張新領導人應「找外部」，週日改稱「他（黃仁勳）現在就在外部」，Kalshi 黃仁勳回任機率由 11/20 的 7% 升至 12%；川普支持其回任，但董事會表示無意請回（Motley Fool 11/22）。SEC 調查仍未獲官方證實。②Anthropic：路透 11/22 報導其要求 22 家承銷商的交易團隊 6 個月內不得服務 OpenAI、Cursor、DeepSeek、Hugging Face，承銷費逾 5 億美元（Fox News 引路透）。③地緣：UKMTO 11/22 再報阿曼外海第二艘油輪受損；伊朗 11/21 攻擊巴林民用工業設施、2 人受傷，沙國警告伊朗「將承擔後果」；沙國聯軍 11/22 擊落飛向利雅德的胡塞無人機；伊朗外長稱若滿足 7 項條件「數小時內」可重開荷莫茲（Investing.com、Iran International、The National）。④本週行事曆：11/23 標普全球 PMI 初值、紐約 Fed 威廉斯談話、HPE 盤後財報；11/24 經濟諮商會消費者信心（預期 92.1）、ADI 盤前、Dell／Workday 盤後；11/25 核心 PCE 月增預期 0.3%、Q3 GDP、耐久財、初領失業金、褐皮書；11/26 感恩節休市、11/27 13:00 提早收盤（FXEmpire、TradingKey）。",
+ "generated": "2026-11-23T14:47:30Z",
+ "headline": "盤中版：輝達董事會盤前宣布黃仁勳即日復任執行長，輝達開盤飆 33%（2003 年以來最大盤中漲幅），費半盤中 +12%～14%、那指 100 +6%、標普 +4%；上週崩跌後強力反彈、VIX 從 35.89 降到 26.76；本週焦點 11/25 PCE＋GDP、11/26 感恩節休市",
+ "summary": "美股 11/23（週一）早盤大漲，台北 22:46（美東 09:46）本站即時報價：那指 100 26,530.01（+6.00%）、費半 9,447.24（+12.35%）、標普 7,195.18（+4.12%）、道瓊 49,311.84（+2.42%）、羅素 2000 2,664.21（+3.19%，Yahoo 報價延遲約 15 分鐘）、那斯達克綜合 23,942.73（+5.86%）；VIX 26.76（−25.44%）、10 年期殖利率 4.97%（Yahoo Finance）。①輝達：董事會美東 11/23 盤前公告，黃仁勳即日起恢復總裁、執行長與董事職務，董事會一致通過，並稱聽取美國政府高層意見後確信其復職沒有國安風險（輝達 8-K）；前一天川普在社群發文要求董事會回聘（Yahoo Finance）。輝達開盤 +33%，是 2003 年 5 月以來最大盤中漲幅（Bloomberg），本站即時 162.20（+29.21%）。②AI 鏈全面噴出：費半盤中一度 +14%（Bloomberg），美光 +13.7%、ARM +15.1%、超微 +6.2%（本站即時）；依本站熱力圖市值估算，輝達一檔約占那指 100 成分股今天市值增加的四成（8,837 億÷2.23 兆美元）。③黃仁勳消息公布前，美股期貨已因上週崩跌後的超跌反彈上漲約 2%～3%（Fox Business、investingLive）。④資安：CrowdStrike 宣布以 439 億美元收購 Zscaler（民視新聞網），CrowdStrike 盤中 −9%（本站即時）。⑤本週行事曆不變：11/24 消費者信心、Dell 盤後財報；11/25 核心 PCE、Q3 GDP；11/26 感恩節休市、11/27 13:00 提早收盤。本版是台北 22:47 產出的盤中版；指數表、週表的收盤欄仍是 11/20（報告 session），最新點位看各表「最新」欄（約每分鐘更新）。",
  "indices": [
   {
    "key": "NDX",
@@ -178,56 +178,59 @@
  "big_move": {
   "triggered": true,
   "threshold": 2,
-  "intro": "最近一個交易日（11/20）五項指數跌逾 2%：費半 −10.73%、那指 100 −5.63%、那斯達克綜合 −5.28%、標普 −3.70%、羅素 −2.76%；道瓊 −1.93% 未達門檻。週一盤前版依週末新資訊檢視、權重不變：貝森特要求輝達 11/25 前答覆出口管制疑問（第一項證據加強，但同時出現黃仁勳回任的可能，方向不明）；FXEmpire 指輝達財報優於預期、上調 2028 年營收成長預估至 75% 仍未能恢復 AI 信心（支持第二項）；Fed 12 月升息預期未變（第三項不變）。期貨尚未開盤，無新價格可驗證。機率為本站依新聞證據權重所作的主觀估計（合計 100%），不是統計推論。",
+  "intro": "美股 11/23 盤中大漲（台北 22:46，本站即時報價）：費半 +12.35%、那指 100 +6.00%、那斯達克綜合 +5.86%、標普 +4.12%、羅素 2000 +3.19%、道瓊 +2.42%，六項全部超過 ±2%。下面是盤中分析，收盤後隔天 06:46 的版本會依收盤再檢視；11/20 收盤大跌的主因分析請選日期 2026-11-22 查看。機率為本站依新聞證據權重所作的主觀估計（合計 100%），不是統計推論。",
   "causes": [
    {
-    "p": 40,
-    "title": "輝達領導與會計風暴：傳 SEC 調查會計作業，龍頭股單日 −14%",
+    "p": 50,
+    "title": "輝達董事會即日恢復黃仁勳執行長職務：輝達開盤 +33%，帶動整條 AI 鏈",
     "evidence": [
-     "路透引兩名知情人士：SEC 執法人員正檢視輝達可能的會計問題；SEC、輝達不予置評（中央社轉路透）",
-     "輝達收 125.53（−14.01%），連七黑，本週約 −23%、7 週約 −46%，市值約 3.03 兆、2024 年 4 月以來首度被 Alphabet 超車（鉅亨網、Motley Fool）",
-     "黃仁勳 11/12 因涉中國間諜疑雲的私人關係辭職，紐約時報續報董事會調查國安風險；加州檢察長發傳票（中央社標題、鉅亨網）",
-     "財長貝森特 11/22（CBS）：輝達須在 11/25 前答覆是否以空殼公司規避出口管制，財政部尚未收到；Kalshi 黃仁勳回任機率 7%→12%（Motley Fool 11/22）"
+     "輝達 8-K：董事會一致決議讓黃仁勳即日恢復總裁、執行長與董事職務，並稱聽取美國政府高層意見後確信其復職沒有國安風險（SEC 公告）",
+     "輝達開盤 +33%，2003 年 5 月以來最大盤中漲幅；費半盤中一度 +14%（Bloomberg）",
+     "依本站熱力圖市值估算：輝達市值增加約 8,837 億美元，約占那指 100 成分股今天市值增加 2.23 兆美元的四成",
+     "ARM +15.1%、美光 +13.7%、超微 +6.2%（本站即時）；CoreWeave 早盤 +28.6%（經濟日報）"
     ],
-    "counter": "輝達本週二財報優於預期、本益比僅約 8.4 倍（鉅亨網），且 SEC 調查細節未證實、接受調查不代表違法；單一公司消息難以完全解釋羅素 2000 與加密資產同步下跌。",
+    "counter": "輝達一檔只能解釋那指 100 漲幅約四成；消息公布前期貨已上漲 2%～3%，而且獨立調查、SEC 與加州檢察長調查都還在進行，事件風險沒有完全消失。",
     "tags": [
      "corp",
-     "pol"
-    ]
-   },
-   {
-    "p": 35,
-    "title": "AI 交易全面平倉：資料中心政策風險＋AI 資本支出回收疑慮",
-    "evidence": [
-     "川普揚言對到海外建資料中心的企業課「巨額稅負」，並稱只賣舊款晶片給中國；民主黨期中大勝增添反資料中心政策風險（鉅亨網、路透經 Yahoo）",
-     "Anthropic 上市第二天 −8.5%（88.91），開盤後回吐首日大半漲幅（Motley Fool、鉅亨網）",
-     "資料中心電力與設備同步重挫：卡特彼勒 −5.01%、GE Vernova −7.57%、Vistra −7.21%、Applied Digital −17.81%、IREN −17.97%、Nebius −16.11%（本站 us-close）",
-     "花旗 11 月將美股與全球科技股降至中性、瑞銀調降美股評級；BNP 稱「恐慌性賣壓」（Beinsure、StockTitan）"
-    ],
-    "counter": "非 AI 的消費、醫療股上漲（Gap +11.44%、聯合健康 +2.91%），大型雲端商跌幅相對小（蘋果 −1.90%、微軟 −2.77%），顯示並非所有 AI 受益股被同等看壞。",
-    "tags": [
      "tech",
-     "pol",
      "mkt"
     ]
    },
    {
-    "p": 25,
-    "title": "鷹派 Fed＋跨資產去槓桿：升息預期與比特幣、貴金屬同步下跌",
+    "p": 30,
+    "title": "上週崩跌後的超跌反彈：空單回補、波動率回落",
     "evidence": [
-     "Fed 理事庫克：通膨壓力擴散、等待恐落後曲線；費城 Fed 總裁保爾森：可接受連續升息（Investing.com、鉅亨網）",
-     "CME FedWatch 一度顯示 12 月升 1 碼機率約 97.5%（Yahoo Finance）",
-     "比特幣跌破 6 萬（11 月約 −23%）、Strategy −9.67%、Robinhood −9.44%；白銀 −6.79%（SLV）、黃金期貨約 −4%（Yahoo Finance、本站 us-close、Investing.com）",
-     "日經 −5.06%、KOSPI −5.21%、台股 −5.65%，亞洲先跌再傳導至美股（StockTitan）"
+     "上週那指 100 −10.43%、費半 −17.13%，那指 100 一度逼近熊市（本報告週表；Yahoo Finance）",
+     "黃仁勳消息公布前，美股期貨已上漲約 2%～3%（Fox Business、investingLive）",
+     "VIX 由 11/20 的 35.89 降到 26.76（−25.44%，本站即時）"
     ],
-    "counter": "10 年期殖利率反降 12 bp 至 4.92%、密大 1 年通膨預期降至 3.7%（Investing.com），利率面其實在放鬆；鉅亨網指交易員已不再完全計入 12 月升息，Fed 本身不是當天新增的衝擊。",
+    "counter": "單純的超跌反彈很難讓費半單日上漲兩位數；道瓊、羅素 2000 只漲 2%～3%，漲幅集中在 AI 與半導體。",
     "tags": [
-     "rate",
-     "crypto",
-     "cmdty"
+     "mkt",
+     "tech"
+    ]
+   },
+   {
+    "p": 20,
+    "title": "華府對輝達與 AI 晶片的態度轉向，政策風險溢價下降",
+    "evidence": [
+     "川普週日發文要求董事會回聘黃仁勳，認為對公司與美國都最好；消息讓輝達盤前先漲約 9%（Yahoo Finance、CMoney）",
+     "財長貝森特 11/22 受訪改稱黃仁勳「現在已是外部人士」，態度由要求外部接班轉為留下空間（自由財經、TVBS）",
+     "台積電強調 AI 需求沒有降溫、先進製程供不應求（鉅亨網）"
+    ],
+    "counter": "11/25 出口管制答覆期限仍在，加州檢察長已擴大刑事調查（鉅亨網），政策轉向沒有正式文件，隨時可能再反覆。",
+    "tags": [
+     "pol",
+     "tech",
+     "corp"
     ]
    }
-  ]
+  ],
+  "live": {
+   "session": "2026-11-23",
+   "phase": "盤中",
+   "asof": "2026-11-23T14:46:00Z"
+  }
  },
  "weekly": {
   "range": "2026-11-13 → 2026-11-20（本週一至週五；收盤÷上週五 11/13 收盤現算）",
@@ -541,23 +544,20 @@
     "cap": "3.03 兆",
     "px": "125.53",
     "wk": "−14.01%",
-    "news": "週一盤前：財長貝森特 11/22（CBS）要求輝達 11/25 前答覆是否以空殼公司規避出口管制、財政部尚未收到；改稱黃仁勳「現在就在外部」，Kalshi 回任機率 7%→12%，川普支持回任、董事會表示無意請回（Motley Fool 11/22）；H100 租金一年漲約 60%（Yahoo Finance）。SEC 調查仍未獲官方證實。",
-    "impact": "11/25 答覆期限是本週最大個股事件：若涉規避出口管制屬實，可能面臨制裁與重編財報；若澄清或黃仁勳回任，低本益比（約 8 倍）可能引發強彈。舊款 GPU 租金上漲顯示 AI 算力需求仍強。",
+    "news": "11/23 盤前董事會公告黃仁勳即日復任總裁、執行長與董事，董事會一致通過，稱聽取美國政府高層意見後確信沒有國安風險（輝達 8-K）；開盤 +33%、2003 年以來最大盤中漲幅（Bloomberg），台北 22:46 本站即時 162.20（+29.21%）。獨立調查與 SEC、加州檢察長調查仍在進行，11/25 出口管制答覆期限未變。",
+    "impact": "領導層不確定性大幅降低，AI 鏈風險溢價回落；但 11/25 答覆期限與多項調查仍可能造成波動，盤中漲幅能否守住要看收盤與後續說明。",
     "win": [
-     "GOOGL（TPU 替代）",
-     "AMZN（自研 Trainium）",
-     "AMD（若客戶分散採購）"
+     "NVDA",
+     "TSM（AI 晶片代工）",
+     "MU（HBM）",
+     "CRWV（GPU 雲端）"
     ],
     "lose": [
-     "NVDA",
-     "SMCI",
-     "DELL",
-     "CRWV",
-     "TSM"
+     "—"
     ],
     "tags": [
      "corp",
-     "trade",
+     "tech",
      "pol"
     ]
    },
@@ -776,6 +776,50 @@
   ]
  },
  "sources": [
+  {
+   "t": "NVIDIA 8-K（11/23）：NVIDIA Board Reinstates Jensen Huang as President, CEO and Board Director",
+   "u": "https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000090/nov23pressrelease.htm"
+  },
+  {
+   "t": "Bloomberg（11/23）：AI-Linked Stocks Take Off After Nvidia Reinstates Jensen Huang（開盤 +33%、費半 +14%）",
+   "u": "https://www.bloomberg.com/news/articles/2026-11-23/ai-linked-stocks-take-off-after-nvidia-reinstates-jensen-huang"
+  },
+  {
+   "t": "Yahoo Finance 直播（11/23）：Stock market today: Nvidia stock soars after company reinstates Jensen Huang as CEO",
+   "u": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-23-dow-sp-500-nasdaq-nvidia-reinstates-jensen-huang-141511975.html"
+  },
+  {
+   "t": "Yahoo Finance（11/23）：Nvidia stock jumps as Trump makes U-turn on Jensen Huang（盤前 +9%）",
+   "u": "https://finance.yahoo.com/markets/stocks/article/nvidia-stock-jumps-as-trump-makes-u-turn-on-jensen-huang-133907693.html"
+  },
+  {
+   "t": "經濟日報（11/23）：美股早盤／黃仁勳閃電回朝 輝達噴漲近30% 費半噴漲14%（CoreWeave、美光、超微）",
+   "u": "https://money.udn.com/money/story/123398/9897286"
+  },
+  {
+   "t": "Fox Business（11/23）：US stock futures rebound as battered AI and chip stocks rally after correction",
+   "u": "https://www.foxbusiness.com/markets/stocks-november-23-2026"
+  },
+  {
+   "t": "investingLive（11/23）：Nasdaq analysis today as we wake up to the green（期貨 +3%）",
+   "u": "https://investinglive.com/stocks/nasdaq-analysis-today-as-we-wake-up-to-the-green/"
+  },
+  {
+   "t": "民視新聞網（11/23）：輝達宣布黃仁勳回任執行長 美股期指大漲那指飆近7%（CrowdStrike 收購 Zscaler）",
+   "u": "https://www.ftvnews.com.tw/news/detail/2026B23W0744"
+  },
+  {
+   "t": "自由財經（11/23）：川普隔空要求黃仁勳回鍋 輝達夜盤強彈7.3%（貝森特「外部人士」）",
+   "u": "https://ec.ltn.com.tw/article/breakingnews/5650134"
+  },
+  {
+   "t": "CMoney（11/23）：輝達(NVDA)盤前狂飆9%！川普態度大轉彎呼籲黃仁勳回鍋",
+   "u": "https://cmnews.com.tw/article/newsyoudeservetoknow-1351a4ce-e73f-11f1-8476-5232e88af190"
+  },
+  {
+   "t": "本站即時報價（Yahoo Finance，台北 22:46）：heatmap-live 分支 us.json",
+   "u": "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/us.json"
+  },
   {
    "t": "Motley Fool（11/22）：Bessent Just Delivered Great News to Former Nvidia CEO Jensen Huang（11/25 期限、Kalshi 回任機率）",
    "u": "https://www.fool.com/investing/2026/11/22/u-s-treasury-secretary-scott-bessent-just-delivered-great-news-to-former-nvidia-ceo-jensen-huang-should-you-buy-nvidia-stock-before-nov-25/"
