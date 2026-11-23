@@ -73,6 +73,30 @@
 .tk.w{color:var(--good);border-color:rgba(31,122,58,.4)}
 .tk.l{color:var(--bad);border-color:rgba(179,38,30,.4)}
 .viz{width:100%;height:auto;display:block}
+.lvtag{color:var(--ink-2)!important}.lvtag i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin-right:6px;vertical-align:1px}
+.lvtag.on i{background:#1f8f4a;animation:hm-live 2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.lvtag.on i{animation:none}}
+.lvb{display:inline-block;font-size:11px;line-height:1.5;letter-spacing:.04em;padding:0 5px;border-radius:2px;margin-right:6px;border:1px solid var(--line);color:var(--ink-2);font-weight:600;white-space:nowrap;vertical-align:1px}
+.lvb.pre{color:var(--s-fund);border-color:currentColor}.lvb.open,.lvb.settle{color:var(--good);border-color:currentColor}.lvb.post{color:var(--s-sat2);border-color:currentColor}.lvb.close{color:var(--muted)}
+.lvt{font-size:11.5px;color:var(--muted);margin-left:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.kv .tile.lv .s{display:flex;flex-wrap:wrap;align-items:baseline;font-variant-numeric:tabular-nums}
+.kv .tile .s2{font-size:12px;color:var(--muted)}
+td .lvs{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
+.news-top{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold-hi);padding:10px 14px;margin:12px 0 18px}
+.news-top .nt-h{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:baseline;font-size:12.5px;color:var(--muted);margin-bottom:2px}
+.news-top .nt-h b{color:var(--ink);font-size:14px;letter-spacing:.06em}
+.nl{list-style:none;margin:0;padding:0}
+.nl li{padding:7px 0;border-bottom:1px solid var(--line-2);font-size:15px;line-height:1.5}
+.nl li:last-child{border-bottom:0}
+.nl a{color:var(--ink);text-decoration:none}.nl a:hover{text-decoration:underline}
+.nl .nm{display:block;font-size:12px;color:var(--muted)}
+.news-cols{display:grid;grid-template-columns:1fr;gap:6px 28px}
+.news-cols h3{margin:6px 0 2px;font-size:15px}
+@media (min-width:900px){.news-cols{grid-template-columns:1fr 1fr}}
+.nmore summary{cursor:pointer;font-size:13.5px;color:var(--ink-2);padding:6px 0}
+.mcard .mnews{margin:4px 0 8px;padding:6px 10px;background:var(--band);border:1px solid var(--line-2)}
+.mcard .mnews p{margin:0}.mcard .mnews .nmu{font-size:11.5px;color:var(--muted)}
+.mcard .mnews .nl li{font-size:14px;padding:5px 0}
 .viz .bar-neg{fill:var(--bad)}.viz .bar-pos{fill:var(--good)}
 .viz .lbl{fill:var(--ink);font-size:12.5px;font-weight:500}
 .viz .val{font-size:12px;font-weight:600;fill:var(--ink)}
@@ -215,12 +239,13 @@ a.dm-mo:hover{border-color:var(--gold);color:var(--gold)}
     <li><a href="#why">2. 大漲大跌主因</a></li>
     <li><a href="#week">3. 股匯債一週趨勢</a></li>
     <li><a href="#models">消息對模型的影響</a></li>
+    <li><a href="#news">即時新聞（每小時更新）</a></li>
     <li><a href="#events">4. 24 小時國際大事</a></li>
     <li><a href="#mega">5. 兆元企業新聞與影響</a></li>
     <li><a href="#src">資料來源</a></li>
   </ul></div>
   <div class="side"><h3>說明</h3><ul>
-    <li>指數為美東時間收盤值；一週變化＝與上週五收盤比較。</li>
+    <li>看最新一份報告時，指數、股匯債表的「最新」欄、兆元企業股價會自動換成即時報價（美東 04:00～20:00 約每分鐘；盤前盤後的指數點位以追蹤 ETF 推估），即時新聞每小時更新；其餘數字為報告當天美東收盤值，一週變化＝與上週五收盤比較。</li>
     <li>「主因機率」是依新聞證據權重的主觀估計，不是統計推論。</li>
     <li>每則消息後面的「模型影響」登入後顯示；訪客與會員在本頁看不到任何策略訊號或持倉，持有狀態請至<a href="login.html">會員專區</a>。</li>
   </ul></div>
@@ -355,9 +380,7 @@ function ycWire(root,P){ // 滑過／點某個天期：十字線＋三條曲線�
   svg.addEventListener('mouseleave',()=>{cx.setAttribute('visibility','hidden');if(tip)tip.hidden=true;});
 }
 function bondPanel(sec,heads,session){ // 債市：標題 → 各天期殖利率曲線（財政部官方）→ 週表 → 說明
-  return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="yc" data-session="${esc(session)}"><p class="small" style="color:var(--muted)">殖利率曲線載入中…</p></div><div class="tblwrap"><table class="tbl"><thead><tr>${heads.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
-    sec.rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===3&&/^[−-]/.test(c)?'neg':i===3&&/^\+/.test(c)?'pos':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+
-    `</tbody></table></div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
+  return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="yc" data-session="${esc(session)}"><p class="small" style="color:var(--muted)">殖利率曲線載入中…</p></div><div class="tblwrap" data-wk="bond">${wkTbl(sec,heads,null)}</div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
 }
 function ycLoad(){
   const box=document.querySelector('.yc[data-session]'); if(!box) return;
@@ -369,10 +392,8 @@ function ycLoad(){
     ycWire(box,P); if(PLAY) BN.play.scan(box);
   }).catch(()=>{box.innerHTML='<p class="small" style="color:var(--muted)">殖利率曲線暫時無法載入。</p>';});
 }
-function wkTable(sec,heads){
-  return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="tblwrap"><table class="tbl"><thead><tr>${heads.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
-    sec.rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===3&&/^[−-]/.test(c)?'neg':i===3&&/^\+/.test(c)?'pos':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+
-    `</tbody></table></div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
+function wkTable(sec,heads,k){   // 表格內容由 wkTbl 產生（有即時快照時 lvApply 加「最新」欄）
+  return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="tblwrap" data-wk="${k}">${wkTbl(sec,heads,null)}</div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
 }
 function pieChart(items,sw){ // items: [{p, t}]（p 為百分比，合計 100）→ 圓餅圖＋圖例（圖例同時是各主因的說明）；sw＝動態走勢的一格（0～1，自 12 點鐘方向順時針畫到哪裡）
   const R=100,C=115,tot=items.reduce((t,i)=>t+i.p,0)||1,cut=sw==null?Infinity:-Math.PI/2+2*Math.PI*sw;let a0=-Math.PI/2,svg='';
@@ -398,20 +419,130 @@ function pieChart(items,sw){ // items: [{p, t}]（p 為百分比，合計 100）
 const tpeTime=g=>{const t=new Date(g);return isNaN(t)?String(g||''):new Date(t.getTime()+8*36e5).toISOString().slice(0,16).replace('T',' ');};
 // 每一則消息後面的「模型影響」（assets/daily-models.js）：沒登入只顯示「會員專屬」；會員一句簡單說明；管理員另有判斷條件
 const DM=window.BN&&BN.dm, dmLine=(t,g)=>DM?DM.line(t,g):'';
+// ===== 即時報價與即時新聞（2026-11-23 使用者：「每日即時資訊頁面的所有指數跟個股報價還有新聞都要用最新的新聞跟盤前盤後價格及指數點位」「新聞一個小時更新一次就好」）=====
+// 報價：熱力圖那段程式每分鐘讀到的美股快照 window.BN.live.US（scripts/heatmap_live.py 寫在 heatmap-live 分支；讀到新的會發 bn-live 事件）
+//   熱力圖成分股 q[代號]＝[現價, 單日漲跌%, 報價距快照幾秒]；盤前盤後另有 x[代號]＝[成交價, 漲跌%（盤前對前一交易日收盤、盤後對當天收盤）, 幾秒前]
+//   報價板 mb.q[代號]＝[最新價, 前一交易日收盤, 報價時間]（指數、匯率、殖利率、商品、比特幣、熱力圖以外的大型股）
+//          mb.x[代號]＝[盤前／盤後最新成交, 基準（盤前＝前一交易日收盤、盤後＝當天收盤）, 成交時間]（追蹤指數的 ETF、熱力圖以外的大型股）
+//   指數本身沒有盤前盤後報價 → 推估點位＝收盤 ×（1＋追蹤 ETF 的盤前／盤後漲跌），畫面標「推估」。
+// 新聞：heatmap-live 分支的 news.json（伺服器每小時抓一次：鉅亨網、Google 新聞、CNBC、MarketWatch＋兆元企業各自的 Google 新聞），只顯示標題、來源、時間與連結。
+// 只有看「最新一份」報告時才換成即時數字、顯示即時新聞；看舊日期的報告照原樣。
+let RPT=null, LVOK=false, NEWS=null, WKH={};
+const RAWL='https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/';
+const IXS={NDX:['^NDX',['QQQ']],SOX:['^SOX',['SOXQ','SOXX']],SPX:['^GSPC',['SPY']],DJI:['^DJI',['DIA']],RUT:['^RUT',['IWM']],IXIC:['^IXIC',['ONEQ','QQQ']]};
+const ROWS=[[/那斯達克綜合/,'IXIC'],[/那斯達克\s*100|那指/,'NDX'],[/費城半導體|費半/,'SOX'],[/標普/,'SPX'],[/道瓊/,'DJI'],[/羅素/,'RUT'],[/^VIX/i,'^VIX'],
+  [/美元指數|DXY/,'DX-Y.NYB'],[/USD\s*\/\s*JPY|日圓/,'JPY=X'],[/EUR\s*\/\s*USD|歐元/,'EURUSD=X'],[/USD\s*\/\s*TWD|台幣/,'TWD=X'],
+  [/^5\s*年/,'^FVX'],[/^10\s*年/,'^TNX'],[/^30\s*年/,'^TYX'],[/WTI|西德州/,'CL=F'],[/布蘭特|Brent/i,'BZ=F'],[/黃金|Gold/i,'GC=F'],[/比特幣|Bitcoin|BTC/i,'BTC-USD']];
+const rowSym=n=>{for(const [re,s] of ROWS) if(re.test(String(n||''))) return s; return null;};
+const YLD={'^FVX':1,'^TNX':1,'^TYX':1}, FOREIGN={'2222.SR':' 里亞爾'};
+const okQ=v=>Array.isArray(v)&&+v[0]>0&&+v[1]>0&&isFinite(+v[2]);
+const okH=v=>Array.isArray(v)&&+v[0]>0&&isFinite(+v[1])&&Math.abs(+v[1])<100;
+const nowS=()=>Date.now()/1000, p2=v=>String(v).padStart(2,'0'), tz8=sec=>new Date(sec*1000+8*36e5), mdd=s=>String(s||'').slice(5).replace('-','/');
+const tpeAt=sec=>{if(!(sec>0))return '';const z=tz8(sec),n=tz8(nowS()),same=z.getUTCMonth()===n.getUTCMonth()&&z.getUTCDate()===n.getUTCDate();return (same?'':(z.getUTCMonth()+1)+'/'+z.getUTCDate()+' ')+p2(z.getUTCHours())+':'+p2(z.getUTCMinutes());};
+function lvSnap(){const L=window.BN&&BN.live&&BN.live.US;return LVOK&&RPT&&L&&L.mb&&L.mb.q&&typeof L.mb.q==='object'&&typeof L.session==='string'&&L.session>=RPT.session?L:null;}
+function lvPh(L){const nx=Object.keys((L.mb&&L.mb.x)||{}).length;   // pre 盤前／post 盤後（結束後仍是最後成交）／open 盤中／settle 剛收盤／close 收盤
+  if((L.ext==='pre'||L.ext==='post')&&nx) return L.ext;
+  return L.state==='open'?'open':L.state==='settling'?'settle':'close';}
+const lvActive=L=>{const ph=lvPh(L);return (ph==='pre'||ph==='post')?L.xstate!=='closed':ph==='open'||ph==='settle';};
+const lvStale=L=>lvActive(L)&&nowS()-L.at>420;   // 還在交易時段，卻超過 7 分鐘沒有新快照
+function ixLive(L,key){const m=IXS[key],q=m&&L.mb.q[m[0]];if(!okQ(q))return null;
+  const ph=lvPh(L),p=+q[0],pv=+q[1],dc=(p/pv-1)*100;
+  if(ph==='pre'||ph==='post'){   // 推估：候選 ETF 裡優先用追得最準的那支，但它的最後成交比其他候選舊 15 分鐘以上就換下一支
+    const xs=L.mb.x||{},ok=m[1].filter(s=>okQ(xs[s])&&Math.abs(+xs[s][0]/+xs[s][1]-1)<0.25),tmax=Math.max(0,...ok.map(s=>+xs[s][2])),s=ok.find(s=>+xs[s][2]>=tmax-900);
+    if(s){const e=xs[s],ec=+e[0]/+e[1]-1;return {v:p*(1+ec),c:ec*100,ph,est:s,t:+e[2],ref:{v:p,c:dc},ix:1};}
+    return {v:p,c:dc,ph:'close',t:+q[2],ref:{v:pv},ix:1};}
+  return {v:p,c:dc,ph,t:+q[2],ref:{v:pv},ix:1};}
+function symLive(L,s){const q=L.mb.q[s];if(!okQ(q))return null;const p=+q[0],pv=+q[1];return {v:p,c:(p/pv-1)*100,d:p-pv,t:+q[2],y:!!YLD[s]};}
+function rowLive(L,name){const s=rowSym(name);return !s?null:IXS[s]?ixLive(L,s):symLive(L,s);}
+function stLive(L,tk){const s=tk==='BRK.B'?'BRK-B':tk;
+  if(FOREIGN[tk]){const v=symLive(L,s);return v&&Object.assign(v,{cur:FOREIGN[tk]});}
+  const ph=lvPh(L),ext=ph==='pre'||ph==='post',hq=L.q&&L.q[s],hx=L.x&&L.x[s],bq=L.mb.q[s],bx=(L.mb.x||{})[s],ph2=ext?'close':ph;
+  if(ext&&okH(hx)) return {v:+hx[0],c:+hx[1],ph,t:L.at-(+hx[2]||0)};
+  if(ext&&okQ(bx)) return {v:+bx[0],c:(bx[0]/bx[1]-1)*100,ph,t:+bx[2]};
+  if(okH(hq)) return {v:+hq[0],c:+hq[1],ph:ph2,t:L.at-(+hq[2]||0)};
+  if(okQ(bq)) return {v:+bq[0],c:(bq[0]/bq[1]-1)*100,ph:ph2,t:+bq[2]};
+  return null;}
+const PHN={pre:'盤前',post:'盤後',open:'盤中',settle:'剛收盤',close:'收盤'};
+const badge=v=>v&&PHN[v.ph]?`<span class="lvb ${v.ph}"${v.est?` title="以 ${esc(v.est)} 的${PHN[v.ph]}成交推估"`:''}>${PHN[v.ph]}${v.est?'推估':''}</span>`:'';
+const valTxt=v=>v.y?v.v.toFixed(3)+'%':v.ix?fmt(v.v,2):fmt(v.v,v.v<10?4:v.v<10000?2:0)+(v.cur||'');
+const chgTxt=v=>v.y?((v.d>0?'+':v.d<0?'−':'±')+Math.abs(v.d*100).toFixed(1)+' bp'):pct(v.c);
+const chgCls=v=>v.y?cls(v.d):cls(v.c);
+const lvCell=v=>!v?'<td>—</td>':`<td><b>${valTxt(v)}</b> <span class="${chgCls(v)}">${chgTxt(v)}</span><span class="lvs">${badge(v)}${esc(tpeAt(v.t))}</span></td>`;
+function lvWhat(L){const ph=lvPh(L),x=(ph==='pre'||ph==='post')&&L.xstate==='closed'?'（已結束）':'';return '美股 '+mdd(L.session)+' '+PHN[ph]+x+'，台北 '+tpeAt(L.at)+(lvStale(L)?'，更新中斷':'');}
+function ixTiles(d,L){return d.indices.slice(0,5).map(ix=>{const v=L&&ixLive(L,ix.key);
+  if(!v) return `<div class="tile"><div class="k"><b>${esc(ix.name)}</b> ${esc(ix.key)}</div><div class="v ${cls(ix.chg)}">${pct(ix.chg)}</div><div class="s">收 ${fmt(ix.close,2)}｜一週 ${pct(ix.wk)}</div></div>`;
+  const ref=v.ph==='post'?`今收 ${fmt(v.ref.v,2)}（${pct(v.ref.c)}）`:`前收 ${fmt(v.ref.v,2)}`;   // 前一交易日的漲跌看下表報告的數字（Yahoo 與報告來源可能差 0.0x 個百分點，不並列）
+  return `<div class="tile lv"><div class="k"><b>${esc(ix.name)}</b> ${esc(ix.key)}</div><div class="v ${cls(v.c)}">${pct(v.c)}</div><div class="s">${badge(v)}${fmt(v.v,2)}<span class="lvt">${esc(tpeAt(v.t))}</span></div><div class="s s2">${ref}</div></div>`;}).join('');}
+function ixBar(d,L){const lv=L?d.indices.map(ix=>ixLive(L,ix.key)):[];
+  if(!lv.length||lv.some(x=>!x)) return `<div class="fsub">單日漲跌幅（${esc(d.session)} 收盤）</div>${barChart(d.indices.map(i=>({name:i.name,chg:i.chg})))}<p class="fnote">虛線為 ±50%／±100% 刻度（以當日最大跌幅為 100%）。</p>`;
+  const ph=lv[0].ph,ext=ph==='pre'||ph==='post';
+  return `<div class="fsub">最新漲跌幅（${esc(lvWhat(L))}；${ph==='post'?'盤後對當天收盤':'對前一交易日收盤'}）</div>${barChart(d.indices.map((ix,i)=>({name:ix.name,chg:lv[i].c})))}<p class="fnote">${ext?'指數沒有盤前盤後報價，點位與漲跌以追蹤 ETF（QQQ、SOXQ／SOXX、SPY、DIA、IWM、ONEQ）的'+PHN[ph]+'成交推估；':''}報告收盤日 ${esc(mdd(d.session))} 的漲跌見下表。虛線為 ±50%／±100% 刻度（以最大漲跌為 100%）。</p>`;}
+function ixTbl(d,L){const W=esc((d.weekly.cols||['10/30'])[0]),S=esc(mdd(d.session)),lv=L?d.indices.map(ix=>ixLive(L,ix.key)):[],on=lv.some(Boolean);
+  let h=`<table class="tbl"><caption>五大指數＋那斯達克綜合：${on?'最新（'+esc(lvWhat(L))+'）、':''}收盤、單日、一週（vs 上週五 ${W}）</caption><thead><tr><th>指數</th>${on?'<th>最新</th>':''}<th>${on?S+' 收盤':'收盤'}</th><th>${on?S+' 單日':'單日'}</th><th>上週五收盤</th><th>一週</th><th class="l">備註</th></tr></thead><tbody>`;
+  d.indices.forEach((ix,i)=>{const wk=(ix.close/ix.prev_week-1)*100;
+    h+=`<tr><td>${esc(ix.name)}<span class="tagfix" style="font-size:11px;color:var(--muted);margin-left:6px">${esc(ix.key)}</span></td>${on?lvCell(lv[i]):''}<td>${fmt(ix.close,2)}</td><td class="${cls(ix.chg)}">${pct(ix.chg)}</td><td>${fmt(ix.prev_week,2)}</td><td class="${cls(wk)}">${pct(wk)}</td><td class="l" style="white-space:normal;min-width:240px">${esc(ix.note)}</td></tr>`;});
+  return h+`</tbody><tfoot><tr><td colspan="${on?7:6}">一週欄位由收盤÷上週五收盤現算；${on?'「最新」欄約每分鐘自動更新，盤前盤後的指數點位為追蹤 ETF 推估；':''}資料來源見頁尾。</td></tr></tfoot></table>`;}
+function wkLine(d,L){const wp=d.week_path,note=esc(wp.note||'那指 100 與費半缺每日收盤公開來源，僅以週線呈現於下表。');let w2=null,lab='';
+  if(L&&L.session>d.session&&wp.dates.length&&wp.dates[wp.dates.length-1]===mdd(d.session)){
+    const add=wp.series.map(se=>{const k=rowSym(se.name),ix=IXS[k]&&d.indices.find(x=>x.key===k),v=ix&&ixLive(L,k);return v&&ix.close>0?(v.v/ix.close-1)*100:null;});
+    if(add.every(x=>x!=null&&isFinite(x))){lab=mdd(L.session)+'*';w2={dates:wp.dates.concat([lab]),series:wp.series.map((se,i)=>Object.assign({},se,{chg:se.chg.concat([+add[i].toFixed(2)])}))};}}
+  const ext=L&&(lvPh(L)==='pre'||lvPh(L)==='post');
+  return `<div class="fsub">本週累積走勢（${esc(wp.dates[0])} 收盤＝100，逐日單日漲跌累乘${w2?'；最後一點＝最新':''}）</div>${lineChart(w2||wp)}<p class="fnote">${w2?esc(lab)+'＝'+esc(lvWhat(L))+'的最新點位，相對 '+esc(mdd(d.session))+' 收盤'+(ext?'（盤前盤後以追蹤 ETF 推估）':'')+'。':''}${note}</p>`;}
+function wkTbl(sec,heads,L){const lv=L?sec.rows.map(r=>rowLive(L,r[0])):[],on=lv.some(Boolean),H=on?[heads[0],heads[1],heads[2],'最新',heads[3]]:heads;
+  return `<table class="tbl"><thead><tr>${H.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
+    sec.rows.map((r,k)=>{const c=r.map((x,i)=>`<td class="${i===3&&/^[−-]/.test(x)?'neg':i===3&&/^\+/.test(x)?'pos':''}">${esc(x)}</td>`);if(on)c.splice(3,0,lvCell(lv[k]));return `<tr>${c.join('')}</tr>`;}).join('')+`</tbody></table>`;}
+function megaLive(r,L){const v=L&&stLive(L,r.t);if(!v)return null;
+  const px=parseFloat(String(r.px).replace(/,/g,'')),m=String(r.cap).match(/^(約\s*)?([\d.]+)\s*兆$/);let cap=null;
+  if(m&&px>0&&!v.cur){const k=v.v/px;if(k>0.5&&k<2)cap=(m[1]||'')+(parseFloat(m[2])*k).toFixed(2)+' 兆';}
+  return Object.assign({},v,{cap});}
+function megaTbl(d,L){const wl=esc(d.mega.wk_label||'一週'),lv=L?d.mega.rows.map(r=>megaLive(r,L)):[],on=lv.some(Boolean);
+  let h=`<table class="tbl"><caption>一覽：市值、${on?'最新股價（'+esc(lvWhat(L))+'）':'股價'}、${wl}變化</caption><thead><tr><th>代號</th><th class="l">公司</th><th>市值（美元${on?'，依最新股價換算':''}）</th><th>${on?'最新股價':'股價'}</th><th>${wl}</th><th class="l">一句話</th></tr></thead><tbody>`;
+  d.mega.rows.forEach((r,i)=>{const w=parseFloat(String(r.wk).replace('−','-')),v=lv[i];
+    h+=`<tr><td><a href="#m-${esc(r.t).replace(/\W/g,'')}">${esc(r.t)}</a></td><td class="l">${esc(r.n)}</td><td>${esc(v&&v.cap||r.cap)}</td>${v?`<td><b>${valTxt(v)}</b> <span class="${cls(v.c)}">${pct(v.c)}</span><span class="lvs">${badge(v)}${esc(tpeAt(v.t))}</span></td>`:`<td>${esc(r.px)}</td>`}<td class="${isNaN(w)?'':cls(w)}">${esc(r.wk)}</td><td class="l" style="white-space:normal;min-width:220px">${esc(r.impact)}</td></tr>`;});
+  return h+`</tbody></table>`;}
+function mmHTML(d,r,L){const w=parseFloat(String(r.wk).replace('−','-')),wl=esc(d.mega.wk_label||'一週'),v=L&&megaLive(r,L);
+  return `<span>市值 ${esc(v&&v.cap||r.cap)}</span>`+(v?`<span>最新 <b>${valTxt(v)}</b> <span class="${cls(v.c)}">${pct(v.c)}</span> ${badge(v)}<span class="lvt">${esc(tpeAt(v.t))}</span></span>`:`<span>股價 ${esc(r.px)}</span>`)+`<span class="${isNaN(w)?'':cls(w)}">${wl} ${esc(r.wk)}</span>`;}
+function lvHead(){const el=document.getElementById('lv-tag');if(!el)return;const L=lvSnap();if(!L){el.hidden=true;return;}
+  el.hidden=false;el.classList.toggle('on',lvActive(L)&&!lvStale(L));el.innerHTML='<i></i>即時報價：'+esc(lvWhat(L));}
+function lvApply(){if(!RPT)return;lvHead();const L=lvSnap(),d=RPT;if(!L)return;
+  const put=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
+  const fig=(id,fn)=>{const el=document.getElementById(id);if(!el||(PLAY&&BN.play.busy(el)))return;el.innerHTML=fn();if(PLAY)BN.play.scan(el);};   // 動態走勢播放中先不換圖
+  put('ix-tiles',ixTiles(d,L)); fig('ix-bar',()=>ixBar(d,L)); put('ix-tbl',ixTbl(d,L)); fig('wk-line',()=>wkLine(d,L));
+  document.querySelectorAll('[data-wk]').forEach(el=>{const k=el.dataset.wk;if(d.weekly[k]&&WKH[k])el.innerHTML=wkTbl(d.weekly[k],WKH[k],L);});
+  put('mega-tbl',megaTbl(d,L));
+  document.querySelectorAll('.mcard .mm[data-i]').forEach(el=>{const r=d.mega.rows[+el.dataset.i];if(r)el.innerHTML=mmHTML(d,r,L);});}
+const relT=sec=>{const m=Math.floor((nowS()-sec)/60);return m<1?'剛剛':m<60?m+' 分鐘前':m<24*60?Math.floor(m/60)+' 小時前':tpeAt(sec);};
+const safeU=u=>/^https:\/\/[^\s"<>]+$/.test(String(u||''))?String(u):'';
+const nOk=x=>x&&x.t&&safeU(x.u)&&isFinite(+x.at);
+const nItem=x=>`<li><a href="${esc(safeU(x.u))}" target="_blank" rel="noopener noreferrer">${esc(x.t)}</a><span class="nm">${esc(x.s||'')}｜<span data-at="${+x.at}">${esc(relT(+x.at))}</span></span></li>`;
+function nList(arr,n){const a=(arr||[]).filter(nOk);if(!a.length)return '<p class="small" style="color:var(--muted)">目前沒有新聞。</p>';const rest=a.slice(n);
+  return `<ul class="nl">${a.slice(0,n).map(nItem).join('')}</ul>`+(rest.length?`<details class="nmore"><summary>看更多（另 ${rest.length} 則）</summary><ul class="nl">${rest.map(nItem).join('')}</ul></details>`:'');}
+function newsRender(){const N=NEWS;if(!N||!RPT||!LVOK)return;
+  const upd='台北 '+tpeAt(N.at)+' 更新（每小時一次）',srcOk=(N.src||[]).filter(s=>s&&s.ok).map(s=>String(s.n)).join('、');
+  const box=document.getElementById('news-box');
+  if(box) box.innerHTML=`<p class="small" style="color:var(--muted);margin:0 0 8px">${esc(upd)}；來源：${esc(srcOk||'—')}。只列標題，按標題到原網站閱讀全文。</p><div class="news-cols"><div><h3>中文</h3>${nList(N.zh,10)}</div><div><h3>English</h3>${nList(N.en,8)}</div></div>`;
+  const top=document.getElementById('news-top'),a=(N.zh||[]).filter(nOk).slice(0,3);
+  if(top){top.hidden=!a.length;if(a.length)top.innerHTML=`<div class="nt-h"><b>最新頭條</b><span>${esc(upd)}</span><a href="#news">看全部即時新聞 ↓</a></div><ul class="nl">${a.map(nItem).join('')}</ul>`;}
+  document.querySelectorAll('.mnews[data-t]').forEach(el=>{const b=((N.co||{})[el.dataset.t]||[]).filter(nOk);el.hidden=!b.length;if(b.length)el.innerHTML=`<p><b>最新新聞</b><span class="nmu">${esc(upd)}</span></p><ul class="nl">${b.map(nItem).join('')}</ul>`;});}
+function newsLoad(){if(!LVOK)return;
+  fetch(RAWL+'news.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}).then(j=>{
+    if(j&&j.schema==='bnasdaq-news/1'&&isFinite(j.at)&&(!NEWS||j.at>NEWS.at)){NEWS=j;newsRender();}
+  }).catch(()=>{const box=document.getElementById('news-box');if(box&&!NEWS)box.innerHTML='<p class="small" style="color:var(--muted)">即時新聞暫時無法載入，稍後會自動再試。</p>';});}
+window.addEventListener('bn-live',e=>{if(!e.detail||e.detail.mk==='US')lvApply();});
+setInterval(()=>{if(document.hidden)return;lvHead();document.querySelectorAll('[data-at]').forEach(el=>{el.textContent=relT(+el.dataset.at);});},60000);
+setInterval(()=>{if(!document.hidden)newsLoad();},600000);   // 新聞每小時更新一次；每 10 分鐘看有沒有新的一份
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&NEWS&&nowS()-NEWS.at>3900)newsLoad();});
 function render(d){
   const el=document.getElementById('report');
   let h='';
   if(DM) DM.begin();
-  h+=`<div class="dl-head"><span class="date">${esc(d.date)}</span><span class="tag">美股 ${esc(d.session)} 收盤</span><span class="tag">台北 ${esc(tpeTime(d.generated))} 產出</span><span id="pick"></span></div>`;
+  h+=`<div class="dl-head"><span class="date">${esc(d.date)}</span><span class="tag">美股 ${esc(d.session)} 收盤</span><span class="tag">台北 ${esc(tpeTime(d.generated))} 產出</span><span class="tag lvtag" id="lv-tag" hidden></span><span id="pick"></span></div>`;
   h+=`<h2 style="margin-top:.4em">${esc(d.headline)}</h2><p class="dl-sum">${esc(d.summary)}</p>`;
-  // 1. indices
-  h+=`<h2 id="idx">1. 美股主要指數</h2><div class="kv">`;
-  d.indices.slice(0,5).forEach(ix=>{h+=`<div class="tile"><div class="k"><b>${esc(ix.name)}</b> ${esc(ix.key)}</div><div class="v ${cls(ix.chg)}">${pct(ix.chg)}</div><div class="s">收 ${fmt(ix.close,2)}｜一週 ${pct(ix.wk)}</div></div>`;});
-  h+=`</div>`;
-  h+=`<div class="fig"><div class="fsub">單日漲跌幅（${esc(d.session)} 收盤）</div>${barChart(d.indices.map(i=>({name:i.name,chg:i.chg})))}<p class="fnote">虛線為 ±50%／±100% 刻度（以當日最大跌幅為 100%）。</p></div>`;
-  h+=`<div class="tblwrap"><table class="tbl"><caption>五大指數＋那斯達克綜合：收盤、單日、一週（vs 上週五 ${esc((d.weekly.cols||['10/30'])[0])}）</caption><thead><tr><th>指數</th><th>收盤</th><th>單日</th><th>上週五收盤</th><th>一週</th><th class="l">備註</th></tr></thead><tbody>`;
-  d.indices.forEach(ix=>{const wk=(ix.close/ix.prev_week-1)*100;h+=`<tr><td>${esc(ix.name)}<span class="tagfix" style="font-size:11px;color:var(--muted);margin-left:6px">${esc(ix.key)}</span></td><td>${fmt(ix.close,2)}</td><td class="${cls(ix.chg)}">${pct(ix.chg)}</td><td>${fmt(ix.prev_week,2)}</td><td class="${cls(wk)}">${pct(wk)}</td><td class="l" style="white-space:normal;min-width:240px">${esc(ix.note)}</td></tr>`;});
-  h+=`</tbody><tfoot><tr><td colspan="6">一週欄位由收盤÷上週五收盤現算；資料來源見頁尾。</td></tr></tfoot></table></div>`;
+  if(LVOK) h+=`<div class="news-top" id="news-top" hidden></div>`;
+  // 1. indices（tiles／長條圖／表的內容由 ixTiles、ixBar、ixTbl 產生；有即時快照時 lvApply 換成最新數字）
+  h+=`<h2 id="idx">1. 美股主要指數</h2><div class="kv" id="ix-tiles">${ixTiles(d,null)}</div>`;
+  h+=`<div class="fig" id="ix-bar">${ixBar(d,null)}</div>`;
+  h+=`<div class="tblwrap" id="ix-tbl">${ixTbl(d,null)}</div>`;
   // 2. big move
   h+=`<h2 id="why">2. 大漲大跌主因（單日 ±${d.big_move.threshold}% 以上才啟用）</h2>`;
   if(d.big_move.triggered){
@@ -421,36 +552,38 @@ function render(d){
   } else { h+=`<p class="lead">${esc(d.big_move.intro||'當日五大指數漲跌皆未超過 2%，本節不啟用。')}</p>`; }
   // 3. weekly
   h+=`<h2 id="week">3. 美國股市、匯市、債市近一週趨勢（${esc(d.weekly.range)}）</h2>`;
-  h+=`<div class="fig"><div class="fsub">本週累積走勢（${esc(d.week_path.dates[0])} 收盤＝100，逐日單日漲跌累乘）</div>${lineChart(d.week_path)}<p class="fnote">${esc(d.week_path.note||'那指 100 與費半缺每日收盤公開來源，僅以週線呈現於下表。')}</p></div>`;
+  h+=`<div class="fig" id="wk-line">${wkLine(d,null)}</div>`;
   const WC=d.weekly.cols||['10/30','11/05'];
-  h+=wkTable(d.weekly.stock,['指數',WC[0],WC[1],'一週']);
-  h+=wkTable(d.weekly.fx,['匯率',WC[0],WC[1],'一週']);
-  h+=bondPanel(d.weekly.bond,['期限',WC[0],WC[1],'變化'],d.session);
-  h+=wkTable(d.weekly.other,['商品',WC[0],WC[1],'一週']);
+  WKH={stock:['指數',WC[0],WC[1],'一週'],fx:['匯率',WC[0],WC[1],'一週'],bond:['期限',WC[0],WC[1],'變化'],other:['商品',WC[0],WC[1],'一週']};
+  h+=wkTable(d.weekly.stock,WKH.stock,'stock');
+  h+=wkTable(d.weekly.fx,WKH.fx,'fx');
+  h+=bondPanel(d.weekly.bond,WKH.bond,d.session);
+  h+=wkTable(d.weekly.other,WKH.other,'other');
   // 4. events
   if(DM) h+=DM.sect();
+  if(LVOK) h+=`<h2 id="news">即時新聞（每小時更新）</h2><div id="news-box" class="news-box"><p class="small" style="color:var(--muted)">即時新聞載入中…</p></div>`;
   h+=`<h2 id="events">4. 最近 24 小時國際大事</h2><div class="evt">`;
   d.events.forEach(g=>{h+=`<h3>${esc(g.cat)}</h3><ul>${g.items.map((x,i)=>`<li>${esc(x)}${dmLine(x,g.tags&&g.tags[i])}</li>`).join('')}</ul>`;});
   h+=`</div>`;
   // 5. mega
   h+=`<h2 id="mega">5. 市值逾一兆美元企業：新聞、影響、受惠／受害</h2><p class="lead">${esc(d.mega.intro)}</p>`;
-  h+=`<div class="tblwrap"><table class="tbl"><caption>一覽：市值、股價、${esc(d.mega.wk_label||'一週')}變化</caption><thead><tr><th>代號</th><th class="l">公司</th><th>市值（美元）</th><th>股價</th><th>${esc(d.mega.wk_label||'一週')}</th><th class="l">一句話</th></tr></thead><tbody>`;
-  d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<tr><td><a href="#m-${esc(r.t).replace(/\W/g,'')}">${esc(r.t)}</a></td><td class="l">${esc(r.n)}</td><td>${esc(r.cap)}</td><td>${esc(r.px)}</td><td class="${isNaN(w)?'':cls(w)}">${esc(r.wk)}</td><td class="l" style="white-space:normal;min-width:220px">${esc(r.impact)}</td></tr>`;});
-  h+=`</tbody></table></div><div class="mega">`;
-  d.mega.rows.forEach(r=>{const w=parseFloat(String(r.wk).replace('−','-'));h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm"><span>市值 ${esc(r.cap)}</span><span>股價 ${esc(r.px)}</span><span class="${isNaN(w)?'':cls(w)}">${esc(d.mega.wk_label||'一週')} ${esc(r.wk)}</span></div></div><p class="mn"><b>新聞</b>${esc(r.news)}</p><p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div>${dmLine(r.n+'：'+r.news+'；'+r.impact,r.tags)}</div>`;});
+  h+=`<div class="tblwrap" id="mega-tbl">${megaTbl(d,null)}</div><div class="mega">`;
+  d.mega.rows.forEach((r,i)=>{h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm" data-i="${i}">${mmHTML(d,r,null)}</div></div><p class="mn"><b>新聞</b>${esc(r.news)}</p>${LVOK?`<div class="mnews" data-t="${esc(r.t)}" hidden></div>`:''}<p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div>${dmLine(r.n+'：'+r.news+'；'+r.impact,r.tags)}</div>`;});
   h+=`</div><p class="small" style="color:var(--muted);font-size:13px">受惠／受害為依新聞內容推論的方向性判斷，不是投資建議；「—」代表無明確對象。</p>`;
   // sources
   h+=`<h2 id="src">資料來源</h2><ol class="src">${d.sources.map(s=>`<li><a href="${esc(s.u)}" rel="noopener" target="_blank">${esc(s.t)}</a></li>`).join('')}</ol>`;
+  if(LVOK) h+=`<p class="small" style="color:var(--muted);font-size:13px">即時報價：Yahoo Finance，由本站伺服器在美東 04:00～20:00 約每分鐘轉存（指數的盤前盤後點位以追蹤 ETF 推估；2 年期公債殖利率沒有即時來源）。即時新聞：鉅亨網、Google 新聞、CNBC、MarketWatch，每小時更新，只列標題與連結。報告內文（主因、國際大事、各公司新聞摘要）是報告產出當時的分析，不會自動改寫。</p>`;
   el.innerHTML=h;
   if(PLAY) BN.play.scan(el);
   if(DM) DM.mount(el,d);
   ycLoad();
+  RPT=d; lvApply(); newsLoad();
 }
 function pickDate(){const q=new URLSearchParams(location.search).get('d');return q&&/^\d{4}-\d{2}-\d{2}$/.test(q)?q:null;}
 const nc='?t='+Date.now();   // 加時間參數：GitHub Pages 的 CDN 快取最多 10 分鐘，報告一上線就要看得到
 const dmReady=DM?DM.ready().catch(()=>{}):Promise.resolve();   // 登入後要先知道模型名稱才畫得出「模型影響」；沒登入不用等
 fetch('data/daily/index.json'+nc,{cache:'no-store'}).then(r=>r.json()).then(idx=>{
-  const want=pickDate()||idx.latest;
+  const want=pickDate()||idx.latest; LVOK=want===idx.latest;   // 只有最新一份報告換成即時報價、顯示即時新聞
   return Promise.all([fetch('data/daily/'+want+'.json'+nc,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('no report');return r.json();}),dmReady]).then(([d])=>{render(d);
     if(idx.items&&idx.items.length>1){const sel=document.createElement('select');sel.setAttribute('aria-label','選擇日期');idx.items.forEach(it=>{const o=document.createElement('option');o.value=it.date;o.textContent=it.date+'（美股 '+it.session+'）';if(it.date===want)o.selected=true;sel.appendChild(o);});sel.onchange=()=>{location.search='?d='+sel.value;};document.getElementById('pick').appendChild(sel);}
   });
@@ -509,7 +642,10 @@ const MKT={TW:{file:'tw',tz:'Asia/Taipei',open:540,close:810,name:'台股',step:
 const LIVE={}, MISS={TW:0,US:0}, FIXED={TW:0,US:0};
 const stepOf=mk=>{const L=LIVE[mk];return (L&&L.step>=15&&L.step<=600)?L.step:MKT[mk].step;};
 const everyTxt=L=>{const e=L.every>0?L.every:(L.step>0?L.step:60);return e<50?'約每 '+Math.round(e)+' 秒更新一次':e<=90?'約每分鐘更新一次':'約每 '+Math.round(e/60)+' 分鐘更新一次';};
-let skew=0, liveTimer=0, liveBusy=false, liveAgain=false;
+let skew=0, liveTimer=0;
+const BUSY={}, AGAIN={}, LASTSLOT={TW:0,US:0};
+// 2026-11-23 每日市場分析的報告也要用美股快照（指數、個股、匯率等最新報價；us.json 的 mb）：不管熱力圖看哪個分頁都持續讀美股，讀到新的就發 bn-live 事件
+(window.BN=window.BN||{}).live=LIVE;
 const now=()=>Date.now()+skew;   // skew＝伺服器時間−本機時間：本機時鐘不準時，時間格才不會算錯
 const mkOf=S=>S&&S.market==='TW'?'TW':'US';
 const hhmm=(sec,ss)=>{const z=new Date(sec*1000+8*36e5), p=v=>String(v).padStart(2,'0');return p(z.getUTCHours())+':'+p(z.getUTCMinutes())+(ss?':'+p(z.getUTCSeconds()):'');};   // 台北時間（固定 UTC+8）；ss＝要不要顯示秒
@@ -565,16 +701,17 @@ function xLabel(S,L,X){   // 盤前／盤後的說明文字：[說明, 是不是
   return [nm+'資料停在 '+at+'（更新中斷，'+base+'）',false];
 }
 async function getJ(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json();}
-async function liveTick(){
-  if(!D||document.hidden) return; if(liveBusy){liveAgain=true;return;}
-  const S=D.sets[cur]; if(!S) return; const mk=mkOf(S), M=MKT[mk], had=LIVE[mk]; liveBusy=true;
+async function liveTick(mk){
+  if(!D||document.hidden) return; mk=mk||mkOf(D.sets[cur]||{}); if(!MKT[mk]) return; if(BUSY[mk]){AGAIN[mk]=true;return;}
+  const M=MKT[mk], had=LIVE[mk]; BUSY[mk]=true;
   try{
     const ph=phase(mk), step=stepOf(mk), t=now()/1000, slow=Math.max(3,Math.ceil(180/step));   // slow：連續這麼多輪（約 3 分鐘）找不到時間格檔，就改成慢慢讀
     const done=had&&had.state==='closed'&&(M.post==null||(had.ext==='post'&&had.xstate==='closed'))&&t-had.at<6*3600;   // 今天已經收盤（美股：盤後也結束了）：不用再讀
     let got=null;
     if(hot(ph)&&!done&&MISS[mk]<slow&&!(had&&had.every>step&&t-had.at<600)){   // 盤中、盤前、盤後：讀最新的時間格檔，沒有就往前找兩格
       const s0=Math.floor((t-M.margin)/step);
-      for(let k=0;k<3&&!got;k++){try{const j=await getJ(RAW+M.file+'-'+(s0-k)+'.json');if(okSnap(j,mk))got=j;}catch(e){}}
+      if(had&&LASTSLOT[mk]===s0) return;   // 這一格已經讀過（台股分頁時兩個市場一起讀，美股一分鐘只讀一次）
+      for(let k=0;k<3&&!got;k++){try{const j=await getJ(RAW+M.file+'-'+(s0-k)+'.json');if(okSnap(j,mk)){got=j;LASTSLOT[mk]=s0-k;}}catch(e){}}
       MISS[mk]=got?0:MISS[mk]+1;
     }
     if(!got&&!done&&Date.now()-FIXED[mk]>(!hot(ph)?600:MISS[mk]>=slow?300:55)*1000){   // 讀「最新一份」：非交易時段 10 分鐘一次；交易時段連續找不到時間格檔（休市或更新中斷）5 分鐘一次
@@ -582,15 +719,18 @@ async function liveTick(){
       try{const j=await getJ(RAW+M.file+'.json');if(okSnap(j,mk)){got=j;if(liveOn(j)&&now()/1000-j.at<360)MISS[mk]=0;}}catch(e){}
     }
     if(got&&liveOn(got)&&got.at*1000>now()) skew+=got.at*1000-now();   // 本機時鐘比資料還慢：往前校正
-    const fresh=!!got&&(!had||got.at>had.at); if(fresh) LIVE[mk]=got;
+    const fresh=!!got&&(!had||got.at>had.at); if(fresh){LIVE[mk]=got; try{window.dispatchEvent(new CustomEvent('bn-live',{detail:{mk}}));}catch(e){}}
     // 有新資料就重畫；沒有新資料、但畫面上是還在更新的快照時也重畫（超過 4 分鐘沒更新，說明文字要改成「更新中斷」；盤前盤後結束 15 分鐘後回到收盤顯示）
     if((fresh||liveOn(LIVE[mk])||(LIVE[mk]&&LIVE[mk].ext))&&D.sets[cur]&&mkOf(D.sets[cur])===mk) draw();
-  }finally{liveBusy=false; if(liveAgain){liveAgain=false;liveTick();}}
+  }finally{BUSY[mk]=false; if(AGAIN[mk]){AGAIN[mk]=false;liveTick(mk);}}
 }
-function liveLoop(){clearTimeout(liveTimer); if(!D) return;   // 下一次讀的時間：這個分頁的市場盤中時用它的間隔（台股 30 秒），其他時候每分鐘看一次就好
-  const mk=mkOf(D.sets[cur]), M=MKT[mk], st=hot(phase(mk))?stepOf(mk):60, t=now()/1000, nb=(Math.floor((t-M.margin)/st)+1)*st+M.margin;
-  liveTimer=setTimeout(()=>{liveTick().catch(()=>{}).then(liveLoop);},Math.max(3,nb-t)*1000+Math.random()*2000);}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveTick().catch(()=>{});});
+const liveMks=()=>{const cm=mkOf(D.sets[cur]||{});return cm==='TW'?['TW','US']:['US'];};   // 熱力圖這個分頁的市場；美股一定要讀（報告的即時報價）
+async function liveAll(){for(const mk of liveMks()){try{await liveTick(mk);}catch(e){}}}
+function liveLoop(){clearTimeout(liveTimer); if(!D) return;   // 下一次讀的時間：市場盤中時用它的間隔（台股 30 秒），其他時候每分鐘看一次就好；兩個市場取較早的
+  const t=now()/1000; let nb=Infinity;
+  liveMks().forEach(mk=>{const M=MKT[mk], st=hot(phase(mk))?stepOf(mk):60; nb=Math.min(nb,(Math.floor((t-M.margin)/st)+1)*st+M.margin);});
+  liveTimer=setTimeout(()=>{liveAll().then(liveLoop);},Math.max(3,nb-t)*1000+Math.random()*2000);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)liveAll();});
 function draw(){
   if(!D||RP) return; const S=D.sets[cur]; if(!S) return;   // RP：動態走勢重播中，盤中更新與版面重畫等播完再畫
   const V=view(S), T=V.T, L=V.L, X=V.X||null, XN=X==='pre'?'盤前':X==='post'?'盤後':''; shown=T; shownX=X; shownLive=!!L&&(X?L.xstate!=='closed':L.state!=='closed');
@@ -684,13 +824,13 @@ box.addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';},{passive:
 box.addEventListener('click',e=>{const el=e.target.closest('.tl');if(!el)return;   // 滑鼠：點一下就開個股分析；觸控：第一下看提示、同一格再點一下才開
   if(lastPT==='mouse'||armed===el.dataset.s){go(el.dataset.s);return;}
   armed=el.dataset.s;show(el,e);});
-document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{if(RP&&window.BN&&BN.play)BN.play.detach(hmSec);cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();liveTick().catch(()=>{}).then(liveLoop);}));
+document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{if(RP&&window.BN&&BN.play)BN.play.detach(hmSec);cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();liveAll().then(liveLoop);}));
 let rt=0; if('ResizeObserver' in window) new ResizeObserver(()=>{clearTimeout(rt);rt=setTimeout(draw,120);}).observe(box); else window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
 fetch('data/heatmap/latest.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);
   const sv=Date.parse(r.headers.get('date')||''); if(isFinite(sv)&&Math.abs(sv+500-Date.now())>2500) skew=sv+500-Date.now();   // 回應標頭的時間只到秒，差 2.5 秒以上才校正
   return r.json();}).then(d=>{D=d;
   document.querySelectorAll('.hm-tabs button').forEach(b=>{if(!d.sets[b.dataset.set])b.hidden=true;});
-  draw(); liveTick().catch(()=>{}).then(liveLoop);}).catch(()=>{$('hm-meta').textContent='熱力圖資料暫時無法載入';box.style.height='120px';});
+  draw(); liveAll().then(liveLoop);}).catch(()=>{$('hm-meta').textContent='熱力圖資料暫時無法載入';box.style.height='120px';});
 })();
 </script>
 </body>
