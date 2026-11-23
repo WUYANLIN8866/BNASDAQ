@@ -187,6 +187,27 @@
     const D = await getJ('data/company/' + encodeURIComponent(code) + '.json');
     if (!D) { host.innerHTML = '<p class="small">' + esc(code) + ' 尚未納入公司分析資料（每週更新熱力圖四個指數的成分股）。</p>'; return; }
     const P = (await Promise.all((D.peers || []).map(c => getJ('data/company/' + encodeURIComponent(c) + '.json')))).filter(Boolean);
+    // 即時（2026-11-24 站主：所有股價計算都用最新的即時價格）：本公司與同業的股價相關數字換成即時成交（assets/liveq.js；台股盤中、美股盤中與盤前盤後）——
+    // 價格比 k＝即時價 ÷ 資料日股價：市值、本益比、股價營收比、股價淨值比 ×k；EV/EBITDA＝(原值−淨負債/EBITDA)×k＋淨負債/EBITDA；FCF 殖利率、股東回饋率 ÷k；
+    // 1 年報酬＝(1＋原值)×k−1；52 週高低納入即時價後重算位置與距高點；股價走勢最後加上（或換掉）即時那一天。財報數字不動。即時資料的交易日比資料日新才換。
+    const LQ = window.BN && BN.liveq;
+    const liveCo = x => {
+      if (!LQ || !x || !x.m || !(x.m.last_px > 0)) return null;
+      const q = LQ.get(x.code, x.market === 'TW' ? 'TW' : 'US'); if (!q || !(q.p > 0) || !q.ses) return null;
+      const p1 = x.p1y || (x.p1y = []), ld = p1.length ? p1[p1.length - 1][0] : '';
+      if (!(q.ses > ld || (q.ses === ld && q.ph !== 'close'))) return null;
+      const m = x.m, k = q.p / m.last_px; if (!(k > 0.2 && k < 5)) return null;
+      ['pe', 'ps', 'pb'].forEach(f => { if (m[f] != null) m[f] *= k; });
+      if (m.ev_ebitda != null && m.nd_ebitda != null) m.ev_ebitda = (m.ev_ebitda - m.nd_ebitda) * k + m.nd_ebitda;
+      ['fcf_yield', 'sh_yield'].forEach(f => { if (m[f] != null) m[f] /= k; });
+      if (m.ret_1y != null) m.ret_1y = (1 + m.ret_1y) * k - 1;
+      if (m.hi52 > 0 && m.lo52 > 0) { m.hi52 = Math.max(m.hi52, q.p); m.lo52 = Math.min(m.lo52, q.p); if (m.hi52 > m.lo52) m.pos52 = (q.p - m.lo52) / (m.hi52 - m.lo52); m.dd52 = q.p / m.hi52 - 1; }
+      m.last_px = q.p; if (x.cap_bn) x.cap_bn *= k;
+      if (p1.length && p1[p1.length - 1][0] === q.ses) p1[p1.length - 1] = [q.ses, q.p]; else p1.push([q.ses, q.p]);
+      return q;
+    };
+    const LV = liveCo(D); P.forEach(liveCo); BN.company.shown = { code, live: !!LV };
+    const pxWhen = LV ? '最新價格（' + LV.ses + ' ' + LQ.tag(LV) + (LV.ph === 'close' ? '' : ' 即時成交') + '，打開這一段時的價格；重新整理可更新）' : '各公司資料更新日的股價';
     const INS = D.market === 'TW' ? await getJ('data/company/_tw_insider.json') : null;   // 台股內部人轉讓申報（本站每日累積）
     const cur = D.cur, m = D.m || {}, S = D.s || {}, nm = D.name, A = D.A || {}, ds = A.d || [], fxNote = D.fin_cur && D.fin_cur !== D.cur ? '（原始財報幣別 ' + D.fin_cur + '，以匯率 ' + (D.fx ? D.fx.toPrecision(4) : '—') + ' 換算 ' + D.cur + '）' : '';
     let h = '';
@@ -238,7 +259,7 @@
       const best = r[2] && ok.length > 1 ? ok.reduce((b, i) => (r[2] > 0 ? vs[i] > vs[b] : vs[i] < vs[b]) ? i : b, ok[0]) : -1; return { r, vs, best, md: med(vs.slice(1)) }; }).filter(x => x.vs.some(v => v != null));
     if (P.length) h += '<h3 id="co-peers">同業關鍵數據對照</h3><div class="tblwrap"><table class="tbl ptb"><caption>' + esc(nm) + ' 與 ' + P.length + ' 家主要對手的實際數值（粗體＝該列最好；中位數不含本公司）</caption><thead><tr><th class="l">項目</th>' + ALL.map((x, i) => '<th' + (i ? '' : ' class="me"') + '>' + esc(x.code) + '</th>').join('') + '<th>同業中位數</th></tr></thead><tbody>' +
       peerTbl.map(t => '<tr><td class="l">' + esc(t.r[0]) + '</td>' + t.vs.map((v, i) => '<td' + (i ? '' : ' class="me"') + '>' + (i === t.best ? '<b>' + rf(t.r, v) + '</b>' : rf(t.r, v)) + '</td>').join('') + '<td>' + rf(t.r, t.md) + '</td></tr>').join('') + '</tbody></table></div>' +
-      '<p class="small">估值與報酬用各公司資料更新日的股價；財報比率用最新年度（本益比、股價營收比、FCF 殖利率用近四季）。「最好」只是數字方向（例如本益比越低越好），不代表投資建議。</p>';
+      '<p class="small">估值與報酬用' + esc(pxWhen) + '；財報比率用最新年度（本益比、股價營收比、FCF 殖利率用近四季）。「最好」只是數字方向（例如本益比越低越好），不代表投資建議。</p>';
     // ---- 股價走勢與技術面 ----
     let pxDraw = null;
     const p1 = (D.p1y || []).filter(x => x[1] != null);

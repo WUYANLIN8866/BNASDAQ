@@ -168,7 +168,7 @@ main .btn.ghost:hover{color:var(--ink);background:var(--band);border-color:var(-
 @media(max-width:900px){.esg{grid-template-columns:1fr}}
 .glos{margin-top:10px}.glos summary{cursor:pointer;font-weight:600}.glos td{font-size:13.5px;vertical-align:top}.glos td:first-child{white-space:nowrap}
 </style>
-<script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/company.js?v=22864abbb6"></script><script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
+<script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/company.js?v=66e4ef466a"></script><script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);
@@ -356,6 +356,9 @@ function relive(){
   DET.where=where;DET.pxNote=pxAuto(DET.code,DET.fund,where,DET.hm);
   if(S)DET.peers=(DET.peers||[]).map(r=>({t:S.tiles.find(x=>x[0]===r.t[0])||r.t,f:r.f}));
   renderDetail();
+  // 完整公司分析：畫的時候還沒有即時報價（剛打開頁面）就在即時報價到了之後重畫一次；之後不自動重畫（內容很長，避免畫面跳動）
+  const sh=window.BN&&BN.company&&BN.company.shown;
+  if(sh&&sh.code===DET.code&&!sh.live&&BN.liveq.get(DET.code)){sh.live=true;BN.company.render(DET.code,{toc:buildToc});}
 }
 if(LVQ()){BN.liveq.want(['TW','US']);BN.liveq.on(()=>relive());}
 async function loadDetail(code,fund){
