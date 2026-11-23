@@ -1,0 +1,40 @@
+name: probe live quotes (temporary)
+on:
+  push:
+    branches: [probe-live-20261124]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts
+            data/heatmap
+            data/daily
+      - name: probe
+        run: |
+          ls data/tw 2>/dev/null | head -2 || true
+          echo "== US regular"; timeout 120 python3 scripts/heatmap_live.py once --market US | python3 -c "import sys,json; j=json.loads(sys.stdin.read().splitlines()[-1]); print({k:j[k] for k in ('ok','src','have','n','quote_age_sec_min_med_max')})" || true
+          echo "== US board"; timeout 60 python3 scripts/heatmap_live.py once --market US --board | tail -c 600 || true
+          echo "== TW board"; timeout 60 python3 scripts/heatmap_live.py once --market TW --board || true
+          echo "== TW all"; timeout 150 python3 scripts/heatmap_live.py once --market TW | python3 -c "import sys,json; j=json.loads(sys.stdin.read().splitlines()[-1]); print({k:j[k] for k in ('ok','src','have','n','quote_age_sec_min_med_max')})" || true
+          echo "== extras detail"
+          timeout 150 python3 - <<'PY'
+          import importlib.util, json, time
+          spec = importlib.util.spec_from_file_location('hm', 'scripts/heatmap_live.py'); hm = importlib.util.module_from_spec(spec); spec.loader.exec_module(hm)
+          it = hm.latest_items()
+          for mk in ('TW', 'US'):
+              u = hm.universe(mk); base = set(hm.PATHSET or [])
+              ex = [c for c in u if c not in base]
+              t0 = time.time()
+              got = hm.fetch_tw(ex)[0] if mk == 'TW' else hm.fetch_us([hm.q_sym(s) for s in ex])[0]
+              miss = [c for c in ex if c not in got]
+              print(mk, 'universe', len(u), 'extras', len(ex), 'got', len(got), f'{time.time()-t0:.1f}s', 'missing', len(miss), miss[:40])
+              for c in (['0050', '00631L', '00670L', '00679B', '006208'] if mk == 'TW' else ['QLD', 'SHV', 'BOXX', 'ANT', 'TQQQ']):
+                  print('  ', c, got.get(c), it.get(c))
+          PY
