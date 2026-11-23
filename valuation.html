@@ -168,7 +168,7 @@ main .btn.ghost:hover{color:var(--ink);background:var(--band);border-color:var(-
 @media(max-width:900px){.esg{grid-template-columns:1fr}}
 .glos{margin-top:10px}.glos summary{cursor:pointer;font-weight:600}.glos td{font-size:13.5px;vertical-align:top}.glos td:first-child{white-space:nowrap}
 </style>
-<script src="assets/company.js?v=22864abbb6"></script><script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
+<script src="assets/liveq.js?v=f326910399"></script><script src="assets/company.js?v=22864abbb6"></script><script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);
@@ -304,20 +304,64 @@ const ADR={'2330':'TSM','2303':'UMC','3711':'ASX','2412':'CHT'};   // 台股 →
 const NEWSKW={TSM:['TSMC','Taiwan Semiconductor'],'2330':['TSMC','Taiwan Semiconductor','台積電'],'2303':['UMC','聯電'],'3711':['ASE','日月光'],'2412':['Chunghwa','中華電'],GOOGL:['Google','Alphabet'],GOOG:['Google','Alphabet'],META:['Meta','Facebook'],'BRK-B':['Berkshire','Buffett'],AMZN:['Amazon'],MSFT:['Microsoft'],AAPL:['Apple','iPhone'],NVDA:['Nvidia','Jensen Huang'],TSLA:['Tesla','Musk'],AVGO:['Broadcom'],SPCX:['SpaceX']};
 const spz=t=>/[A-Za-z0-9)）]$/.test(t)?t+' ':t;   // 中文後接英數才留空白
 const med=a=>!a.length?null:a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2;
-async function loadDetail(code,fund){
-  const hm=await getHM();
-  if(!hm||!hm.sets){DET={code,fund,hm:null,where:[],peers:[]};renderDetail();return;}
-  const ORDER=['tw50','sox','ndx','spx','twse','tpex'];   // 同業優先用最窄的指數（費半＞那指＞標普）；台股全上市／全上櫃放最後（2026-11-20：漏了這兩個，新加入的公司股價停在基本面資料日）
-  const where=ORDER.filter(k=>hm.sets[k]).map(k=>{const S=hm.sets[k],i=S.tiles.findIndex(t=>t[0]===code);if(i<0)return null;
+// ---- 即時（2026-11-24 站主：所有股價計算都用最新的即時價格）----
+// 熱力圖方塊換成即時成交（台股盤中、美股盤中與盤前盤後；assets/liveq.js）：現價、對前一交易日收盤的漲跌，市值依價格比例換算（和每日市場分析的熱力圖同一套）。
+// 即時資料的交易日比熱力圖新才換；同一天時用熱力圖（正式收盤），只有美股盤後例外。收盤後、即時資料過期都會自動回到收盤資料。
+const LVQ=()=>window.BN&&BN.liveq;
+function liveSet(S,ses0){
+  const Q=LVQ();if(!Q)return S;const mk=S.market==='TW'?'TW':'US',ses=S.session||ses0||'',lq={};let n=0,tag='',lses='';
+  const tiles=S.tiles.map(t=>{const q=Q.get(t[0],mk);if(!q||!(q.p>0)||!q.ses||!(q.ses>ses||(q.ses===ses&&q.ph==='post')))return t;
+    n++;lq[t[0]]=q;if(!lses||q.ses>lses||(q.ses===lses&&q.t>(lq.__t||0))){lses=q.ses;tag=Q.tag(q);lq.__t=q.t;}const k=t[5]>0?q.p/t[5]:1;return [t[0],t[1],t[2],(k>0.5&&k<2)?t[3]*k:t[3],(q.p/q.ref-1)*100,q.p];});
+  if(!n)return S;
+  delete lq.__t;
+  // 新交易日還沒有成交的公司：漲跌留空（和熱力圖的灰色方塊一樣），不拿前一個交易日的漲跌來排名、算加權平均；價格、市值照舊
+  const tl=lses>ses?tiles.map(t=>lq[t[0]]?t:[t[0],t[1],t[2],t[3],null,t[5]]):tiles;
+  return Object.assign({},S,{tiles:tl,session:lses,cap_total_bn:tl.reduce((s,t)=>s+(t[3]||0),0),lq,live:{n,tag,base:ses}});
+}
+const ORDER=['tw50','sox','ndx','spx','twse','tpex'];   // 同業優先用最窄的指數（費半＞那指＞標普）；台股全上市／全上櫃放最後（2026-11-20：漏了這兩個，新加入的公司股價停在基本面資料日）
+function whereOf(code,hm){
+  return ORDER.filter(k=>hm.sets[k]).map(k=>{const S=liveSet(hm.sets[k],hm.session),i=S.tiles.findIndex(t=>t[0]===code);if(i<0)return null;
     const t=S.tiles[i],ch=S.tiles.filter(x=>x[4]!=null).slice().sort((a,b)=>b[4]-a[4]);
     const wavg=a=>{let c=0,v=0;a.forEach(x=>{if(x[4]!=null&&x[3]>0){c+=x[3];v+=x[3]*x[4];}});return c?v/c:null;};
     return {k,S,t,rank:i+1,n:S.tiles.length,chRank:t[4]==null?null:ch.findIndex(x=>x[0]===code)+1,chN:ch.length,
       wt:S.cap_total_bn?t[3]/S.cap_total_bn*100:null,idx:wavg(S.tiles),sec:wavg(S.tiles.filter(x=>x[2]===t[2])),secN:S.tiles.filter(x=>x[2]===t[2]).length};}).filter(Boolean);
-  // 最新收盤比基本面資料日新 → 把「目前股價」換成最新收盤（其他參數不動）
-  let pxNote='';
-  if(where.length&&fund&&fund.params){const w=where[0],sess=w.S.session||hm.session,close=w.t[5];
-    if(close>0&&sess>(fund.updated||'')){const old=+$('px').value;$('px').value=+close.toFixed(2);
-      pxNote='目前股價已自動更新為 '+sess+' 收盤 '+fp(close)+'（基本面資料日 '+esc(fund.updated)+' 的股價為 '+fp(old)+'）；可在下方自行修改。';run();}}
+}
+// 「目前股價」：最新價格（即時成交或收盤）比基本面資料日新，就換成最新價格（其他參數不動）；之後有新報價就跟著換，使用者自己改過就不再自動換
+let PXAUTO=null;   // 上一次自動填入的值
+function pxAuto(code,fund,where,hm){
+  if(!fund||!fund.params)return '';
+  const Q=LVQ(),w=where[0],fd=fund.updated||'';let p=null,lbl='';
+  if(w){const q=w.S.lq&&w.S.lq[code];
+    if(q){if(q.ses>fd){p=q.p;lbl=q.ses+' '+Q.tag(q)+(q.ph==='close'?'':' 即時價');}}
+    else{const ses=(w.S.live?w.S.live.base:w.S.session)||hm.session;if(w.t[5]>0&&ses>fd){p=w.t[5];lbl=ses+' 收盤';}}}
+  else if(Q){const q=Q.get(code);if(q&&q.p>0&&q.ses>fd){p=q.p;lbl=q.ses+' '+Q.tag(q)+(q.ph==='close'?'':' 即時價');}}
+  if(!(p>0))return '';
+  const cur=+$('px').value;
+  if(PXAUTO!=null&&Math.abs(cur-PXAUTO)>1e-9)return (DET&&DET.pxNote)||'';   // 使用者改過：不動
+  const np=+p.toFixed(2);PXAUTO=np;if(Math.abs(cur-np)>1e-9){$('px').value=np;run();}
+  const old=fund.params.px!=null?+fund.params.px:null;
+  return '目前股價已自動更新為 '+esc(lbl)+' '+fp(p)+(old!=null?'（基本面資料日 '+esc(fd)+' 的股價為 '+fp(old)+'）':'')+'；開盤期間每 30～60 秒自動更新，可在下方自行修改（改過就不再自動更新）。';
+}
+// ---- 即時新聞（2026-11-24）：scripts/heatmap_live.py 每小時抓兆元企業與那斯達克 100、台灣 50 成分股的 Google 新聞（每家最多 3 則、48 小時內），寫在 heatmap-live 分支的 news-co.json ----
+let NCO=null,NCOAT=0;
+const getNCO=()=>{if(NCO&&Date.now()-NCOAT<15*60e3)return NCO;NCOAT=Date.now();
+  return NCO=fetch('https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/news-co.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>j&&j.schema==='bnasdaq-news-co/1'&&j.co?j:null).catch(()=>null);};
+const coNews=(j,code)=>{if(!j)return null;const ks=[code,code.replace('-','.'),ADR[code]].filter(Boolean);for(const k of ks){const v=j.co[k];if(Array.isArray(v)&&v.length)return {k,items:v.filter(x=>x&&x.t&&/^https:\/\//.test(x.u||'')&&x.at>0),at:j.at};}return null;};
+const ago=s=>{const m=Math.max(0,Math.round((Date.now()/1000-s)/60));return m<60?m+' 分鐘前':m<48*60?Math.round(m/60)+' 小時前':Math.round(m/1440)+' 天前';};
+setInterval(async()=>{if(!DET||document.hidden)return;const j=await getNCO(),n=coNews(j,DET.code);if(JSON.stringify(n)!==JSON.stringify(DET.cnews||null)){DET.cnews=n;renderDetail();}},15*60e3);
+// 有新的即時報價：重算市場位置、同業（同一批公司，換成即時價），必要時更新「目前股價」，再重畫
+function relive(){
+  if(!DET||!DET.hm)return;
+  const where=whereOf(DET.code,DET.hm),S=where[0]&&where[0].S;
+  DET.where=where;DET.pxNote=pxAuto(DET.code,DET.fund,where,DET.hm);
+  if(S)DET.peers=(DET.peers||[]).map(r=>({t:S.tiles.find(x=>x[0]===r.t[0])||r.t,f:r.f}));
+  renderDetail();
+}
+if(LVQ()){BN.liveq.want(['TW','US']);BN.liveq.on(()=>relive());}
+async function loadDetail(code,fund){
+  const hm=await getHM();PXAUTO=null;
+  if(!hm||!hm.sets){DET={code,fund,hm:null,where:[],peers:[]};renderDetail();return;}
+  const where=whereOf(code,hm),pxNote=pxAuto(code,fund,where,hm);
   // 同業：與本股同一個指數分頁、同一產業，市值最大的 8 家（不含本股）
   let peers=[];
   if(where.length){const w=where[0];peers=w.S.tiles.filter(x=>x[2]===w.t[2]&&x[0]!==code).slice(0,8);}
@@ -328,8 +372,9 @@ async function loadDetail(code,fund){
     if(ix&&ix.latest){const rp=await fetch('data/daily/'+ix.latest+'.json',{cache:'no-store'}).then(r=>r.ok?r.json():null);
       const row=rp&&rp.mega&&(rp.mega.rows||[]).find(r=>String(r.t).replace('.','-').toUpperCase()===key);if(row)mega={date:ix.latest,session:rp.session,row};}}catch(e){}
   if(ADR[code]&&!(fund&&(fund.news||[]).length)){const f2=await getFund(ADR[code]);if(f2&&(f2.news||[]).length)adr={code:ADR[code],news:f2.news};}
-  DET={code,fund,hm,where,pxNote,mega,adr,peers:peers.map((x,i)=>({t:x,f:pf[i]}))};
-  renderDetail();
+  const cnews=coNews(await getNCO(),code);
+  DET={code,fund,hm,where,pxNote,mega,adr,cnews,peers:peers.map((x,i)=>({t:x,f:pf[i]}))};
+  if(LVQ()&&BN.liveq.codes().length){relive();}else renderDetail();   // 讀同業資料的這段時間可能已經有新的即時報價
   if(window.BN&&BN.company)BN.company.render(code,{toc:buildToc});
   buildToc();
 }
@@ -373,9 +418,9 @@ function renderDetail(){
     const cl=v=>v>0?'pos':v<0?'neg':'';const x0=where[0];
     const rel=x0.t[4]!=null&&x0.idx!=null?'當日 '+pctC(x0.t[4])+'，'+(x0.t[4]>x0.idx?'強於':x0.t[4]<x0.idx?'弱於':'等於')+spz(x0.S.name)+'市值加權 '+pctC(x0.idx)+(x0.sec!=null?'、同產業（'+x0.t[2]+' '+x0.secN+' 檔）加權 '+pctC(x0.sec):'')+'。':'';
     $('dPos').innerHTML='<h3>市值與指數排名、當日漲跌</h3><p>'+esc(name)+' 市值 <b>'+capS(x0.t[3],x0.S.cur)+'</b>，在'+esc(spz(x0.S.name))+'排第 <b>'+x0.rank+'</b> 名（占指數市值 '+(x0.wt!=null?x0.wt.toFixed(2)+'%':'—')+'）；'+rel+'</p>'+
-      '<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">指數（產業）</th><th>交易日</th><th>市值</th><th>市值排名</th><th>占指數市值</th><th>收盤</th><th>單日漲跌</th><th>漲幅排名</th><th>指數加權漲跌</th><th>同產業加權漲跌</th></tr></thead><tbody>'+
-      where.map(x=>'<tr><td class="l">'+esc(x.S.name)+'（'+esc(x.t[2])+'）</td><td>'+esc(x.S.session||DET.hm.session)+'</td><td>'+capS(x.t[3],x.S.cur)+'</td><td>第 '+x.rank+'／'+x.n+'</td><td>'+(x.wt!=null?x.wt.toFixed(2)+'%':'—')+'</td><td>'+(x.t[5]==null?'—':fp(x.t[5]))+'</td><td class="'+cl(x.t[4])+'">'+pctC(x.t[4])+'</td><td>'+(x.chRank?'第 '+x.chRank+'／'+x.chN:'—')+'</td><td class="'+cl(x.idx)+'">'+pctC(x.idx)+'</td><td class="'+cl(x.sec)+'">'+pctC(x.sec)+'</td></tr>').join('')+
-      '</tbody></table></div><p class="small">資料：每日市場分析的市值熱力圖（同一份資料）；加權漲跌＝以市值加權的成分股平均漲跌。<a href="daily.html">回到熱力圖 ›</a></p>';
+      '<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">指數（產業）</th><th>交易日</th><th>市值</th><th>市值排名</th><th>占指數市值</th><th>'+(where.some(x=>x.S.live)?'價格':'收盤')+'</th><th>單日漲跌</th><th>漲幅排名</th><th>指數加權漲跌</th><th>同產業加權漲跌</th></tr></thead><tbody>'+
+      where.map(x=>'<tr><td class="l">'+esc(x.S.name)+'（'+esc(x.t[2])+'）</td><td>'+esc(x.S.session||DET.hm.session)+(x.S.lq&&x.S.lq[code]?'<br><small>'+esc(BN.liveq.tag(x.S.lq[code]))+'</small>':'')+'</td><td>'+capS(x.t[3],x.S.cur)+'</td><td>第 '+x.rank+'／'+x.n+'</td><td>'+(x.wt!=null?x.wt.toFixed(2)+'%':'—')+'</td><td>'+(x.t[5]==null?'—':fp(x.t[5]))+'</td><td class="'+cl(x.t[4])+'">'+pctC(x.t[4])+'</td><td>'+(x.chRank?'第 '+x.chRank+'／'+x.chN:'—')+'</td><td class="'+cl(x.idx)+'">'+pctC(x.idx)+'</td><td class="'+cl(x.sec)+'">'+pctC(x.sec)+'</td></tr>').join('')+
+      '</tbody></table></div><p class="small">資料：每日市場分析的市值熱力圖（同一份資料）'+(where.some(x=>x.S.live)?'；開盤期間換成即時成交（台股盤中、美股盤中與盤前盤後，每 30～60 秒自動更新），漲跌對前一交易日收盤、市值依價格比例換算':'')+'；加權漲跌＝以市值加權的成分股平均漲跌。<a href="daily.html">回到熱力圖 ›</a></p>';
   }else $('dPos').innerHTML='<p class="small">'+esc(code)+' 不在熱力圖的四個指數（那斯達克 100、標普 500、費城半導體、台灣 50）內，沒有市場位置與同業資料。</p>';
   // ---- 同業比較：本益比長條圖＋表 ----
   if(peers&&peers.length){
@@ -392,11 +437,11 @@ function renderDetail(){
           sv+='<rect class="'+(r.me?'me':'ot')+'" x="'+L+'" y="'+(y+5)+'" width="'+Math.max(1,X(v)-L).toFixed(1)+'" height="'+(bh-10)+'" rx="2"><title>'+esc(r.t[0])+'：'+v0.toFixed(1)+' 倍</title></rect>'+
             (gg<1?'':'<text class="viz-lbl" x="'+(X(v)+6).toFixed(1)+'" y="'+(y+bh/2+4)+'" font-size="12.5"'+(r.me?' font-weight="700"':'')+'>'+v0.toFixed(1)+'</text>');});
         return sv+'</svg>';};
-      g='<div class="fig"><p class="ftitle">同業本益比（'+esc(w.S.session||DET.hm.session)+' 收盤 ÷ 近四季 EPS，倍）'+(peMed!=null?'｜虛線＝同業中位數 '+peMed.toFixed(1)+' 倍':'')+'</p>'+svgP(null)+'<p class="fnote">金色＝'+esc(code)+'、灰色＝同業（同一指數、同一產業市值最大的 '+peers.length+' 家）；本益比為負或沒有資料者不畫。</p></div>';}
+      g='<div class="fig"><p class="ftitle">同業本益比（'+esc(w.S.session||DET.hm.session)+(w.S.live?' 最新價格':' 收盤')+' ÷ 近四季 EPS，倍）'+(peMed!=null?'｜虛線＝同業中位數 '+peMed.toFixed(1)+' 倍':'')+'</p>'+svgP(null)+'<p class="fnote">金色＝'+esc(code)+'、灰色＝同業（同一指數、同一產業市值最大的 '+peers.length+' 家）；本益比為負或沒有資料者不畫。</p></div>';}
     const body=rows.map(r=>{const pe=peOf(r.f,r.t[5]),gm=gMid(r.f),pg=pegOf(pe,gm),gi=(r.f&&r.f.growth_inputs)||{};const a1=gi.analyst_this_year,a2=gi.analyst_next_year;
       return '<tr'+(r.me?' class="peer-me"':'')+'><td class="l">'+(r.me?esc(r.t[0]):'<a href="#code='+encodeURIComponent(r.t[0])+'" data-code="'+esc(r.t[0])+'">'+esc(r.t[0])+'</a>')+'</td><td class="l">'+esc(r.t[1])+'</td><td>'+(r.t[3]!=null?capS(r.t[3],cur):'—')+'</td><td>'+(pe!=null?pe.toFixed(1):'—')+'</td><td>'+(gm!=null?gm.toFixed(1)+'%':'—')+'</td><td>'+(pg!=null?pg.toFixed(2):'—')+'</td><td>'+(a1!=null||a2!=null?(a1!=null?(a1*100).toFixed(1)+'%':'—')+'／'+(a2!=null?(a2*100).toFixed(1)+'%':'—'):'—')+'</td><td class="'+(r.t[4]>0?'pos':r.t[4]<0?'neg':'')+'">'+pctC(r.t[4])+'</td></tr>';}).join('');
     $('dPeer').innerHTML='<h3>同業比較（'+esc(w.t[2])+'）</h3>'+g+'<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">公司</th><th>市值</th><th>本益比</th><th>成長率中點</th><th>PEG</th><th>分析師 EPS 成長<br>本年度／明年度</th><th>單日漲跌</th></tr></thead><tbody>'+body+'</tbody></table></div>'+
-      '<p class="small">本益比＝'+esc((w.S.session||DET.hm.session))+' 收盤 ÷ 近四季 EPS（EPS 來自基本面資料，每週日更新）；成長率中點＝本站自動帶入的成長率區間（最低～最高）的中點；PEG＝本益比 ÷ 成長率中點，小於 1 常被視為相對便宜，但成長率是預估值。'+(below!=null&&pes.length>1?esc(code)+' 的本益比在 '+pes.length+' 家中由低到高排第 '+(below+1)+'。':'')+'點同業代號可直接切換分析。</p>';
+      '<p class="small">本益比＝'+esc((w.S.session||DET.hm.session))+(w.S.live?' 最新價格（開盤期間為即時成交）':' 收盤')+' ÷ 近四季 EPS（EPS 來自基本面資料，每週日更新）；成長率中點＝本站自動帶入的成長率區間（最低～最高）的中點；PEG＝本益比 ÷ 成長率中點，小於 1 常被視為相對便宜，但成長率是預估值。'+(below!=null&&pes.length>1?esc(code)+' 的本益比在 '+pes.length+' 家中由低到高排第 '+(below+1)+'。':'')+'點同業代號可直接切換分析。</p>';
     if(window.BN&&BN.play)BN.play.scan($('dPeer'));
     $('dPeer').querySelectorAll('a[data-code]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const c=a.dataset.code;$('code').value=c;history.replaceState(null,'','#code='+c);loadCode(c);window.scrollTo({top:0,behavior:'smooth'});}));
   }else $('dPeer').innerHTML='';
@@ -432,15 +477,17 @@ function renderDetail(){
    const rel=nw.filter(n=>hit(n.t)),oth=nw.filter(n=>!hit(n.t));
    const li=n=>'<li><a href="'+esc(n.u)+'" target="_blank" rel="noopener">'+esc(n.t)+'</a><small>'+esc(n.p||'')+(n.d?'｜'+esc(n.d):'')+'</small></li>';
    let h='<h3>最新新聞</h3>';
+   if(DET.cnews&&DET.cnews.items.length){const C=DET.cnews,hh=s=>{const z=new Date(s*1000+8*36e5);return String(z.getUTCMonth()+1)+'/'+z.getUTCDate()+' '+String(z.getUTCHours()).padStart(2,'0')+':'+String(z.getUTCMinutes()).padStart(2,'0');};
+     h+='<p class="small"><b>即時新聞</b>（Google 新聞，每小時更新；最近一次抓取：台北 '+hh(C.at)+'，'+ago(C.at)+'）</p><ul class="news">'+C.items.map(n=>'<li><a href="'+esc(n.u)+'" target="_blank" rel="noopener">'+esc(n.t)+'</a><small>'+esc(n.s||'')+'｜'+hh(n.at)+'（'+ago(n.at)+'）</small></li>').join('')+'</ul>';}
    if(DET.mega){const r=DET.mega.row;h+='<div class="note navy"><p><b>每日市場分析（'+esc(DET.mega.date)+'，美股 '+esc(DET.mega.session)+' 收盤）</b></p><p><b>新聞</b>　'+esc(r.news)+'</p><p><b>可能影響</b>　'+esc(r.impact)+'</p>'+
      ((r.win||[]).length?'<p><b>受惠</b>　'+r.win.map(esc).join('、')+'</p>':'')+((r.lose||[]).length?'<p><b>受害</b>　'+r.lose.map(esc).join('、')+'</p>':'')+'<p class="small"><a href="daily.html#m-'+esc(String(r.t).replace(/\W/g,''))+'">看當天完整分析 ›</a></p></div>';}
    if(nw.length){h+=(src?'<p class="small">'+src+'</p>':'');
      h+=rel.length?'<ul class="news">'+rel.map(li).join('')+'</ul>':'<p class="small">本週收錄的 '+nw.length+' 則 Yahoo 新聞，標題都沒有直接提到 '+esc(name)+'。</p>';
      if(oth.length)h+='<details style="margin-top:8px"><summary class="small">其他 '+oth.length+' 則市場新聞（Yahoo 依代號搜尋，標題沒有直接提到 '+esc(name)+'）</summary><ul class="news">'+oth.map(li).join('')+'</ul></details>';}
-   else if(!DET.mega)h+='<p class="small">這檔股票目前沒有收錄新聞。</p>';
+   else if(!DET.mega&&!(DET.cnews&&DET.cnews.items.length))h+='<p class="small">這檔股票目前沒有收錄新聞。</p>';
    const q=/^\d/.test(code)?((w&&w.t[1])||name)+' '+code:code+' stock';
-   h+='<p class="small">Yahoo 新聞每週日隨基本面資料更新；每日市場分析只整理市值逾一兆美元的企業。更即時的消息：<a href="https://news.google.com/search?q='+encodeURIComponent(q)+'&hl=zh-TW&gl=TW&ceid=TW:zh-Hant" target="_blank" rel="noopener">Google 新聞搜尋「'+esc(q)+'」›</a>。試算參數不依新聞情緒調整。</p>';
-   $('dNews').innerHTML=fund||DET.mega||nw.length?h:'';}
+   h+='<p class="small">即時新聞每小時更新，涵蓋市值逾一兆美元的企業與那斯達克 100、台灣 50 成分股（標題須提到公司名稱）；Yahoo 新聞每週日隨基本面資料更新；每日市場分析只整理市值逾一兆美元的企業。其他公司或更即時的消息：<a href="https://news.google.com/search?q='+encodeURIComponent(q)+'&hl=zh-TW&gl=TW&ceid=TW:zh-Hant" target="_blank" rel="noopener">Google 新聞搜尋「'+esc(q)+'」›</a>。試算參數不依新聞情緒調整。</p>';
+   $('dNews').innerHTML=fund||DET.mega||nw.length||(DET.cnews&&DET.cnews.items.length)?h:'';}
 }
 $('cf').addEventListener('submit',e=>{e.preventDefault();loadCode($('code').value);});
 {const m=location.hash.match(/code=([0-9A-Za-z.-]+)/);if(m){$('code').value=m[1];loadCode(m[1]);}}

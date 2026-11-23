@@ -119,15 +119,16 @@
     const u = LT.resolve(r.code, U), off = r.off ? ' <small class="muted">｜不列入計算</small>' : '';
     if (!u) { cell.innerHTML = '<span class="neg">找不到這個代號</span>' + off; return; }
     if (u.k === 'C') { cell.innerHTML = '<b>' + esc(u.n) + '</b> <small>填金額' + (u.cur === 'USD' ? '（美元，依匯率 ' + (FX ? nf(FX, 3) : '—') + ' 換算）' : '（元）') + '</small>' + off; return; }
-    cell.innerHTML = '<b>' + esc(u.n) + '</b> <small>' + esc((MK[u.m] || u.m) + (u.k === 'E' ? ' ETF' : '') + '｜' + (u.p ? nf(u.p, u.p < 10 ? 3 : 2) + (u.m === 'US' ? ' 美元' : ' 元') + '（' + (u.d || '') + '）' : '沒有價格')) + '</small>' + off;
+    cell.innerHTML = '<b>' + esc(u.n) + '</b> <small>' + esc((MK[u.m] || u.m) + (u.k === 'E' ? ' ETF' : '') + '｜' + (u.p ? nf(u.p, u.p < 10 ? 3 : 2) + (u.m === 'US' ? ' 美元' : ' 元') + '（' + MH.when(u) + '）' : '沒有價格')) + '</small>' + off;
   }
 
   // ---------- 分析 ----------
   function schedule() { clearTimeout(timer); timer = setTimeout(run, 300); }
+  let seq = 0;   // 只畫最後一次要求的結果（使用者修改與即時報價更新可能同時在算）
+  async function redraw() { if (!U) return; const k = ++seq, R = await MH.compute(st.rows); if (k === seq) render(R); }
   async function run() {
     await save();
-    if (!U) return;
-    render(await MH.compute(st.rows));
+    await redraw();
   }
   // 公司名稱縮短：去掉 Inc.、Corporation、Class A 等尾綴，太長加「…」
   const SUF = /[,\s]+(Inc\.?|Incorporated|Corporation|Corp\.?|Co\.?|Company|Ltd\.?|Limited|plc|PLC|N\.?V\.?|S\.?A\.?|AG|SE|Holdings?|Group|Class [A-C]|Cl [A-C]|CL [A-C]|ADR|The)$/i;
@@ -201,7 +202,7 @@
       '<div class="tile"><div class="k">現金占比</div><div class="v">' + pc(R.cash) + '</div><div class="s">股票曝險 ' + pc(R.stockExp) + (R.levExtra > 0.0005 ? '（含槓桿額外 ' + pc(R.levExtra) + '）' : '') + '</div></div></div>';
     // 明細
     h += '<h3>持有明細</h3><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">代號</th><th class="l">名稱</th><th>股數／金額</th><th>價格（日期）</th><th>市值（台幣）</th><th>占比</th><th>平均成本</th><th>未實現損益</th></tr></thead><tbody>' +
-      lines.map(x => { const a = x.a, u = U.get(a.code) || {}; return '<tr><td class="l"><b>' + esc(a.code) + '</b></td><td class="l">' + esc(a.name) + '</td><td>' + qty(a.v) + '</td><td>' + (a.kind === 'C' ? '—' : nf(a.px, a.px < 10 ? 3 : 2) + (a.cur === 'USD' ? ' 美元' : ' 元') + '<br><small>' + esc(u.d || '') + '</small>') + '</td><td>' + twd(a.value) + '</td><td>' + pc(a.w) + '</td><td>' + (x.c > 0 ? nf(x.c, 2) : '—') + '</td><td class="' + (x.pl > 0 ? 'pos' : x.pl < 0 ? 'neg' : '') + '">' + (x.pl == null ? '—' : (x.pl >= 0 ? '+' : '−') + nf(Math.abs(Math.round(x.pl))) + '<br><small>' + sg(x.plp) + '</small>') + '</td></tr>'; }).join('') +
+      lines.map(x => { const a = x.a, u = U.get(a.code) || {}; return '<tr><td class="l"><b>' + esc(a.code) + '</b></td><td class="l">' + esc(a.name) + '</td><td>' + qty(a.v) + '</td><td>' + (a.kind === 'C' ? '—' : nf(a.px, a.px < 10 ? 3 : 2) + (a.cur === 'USD' ? ' 美元' : ' 元') + '<br><small>' + esc(MH.when(u)) + '</small>') + '</td><td>' + twd(a.value) + '</td><td>' + pc(a.w) + '</td><td>' + (x.c > 0 ? nf(x.c, 2) : '—') + '</td><td class="' + (x.pl > 0 ? 'pos' : x.pl < 0 ? 'neg' : '') + '">' + (x.pl == null ? '—' : (x.pl >= 0 ? '+' : '−') + nf(Math.abs(Math.round(x.pl))) + '<br><small>' + sg(x.plp) + '</small>') + '</td></tr>'; }).join('') +
       '</tbody></table></div>';
     // 左：配置＋透視；右：資產全貌；下一排：產業、策略對照。每一區都是 3D 圓餅（out.innerHTML 之後由 pies() 畫）
     const hasCo = R.cos.some(c => c.w > 0), hasSec = R.sectors.some(s => s[1] > 0);
@@ -209,7 +210,8 @@
     h += '<div><h3>資產全貌：現金＋透視後的公司</h3><div id="mh-p-mix"></div></div></div>';
     h += '<div class="mh-two"><div><h3>產業分布（股票曝險）</h3>' + (hasSec ? '<div id="mh-p-sec"></div>' : '<p class="small">—</p>') + '</div>';
     h += '<div><h3>' + (targets && targets.list && targets.list.length ? '和 ' + targets.list.map(t => esc(t.id)).join('、') + ' 本月目標比較' : '和策略本月目標比較') + '</h3>' + strategy(R) + '</div></div>';
-    h += '<p class="small">說明：價格取各來源中日期最新的收盤（證交所／櫃買中心、Yahoo Finance、熱力圖、投資組合透視價格檔），日期列在價格下方；ETF 依發行商公布的持股拆解，槓桿 ETF 依倍數放大。以上為依你輸入的數字所做的計算，不構成投資建議。</p>';
+    const lv = R.assets.filter(a => { const u = U.get(a.code) || {}; return u.live && u.live.ph !== 'close'; }).length;
+    h += '<p class="small">說明：價格用最新的即時成交（台股盤中、美股盤中與盤前盤後，每 30～60 秒自動更新' + (lv ? '；目前 ' + lv + ' 檔是即時價' : '') + '），沒有即時成交時用各來源中日期最新的收盤（證交所／櫃買中心、Yahoo Finance、熱力圖、投資組合透視價格檔），日期與時間列在價格下方；美元兌台幣 ' + (FX ? nf(FX, 3) : '—') + '（' + esc(MH.fxWhen()) + '）；ETF 依發行商公布的持股拆解，槓桿 ETF 依倍數放大。以上為依你輸入的數字所做的計算，不構成投資建議。</p>';
     out.innerHTML = h;
     pies(R, lines);
   }
@@ -264,7 +266,9 @@
     await Promise.race([first, new Promise(r => setTimeout(r, 4000))]);
     drawRows(); bind(); note();
     if (!firstDone) root.inert = true;   // 連線很慢：先顯示這台存的資料，但等第一次同步有結果才開放編輯（最久約 12 秒），免得剛打的字和雲端那份互相覆蓋
-    try { const D = await MH.data(); U = D.U; FX = D.FX.rate; st.rows.forEach((r, i) => info(i)); await run(); }
+    try { const D = await MH.data(); U = D.U; FX = D.FX.rate; st.rows.forEach((r, i) => info(i)); await run();
+      // 即時報價（assets/liveq.js）：每 30～60 秒有新成交就重算市值、損益與差額（不重新存檔）
+      MH.onLive(() => { FX = D.FX.rate; st.rows.forEach((r, i) => info(i)); redraw(); }); }
     catch (e) { $('mh-out').innerHTML = '<p class="msg err">資料載入失敗：' + esc(e.message || e) + '</p>'; }
   })();
 })();

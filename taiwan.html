@@ -83,7 +83,7 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#lump">單筆投入 100 萬元</a></li><li><a href="#annual">逐年報酬</a></li><li><a href="#mdd">最大回撤</a></li><li><a href="#crises">大跌期間表現</a></li><li><a href="#method">計算方法與資料口徑</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="dca.html#six">六種做法的定期定額比較</a></li><li><a href="research.html#crises">美股大幅修正期間（美元計）</a></li><li><a href="data.html">台股資料口徑</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/period.js?v=f4affab552"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/period.js?v=f4affab552"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/liveq.js?v=f326910399"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function(){
 'use strict';
@@ -327,23 +327,33 @@ function render(list){
 }
 
 // ---------- 最新行情 ----------
+// 2026-11-24 站主：所有股價計算都用最新的即時價格 → 開盤期間（台股盤中、美股盤中與盤前盤後）改用即時成交與即時匯率（assets/liveq.js），收盤後回到收盤價
+// 即時資料的交易日比收盤檔新才用；同一天時用收盤檔（官方收盤），只有美股盤後例外（盤後成交比當天收盤新）
+const LQ=()=>window.BN&&BN.liveq;
+const liveOf=(code,mk,d0)=>{const Q=LQ(),q=Q&&Q.get(code,mk);return q&&q.p>0&&q.ses&&(q.ses>(d0||'')||(q.ses===d0&&q.ph==='post'))?q:null;};
 function renderLatest(){
   const host=$('t-latest');if(!host)return;
   if(!LATEST||!LATEST.items||!Object.keys(LATEST.items).length||!MODEL){host.innerHTML='';return;}
-  const Md=MODEL,fxNow=LATEST.fx&&LATEST.fx.rate,lumpOf=k=>{const r=Md.rows.find(x=>x.key===k);return r?r.lump:null;};
-  const rows=[];
+  const Q=LQ(),fl=Q&&Q.fx(),fxLive=!!(fl&&fl.rate>0&&fl.date>=((LATEST.fx||{}).date||'')),fxNow=fxLive?fl.rate:LATEST.fx&&LATEST.fx.rate;
+  const Md=MODEL,lumpOf=k=>{const r=Md.rows.find(x=>x.key===k);return r?r.lump:null;};
+  const rows=[];let nLive=0;
   const push=(name,color,code,lastClose,lump,market,fxEnd)=>{const it=LATEST.items[code];if(!it||!lastClose)return;let pct,note='';
-    if(market==='US'){if(fxNow&&fxEnd){pct=(it[0]*fxNow)/(lastClose*fxEnd)-1;note='美元收盤 × 匯率 '+fxNow.toFixed(3)+'（期末 '+fxEnd.toFixed(3)+'）';}else{pct=it[0]/lastClose-1;note='美元計，未換匯';}}
-    else pct=it[0]/lastClose-1;
-    rows.push({name,color,close:it[0],chg:it[1],us:market==='US',date:LATEST.asof[it[3]||market]||LATEST.asof.TW||'',pct,lumpNow:lump!=null?lump*(1+pct):null,note});};
+    const mk=it[3]||market,d0=LATEST.asof[mk]||LATEST.asof.TW||'',q=liveOf(code,mk,d0),px=q?q.p:it[0];if(q&&q.ph!=='close')nLive++;
+    if(market==='US'){if(fxNow&&fxEnd){pct=(px*fxNow)/(lastClose*fxEnd)-1;note=(q&&q.ph!=='close'?'美元即時價':'美元收盤')+' × '+(fxLive?'即時':'')+'匯率 '+fxNow.toFixed(3)+'（期末 '+fxEnd.toFixed(3)+'）';}else{pct=px/lastClose-1;note='美元計，未換匯';}}
+    else pct=px/lastClose-1;
+    rows.push({name,color,close:px,chg:q?+(q.p-q.ref).toFixed(q.p<10?3:2):it[1],us:market==='US',date:q?q.ses+'<br><small>'+Q.tag(q)+'</small>':d0,pct,lumpNow:lump!=null?lump*(1+pct):null,note});};
   Md.adds.forEach(a=>push(a.label,a.color,a.code,a.data.last_close,lumpOf(a.code),a.market,a.data.fx&&a.data.fx.end13));
   if(BASEJ['0050'])push('0050','var(--s-tw)','0050',BASEJ['0050'].last_close,lumpOf('tw'),'TW');
   if(BASEJ['2330'])push('台積電 2330','var(--s-tsmc)','2330',BASEJ['2330'].last_close,lumpOf('tsmc'),'TW');
-  if(MKT&&MKT.current&&MKT.months&&MKT.months.length){const m0=MKT.months[MKT.months.length-1];let pct=MKT.current.U/m0.U-1,note='美元含息';if(fxNow&&Md.fxEnd){pct=(1+pct)*fxNow/Md.fxEnd-1;note='美元含息 × 匯率 '+fxNow.toFixed(3)+'（期末 '+(Md.official?Md.fxEnd:(+Md.fxEnd).toFixed(3))+'）';}const lq=lumpOf('qqq');rows.push({name:'QQQ',color:'var(--s-qqq)',close:MKT.current.c,chg:null,us:true,date:MKT.current.asof,pct,lumpNow:lq!=null?lq*(1+pct):null,note});}
+  if(MKT&&MKT.current&&MKT.months&&MKT.months.length){const m0=MKT.months[MKT.months.length-1],cu=MKT.current,k=MKT.k>0?MKT.k:cu.U/cu.c;
+    // QQQ 即時：同一個月才用（還原係數 k＝本月還原收盤÷收盤，market.json 同一個定義）；market.json 是收盤後（或部署時）的快照，即時資料同一天或更新就用即時的
+    const Qq=Q&&Q.get('QQQ','US'),q=Qq&&Qq.p>0&&Qq.ses&&Qq.ses>=(cu.asof||'')&&Qq.ses.slice(0,7)===cu.m&&k>0?Qq:null;if(q&&q.ph!=='close')nLive++;
+    let pct=(q?q.p*k:cu.U)/m0.U-1,note='美元含息';if(fxNow&&Md.fxEnd){pct=(1+pct)*fxNow/Md.fxEnd-1;note=(q&&q.ph!=='close'?'美元即時價、':'')+'美元含息 × '+(fxLive?'即時':'')+'匯率 '+fxNow.toFixed(3)+'（期末 '+(Md.official?Md.fxEnd:(+Md.fxEnd).toFixed(3))+'）';}const lq=lumpOf('qqq');
+    rows.push({name:'QQQ',color:'var(--s-qqq)',close:q?q.p:cu.c,chg:q?+(q.p-q.ref).toFixed(2):null,us:true,date:q?q.ses+'<br><small>'+Q.tag(q)+'</small>':cu.asof,pct,lumpNow:lq!=null?lq*(1+pct):null,note});}
   if(!rows.length){host.innerHTML='';return;}
-  host.innerHTML='<div class="tblwrap"><table class="tbl"><caption>最新行情：回測終點 '+END+' 之後至最近交易日（每個交易日收盤後自動更新，'+(LATEST.updated||'').slice(0,10)+'）</caption><thead><tr><th class=l>標的</th><th>最新收盤</th><th>日期</th><th>較 '+END+'（新台幣）</th><th>單筆 100 萬推估至最新 ≈</th></tr></thead><tbody>'+
+  host.innerHTML='<div class="tblwrap"><table class="tbl"><caption>最新行情：回測終點 '+END+' 之後至最新價格（開盤期間每 30～60 秒自動更新為即時成交'+(nLive?'，目前 '+nLive+' 檔是即時價':'')+'；收盤後用收盤價，收盤資料 '+(LATEST.updated||'').slice(0,10)+'）</caption><thead><tr><th class=l>標的</th><th>最新價格</th><th>日期</th><th>較 '+END+'（新台幣）</th><th>單筆 100 萬推估至最新 ≈</th></tr></thead><tbody>'+
     rows.map(r=>'<tr><td class=l>'+sw(r.color)+r.name+(r.note?' <small class="muted">（'+r.note+'）</small>':'')+'</td><td>'+(r.us?'US$ ':'')+(r.close>=100?r.close.toFixed(1):r.close.toFixed(2))+(r.chg!=null?' <small class="'+(r.chg>=0?'pos':'neg')+'">'+(r.chg>=0?'+':'')+r.chg+'</small>':'')+'</td><td>'+r.date+'</td><td>'+cell(r.pct).replace(/^<td>|<\/td>$/g,'')+'</td><td>'+(r.lumpNow!=null?f.big(r.lumpNow):'—')+'</td></tr>').join('')+
-    '</tbody><tfoot><tr><td colspan="5">台股採證交所／櫃買中心收盤價，美股採 Yahoo 收盤價，匯率採 Yahoo TWD=X；回測終點之後的股息未計入（僅以收盤價換算）。「單筆 100 萬推估至最新」＝自 '+Md.start+' 起的期末價值 ×（1 ＋ 終點後漲跌幅）；其餘各表仍以 '+END+' 為終點，每月重算。</td></tr></tfoot></table></div>';
+    '</tbody><tfoot><tr><td colspan="5">開盤期間用即時成交（台股盤中：Yahoo奇摩股市；美股盤中與盤前盤後：Yahoo Finance）與即時匯率（Yahoo TWD=X'+(fxLive?'，'+Q.hhmm(fl.t)+' 更新':'')+'）；收盤後台股採證交所／櫃買中心收盤價，美股採 Yahoo 收盤價；回測終點之後的股息未計入（僅以價格換算）。「單筆 100 萬推估至最新」＝自 '+Md.start+' 起的期末價值 ×（1 ＋ 終點後漲跌幅）；其餘各表仍以 '+END+' 為終點，每月重算。</td></tr></tfoot></table></div>';
 }
 
 // ---------- 載入與起點 ----------
@@ -358,6 +368,7 @@ async function loadAll(){
   LATEST=lt;MKT=mk;if(j0)BASEJ['0050']=j0;if(j1)BASEJ['2330']=j1;
   try{FX=await RB.loadFX();}catch(e){}
   LOADED=true;
+  if(window.BN&&BN.liveq){BN.liveq.want(['TW','US']);BN.liveq.on(()=>renderLatest());}   // 有新的即時報價就重算「最新行情」表（其餘各表仍以回測終點為準）
   if(bt){const m=dataMin();if(m&&m!==TWMIN){TWMIN=m;GRID=null;makePicker();}if(bt.get()<TWMIN){bt.set(TWMIN);return;}}
   render();
 }

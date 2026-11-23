@@ -269,7 +269,7 @@ a.dm-mo:hover{border-color:var(--gold);color:var(--gold)}
   <div class="wrap disc"><h4>免責聲明</h4><p>本站所有績效數字皆為歷史回測，不代表未來報酬，也不構成任何投資建議或要約。槓桿型 ETF 具有高風險，可能在短期內大幅虧損；本站不公開策略的買賣規則，亦不提供個別化建議。使用者應自行評估風險並承擔投資結果。</p><p class="more"><a href="data.html">資料口徑與驗證方法 ›</a></p></div>
   <div class="legal"><div class="wrap"><span>© 2026 BNASDAQ</span><span>回測資料終點 2026-09-30；過去績效不代表未來報酬。</span></div></div>
 </footer>
-<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=286770f832"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/daily-models.js?v=fd3e51f9d6"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/mh-core.js?v=fb75e07da9"></script><script src="assets/mychange.js?v=dfa7a7c184"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=286770f832"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/daily-models.js?v=fd3e51f9d6"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/liveq.js?v=f326910399"></script><script src="assets/mh-core.js?v=85f0ef4592"></script><script src="assets/mychange.js?v=d1d5418c31"></script>
 <script>
 (function(){
 'use strict';
@@ -688,7 +688,7 @@ const everyTxt=L=>{const e=L.every>0?L.every:(L.step>0?L.step:60);return e<50?'�
 let skew=0, liveTimer=0;
 const BUSY={}, AGAIN={}, LASTSLOT={TW:0,US:0};
 // 2026-11-23 每日市場分析的報告也要用美股快照（指數、個股、匯率等最新報價；us.json 的 mb）：不管熱力圖看哪個分頁都持續讀美股，讀到新的就發 bn-live 事件
-(window.BN=window.BN||{}).live=LIVE;
+(window.BN=window.BN||{}).live=LIVE; window.BN.liveOwn=true; window.BN.liveKick=()=>{liveAll().then(liveLoop);};   // 2026-11-24 全站即時報價（assets/liveq.js）在這一頁跟著這裡讀，需要的市場放在 BN.liveWant
 const now=()=>Date.now()+skew;   // skew＝伺服器時間−本機時間：本機時鐘不準時，時間格才不會算錯
 const mkOf=S=>S&&S.market==='TW'?'TW':'US';
 const hhmm=(sec,ss)=>{const z=new Date(sec*1000+8*36e5), p=v=>String(v).padStart(2,'0');return p(z.getUTCHours())+':'+p(z.getUTCMinutes())+(ss?':'+p(z.getUTCSeconds()):'');};   // 台北時間（固定 UTC+8）；ss＝要不要顯示秒
@@ -767,7 +767,7 @@ async function liveTick(mk){
     if((fresh||liveOn(LIVE[mk])||(LIVE[mk]&&LIVE[mk].ext))&&D.sets[cur]&&mkOf(D.sets[cur])===mk) draw();
   }finally{BUSY[mk]=false; if(AGAIN[mk]){AGAIN[mk]=false;liveTick(mk);}}
 }
-const liveMks=()=>{const cm=mkOf(D.sets[cur]||{});return cm==='TW'?['TW','US']:['US'];};   // 熱力圖這個分頁的市場；美股一定要讀（報告的即時報價）
+const liveMks=()=>{const s=new Set([mkOf(D.sets[cur]||{}),'US']);(window.BN.liveWant||[]).forEach(m=>{if(MKT[m])s.add(m);});return ['TW','US'].filter(m=>s.has(m));};   // 熱力圖這個分頁的市場；美股一定要讀（報告的即時報價）；「你的資產變化」持有台股時也讀台股（BN.liveWant）
 async function liveAll(){for(const mk of liveMks()){try{await liveTick(mk);}catch(e){}}}
 function liveLoop(){clearTimeout(liveTimer); if(!D) return;   // 下一次讀的時間：市場盤中時用它的間隔（台股 30 秒），其他時候每分鐘看一次就好；兩個市場取較早的
   const t=now()/1000; let nb=Infinity;

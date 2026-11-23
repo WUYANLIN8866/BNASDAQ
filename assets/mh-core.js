@@ -8,7 +8,8 @@
      data/lt/us-close.json（美股總表全部代號的最新收盤＋漲跌，美股收盤後更新；上面那個檔的美股只有比較頁清單六百多檔）
      data/heatmap/latest.json（指數成分股收盤＋漲跌%）、data/market.json（QQQ 本月每日收盤）
    各市場收盤後由 heatmap-live.yml 的 session 啟動 tw-latest.yml 更新上面兩個檔並重新部署（GitHub 自己的排程在這個 repo 會晚 7～10 小時）。
-   「不列入計算」的列（row.off）在 rows() 會換成空白列：引擎略過它，列號不變。計算交給 assets/lt-engine.js（股數模式）。 */
+   「不列入計算」的列（row.off）在 rows() 會換成空白列：引擎略過它，列號不變。計算交給 assets/lt-engine.js（股數模式）。
+   即時價（2026-11-24）：有載入 assets/liveq.js 的頁面，盤中／盤前／盤後的最新成交與即時匯率會蓋在上面的收盤價上（C.applyLive，規則見下方）。 */
 (function () {
   'use strict';
   if (!window.BN || !BN.lt) return;   // BN.auth 只有加密函式用到（會員頁才載入）
@@ -233,9 +234,47 @@
     const fp = (P && P.fx) || {}, fl = (L && L.fx) || {};
     const FX = (fl.date || '') >= (fp.date || '') && fl.rate ? { rate: fl.rate, date: fl.date, prev: fl.chg != null ? fl.rate - fl.chg : null, src: fl.source || 'Yahoo' }
       : { rate: fp.USDTWD, date: fp.date, prev: null, src: fp.source || '' };
-    D = { U, ALIAS: UNI.alias || {}, FX, E: new Map(), VER: (P && P.updated) || '', UNI, PX: P || {} };
+    D = { U, ALIAS: UNI.alias || {}, FX, FX0: FX, E: new Map(), VER: (P && P.updated) || '', UNI, PX: P || {} };
+    C.applyLive();
     return D;
   };
+  // ---------- 即時價（2026-11-24 站主：所有股價計算都用最新的即時價格）----------
+  // assets/liveq.js 讀到的盤中／盤前／盤後最新成交蓋在上面的收盤價上：
+  //   交易日比收盤資料新才蓋；同一天時收盤資料優先（官方收盤），只有美股盤後例外（盤後成交比當天收盤新）
+  //   前一交易日收盤 pp 換成即時資料的前收（算今日變化用）；盤後的今日變化＝正規時段＋盤後
+  //   每次先把上次蓋過的還原，所以即時資料過期（例如美股盤後結束 15 分鐘後）就自動回到收盤價
+  // 匯率：即時 TWD=X（美股時段的報價板；台股時段的報價板也有）日期不早於收盤檔就用即時的
+  const LVB = new Map();   // 代號 → 蓋之前的 {p, d, pp, src, pr}
+  C.applyLive = () => {
+    if (!D) return 0;
+    LVB.forEach((b, c) => { const u = D.U.get(c); if (u) { Object.assign(u, b); delete u.live; } });
+    LVB.clear(); D.FX = D.FX0;
+    const Q = window.BN && BN.liveq; if (!Q) return 0;
+    let n = 0;
+    Q.codes().forEach(c => {
+      const u = D.U.get(c); if (!u || u.k === 'C') return;
+      const q = Q.get(c, u.m); if (!q || !(q.p > 0) || !q.ses) return;
+      const d0 = u.d || '', same = q.ses === d0;
+      if (!(q.ses > d0 || (same && q.ph === 'post') || !(u.p > 0))) return;
+      LVB.set(c, { p: u.p, d: u.d, pp: u.pp, src: u.src, pr: u.pr });
+      u.p = q.p; u.d = q.ses; u.pp = q.ref > 0 ? q.ref : null; u.src = q.src; u.pr = 9; u.live = q; n++;
+    });
+    const f = Q.fx(), b = D.FX0 || {};
+    if (f && f.rate > 0 && f.date >= (b.date || '')) D.FX = { rate: f.rate, date: f.date, prev: f.prev > 0 ? f.prev : b.prev, src: f.src, live: f };
+    return n;
+  };
+  // 頁面用：開始讀即時快照，有新報價時先套用再呼叫 fn（會員專區、投資組合透視、每日市場分析「你的資產變化」）
+  C.onLive = fn => {
+    const Q = window.BN && BN.liveq; if (!Q) return false;
+    Q.want(['TW', 'US']);
+    const go = () => { if (!D) return; C.applyLive(); try { fn(); } catch (e) { /* 畫面元件自己處理 */ } };
+    Q.on(go);
+    if (Q.codes().length) setTimeout(go, 0);   // 頁面算完之前就已經讀到的即時報價：馬上套用一次
+    return true;
+  };
+  // 價格旁的日期說明：收盤只寫日期；即時寫「日期 盤中 10:15」之類（台北時間）
+  C.when = u => !u ? '' : (u.d || '') + (u.live && window.BN && BN.liveq ? ' ' + BN.liveq.tag(u.live) : '');
+  C.fxWhen = () => !D || !D.FX ? '' : (D.FX.date || '') + (D.FX.live && window.BN && BN.liveq ? ' ' + BN.liveq.hhmm(D.FX.live.t) + ' 即時' : '');
   C.etf = async function etf(code, depth) {
     const d = await C.data();
     if (d.E.has(code) || (depth || 0) > 2) return;
@@ -249,6 +288,7 @@
     const d = await C.data(), rs = C.rows(rows);
     const codes = [...new Set(rs.map(r => LT.norm(r.code)).filter(c => d.U.has(c)))];
     await Promise.all(codes.map(c => C.etf(c)));
+    C.applyLive();
     return LT.compute(rs, { mode: 'shares', U: d.U, E: d.E, fx: d.FX.rate, alias: d.ALIAS });
   };
   window.BN.mh = C;
