@@ -20,7 +20,5 @@ jobs:
             scripts
             data/heatmap
             data/daily
-      - name: Board (pre-market) from the real feed
-        run: python3 scripts/heatmap_live.py once --market US --board pre
-      - name: News (print only, no publish)
-        run: python3 scripts/heatmap_live.py news --print
+      - name: Company news query variants
+        run: python3 scripts/probe_coq.py
