@@ -451,6 +451,9 @@ function ixLive(L,key){const m=IXS[key],q=m&&L.mb.q[m[0]];if(!okQ(q))return null
     const xs=L.mb.x||{},ok=m[1].filter(s=>okQ(xs[s])&&Math.abs(+xs[s][0]/+xs[s][1]-1)<0.25),tmax=Math.max(0,...ok.map(s=>+xs[s][2])),s=ok.find(s=>+xs[s][2]>=tmax-900);
     if(s){const e=xs[s],ec=+e[0]/+e[1]-1;return {v:p*(1+ec),c:ec*100,ph,est:s,t:+e[2],ref:{v:p,c:dc},ix:1};}
     return {v:p,c:dc,ph:'close',t:+q[2],ref:{v:pv},ix:1};}
+  if(isFinite(L.open)&&+q[2]<L.open){   // 盤中卻還是前一交易日的報價（2026-11-23 實測：羅素 2000 在 Yahoo 延遲約 15 分鐘）→ 先用追蹤 ETF 的盤中漲跌推估，避免把上一個交易日的漲跌標成「盤中」
+    for(const s of m[1]){const e=L.mb.q[s];if(okQ(e)&&+e[2]>=L.open){const ec=+e[0]/+e[1]-1;if(Math.abs(ec)<0.25) return {v:p*(1+ec),c:ec*100,ph,est:s,t:+e[2],ref:{v:p},ix:1};}}
+    return {v:p,c:dc,ph:'close',t:+q[2],ref:{v:pv},ix:1};}
   return {v:p,c:dc,ph,t:+q[2],ref:{v:pv},ix:1};}
 function symLive(L,s){const q=L.mb.q[s];if(!okQ(q))return null;const p=+q[0],pv=+q[1];return {v:p,c:(p/pv-1)*100,d:p-pv,t:+q[2],y:!!YLD[s]};}
 function rowLive(L,name){const s=rowSym(name);return !s?null:IXS[s]?ixLive(L,s):symLive(L,s);}
