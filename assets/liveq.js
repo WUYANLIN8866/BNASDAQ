@@ -125,7 +125,23 @@
         return { code, mk, p, ref, chg: p / ref - 1, t: qx, at: L.at, ses: L.session, ph: 'post', close: base, xchg: c / 100, src: (L.src || 'Yahoo Finance') + ' 盤後', stale: L.xstate !== 'closed' && t - L.at > 600 };
       }
     }
-    return fromQ(L, code, mk);
+    return fromQ(L, code, mk) || fromMB(L, code, mk, t);
+  }
+  // 報價板（mb）：q[代號]＝[價格, 前收, 報價時間]、x[代號]＝[盤前／盤後成交, 基準, 時間]；QQQ、SPY、TSM 等也在這裡（快照的 q 沒有時用）
+  function fromMB(L, code, mk, t) {
+    const B = L.mb || {}, v = B.q && B.q[code], w = B.x && B.x[code];
+    const p = Array.isArray(v) ? +v[0] : NaN, prev = Array.isArray(v) ? +v[1] : NaN, qt = Array.isArray(v) ? +v[2] : NaN;
+    const okq = p > 0 && prev > 0 && qt > 0 && !(isFinite(L.open) && qt < L.open - 600);
+    if (L.ext && Array.isArray(w) && +w[0] > 0 && +w[1] > 0 && (L.xstate === 'closed' ? t <= L.xclose + 900 : t - L.at <= 5400) && +w[2] >= L.xopen - 600) {
+      const xp = +w[0], base = +w[1];
+      if (L.ext === 'pre') return { code, mk, p: xp, ref: base, chg: xp / base - 1, t: +w[2], at: L.at, ses: L.session, ph: 'pre', src: (L.src || 'Yahoo Finance') + ' 盤前', stale: L.xstate !== 'closed' && t - L.at > 600 };
+      const ref = okq ? prev : base;
+      return { code, mk, p: xp, ref, chg: xp / ref - 1, t: +w[2], at: L.at, ses: L.session, ph: 'post', close: base, xchg: xp / base - 1, src: (L.src || 'Yahoo Finance') + ' 盤後', stale: L.xstate !== 'closed' && t - L.at > 600 };
+    }
+    if (!okq) return null;
+    const closed = L.state === 'closed';
+    return { code, mk, p, ref: prev, chg: p / prev - 1, t: qt, at: L.at, ses: L.session, ph: closed ? 'close' : 'open', settling: L.state === 'settling',
+      src: (L.src || 'Yahoo Finance') + (closed ? ' 收盤' : ' 即時'), stale: !closed && t - L.at > 600 };
   }
   function fx() {
     let best = null;
@@ -134,7 +150,8 @@
     if (!best || now() / 1000 - best.t > 4 * 86400) return null;
     best.date = tpeDate(best.t); best.src = 'Yahoo TWD=X 即時'; return best;
   }
-  function codes() { const s = new Set(); ['TW', 'US'].forEach(mk => { const L = LIVE[mk]; if (!L) return; Object.keys(L.q || {}).forEach(c => s.add(c)); Object.keys(L.x || {}).forEach(c => s.add(c)); }); return [...s]; }
+  function codes() { const s = new Set(); ['TW', 'US'].forEach(mk => { const L = LIVE[mk]; if (!L) return; Object.keys(L.q || {}).forEach(c => s.add(c)); Object.keys(L.x || {}).forEach(c => s.add(c));
+    Object.keys((L.mb && L.mb.q) || {}).forEach(c => { if (/^[A-Z0-9.-]+$/.test(c)) s.add(c); }); }); return [...s]; }
   function tag(q) {
     if (!q) return '';
     if (q.ph === 'close') return '收盤';

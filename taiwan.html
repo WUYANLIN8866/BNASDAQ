@@ -83,7 +83,7 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#lump">單筆投入 100 萬元</a></li><li><a href="#annual">逐年報酬</a></li><li><a href="#mdd">最大回撤</a></li><li><a href="#crises">大跌期間表現</a></li><li><a href="#method">計算方法與資料口徑</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="dca.html#six">六種做法的定期定額比較</a></li><li><a href="research.html#crises">美股大幅修正期間（美元計）</a></li><li><a href="data.html">台股資料口徑</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/period.js?v=f4affab552"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/liveq.js?v=1375dd68e6"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/period.js?v=f4affab552"></script><script src="assets/rebase.js?v=88b0c5385b"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/compare.js?v=3c2303e9e9"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function(){
 'use strict';
@@ -328,9 +328,9 @@ function render(list){
 
 // ---------- 最新行情 ----------
 // 2026-11-24 站主：所有股價計算都用最新的即時價格 → 開盤期間（台股盤中、美股盤中與盤前盤後）改用即時成交與即時匯率（assets/liveq.js），收盤後回到收盤價
-// 即時資料的交易日比收盤檔新才用；同一天時用收盤檔（官方收盤），只有美股盤後例外（盤後成交比當天收盤新）
+// 即時資料的交易日比收盤檔新才用；同一天時：還在交易（盤中、盤前、盤後）就用即時的，已收盤就用收盤檔（官方收盤）
 const LQ=()=>window.BN&&BN.liveq;
-const liveOf=(code,mk,d0)=>{const Q=LQ(),q=Q&&Q.get(code,mk);return q&&q.p>0&&q.ses&&(q.ses>(d0||'')||(q.ses===d0&&q.ph==='post'))?q:null;};
+const liveOf=(code,mk,d0)=>{const Q=LQ(),q=Q&&Q.get(code,mk);return q&&q.p>0&&q.ses&&(q.ses>(d0||'')||(q.ses===d0&&q.ph!=='close'))?q:null;};
 function renderLatest(){
   const host=$('t-latest');if(!host)return;
   if(!LATEST||!LATEST.items||!Object.keys(LATEST.items).length||!MODEL){host.innerHTML='';return;}
