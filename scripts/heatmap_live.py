@@ -1017,6 +1017,7 @@ class Session:
             pts = [(e, c) for e, c in bars if lo <= e < hi]
             if not pts:
                 continue   # 這個時段還沒有成交
+            p = self.close_of(sym, self.q, kind, p)
             e, c = pts[-1]
             self.x[sym] = [c, p, e]
             if PATHSET is not None and sym not in PATHSET:
@@ -1049,8 +1050,19 @@ class Session:
                     continue
                 pts = [(e, c) for e, c in bars if lo <= e < hi]
                 if pts:
-                    self.mb_x[s] = [pts[-1][1], p, pts[-1][0]]
+                    self.mb_x[s] = [pts[-1][1], self.close_of(s, self.mb_q, kind, p), pts[-1][0]]
         return stat['ok'] > 0
+
+    def close_of(self, sym, qmap, kind, p):
+        """盤後的基準（當天收盤）：正規時段的最後報價（收盤後抓到、報價時間在收盤前 1 分鐘以後）優先，
+        沒有才用走勢 API 的 regularMarketPrice。2026-11-23 實測走勢 API 的 regularMarketPrice 收盤後半小時有一半的代號
+        還停在收盤前的成交（HPE 48.018，正規時段最後報價＝收盤 48.31，盤後漲跌差 0.58 個百分點）。盤前不動（基準＝前一個交易日收盤）。"""
+        if kind != 'post':
+            return p
+        v = qmap.get(sym)
+        if v and v[0] and v[0] > 0 and v[2] and v[2] >= self.sess['close'] - 60:
+            return v[0]
+        return p
 
     def maybe_news(self):
         """新聞一小時更新一次：到時間就抓，放進下一次發布（同一個 commit）；全部來源都失敗就 10 分鐘後再試。"""

@@ -408,6 +408,30 @@ def test_news_co(hm, fails):
           f'標題比對：{got}', fails)
 
 
+def test_post_base(hm, fails):
+    print('【8】盤後基準＝當天收盤（正規時段最後報價）；走勢 API 的 regularMarketPrice 還停在收盤前也不受影響')
+    day = dt.date(2026, 11, 23); syms = [f'S{i:02d}' for i in range(10)]
+    fake = FakeUS(day, syms); fake.liq = {s: 2 for s in syms}
+    stale = set(syms[:5])
+    clock = Clock(ts(day, 16, 20)); pub = MemPub(hm, clock)
+    hm.PATHSET = None; hm.yahoo_batch = fake.batch(clock); hm.yahoo_intraday = lambda b, ysym=None: {}; hm.fetch_news = lambda now=None: None
+    ext = fake.ext(clock)
+    def ext2(b, nonce=None):   # 一半的代號：regularMarketPrice 還是收盤前一分鐘的成交（2026-11-23 實測 HPE 這樣）
+        st, out = ext(b, nonce)
+        for s in list(out):
+            if s in stale:
+                p, t, per, bars = out[s]; out[s] = (fake.px(s, fake.close - 60), t, per, bars)
+        return st, out
+    hm.yahoo_ext = ext2
+    S = hm.Session('US', hm.session('US', clock()), syms, pub, clock=clock, sleep=clock.sleep, t0=clock())
+    S.poll(); S.xkind = 'post'; S.poll_ext('post')
+    bad = [s for s in syms if not (s in S.x and abs(S.x[s][1] - fake.px(s, fake.close)) < 1e-9 and S.q[s][0] == fake.px(s, fake.close))]
+    check(len(S.x) == len(syms) and not bad, f'盤後 {len(S.x)} 檔的基準都是當天收盤（含 {len(stale)} 檔走勢 API 還沒更新的）；不符 {bad}', fails)
+    snap = S.snapshot('post', int(clock()) // S.step, clock())
+    off = [s for s in syms if abs((snap['x'][s][0] / fake.px(s, fake.close) - 1) * 100 - snap['x'][s][1]) > 0.006]
+    check(not off, f'快照的盤後漲跌＝盤後價 ÷ 當天收盤 − 1（逐檔逆算，容許 0.006 個百分點的四捨五入）；不符 {off}', fails)
+
+
 def tw_regression(hm_new, hm_old, fails):
     print('【4a】回歸：台股一整個時段，新舊程式的快照逐份相同')
     day = dt.date(2026, 11, 24)
@@ -474,6 +498,7 @@ def main():
     test_board_news(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new6'), fails)
     test_extras(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new7'), fails)
     test_news_co(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new8'), fails)
+    test_post_base(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new9'), fails)
     old = load(old_path, 'hm_old')
     if hasattr(old, 'yahoo_ext'):
         print('（--old 指的檔案已經是盤前盤後版，略過回歸比對）')
