@@ -47,22 +47,35 @@
   收盤後（台股 +150 秒、美股 +10 分鐘）session 會啟動 tw-latest.yml，把全站的最新收盤價更新到當天並重新部署；
   gate 被外部準時啟動時另外檢查一次：有市場已收盤但收盤價還落後，就補啟動 tw-latest.yml。
 
+每日市場分析頁的即時報價與新聞（2026-11-23 使用者：「每日即時資訊頁面的所有指數跟個股報價還有新聞都要用最新的新聞跟盤前盤後價格及指數點位」、
+「新聞一個小時更新一次就好」）：
+  美股 session 每一格另外抓報價板（指數、VIX、美元指數、殖利率、匯率、原油、黃金、比特幣、推估指數用的 ETF、熱力圖沒有的大型股），
+  放在 us.json 的 mb 欄位（說明見 BOARD）；網頁的指數用 ETF 的盤前盤後漲跌推估點位，個股直接用盤前盤後成交價。
+  新聞（鉅亨網美股、Google 新聞「美股」、CNBC、MarketWatch 的標題與連結）一小時抓一次，寫成分支上的 news.json：
+  交易時段內由兩個市場的 session 順便做（和快照同一個 commit），其餘時間由 .github/workflows/news.yml（每小時）補。
+
 用法：
   python3 scripts/heatmap_live.py gate
   python3 scripts/heatmap_live.py run [--market TW|US]
   python3 scripts/heatmap_live.py once --market TW        # 抓一次、印摘要，不發布（檢查來源用）
+  python3 scripts/heatmap_live.py once --market US --board [pre|post]   # 檢查報價板
+  python3 scripts/heatmap_live.py news [--force|--print]  # 更新新聞（一小時內更新過就不重抓）
 環境變數：GITHUB_TOKEN、GITHUB_REPOSITORY、GITHUB_RUN_ID、GITHUB_OUTPUT、GITHUB_REF_NAME；RELAY（上一棒的 run 編號）、MARKET（指定市場）、
           HM_BUDGET（測試交棒用：一個 job 最多跑幾秒，預設 19200）。
 只用 Python 標準函式庫。"""
 import base64
 import concurrent.futures as cf
 import datetime as dt
+import email.utils
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as XET
 from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -89,7 +102,8 @@ MARKETS = {
                pre=(4, 0), post=(20, 0), xtail=6 * 60, xpstep=900, lead=120 * 60),
 }
 README = ('# heatmap-live\n\n這個分支由 `.github/workflows/heatmap-live.yml` 在開盤期間定時自動覆寫（只留最新一筆 commit），'
-          '內容是市值熱力圖的盤中報價。請勿手動修改；程式在 main 分支的 `scripts/heatmap_live.py`。\n')
+          '內容是市值熱力圖的盤中報價、每日市場分析頁的報價板（us.json 的 mb）與每小時更新的新聞標題（news.json）。'
+          '請勿手動修改；程式在 main 分支的 `scripts/heatmap_live.py`。\n')
 
 
 def log(*a):
@@ -298,6 +312,167 @@ def yahoo_ext(batch, nonce=None):
     return last, {}
 
 
+# ---------- 每日市場分析頁：報價板與新聞（2026-11-23） ----------
+# 使用者：「每日即時資訊頁面的所有指數跟個股報價還有新聞都要用最新的新聞跟盤前盤後價格及指數點位」；「新聞一個小時更新一次就好」。
+# 報價板跟著美股時段（盤前、正規、盤後）每一格抓一次，放在 us.json 的 mb 欄位：
+#   mb.q＝{代號: [現價, 前一交易日收盤, 報價時間]}（同 yahoo_batch，5 日日 K）
+#   mb.x＝{代號: [盤前或盤後成交價, 基準價, 成交時間]}（只在盤前、盤後；算法同 poll_ext：盤前基準＝前收、盤後基準＝當天收盤）
+# 指數本身沒有盤前盤後（Yahoo 的 ^NDX 等只在正規時段更新），網頁用追蹤它的 ETF 的盤前盤後漲跌推估點位：
+#   那斯達克 100→QQQ、費城半導體→SOXQ（成交稀少時改 SOXX）、標普 500→SPY、道瓊→DIA、羅素 2000→IWM、那斯達克綜合→ONEQ（成交稀少時改 QQQ）。
+# 2026-11-23 08:25 美東從 GitHub runner 實測（專案文件 claude/daily-live-quotes-20261123.md）：指數 rmt 停在 11/20 收盤後；
+#   VIX、美元指數、匯率、期貨、比特幣 rmt 是當下；QQQ／SPY／SOXX／IWM 每根 5 分 K 都有盤前成交，SOXQ 25 分鐘內有 20 根、ONEQ 只有 4 根；
+#   ^TNX／^TYX 只在芝加哥選擇權交易所時段更新（沒有盤前）；2 年期沒有可用的即時來源。
+BOARD = ['^NDX', '^SOX', '^GSPC', '^DJI', '^RUT', '^IXIC', '^VIX', 'DX-Y.NYB', '^TNX', '^TYX', '^FVX', 'JPY=X', 'EURUSD=X', 'TWD=X',
+         'CL=F', 'BZ=F', 'GC=F', 'BTC-USD', 'QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT', '2222.SR']
+BOARD_EXT = ['QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT']   # 盤前盤後要看成交的：推估指數用的 ETF、熱力圖裡沒有的大型股
+NEWS_FILE, NEWS_EVERY = 'news.json', 3600   # 新聞一小時更新一次（交易時段內由 session 順便做；其他時間由 news.yml 補）
+NEWS_SRC = [   # (語言, 來源名稱, 格式, 網址)；2026-11-23 從 GitHub runner 實測都回 200
+    ('zh', '鉅亨網', 'cnyes', 'https://api.cnyes.com/media/api/v1/newslist/category/us_stock?limit=30'),
+    ('zh', 'Google 新聞', 'rss', 'https://news.google.com/rss/search?q=%E7%BE%8E%E8%82%A1%20when%3A1d&hl=zh-TW&gl=TW&ceid=TW%3Azh-Hant'),
+    ('en', 'CNBC', 'rss', 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=100003114'),
+    ('en', 'MarketWatch', 'rss', 'https://feeds.content.dowjones.io/public/rss/mw_topstories'),
+]
+
+# 兆元企業各自的最新新聞（每日市場分析第 5 節的卡片）：Google 新聞（繁中）搜尋，近 2 天、每家最多 3 則。
+# 公司清單＝最新一份每日報告的 mega.rows（data/daily）；報告上的公司不在這張表裡就用報告上的名稱搜尋。
+NEWS_CO_Q = {   # 代號: (Google 新聞搜尋字串, 標題必須含其中一個詞, 標題含這些詞就不要)；2026-11-23 在 GitHub runner 比較過「名稱」與「intitle:名稱」，intitle 版相關度較高
+    'AAPL': ('intitle:蘋果 OR intitle:Apple', ('蘋果', 'apple', 'aapl', 'iphone'), ('蘋果糖', '蘋果日報', '蘋果派', '蘋果汁')),
+    'MSFT': ('intitle:微軟 OR intitle:Microsoft', ('微軟', 'microsoft', 'msft'), ()),
+    'GOOGL': ('intitle:Google OR intitle:谷歌 OR intitle:Alphabet', ('google', '谷歌', 'alphabet', 'googl'), ()),
+    'NVDA': ('intitle:輝達 OR intitle:Nvidia', ('輝達', 'nvidia', 'nvda'), ()),
+    'AMZN': ('intitle:亞馬遜 OR intitle:Amazon', ('亞馬遜', 'amazon', 'amzn'), ()),
+    'SPCX': ('intitle:SpaceX', ('spacex', 'spcx'), ()),
+    'TSM': ('intitle:台積電 (ADR OR 股價 OR 營收 OR 法說 OR 美股)', ('台積電', 'tsmc', 'tsm'), ()),
+    'AVGO': ('intitle:博通 OR intitle:Broadcom', ('博通', 'broadcom', 'avgo'), ()),
+    'META': ('intitle:Meta', ('meta',), ()),
+    'TSLA': ('intitle:特斯拉 OR intitle:Tesla', ('特斯拉', 'tesla', 'tsla'), ()),
+    'LLY': ('intitle:禮來', ('禮來', 'lilly', 'lly'), ()),
+    'BRK.B': ('intitle:波克夏', ('波克夏', 'berkshire', '巴菲特'), ()),
+    'ANT': ('intitle:Anthropic', ('anthropic',), ()),
+    'WMT': ('intitle:沃爾瑪 OR intitle:Walmart', ('沃爾瑪', 'walmart', 'wmt'), ()),
+    '2222.SR': ('沙烏地阿美 OR 阿美石油 OR Aramco', ('沙烏地', '沙國', '阿美', 'aramco'), ()),   # intitle 版 0 則
+}
+NEWS_CO_MAX, NEWS_CO_AGE = 3, 48 * 3600
+
+
+def q_sym(s):
+    """Yahoo 代號放進網址：^、= 要編碼（回應裡的代號是原樣）。"""
+    return urllib.parse.quote(s, safe='-.')
+
+
+def news_items(kind, name, body):
+    """一個來源的回應 → [{'t': 標題, 'u': 網址, 's': 來源, 'at': UNIX 秒}]。只留標題與連結，不轉載內文。"""
+    out = []
+    if kind == 'cnyes':
+        j = json.loads(body)
+        for a in ((j.get('items') or {}).get('data') or []):
+            t, nid, at = str(a.get('title') or '').strip(), a.get('newsId'), num(a.get('publishAt'))
+            if t and nid and at:
+                out.append({'t': t, 'u': f'https://news.cnyes.com/news/id/{int(nid)}', 's': name, 'at': int(at)})
+        return out
+    root = XET.fromstring(body)
+    for it in root.iter('item'):
+        t, u, pd = (it.findtext('title') or '').strip(), (it.findtext('link') or '').strip(), it.findtext('pubDate')
+        src = it.find('source')
+        s = (src.text or '').strip() if src is not None and src.text else name
+        if s != name and t.endswith(' - ' + s):   # Google 新聞的標題後面帶「 - 媒體名稱」
+            t = t[:-(len(s) + 3)].strip()
+        try:
+            at = int(email.utils.parsedate_to_datetime(pd).timestamp())
+        except Exception:
+            continue
+        if t and u.startswith('https://'):
+            out.append({'t': t, 'u': u, 's': s, 'at': at})
+    return out
+
+
+def news_key(t):
+    return re.sub(r'\W+', '', t).lower()[:48]
+
+
+def mega_list():
+    """最新一份每日市場分析報告列的兆元企業 [(代號, 名稱)]；讀不到報告就用 NEWS_CO_Q 的公司。"""
+    try:
+        d = os.path.join(ROOT, 'data', 'daily')
+        latest = json.load(open(os.path.join(d, 'index.json'), encoding='utf-8'))['latest']
+        rows = json.load(open(os.path.join(d, latest + '.json'), encoding='utf-8'))['mega']['rows']
+        out = [(str(r['t']), str(r.get('n') or r['t'])) for r in rows if r.get('t')]
+        if out:
+            return out[:20]
+    except Exception:
+        pass
+    return [(k, k) for k in NEWS_CO_Q]
+
+
+def fetch_co_news(now):
+    """{代號: [最多 3 則]}；某家抓不到或沒有新聞就不放。"""
+    def one(tn):
+        tk, nm = tn
+        q, need, bad = NEWS_CO_Q.get(tk) or ('intitle:' + nm, (nm.lower(),), ())
+        url = 'https://news.google.com/rss/search?' + urllib.parse.urlencode({'q': q + ' when:2d', 'hl': 'zh-TW', 'gl': 'TW', 'ceid': 'TW:zh-Hant'})
+        try:
+            st, body = http(url, headers={'Accept': 'application/rss+xml, application/xml, text/xml, */*', 'Accept-Language': 'zh-TW,zh;q=0.9'}, timeout=12)
+            items = news_items('rss', 'Google 新聞', body)
+        except Exception:
+            return tk, None
+        seen, keep = set(), []
+        for it in sorted(items, key=lambda x: -x['at']):
+            k, low = news_key(it['t']), it['t'].lower()
+            if k in seen or now - it['at'] > NEWS_CO_AGE or it['at'] > now + 600 or not any(w in low for w in need) or any(w in low for w in bad):
+                continue
+            seen.add(k); keep.append(it)
+        return tk, keep[:NEWS_CO_MAX]
+    out = {}
+    with cf.ThreadPoolExecutor(4) as ex:
+        for tk, items in ex.map(one, mega_list()):
+            if items:
+                out[tk] = items
+    return out
+
+
+def fetch_news(now=None):
+    """抓全部新聞來源，合併成 {'schema','at','zh':[…],'en':[…],'co':{代號:[…]},'src':[…]}；綜合新聞全部失敗回 None。
+    依時間新到舊，標題相同的只留一則，只留 36 小時內；中文最多 30 則、英文最多 20 則；co＝兆元企業各自最多 3 則（fetch_co_news）。"""
+    now = now or time.time()
+    out, srcs = {'zh': [], 'en': []}, []
+    for lang, name, kind, url in NEWS_SRC:
+        try:
+            st, body = http(url, headers={'Accept': 'application/json, application/rss+xml, application/xml, text/xml, */*', 'Accept-Language': 'zh-TW,zh;q=0.9,en;q=0.8'}, timeout=15)
+            items = news_items(kind, name, body)
+            out[lang] += items
+            srcs.append({'n': name, 'ok': True, 'k': len(items)})
+        except Exception as e:  # noqa
+            srcs.append({'n': name, 'ok': False, 'e': repr(e)[:100]})
+    if not out['zh'] and not out['en']:
+        return None
+    for lang, cap in (('zh', 30), ('en', 20)):
+        seen, keep = set(), []
+        for it in sorted(out[lang], key=lambda x: -x['at']):
+            k = news_key(it['t'])
+            if k in seen or now - it['at'] > 36 * 3600 or it['at'] > now + 600:
+                continue
+            seen.add(k); keep.append(it)
+        out[lang] = keep[:cap]
+    try:
+        co = fetch_co_news(now)
+    except Exception as e:  # noqa
+        co = {}
+    srcs.append({'n': 'Google 新聞（兆元企業）', 'ok': bool(co), 'k': sum(len(v) for v in co.values()), 'co': len(co)})
+    return {'schema': 'bnasdaq-news/1', 'at': int(now), 'zh': out['zh'], 'en': out['en'], 'co': co, 'src': srcs}
+
+
+def branch_news_at(pub):
+    """heatmap-live 分支上現有 news.json 的抓取時間（讀不到回 0）。pub 要先 load() 過。"""
+    sha = (getattr(pub, 'keep', None) or {}).get(NEWS_FILE)
+    if not sha or not hasattr(pub, 'call'):
+        return 0
+    try:
+        st, b = pub.call('GET', f'/git/blobs/{sha}')
+        return int(json.loads(base64.b64decode(b.get('content') or '').decode('utf-8')).get('at') or 0) if st == 200 else 0
+    except Exception:
+        return 0
+
+
 # ---------- 台股：Yahoo奇摩股市（主要）、鉅亨網（備援）----------
 def iso_ts(x):
     try:
@@ -402,8 +577,8 @@ class Pub:
         # 其他錯誤（暫時讀不到）：沿用上一次記得的檔案清單，不要因為一次讀取失敗就把另一個市場的檔案從分支上拿掉
         return st
 
-    def publish(self, mk, slot, text, message):
-        """寫 <file>.json 與 <file>-<slot>.json；其餘檔案沿用分支上現有的 blob。成功回 True。
+    def publish(self, mk, slot, text, message, extra=None):
+        """寫 <file>.json 與 <file>-<slot>.json（extra＝同一個 commit 一起寫的其他檔案，例如 news.json）；其餘檔案沿用分支上現有的 blob。成功回 True。
         2026-11-23 起美股盤後（到台北 08:00／09:00）和台股的準備時間會重疊、兩個市場可能同時在發布：
         每次發布前重讀分支（另一個市場剛發布的檔案才不會被這裡記得的舊版本蓋回去），別的市場的時間格檔只刪 10 分鐘以前的。"""
         if self.load() != 200 and not self.keep:
@@ -422,8 +597,18 @@ class Pub:
             return False
         other = [p for p in self.keep if old(p)]
         drop = set(other) | set(mine[:-(KEEP - 1)] if KEEP > 1 else mine)
-        tree = [{'path': p, 'mode': '100644', 'type': 'blob', 'content': c} for p, c in ((f + '.json', text), (f'{f}-{slot}.json', text))]
-        if 'README.md' not in self.keep:
+        files = {f + '.json': text, f'{f}-{slot}.json': text}
+        files.update(extra or {})
+        return self.commit(files, drop, message)
+
+    def put(self, files, message):
+        """只寫指定的檔案（news.yml 更新新聞用），其餘照舊。成功回 True。"""
+        self.load()
+        return self.commit(files, set(), message)
+
+    def commit(self, files, drop, message):
+        tree = [{'path': p, 'mode': '100644', 'type': 'blob', 'content': c} for p, c in files.items()]
+        if 'README.md' not in self.keep and 'README.md' not in files:
             tree.append({'path': 'README.md', 'mode': '100644', 'type': 'blob', 'content': README})
         new = {x['path'] for x in tree}
         tree += [{'path': p, 'mode': '100644', 'type': 'blob', 'sha': s} for p, s in self.keep.items() if p not in new and p not in drop]
@@ -474,13 +659,18 @@ class FilePub:
     def load(self):
         return 200
 
-    def publish(self, mk, slot, text, message):
+    def publish(self, mk, slot, text, message, extra=None):
         f = MARKETS[mk]['file']
         for name in (f + '.json', f'{f}-{slot}.json'):
             open(os.path.join(self.out, name), 'w', encoding='utf-8').write(text)
         mine = sorted(p for p in os.listdir(self.out) if p.startswith(f + '-'))
         for p in mine[:-KEEP]:
             os.remove(os.path.join(self.out, p))
+        return self.put(extra or {}, message)
+
+    def put(self, files, message):
+        for name, text in files.items():
+            open(os.path.join(self.out, name), 'w', encoding='utf-8').write(text)
         return True
 
     def dispatch(self, ref, inputs, workflow=WORKFLOW):
@@ -517,6 +707,10 @@ class Session:
         self.xpath = {}      # 代號 → {時間格: 漲跌（0.01%）}；時間格＝(K 棒時間 − 該時段開始) ÷ xpstep
         self.xpstep = MARKETS[mk].get('xpstep') or 900
         self.xok = 0         # 盤前盤後抓到 Yahoo 正常回應的輪數（判斷休市用：有回應卻沒有當天成交＝休市）
+        # 每日市場分析頁（2026-11-23）：報價板（只有美股）與新聞（兩個市場的 session 都會順便更新，一小時一次）
+        self.mb_q, self.mb_x = {}, {}   # 代號 → [現價, 前收, 時間]；盤前盤後 → [成交價, 基準價, 成交時間]
+        self.news_at = 0     # 分支上的新聞是什麼時候抓的（UNIX 秒）
+        self.extra = {}      # 下一次發布要一起寫的其他檔案（news.json）
 
     def track(self):
         """把這一輪的報價記進當日走勢（只收開盤後到收盤前的報價）。"""
@@ -681,6 +875,44 @@ class Session:
         self.pace(stat)
         return stat['ok'] > 0
 
+    def poll_board(self, kind=None):
+        """每日市場分析頁的報價板（見 BOARD 的說明）。kind＝'pre'／'post'：另外抓 BOARD_EXT 的盤前／盤後成交（算法同 poll_ext）。
+        只有美股呼叫；這一輪沒抓到的代號保留上一輪的值。"""
+        if self.mk != 'US':
+            return False
+        nonce = int(self.clock())
+        got, stat = fetch_us([q_sym(s) for s in BOARD], nonce)
+        for s, v in got.items():
+            self.mb_q[s] = [v[0], v[1], int(v[2])]
+        if kind:
+            s_ = self.sess
+            lo, hi = (s_['pre'], s_['open']) if kind == 'pre' else (s_['close'], s_['post'])
+            gx, _ = fetch_us([q_sym(s) for s in BOARD_EXT], nonce, f=yahoo_ext)
+            for s, (p, t, per, bars) in gx.items():
+                if (kind == 'pre' and t >= s_['pre']) or (kind == 'post' and t < s_['open'] - 60):
+                    continue
+                pts = [(e, c) for e, c in bars if lo <= e < hi]
+                if pts:
+                    self.mb_x[s] = [pts[-1][1], p, pts[-1][0]]
+        return stat['ok'] > 0
+
+    def maybe_news(self):
+        """新聞一小時更新一次：到時間就抓，放進下一次發布（同一個 commit）；全部來源都失敗就 10 分鐘後再試。"""
+        now = self.clock()
+        if now - self.news_at < NEWS_EVERY:
+            return
+        n = fetch_news(now)
+        if n:
+            self.extra[NEWS_FILE] = json.dumps(n, ensure_ascii=False, separators=(',', ':'))
+            self.news_at = now
+            log('新聞更新：中文', len(n['zh']), '則、英文', len(n['en']), '則；', '、'.join(f"{x['n']} {'OK ' + str(x.get('k')) if x['ok'] else '失敗'}" for x in n['src']))
+        else:
+            self.news_at = now - NEWS_EVERY + 600
+            log('新聞來源全部失敗，10 分鐘後再試')
+
+    def branch_news_at(self):
+        return branch_news_at(self.pub)
+
     def poll_tw(self):
         got, src = fetch_tw(self.syms)
         lo = self.sess['open']
@@ -725,14 +957,20 @@ class Session:
             xpp = {sym: [d.get(k) for k in range(0, max(d) + 1)] for sym, d in self.xpath.items() if d and sym in x}
             snap.update({'ext': self.xkind, 'xstate': self.xstate, 'xopen': lo, 'xclose': hi, 'xsrc': 'Yahoo Finance', 'xn': len(x), 'x': x,
                          'xps': self.xpstep, 'xpn': max(1, int(-(-(hi - lo) // self.xpstep))), 'xpp': xpp})
+        if self.mb_q:   # 每日市場分析頁的報價板（見 BOARD）
+            r = lambda v: [round(v[0], 6), round(v[1], 6), int(v[2])]
+            snap['mb'] = {'q': {s: r(v) for s, v in self.mb_q.items()}, 'x': {s: r(v) for s, v in self.mb_x.items()}}
         return snap
 
     def publish(self, state, slot, now):
         snap = self.snapshot(state, slot, now)
         hm = dt.datetime.fromtimestamp(now, ZoneInfo(MARKETS[self.mk]['tz'])).strftime('%Y-%m-%d %H:%M')
         ext = f' {snap["ext"]}-{snap["xstate"]} {snap["xn"]}/{snap["n"]}' if snap.get('ext') else ''   # 盤前盤後：另外寫有成交的檔數
-        ok = self.pub.publish(self.mk, slot, json.dumps(snap, ensure_ascii=False, separators=(',', ':')),
-                              f'heatmap live {self.mk} {hm} {state} {snap["have"]}/{snap["n"]}{ext} run={os.environ.get("GITHUB_RUN_ID", "local")}')
+        msg = f'heatmap live {self.mk} {hm} {state} {snap["have"]}/{snap["n"]}{ext}' + (' +news' if self.extra else '') + f' run={os.environ.get("GITHUB_RUN_ID", "local")}'
+        text = json.dumps(snap, ensure_ascii=False, separators=(',', ':'))
+        ok = self.pub.publish(self.mk, slot, text, msg, extra=self.extra) if self.extra else self.pub.publish(self.mk, slot, text, msg)
+        if ok:
+            self.extra = {}
         return ok, snap
 
     # --- 主迴圈 ---
@@ -743,6 +981,7 @@ class Session:
             (f'、盤後到 {s["post"]}' if self.ext else '') + f'；{len(self.syms)} 檔')
         self.pub.load()
         self.resume()
+        self.news_at = self.branch_news_at()
         if self.ext:
             r = self.run_ext('pre')
             if r != 'done':
@@ -767,7 +1006,7 @@ class Session:
         stop = lambda: s['open'] if kind == 'pre' else s['post'] + xtail   # 行情來源可能調整時段（提早收盤日），每次重算
         if self.clock() >= stop():
             return 'done'
-        self.xkind, self.xstate, self.x, self.xpath, self.xok, fails = kind, 'open', {}, {}, 0, 0
+        self.xkind, self.xstate, self.x, self.xpath, self.xok, self.mb_x, fails = kind, 'open', {}, {}, 0, {}, 0
         if kind == 'post':
             self.every = step
             if self.poll_us():   # 正規時段的收盤價再抓一次：交棒、或上一棒沒發布到收盤那一份時，快照的 q 才會是當天收盤
@@ -785,6 +1024,8 @@ class Session:
                 self.sleep(min(30, max(0.2, nxt - now))); continue
             slot = nxt // step
             ok = self.poll_ext(kind)
+            self.poll_board(kind)
+            self.maybe_news()
             now = self.clock()
             if kind == 'pre' and now >= s['open']:   # 開盤了：盤前最後一份標成結束，交給正規時段（正規時段同一格馬上會再發布一份）
                 self.xstate = 'closed'
@@ -820,7 +1061,7 @@ class Session:
         mk, tail, step = self.mk, MARKETS[self.mk]['tail'], self.step
         if self.ext and self.clock() >= self.sess['close'] + tail:
             return 'closed'   # 美股交棒時已經過了正規時段：收盤那一份與收盤後更新由上一棒做過，直接進盤後
-        self.xkind = None
+        self.xkind, self.mb_x = None, {}
         wait = self.sess['open'] - self.clock()
         if wait > 0:
             log(f'離開盤還有 {wait / 60:.1f} 分鐘，等待中')
@@ -833,6 +1074,8 @@ class Session:
                 self.sleep(min(30, max(0.2, nxt - now))); continue
             slot = nxt // step
             ok = self.poll()
+            self.poll_board()   # 美股才有（每日市場分析頁的報價板）
+            self.maybe_news()
             now = self.clock()
             over = now >= self.sess['close'] + tail
             frozen = bool(self.q) and self.still >= max(10, FREEZE // self.every) and now < self.sess['close']
@@ -953,6 +1196,11 @@ def main():
         syms = universe(mk)
         if cmd == 'once':
             s = Session(mk, sess, syms, None)
+            if '--board' in a:   # 檢查每日市場分析頁的報價板：once --market US --board [pre｜post]
+                i = a.index('--board'); kind = a[i + 1] if len(a) > i + 1 and a[i + 1] in ('pre', 'post') else None
+                ok = s.poll_board(kind); snap = s.snapshot('open', int(time.time()) // s.step, time.time())
+                print(json.dumps({'ok': ok, 'q': len(snap.get('mb', {}).get('q', {})), 'x': len(snap.get('mb', {}).get('x', {})), 'mb': snap.get('mb')}, ensure_ascii=False))
+                return 0
             kind = a[a.index('--ext') + 1] if '--ext' in a else ''   # 檢查盤前盤後來源：once --market US --ext pre｜post
             if kind in ('pre', 'post') and s.ext:
                 s.xkind = kind; ok = s.poll_ext(kind); snap = s.snapshot('pre' if kind == 'pre' else 'closed', int(time.time()) // s.step, time.time())
@@ -972,6 +1220,30 @@ def main():
         res = Session(mk, sess, syms, pub).run()
         note(f'session：{mk} {sess["date"]} 結果', res)
         return 0
+    if cmd == 'news':
+        # 新聞一小時更新一次（2026-11-23 使用者）：交易時段內 session 會順便做；其他時間（台股收盤到美股盤前的空檔、週末）由 .github/workflows/news.yml 呼叫這裡補。
+        # --print：只抓、印出來，不發布（測試用）；--force：不管上次多久前更新都重抓
+        if '--print' in a:
+            n = fetch_news()
+            if not n:
+                print('None'); return 1
+            hh = lambda x: dt.datetime.fromtimestamp(x['at'], ZoneInfo('Asia/Taipei')).strftime('%m-%d %H:%M')
+            print('來源：', json.dumps(n['src'], ensure_ascii=False))
+            for lang in ('zh', 'en'):
+                print(f'{lang} {len(n[lang])} 則；最新 5 則：'); [print('  ', hh(x), x['s'], '｜', x['t'][:70], '｜', x['u'][:60]) for x in n[lang][:5]]
+            print(f'兆元企業 {len(n["co"])} 家：'); [print('  ', k, len(v), '則；', hh(v[0]), v[0]['s'], '｜', v[0]['t'][:60]) for k, v in n['co'].items()]
+            print('news.json 大小', len(json.dumps(n, ensure_ascii=False, separators=(',', ':')).encode()), 'bytes')
+            return 0
+        pub = Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN']); pub.load()
+        age = time.time() - branch_news_at(pub)
+        if age < NEWS_EVERY - 300 and '--force' not in a:
+            note(f'新聞 {age / 60:.0f} 分鐘前才更新過，這次不重抓'); return 0
+        n = fetch_news()
+        if not n:
+            note('新聞來源全部失敗，這次沒有更新'); return 1
+        ok = pub.put({NEWS_FILE: json.dumps(n, ensure_ascii=False, separators=(',', ':'))}, f'news zh={len(n["zh"])} en={len(n["en"])} co={len(n.get("co") or {})} run={os.environ.get("GITHUB_RUN_ID", "local")}')
+        note(f'新聞更新：中文 {len(n["zh"])} 則、英文 {len(n["en"])} 則、兆元企業 {len(n.get("co") or {})} 家，發布{"成功" if ok else "失敗"}；' + '、'.join(f"{x['n']} {'OK ' + str(x.get('k')) if x['ok'] else '失敗'}" for x in n['src']))
+        return 0 if ok else 1
     if cmd == 'close':
         # 2026-11-20：盤中程式是在新分頁（台股全上市／全上櫃）上線前啟動的，收盤快照只有台灣 50 → 同一家公司在不同分頁顯示不同日期的股價。
         # 補救：收盤後抓一次全部代號的收盤報價，發布成當天的 closed 快照（已有的當日走勢保留，缺的用 Yahoo 5 分鐘線補）。已完整就不動。

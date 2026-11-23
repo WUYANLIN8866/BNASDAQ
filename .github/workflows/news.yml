@@ -1,0 +1,39 @@
+name: News for the daily market page
+
+# 每日市場分析頁（daily.html）的「即時新聞」與兆元企業個別新聞：寫到 heatmap-live 分支的 news.json。
+# 台股、美股交易時段內由 heatmap-live 的 session 每小時順便更新；這支補其他時間（夜間、週末）。
+# 一小時內已經更新過就直接結束（scripts/heatmap_live.py news）。GitHub 的排程可能延遲或略過，屬盡力而為。
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '不管上次多久前更新都重抓（填 yes）'
+        required: false
+        default: ''
+
+permissions:
+  contents: write   # 寫 heatmap-live 分支
+
+concurrency:
+  group: daily-news
+  cancel-in-progress: false
+
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts
+            data/heatmap
+            data/daily
+      - name: Fetch headlines and publish news.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FORCE: ${{ inputs.force }}
+        run: python3 scripts/heatmap_live.py news $([ "$FORCE" = "yes" ] && echo --force)

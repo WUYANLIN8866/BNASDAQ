@@ -9,6 +9,8 @@
   2. 休市日（感恩節）：盤前開始 25 分鐘沒有當天成交 → 結束、不發布。
   3. 提早收盤日（感恩節隔天）：依行情來源改成 13:00 收盤、盤後到 17:00。
   4. 回歸：台股整個時段、美股正規時段的快照（q、pp、state…）和加盤前盤後之前的程式（commit c2ce227 的版本，或 --old 指定的檔案）逐份相同。
+  5. 每日市場分析頁（2026-11-23 加）：美股快照的報價板 mb（盤前／盤後 ETF 成交對前收／當天收盤、正規時段指數現價）、
+     新聞 news.json 一小時更新一次（和快照同一個 commit；台股 session 也會更新；來源全掛時 10 分鐘後重試）。
 """
 import base64
 import datetime as dt
@@ -20,6 +22,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import urllib.parse
 from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -51,6 +54,7 @@ class MemPub:
     """記憶體裡的 heatmap-live 分支：發布、讀 blob（交棒接續用）、啟動下一棒都記下來。"""
     def __init__(self, hm, clock):
         self.hm, self.clock, self.files, self.blobs, self.keep, self.log, self.dispatches = hm, clock, {}, {}, {}, [], []
+        self.puts = []   # (時間, {檔名: 內容}) 和快照一起或單獨寫的其他檔案（news.json）
 
     def sha(self, c):
         return hashlib.sha1(c.encode()).hexdigest()
@@ -58,13 +62,20 @@ class MemPub:
     def load(self):
         self.keep = {p: self.sha(c) for p, c in self.files.items()}; return 200
 
-    def publish(self, mk, slot, text, message):
+    def publish(self, mk, slot, text, message, extra=None):
         f = self.hm.MARKETS[mk]['file']
         self.files[f + '.json'] = text; self.files[f'{f}-{slot}.json'] = text; self.blobs[self.sha(text)] = text
         for p in sorted(p for p in self.files if p.startswith(f + '-'))[:-self.hm.KEEP]:
             del self.files[p]
-        self.keep = {p: self.sha(c) for p, c in self.files.items()}
         self.log.append((self.clock(), json.loads(text)))
+        return self.put(extra or {}, message)
+
+    def put(self, files, message):
+        for p, c in files.items():
+            self.files[p] = c; self.blobs[self.sha(c)] = c
+        if files:
+            self.puts.append((self.clock(), dict(files)))
+        self.keep = {p: self.sha(c) for p, c in self.files.items()}
         return True
 
     def call(self, method, path, body=None, tries=2):
@@ -125,7 +136,9 @@ class FakeUS:
     def batch(self, clock):
         def f(b, nonce=None):
             out = {}
-            for s in b:
+            for s in map(urllib.parse.unquote, b):
+                if s not in self.P0:
+                    continue   # 報價板的代號：不在假行情裡就當作抓不到
                 p, t = self.reg(s, clock())
                 out[s] = (p, self.P0[s] * 0.99, t, (self.open, self.close))
             return 200, out
@@ -134,7 +147,9 @@ class FakeUS:
     def ext(self, clock):
         def f(b, nonce=None):
             now, out = clock(), {}
-            for s in b:
+            for s in map(urllib.parse.unquote, b):
+                if s not in self.P0:
+                    continue
                 p, t = self.reg(s, now)
                 bars = [] if self.holiday else [(m, self.px(s, m)) for m in range(self.pre, int(now) // 60 * 60 + 1, 60) if self.traded(s, m) and m <= now]
                 out[s] = (p, t, (self.pre, self.open, self.close, self.post), bars)
@@ -142,11 +157,26 @@ class FakeUS:
         return f
 
 
-def run_day(hm, fake, start, syms, budget=None):
+def fake_news(clock, fail_until=0):
+    """假新聞來源：每次呼叫回一份帶時間的新聞；clock() < fail_until 時模擬全部來源失敗。"""
+    calls = []
+
+    def f(now=None):
+        now = now or clock()
+        calls.append(now)
+        if now < fail_until:
+            return None
+        return {'schema': 'bnasdaq-news/1', 'at': int(now), 'zh': [{'t': f'測試新聞 {int(now)}', 'u': 'https://example.com/a', 's': '測試', 'at': int(now) - 60}], 'en': [], 'src': [{'n': '測試', 'ok': True, 'k': 1}]}
+    f.calls = calls
+    return f
+
+
+def run_day(hm, fake, start, syms, budget=None, news=None):
     clock = Clock(start)
     pub = MemPub(hm, clock)
     hm.PATHSET = None
     hm.yahoo_batch = fake.batch(clock); hm.yahoo_ext = fake.ext(clock); hm.yahoo_intraday = lambda b, ysym=None: {}
+    hm.fetch_news = news(clock) if news else (lambda now=None: None)
     if budget:
         os.environ['HM_BUDGET'] = str(budget)
     res, runs = None, 0
@@ -265,6 +295,53 @@ def test_early_close(hm, fails):
     check(pre and pre[-1]['close'] == fake.close, '盤前就依行情來源把收盤改成 13:00', fails)
 
 
+def test_board_news(hm, fails):
+    print('【5】每日市場分析頁：報價板 mb、每小時新聞（含交棒、來源失敗重試）')
+    day = dt.date(2026, 11, 23)
+    stocks = [f'S{i:02d}' for i in range(20)]
+    board = ['QQQ', 'SPY', '^NDX', 'TSM']   # 假行情裡也有的報價板代號（第 20～23 個：QQQ 流動性 2、SPY 流動性 0、^NDX 流動性 2、TSM 流動性 1）
+    fake = FakeUS(day, stocks + board)
+    fake.liq['^NDX'] = 0   # 指數沒有盤前盤後成交
+    res, runs, pub = run_day(hm, fake, ts(day, 2, 10), stocks, news=lambda clock: fake_news(clock, fail_until=ts(day, 4, 25)))
+    snaps = pub.log
+    pre = [(t, s) for t, s in snaps if s.get('ext') == 'pre']
+    reg = [(t, s) for t, s in snaps if 'ext' not in s and s['state'] == 'open']
+    post = [(t, s) for t, s in snaps if s.get('ext') == 'post']
+    check(all('mb' in s for _, s in snaps), '美股每一份快照都有報價板 mb', fails)
+    t1, s1 = next((t, s) for t, s in pre if t >= ts(day, 8, 0))
+    qx, qq = s1['mb']['x'].get('QQQ'), s1['mb']['q'].get('^NDX')
+    lt = fake.last_trade('QQQ', t1, fake.pre, fake.open)
+    check(qx is not None and abs(qx[0] - lt[1]) < 1e-9 and abs(qx[1] - fake.P0['QQQ']) < 1e-9, f'08:00 盤前：QQQ 成交 {qx and qx[0]}（應 {lt[1]}）、基準＝前收 {fake.P0["QQQ"]}', fails)
+    check(qq is not None and abs(qq[0] - fake.P0['^NDX']) < 1e-9 and qq[2] == fake.prev_t, '盤前：^NDX 還是前一交易日收盤（時間是前一天 16:00）', fails)
+    check('SPY' not in s1['mb']['x'] and '^NDX' not in s1['mb']['x'], '沒有盤前成交的（SPY 流動性 0）與指數不出現在 mb.x', fails)
+    t2, s2 = next((t, s) for t, s in reg if t >= ts(day, 11, 0))
+    qq = s2['mb']['q']['^NDX']
+    check(abs(qq[0] - fake.px('^NDX', t2)) < 1e-6 and not s2['mb']['x'], f'11:00 正規時段：^NDX＝當下價、mb.x 是空的', fails)
+    t3, s3 = next((t, s) for t, s in post if t >= ts(day, 18, 0))
+    qx, lt = s3['mb']['x'].get('QQQ'), fake.last_trade('QQQ', t3, fake.close, fake.post)
+    check(qx is not None and abs(qx[0] - lt[1]) < 1e-9 and abs(qx[1] - fake.px('QQQ', fake.close)) < 1e-9, '18:00 盤後：QQQ 成交對當天收盤', fails)
+    check(abs(s3['mb']['q']['^NDX'][0] - fake.px('^NDX', fake.close)) < 1e-6, '盤後：^NDX＝當天收盤', fails)
+    nt = [t for t, f in pub.puts if hm.NEWS_FILE in f]
+    gaps = [b - a for a, b in zip(nt, nt[1:])]
+    print('  新聞發布', len(nt), '次：', [dt.datetime.fromtimestamp(t, ET).strftime('%H:%M') for t in nt])
+    check(nt and abs(nt[0] - ts(day, 4, 30)) < 61, f'來源失敗時 10 分鐘重試：04:00、04:10、04:20 失敗，04:30 才發布第一份（實際 {dt.datetime.fromtimestamp(nt[0], ET).strftime("%H:%M") if nt else "無"}）', fails)
+    check(all(3600 <= g <= 3600 + 61 for g in gaps), f'之後每小時一次（間隔 {sorted(set(int(g) for g in gaps))} 秒，含交棒）', fails)
+    check(15 <= len(nt) <= 17, f'04:30～20:06 約 16 次，實際 {len(nt)}', fails)
+    n0 = json.loads(pub.files[hm.NEWS_FILE])
+    check(n0.get('schema') == 'bnasdaq-news/1' and n0['at'] == int(nt[-1]), '分支上的 news.json 是最後一次抓的', fails)
+    # 台股 session 也更新新聞
+    hm2 = load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_tw_news')
+    dtw = dt.date(2026, 11, 24)
+    o = ts(dtw, 9, 0, TPE)
+    clock = Clock(ts(dtw, 8, 10, TPE)); pub2 = MemPub(hm2, clock)
+    hm2.PATHSET = None; hm2.yahoo_intraday = lambda b, ysym=None: {}; hm2.fetch_news = fake_news(clock)
+    hm2.fetch_tw = lambda codes: ({c: (100.0 + (clock() - o) / 1e4, 100.0, int(min(clock(), ts(dtw, 13, 30, TPE)))) for c in codes} if clock() >= o else {}, 'Yahoo奇摩股市')
+    hm2.Session('TW', hm2.session('TW', clock()), ['2330', '2317'], pub2, clock=clock, sleep=clock.sleep, t0=clock()).run()
+    nt2 = [dt.datetime.fromtimestamp(t, TPE).strftime('%H:%M') for t, f in pub2.puts if hm2.NEWS_FILE in f]
+    check(nt2 == ['09:00', '10:00', '11:00', '12:00', '13:00'], f'台股 session 每小時更新新聞，實際 {nt2}', fails)
+    check(all('mb' not in s for _, s in pub2.log), '台股快照沒有報價板', fails)
+
+
 def tw_regression(hm_new, hm_old, fails):
     print('【4a】回歸：台股一整個時段，新舊程式的快照逐份相同')
     day = dt.date(2026, 11, 24)
@@ -285,7 +362,7 @@ def tw_regression(hm_new, hm_old, fails):
     logs = []
     for hm in (hm_new, hm_old):
         clock = Clock(ts(day, 8, 10, TPE)); pub = MemPub(hm, clock)
-        hm.PATHSET = None; hm.fetch_tw = fake_tw(clock); hm.yahoo_intraday = lambda b, ysym=None: {}
+        hm.PATHSET = None; hm.fetch_tw = fake_tw(clock); hm.yahoo_intraday = lambda b, ysym=None: {}; hm.fetch_news = lambda now=None: None
         S = hm.Session('TW', hm.session('TW', clock()), syms, pub, clock=clock, sleep=clock.sleep, t0=clock())
         r = S.run(); logs.append((r, [(t, s) for t, s in pub.log], pub.dispatches))
     (rn, ln, dn), (ro, lo, do) = logs
@@ -302,7 +379,7 @@ def us_regular_regression(hm_new, hm_old, fails):
     for hm in (hm_new, hm_old):
         fake = FakeUS(day, syms)
         clock = Clock(ts(day, 8, 10)); pub = MemPub(hm, clock)
-        hm.PATHSET = None; hm.yahoo_batch = fake.batch(clock); hm.yahoo_intraday = lambda b, ysym=None: {}
+        hm.PATHSET = None; hm.yahoo_batch = fake.batch(clock); hm.yahoo_intraday = lambda b, ysym=None: {}; hm.fetch_news = lambda now=None: None
         if hasattr(hm, 'yahoo_ext'):
             hm.yahoo_ext = fake.ext(clock)
         S = hm.Session('US', hm.session('US', clock()), syms, pub, clock=clock, sleep=clock.sleep, t0=clock())
@@ -326,6 +403,7 @@ def main():
     test_full_day(hm, fails)
     test_holiday(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new2'), fails)
     test_early_close(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new3'), fails)
+    test_board_news(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new6'), fails)
     old = load(old_path, 'hm_old')
     if hasattr(old, 'yahoo_ext'):
         print('（--old 指的檔案已經是盤前盤後版，略過回歸比對）')

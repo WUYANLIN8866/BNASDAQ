@@ -73,6 +73,7 @@ jobs:
           sparse-checkout: |
             scripts
             data/heatmap
+            data/daily
       - name: Publish quotes until the session ends (Taiwan every 30 s; US every 60 s incl. pre-market and after-hours)
         env:
           GITHUB_TOKEN: ${{ github.token }}
