@@ -730,8 +730,9 @@ class Session:
     def publish(self, state, slot, now):
         snap = self.snapshot(state, slot, now)
         hm = dt.datetime.fromtimestamp(now, ZoneInfo(MARKETS[self.mk]['tz'])).strftime('%Y-%m-%d %H:%M')
+        ext = f' {snap["ext"]}-{snap["xstate"]} {snap["xn"]}/{snap["n"]}' if snap.get('ext') else ''   # 盤前盤後：另外寫有成交的檔數
         ok = self.pub.publish(self.mk, slot, json.dumps(snap, ensure_ascii=False, separators=(',', ':')),
-                              f'heatmap live {self.mk} {hm} {state} {snap["have"]}/{snap["n"]} run={os.environ.get("GITHUB_RUN_ID", "local")}')
+                              f'heatmap live {self.mk} {hm} {state} {snap["have"]}/{snap["n"]}{ext} run={os.environ.get("GITHUB_RUN_ID", "local")}')
         return ok, snap
 
     # --- 主迴圈 ---

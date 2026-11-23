@@ -8,7 +8,7 @@
      盤前漲跌＝盤前最後成交 ÷ 前一交易日收盤 − 1；盤後漲跌＝盤後最後成交 ÷ 當天收盤 − 1；沒成交的不出現；走勢每 15 分鐘一點。
   2. 休市日（感恩節）：盤前開始 25 分鐘沒有當天成交 → 結束、不發布。
   3. 提早收盤日（感恩節隔天）：依行情來源改成 13:00 收盤、盤後到 17:00。
-  4. 回歸：台股整個時段、美股正規時段的快照（q、pp、state…）和改版前的程式（git HEAD 版或 --old 指定的檔案）逐份相同。
+  4. 回歸：台股整個時段、美股正規時段的快照（q、pp、state…）和加盤前盤後之前的程式（commit c2ce227 的版本，或 --old 指定的檔案）逐份相同。
 """
 import base64
 import datetime as dt
@@ -320,7 +320,7 @@ def main():
         old_path = a[a.index('--old') + 1]
     else:
         old_path = os.path.join(tempfile.mkdtemp(), 'heatmap_live_old.py')
-        src = subprocess.run(['git', '-C', ROOT, 'show', 'HEAD:scripts/heatmap_live.py'], capture_output=True, text=True, check=True).stdout
+        src = subprocess.run(['git', '-C', ROOT, 'show', 'c2ce227:scripts/heatmap_live.py'], capture_output=True, text=True, check=True).stdout   # 加盤前盤後之前的最後一版（淺 clone 讀不到時用 --old 指定）
         open(old_path, 'w', encoding='utf-8').write(src)
     fails = []
     test_full_day(hm, fails)
