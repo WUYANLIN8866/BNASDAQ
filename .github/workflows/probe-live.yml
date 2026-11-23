@@ -1,0 +1,20 @@
+name: probe news (temporary)
+on:
+  push:
+    branches: [probe-live-20261124]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts
+            data/heatmap
+            data/daily
+      - name: news preview
+        run: timeout 300 python3 scripts/heatmap_live.py news --print 2>&1 | tail -80

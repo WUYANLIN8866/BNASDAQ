@@ -379,6 +379,35 @@ def test_extras(hm, fails):
     check('QLD' in snap['x'] and 'QLD' not in snap['xpp'] and any(k in snap['xpp'] for k in syms[:-1]), '美股盤前：QLD 有成交、沒有走勢；熱力圖成分股照舊有走勢', fails)
 
 
+def test_news_co(hm, fails):
+    print('【7】個股頁即時新聞：那斯達克 100、台灣 50 成分股另寫 news-co.json；標題比對')
+    wl = hm.watch_list(skip=[m[0] for m in hm.mega_list()])
+    check(len(wl) > 100 and any(m == 'TW' for _, _, m in wl) and any(m == 'US' for _, _, m in wl), f'成分股 {len(wl)} 家（兆元企業另外抓）', fails)
+    n = {'schema': 'bnasdaq-news/1', 'at': 100, 'zh': [], 'en': [], 'co': {'NVDA': [{'t': 'a', 'u': 'https://x', 's': 's', 'at': 90}]}, 'src': [], '_cx': {'AMD': [{'t': 'b', 'u': 'https://y', 's': 's', 'at': 95}]}}
+    f = hm.news_files(n)
+    a, b = json.loads(f[hm.NEWS_FILE]), json.loads(f[hm.NEWS_CO_FILE])
+    check('_cx' not in a and set(a['co']) == {'NVDA'} and b['schema'] == 'bnasdaq-news-co/1' and set(b['co']) == {'NVDA', 'AMD'} and b['at'] == 100, 'news.json 不含成分股那一份；news-co.json＝兆元企業＋成分股', fails)
+    f2 = hm.news_files({k: v for k, v in n.items() if k != '_cx'})
+    check(set(f2) == {hm.NEWS_FILE}, '沒有成分股資料（舊格式）時只寫 news.json', fails)
+    # 標題比對：模擬 Google 新聞回應
+    rss = lambda titles: ('<rss><channel>' + ''.join(f'<item><title>{x} - 媒體</title><link>https://n/{i}</link><pubDate>Mon, 23 Nov 2026 12:00:00 GMT</pubDate><source url="https://m">媒體</source></item>' for i, x in enumerate(titles)) + '</channel></rss>').encode()
+    pages = {'KLAC': ['KLA beats estimates', 'Oklahoma weather update', 'KLA-Tencor history'], 'AMD': ['AMD unveils MI500', 'Advanced Micro Devices raises guidance', 'Lamda news'], '3665': ['貿聯-KY 營收創高', '貿聯 擴產', '其他公司新聞']}
+    def fake_http(url, **kw):
+        qs = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)['q'][0]
+        key = 'KLAC' if 'KLA' in qs else 'AMD' if 'AMD' in qs else '3665' if '貿聯' in qs else None
+        return 200, rss(pages.get(key, []))
+    old = hm.http; hm.http = fake_http
+    hm.watch_list = lambda skip=(): [('KLAC', 'KLA Corporation', 'US'), ('AMD', 'Advanced Micro Devices Inc.', 'US'), ('3665', '貿聯-KY', 'TW')]
+    hm.mega_list = lambda: []
+    try:
+        co, more = hm.fetch_co_news(dt.datetime(2026, 11, 23, 13, tzinfo=dt.timezone.utc).timestamp(), extra=True)
+    finally:
+        hm.http = old
+    got = {k: [x['t'] for x in v] for k, v in more.items()}
+    check(got.get('KLAC') == ['KLA beats estimates', 'KLA-Tencor history'] and got.get('AMD') == ['AMD unveils MI500', 'Advanced Micro Devices raises guidance'] and got.get('3665') == ['貿聯-KY 營收創高', '貿聯 擴產'],
+          f'標題比對：{got}', fails)
+
+
 def tw_regression(hm_new, hm_old, fails):
     print('【4a】回歸：台股一整個時段，新舊程式的快照逐份相同')
     day = dt.date(2026, 11, 24)
@@ -444,6 +473,7 @@ def main():
     test_early_close(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new3'), fails)
     test_board_news(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new6'), fails)
     test_extras(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new7'), fails)
+    test_news_co(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new8'), fails)
     old = load(old_path, 'hm_old')
     if hasattr(old, 'yahoo_ext'):
         print('（--old 指的檔案已經是盤前盤後版，略過回歸比對）')

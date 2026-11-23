@@ -401,6 +401,19 @@ NEWS_CO_Q = {   # 代號: (Google 新聞搜尋字串, 標題必須含其中一�
     '2222.SR': ('沙烏地阿美 OR 阿美石油 OR Aramco', ('沙烏地', '沙國', '阿美', 'aramco'), ()),   # intitle 版 0 則
 }
 NEWS_CO_MAX, NEWS_CO_AGE = 3, 48 * 3600
+# 2026-11-24 使用者：「所有的股價計算在網站上都是用最新的即時價格跟即時消息」→ 個股頁（個股目標價試算）也要即時新聞：
+# 兆元企業之外，熱力圖的那斯達克 100、台灣 50 成分股每小時各抓最多 3 則（48 小時內），寫到 news-co.json（每日市場分析頁照舊只讀較小的 news.json）。
+# 台股用中文名稱搜中文新聞；美股用英文公司名稱（去掉 Inc.、Corporation 等法律字尾）搜英文新聞，標題必須含整個名稱，避免同名誤判。
+NEWS_CO_FILE, NEWS_WATCH = 'news-co.json', ('ndx', 'tw50')
+NEWS_SUFFIX = re.compile(r'[,\s]+(Inc\.?|Incorporated|Corporation|Corp\.?|Co\.?|Company|Ltd\.?|Limited|plc|PLC|N\.?V\.?|S\.?A\.?|AG|SE|ADR|Class [A-C]|Cl [A-C]|\(The\)|\(DE\)|Holdings|Group|Wholesale)$')
+# 新聞標題常用的簡稱（標題要出現這些字之一才算；英文字以整個單字比對，避免 KLA 對到 Oklahoma 之類）
+NEWS_ALIAS = {'AMD': ('AMD', 'Advanced Micro Devices'), 'MU': ('Micron',), 'CSCO': ('Cisco',), 'PLTR': ('Palantir',), 'TMUS': ('T-Mobile',), 'QCOM': ('Qualcomm',),
+              'MRVL': ('Marvell',), 'STX': ('Seagate',), 'MAR': ('Marriott',), 'CDNS': ('Cadence Design', 'Cadence Design Systems'), 'HON': ('Honeywell',), 'NXPI': ('NXP',),
+              'MPWR': ('Monolithic Power',), 'TTWO': ('Take-Two',), 'GEHC': ('GE HealthCare',), 'MSTR': ('MicroStrategy', 'Strategy Inc'), 'NBIS': ('Nebius',), 'ADP': ('ADP',),
+              'PDD': ('PDD', 'Temu'), 'ARM': ('Arm Holdings',), 'CRWD': ('CrowdStrike',), 'PYPL': ('PayPal',), 'LITE': ('Lumentum',), 'MDLZ': ('Mondelez',), 'CMCSA': ('Comcast',),
+              'BKNG': ('Booking Holdings',), 'KDP': ('Keurig Dr Pepper',), 'CCEP': ('Coca-Cola Europacific',), 'ODFL': ('Old Dominion',), 'REGN': ('Regeneron',), 'GILD': ('Gilead',),
+              'VRTX': ('Vertex Pharmaceuticals',), 'ALNY': ('Alnylam',), 'IDXX': ('IDEXX',), 'DXCM': ('DexCom',), 'ISRG': ('Intuitive Surgical',), 'FANG': ('Diamondback Energy',),
+              'CEG': ('Constellation Energy',), 'AEP': ('American Electric Power',), 'XEL': ('Xcel Energy',), 'ALAB': ('Astera Labs',), 'RKLB': ('Rocket Lab',), 'AXON': ('Axon',)}
 
 
 def q_sym(s):
@@ -452,12 +465,56 @@ def mega_list():
     return [(k, k) for k in NEWS_CO_Q]
 
 
-def fetch_co_news(now):
-    """{代號: [最多 3 則]}；某家抓不到或沒有新聞就不放。"""
+def watch_list(skip=()):
+    """個股頁即時新聞的公司 [(代號, 名稱, 'TW'｜'US')]：熱力圖 NEWS_WATCH 分頁的成分股（skip＝已經另外抓的兆元企業）。"""
+    try:
+        d = json.load(open(BASE, encoding='utf-8'))
+    except Exception:
+        return []
+    out, seen = [], set(skip)
+    for k in NEWS_WATCH:
+        S = (d.get('sets') or {}).get(k) or {}
+        mk = 'TW' if S.get('market') == 'TW' else 'US'
+        for t in S.get('tiles') or []:
+            c, n = str(t[0]), str(t[1]).strip()
+            if c and n and c not in seen:
+                seen.add(c); out.append((c, n, mk))
+    return out
+
+
+def co_short(n):
+    """美股公司名稱去掉法律字尾：'NVIDIA Corporation' → 'NVIDIA'、'Booking Holdings Inc.' → 'Booking Holdings'。"""
+    s = n.strip()
+    while True:
+        s2 = NEWS_SUFFIX.sub('', s).strip().rstrip(',').strip()
+        if s2 == s or len(s2) < 2:
+            return s
+        s = s2
+
+
+def fetch_co_news(now, extra=False):
+    """{代號: [最多 3 則]}；某家抓不到或沒有新聞就不放。extra＝True 時另外回傳個股頁用的那斯達克 100、台灣 50 成分股（watch_list）。"""
     def one(tn):
-        tk, nm = tn
-        q, need, bad = NEWS_CO_Q.get(tk) or ('intitle:' + nm, (nm.lower(),), ())
-        url = 'https://news.google.com/rss/search?' + urllib.parse.urlencode({'q': q + ' when:2d', 'hl': 'zh-TW', 'gl': 'TW', 'ceid': 'TW:zh-Hant'})
+        tk, nm = tn[0], tn[1]
+        lang = 'en' if len(tn) > 2 and tn[2] == 'US' else 'zh'
+        wre = None
+        if tk in NEWS_CO_Q:
+            q, need, bad = NEWS_CO_Q[tk]
+        elif len(tn) > 2:   # 那斯達克 100、台灣 50 成分股（watch_list）
+            if lang == 'en':
+                names = NEWS_ALIAS.get(tk) or (co_short(nm),)
+                q = ' OR '.join('intitle:"' + x + '"' for x in names)
+                wre = re.compile('|'.join(r'(?<![a-z0-9])' + re.escape(x.lower()) + r'(?![a-z0-9])' for x in names))
+            else:
+                nm = re.sub(r'[-－]?KY$|\*', '', nm).strip()
+                names = [nm] + ([nm[:-2]] if nm.endswith('投控') and len(nm) > 3 else []) + ([nm[:-1]] if nm.endswith('電子') and len(nm) > 3 else [])
+                q = ' OR '.join('intitle:' + x for x in names)
+                wre = re.compile('|'.join(re.escape(x) for x in names) + '|' + re.escape(tk))
+            need, bad = (), ()
+        else:
+            q, need, bad = 'intitle:' + nm, (nm.lower(),), ()
+        loc = {'hl': 'en-US', 'gl': 'US', 'ceid': 'US:en'} if lang == 'en' else {'hl': 'zh-TW', 'gl': 'TW', 'ceid': 'TW:zh-Hant'}
+        url = 'https://news.google.com/rss/search?' + urllib.parse.urlencode(dict({'q': q + ' when:2d'}, **loc))
         try:
             st, body = http(url, headers={'Accept': 'application/rss+xml, application/xml, text/xml, */*', 'Accept-Language': 'zh-TW,zh;q=0.9'}, timeout=12)
             items = news_items('rss', 'Google 新聞', body)
@@ -466,16 +523,21 @@ def fetch_co_news(now):
         seen, keep = set(), []
         for it in sorted(items, key=lambda x: -x['at']):
             k, low = news_key(it['t']), it['t'].lower()
-            if k in seen or now - it['at'] > NEWS_CO_AGE or it['at'] > now + 600 or not any(w in low for w in need) or any(w in low for w in bad):
+            if k in seen or now - it['at'] > NEWS_CO_AGE or it['at'] > now + 600 or not (wre.search(low) if wre else any(w in low for w in need)) or any(w in low for w in bad):
                 continue
             seen.add(k); keep.append(it)
         return tk, keep[:NEWS_CO_MAX]
-    out = {}
+    out, more = {}, {}
+    mega = mega_list()
     with cf.ThreadPoolExecutor(4) as ex:
-        for tk, items in ex.map(one, mega_list()):
+        for tk, items in ex.map(one, mega):
             if items:
                 out[tk] = items
-    return out
+        if extra:
+            for tk, items in ex.map(one, watch_list(skip=[m[0] for m in mega])):
+                if items:
+                    more[tk] = items
+    return (out, more) if extra else out
 
 
 def fetch_news(now=None):
@@ -502,11 +564,22 @@ def fetch_news(now=None):
             seen.add(k); keep.append(it)
         out[lang] = keep[:cap]
     try:
-        co = fetch_co_news(now)
+        co, more = fetch_co_news(now, extra=True)
     except Exception as e:  # noqa
-        co = {}
+        co, more = {}, {}
     srcs.append({'n': 'Google 新聞（兆元企業）', 'ok': bool(co), 'k': sum(len(v) for v in co.values()), 'co': len(co)})
-    return {'schema': 'bnasdaq-news/1', 'at': int(now), 'zh': out['zh'], 'en': out['en'], 'co': co, 'src': srcs}
+    srcs.append({'n': 'Google 新聞（那斯達克 100、台灣 50 成分股）', 'ok': bool(more), 'k': sum(len(v) for v in more.values()), 'co': len(more)})
+    return {'schema': 'bnasdaq-news/1', 'at': int(now), 'zh': out['zh'], 'en': out['en'], 'co': co, 'src': srcs, '_cx': more}
+
+
+def news_files(n):
+    """fetch_news 的結果 → 要寫的檔案：news.json（每日市場分析頁；不含個股頁那一大份）、news-co.json（個股頁：兆元企業＋那斯達克 100、台灣 50 成分股）。"""
+    n = dict(n); cx = n.pop('_cx', None)
+    files = {NEWS_FILE: json.dumps(n, ensure_ascii=False, separators=(',', ':'))}
+    if cx is not None:
+        co = dict(cx); co.update(n.get('co') or {})
+        files[NEWS_CO_FILE] = json.dumps({'schema': 'bnasdaq-news-co/1', 'at': n['at'], 'co': co}, ensure_ascii=False, separators=(',', ':'))
+    return files
 
 
 def branch_news_at(pub):
@@ -954,7 +1027,7 @@ class Session:
             return
         n = fetch_news(now)
         if n:
-            self.extra[NEWS_FILE] = json.dumps(n, ensure_ascii=False, separators=(',', ':'))
+            self.extra.update(news_files(n))
             self.news_at = now
             log('新聞更新：中文', len(n['zh']), '則、英文', len(n['en']), '則；', '、'.join(f"{x['n']} {'OK ' + str(x.get('k')) if x['ok'] else '失敗'}" for x in n['src']))
         else:
@@ -1283,6 +1356,11 @@ def main():
             for lang in ('zh', 'en'):
                 print(f'{lang} {len(n[lang])} 則；最新 5 則：'); [print('  ', hh(x), x['s'], '｜', x['t'][:70], '｜', x['u'][:60]) for x in n[lang][:5]]
             print(f'兆元企業 {len(n["co"])} 家：'); [print('  ', k, len(v), '則；', hh(v[0]), v[0]['s'], '｜', v[0]['t'][:60]) for k, v in n['co'].items()]
+            cx = n.get('_cx') or {}; wl = watch_list(skip=n['co'])
+            print(f'那斯達克 100、台灣 50 成分股 {len(cx)}／{len(wl)} 家有新聞：'); [print('  ', k, len(v), '則；', hh(v[0]), v[0]['s'], '｜', v[0]['t'][:60]) for k, v in list(cx.items())[:40]]
+            print('沒有新聞：', ' '.join(c for c, _, _ in wl if c not in cx)[:600])
+            for f, s in news_files(n).items():
+                print(f, '大小', len(s.encode()), 'bytes')
             print('news.json 大小', len(json.dumps(n, ensure_ascii=False, separators=(',', ':')).encode()), 'bytes')
             return 0
         pub = Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN']); pub.load()
@@ -1292,7 +1370,7 @@ def main():
         n = fetch_news()
         if not n:
             note('新聞來源全部失敗，這次沒有更新'); return 1
-        ok = pub.put({NEWS_FILE: json.dumps(n, ensure_ascii=False, separators=(',', ':'))}, f'news zh={len(n["zh"])} en={len(n["en"])} co={len(n.get("co") or {})} run={os.environ.get("GITHUB_RUN_ID", "local")}')
+        ok = pub.put(news_files(n), f'news zh={len(n["zh"])} en={len(n["en"])} co={len(n.get("co") or {})} cx={len(n.get("_cx") or {})} run={os.environ.get("GITHUB_RUN_ID", "local")}')
         note(f'新聞更新：中文 {len(n["zh"])} 則、英文 {len(n["en"])} 則、兆元企業 {len(n.get("co") or {})} 家，發布{"成功" if ok else "失敗"}；' + '、'.join(f"{x['n']} {'OK ' + str(x.get('k')) if x['ok'] else '失敗'}" for x in n['src']))
         return 0 if ok else 1
     if cmd == 'close':
