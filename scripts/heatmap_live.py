@@ -157,6 +157,12 @@ def http(url, ua=YUA, headers=None, timeout=12, data=None, method=None):
 
 SUFFIX = {}      # 台股代號 → Yahoo奇摩股市的後綴（上市 .TW、上櫃 .TWO）
 PATHSET = None   # 要記當日走勢的代號；None＝全部。台股全上市／全上櫃近兩千檔，只記方塊大到畫得下走勢圖的那些（台灣 50＋兩個分頁各前 150 大）
+# 2026-11-24 使用者：「所有的股價計算在網站上都是用最新的即時價格」→ 除了熱力圖成分股，網站價格表 data/tw/latest.json
+# （個股對比、會員專區持有資產、投資組合透視、每日市場分析「你的資產變化」、目標價試算用的最新價）裡的代號也一起抓：
+# 台股多 0050、00631L 等 ETF 約 355 檔，美股多 QLD、SHV、ETF 與熱門個股約 126 檔；這些只進快照的 q／x，不記當日走勢。
+EXTRAS = True
+EXTRA_US = ['ANT', 'BOXX']   # 價格表沒有、但網站用得到的美股代號
+LATEST = os.path.join(ROOT, 'data', 'tw', 'latest.json')
 
 
 def universe(mk):
@@ -177,6 +183,47 @@ def universe(mk):
             if c not in seen:
                 seen.add(c); out.append(c)
     PATHSET = ps if mk == 'TW' and any(k in ('twse', 'tpex') for k in MARKETS[mk]['sets']) else None
+    if EXTRAS:
+        more = extras(mk, seen)
+        if more and PATHSET is None:
+            PATHSET = set(out)   # 熱力圖成分股照舊記當日走勢，多抓的代號不記
+        out += more
+    return out
+
+
+def latest_items():
+    """網站價格表的 items。session 的 checkout 只有 scripts、data/heatmap、data/daily（不抓 data/tw 整個資料夾約 30 MB），
+    本機沒有這個檔時從 main 分支的原始檔讀（公開 repo，raw.githubusercontent.com）。"""
+    try:
+        return json.load(open(LATEST, encoding='utf-8')).get('items') or {}
+    except Exception:
+        pass
+    repo = os.environ.get('GITHUB_REPOSITORY')
+    if repo:
+        try:
+            st, body = http(f'https://raw.githubusercontent.com/{repo}/main/data/tw/latest.json', ua='bnasdaq-heatmap-live', timeout=20)
+            if st == 200:
+                return json.loads(body).get('items') or {}
+        except Exception as e:  # noqa
+            log('網站價格表讀取失敗', repr(e)[:100])
+    return {}
+
+
+def extras(mk, have):
+    """網站價格表（data/tw/latest.json 的 items：{代號: [收盤, 漲跌, 名稱, 市場 TW／TWO／US]}）裡、熱力圖沒有的代號（保留順序）。
+    上櫃（TWO）設 Yahoo奇摩股市後綴 .TWO。讀不到價格表就只回固定清單。"""
+    items = latest_items()
+    out = []
+    for c, v in items.items():
+        m = v[3] if isinstance(v, list) and len(v) > 3 else ''
+        if c in have or not ((mk == 'TW' and m in ('TW', 'TWO')) or (mk == 'US' and m == 'US')):
+            continue
+        if m == 'TWO':
+            SUFFIX[c] = '.TWO'
+        have.add(c); out.append(c)
+    for c in (EXTRA_US if mk == 'US' else []):
+        if c not in have:
+            have.add(c); out.append(c)
     return out
 
 
@@ -324,7 +371,8 @@ def yahoo_ext(batch, nonce=None):
 #   ^TNX／^TYX 只在芝加哥選擇權交易所時段更新（沒有盤前）；2 年期沒有可用的即時來源。
 BOARD = ['^NDX', '^SOX', '^GSPC', '^DJI', '^RUT', '^IXIC', '^VIX', 'DX-Y.NYB', '^TNX', '^TYX', '^FVX', 'JPY=X', 'EURUSD=X', 'TWD=X',
          'CL=F', 'BZ=F', 'GC=F', 'BTC-USD', 'QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT', '2222.SR']
-BOARD_EXT = ['QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT']   # 盤前盤後要看成交的：推估指數用的 ETF、熱力圖裡沒有的大型股
+BOARD_EXT = ['QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT']
+BOARDS = {'US': BOARD, 'TW': ['TWD=X', '^TWII']}   # 台股 session 也抓美元兌台幣（全站台幣換算用）與加權指數；2026-11-24 起   # 盤前盤後要看成交的：推估指數用的 ETF、熱力圖裡沒有的大型股
 NEWS_FILE, NEWS_EVERY = 'news.json', 3600   # 新聞一小時更新一次（交易時段內由 session 順便做；其他時間由 news.yml 補）
 NEWS_SRC = [   # (語言, 來源名稱, 格式, 網址)；2026-11-23 從 GitHub runner 實測都回 200
     ('zh', '鉅亨網', 'cnyes', 'https://api.cnyes.com/media/api/v1/newslist/category/us_stock?limit=30'),
@@ -866,6 +914,8 @@ class Session:
                 continue   # 這個時段還沒有成交
             e, c = pts[-1]
             self.x[sym] = [c, p, e]
+            if PATHSET is not None and sym not in PATHSET:
+                continue   # 多抓的代號（網站價格表）只要最新成交，不記走勢
             d = {}
             for e2, c2 in pts:
                 d[int((e2 - lo) // self.xpstep)] = int(round((c2 / p - 1) * 10000))
@@ -877,14 +927,15 @@ class Session:
 
     def poll_board(self, kind=None):
         """每日市場分析頁的報價板（見 BOARD 的說明）。kind＝'pre'／'post'：另外抓 BOARD_EXT 的盤前／盤後成交（算法同 poll_ext）。
-        只有美股呼叫；這一輪沒抓到的代號保留上一輪的值。"""
-        if self.mk != 'US':
+        美股與台股各自的清單見 BOARDS（台股只有匯率與加權指數、沒有盤前盤後）；這一輪沒抓到的代號保留上一輪的值。"""
+        bl = BOARDS.get(self.mk) or []
+        if not bl:
             return False
         nonce = int(self.clock())
-        got, stat = fetch_us([q_sym(s) for s in BOARD], nonce)
+        got, stat = fetch_us([q_sym(s) for s in bl], nonce)
         for s, v in got.items():
             self.mb_q[s] = [v[0], v[1], int(v[2])]
-        if kind:
+        if kind and self.mk == 'US':
             s_ = self.sess
             lo, hi = (s_['pre'], s_['open']) if kind == 'pre' else (s_['close'], s_['post'])
             gx, _ = fetch_us([q_sym(s) for s in BOARD_EXT], nonce, f=yahoo_ext)
@@ -1074,7 +1125,7 @@ class Session:
                 self.sleep(min(30, max(0.2, nxt - now))); continue
             slot = nxt // step
             ok = self.poll()
-            self.poll_board()   # 美股才有（每日市場分析頁的報價板）
+            self.poll_board()   # 報價板：美股（每日市場分析頁）、台股（匯率與加權指數），見 BOARDS
             self.maybe_news()
             now = self.clock()
             over = now >= self.sess['close'] + tail

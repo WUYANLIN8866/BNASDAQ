@@ -334,12 +334,49 @@ def test_board_news(hm, fails):
     dtw = dt.date(2026, 11, 24)
     o = ts(dtw, 9, 0, TPE)
     clock = Clock(ts(dtw, 8, 10, TPE)); pub2 = MemPub(hm2, clock)
-    hm2.PATHSET = None; hm2.yahoo_intraday = lambda b, ysym=None: {}; hm2.fetch_news = fake_news(clock)
+    hm2.PATHSET = None; hm2.yahoo_intraday = lambda b, ysym=None: {}; hm2.fetch_news = fake_news(clock); hm2.BOARDS = {'US': hm2.BOARD}
     hm2.fetch_tw = lambda codes: ({c: (100.0 + (clock() - o) / 1e4, 100.0, int(min(clock(), ts(dtw, 13, 30, TPE)))) for c in codes} if clock() >= o else {}, 'Yahoo奇摩股市')
     hm2.Session('TW', hm2.session('TW', clock()), ['2330', '2317'], pub2, clock=clock, sleep=clock.sleep, t0=clock()).run()
     nt2 = [dt.datetime.fromtimestamp(t, TPE).strftime('%H:%M') for t, f in pub2.puts if hm2.NEWS_FILE in f]
     check(nt2 == ['09:00', '10:00', '11:00', '12:00', '13:00'], f'台股 session 每小時更新新聞，實際 {nt2}', fails)
     check(all('mb' not in s for _, s in pub2.log), '台股快照沒有報價板', fails)
+
+
+def test_extras(hm, fails):
+    print('【6】全站即時報價：網站價格表的代號一起抓（不記走勢）、台股報價板（匯率、加權指數）')
+    u = hm.universe('US')
+    check(all(s in u for s in ('QLD', 'SHV', 'ANT', 'BOXX', 'AAPL')) and hm.PATHSET is not None and 'AAPL' in hm.PATHSET and 'QLD' not in hm.PATHSET,
+          f'美股 {len(u)} 檔含 QLD、SHV、ANT、BOXX；當日走勢只記熱力圖成分股（{len(hm.PATHSET)} 檔）', fails)
+    t = hm.universe('TW')
+    tl = json.load(open(os.path.join(ROOT, 'data', 'tw', 'latest.json'), encoding='utf-8'))['items']
+    two = [c for c in t if (tl.get(c) or [0, 0, 0, ''])[3] == 'TWO']
+    check(all(s in t for s in ('0050', '00631L', '00670L', '2330')) and two and all(hm.SUFFIX.get(c) == '.TWO' for c in two) and '0050' not in hm.PATHSET,
+          f'台股 {len(t)} 檔含 0050、00631L、00670L；上櫃 {len(two)} 檔都用 .TWO；0050 不記走勢', fails)
+    # 台股 session：ETF 有報價、快照有 mb（美元兌台幣、加權指數）
+    day = dt.date(2026, 11, 24); o = ts(day, 9, 0, TPE)
+    clock = Clock(ts(day, 8, 50, TPE)); pub = MemPub(hm, clock)
+    hm.yahoo_intraday = lambda b, ysym=None: {}; hm.fetch_news = lambda now=None: None
+    hm.fetch_tw = lambda codes: ({c: (100.0, 99.0, int(min(clock(), ts(day, 13, 30, TPE)))) for c in codes} if clock() >= o else {}, 'Yahoo奇摩股市')
+    asked = []
+    def fake_us(syms, nonce=None, f=None):
+        asked.append(list(syms))
+        return {'TWD=X': (32.5, 32.6, int(clock()) - 30), '^TWII': (23000.0, 22800.0, int(clock()) - 5)}, {'ok': 1, '429': 0, 'fail': 0}
+    hm.fetch_us = fake_us
+    hm.Session('TW', hm.session('TW', clock()), ['2330', '0050', '6488'], pub, clock=clock, sleep=clock.sleep, t0=clock()).run()
+    s1 = [s for t_, s in pub.log if s['state'] == 'open'][5]
+    check(s1['q'].get('0050', [0])[0] == 100.0 and s1.get('mb', {}).get('q', {}).get('TWD=X', [0])[0] == 32.5 and '^TWII' in s1['mb']['q'],
+          '台股盤中快照：0050 有報價、mb.q 有 TWD=X 與 ^TWII', fails)
+    check(asked and all(a == ['TWD%3DX', '%5ETWII'] for a in asked), f'台股報價板只抓匯率與加權指數（{len(asked)} 輪）', fails)
+    # 美股盤前：多抓的代號有盤前成交（x），但沒有盤前走勢（xpp）
+    hm2 = load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_ex2')
+    syms = [f'S{i:02d}' for i in range(12)] + ['QLD']
+    fake = FakeUS(day, syms); fake.liq['QLD'] = 2
+    clock2 = Clock(ts(day, 4, 0)); pub2 = MemPub(hm2, clock2)
+    hm2.PATHSET = set(syms[:-1]); hm2.yahoo_batch = fake.batch(clock2); hm2.yahoo_ext = fake.ext(clock2); hm2.yahoo_intraday = lambda b, ysym=None: {}; hm2.fetch_news = lambda now=None: None
+    S = hm2.Session('US', hm2.session('US', clock2()), syms, pub2, clock=clock2, sleep=clock2.sleep, t0=clock2())
+    S.xkind = 'pre'; clock2.t = ts(day, 8, 0); S.poll_ext('pre')
+    snap = S.snapshot('pre', int(clock2()) // S.step, clock2())
+    check('QLD' in snap['x'] and 'QLD' not in snap['xpp'] and any(k in snap['xpp'] for k in syms[:-1]), '美股盤前：QLD 有成交、沒有走勢；熱力圖成分股照舊有走勢', fails)
 
 
 def tw_regression(hm_new, hm_old, fails):
@@ -363,6 +400,8 @@ def tw_regression(hm_new, hm_old, fails):
     for hm in (hm_new, hm_old):
         clock = Clock(ts(day, 8, 10, TPE)); pub = MemPub(hm, clock)
         hm.PATHSET = None; hm.fetch_tw = fake_tw(clock); hm.yahoo_intraday = lambda b, ysym=None: {}; hm.fetch_news = lambda now=None: None
+        if hasattr(hm, 'BOARDS'):
+            hm.BOARDS = {'US': hm.BOARD}   # 舊版台股沒有報價板（2026-11-24 起台股多抓匯率與加權指數，另由【6】測）
         S = hm.Session('TW', hm.session('TW', clock()), syms, pub, clock=clock, sleep=clock.sleep, t0=clock())
         r = S.run(); logs.append((r, [(t, s) for t, s in pub.log], pub.dispatches))
     (rn, ln, dn), (ro, lo, do) = logs
@@ -404,6 +443,7 @@ def main():
     test_holiday(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new2'), fails)
     test_early_close(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new3'), fails)
     test_board_news(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new6'), fails)
+    test_extras(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new7'), fails)
     old = load(old_path, 'hm_old')
     if hasattr(old, 'yahoo_ext'):
         print('（--old 指的檔案已經是盤前盤後版，略過回歸比對）')
