@@ -1,6 +1,6 @@
 name: Probe extended hours (temporary)
 
-# 暫時性實測：只在 probe-ext-hours 分支被推送時執行，測完會刪掉這個分支。
+# 暫時性實測：只在 probe-ext-hours 分支被推送時執行。
 on:
   push:
     branches: [probe-ext-hours]
@@ -11,7 +11,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,9 +19,5 @@ jobs:
           sparse-checkout: |
             scripts
             data/heatmap
-      - name: New heatmap_live.py against real pre-market data (once, no publish)
-        run: |
-          python3 scripts/heatmap_live.py once --market US --ext pre
-          sleep 65
-          python3 scripts/heatmap_live.py once --market US --ext pre
-          python3 scripts/heatmap_live.py once --market US
+      - name: Probe quotes board and news sources
+        run: python3 scripts/probe_board.py
