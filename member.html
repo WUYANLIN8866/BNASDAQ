@@ -106,7 +106,7 @@
   <div class="strat" id="cards"></div>
 </div>
 </div></div></div>
-<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=286770f832"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=286770f832"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/lt-engine.js?v=a1a4449e1d"></script><script src="assets/liveq.js?v=1375dd68e6"></script>
 <script>
 (async function(){
   const sess=BN.auth.require(); if(!sess) return;
@@ -143,34 +143,59 @@
     if(G.models!=='*'&&VIS.length<rules.STRATEGIES.length){const gn=$('#grant-note');gn.innerHTML='這個帳號已開通：'+VIS.map(st=>'<b>'+esc(st.id)+'</b>').join('、')+'。其他模型的開通方式請見<a href="plans.html">會員方案</a>，或聯絡管理員。';gn.hidden=false;}
     $('#nowbody').innerHTML=VIS.map(st=>{const w=L.lastComplete.w[st.id], wp=L.prevComplete.w[st.id];
       return '<tr><td class="l"><b>'+esc(st.id)+'</b></td><td class="l"><span class="badge '+cls(w)+'">'+T(w)+'</span></td><td class="l"><span class="badge '+cls(wp)+'">'+T(wp)+'</span></td><td class="l">'+(w==null||wp==null?'—':w!==wp?'<b style="color:var(--bad)">要換倉</b>（'+esc(L.lastComplete.month)+' 月底後的下一個交易日開盤）':'<span class="ok-dot"></span>不用動')+'</td></tr>';}).join('');
-    // 下個月機率：先畫「用最新收盤推算」，再非同步跑模擬
-    const isME=c&&left===0;
-    $('#prob-head').innerHTML=isME?'最新收盤已是 '+esc(c.m)+' 最後一個交易日：下面的結果就是 '+esc(nextM)+' 的正式判斷。':'下個月＝<b>'+esc(nextM)+'</b>。'+esc(c.m)+' 還有 <b>'+left+'</b> 個交易日，月底收盤還沒出來，所以用模擬估計機率（計算中…）';
-    const card=(st,F)=>{const pv=L.provisional.w[st.id], fl=L.flips[st.id]||{};
-      let pr='';
-      if(!L.preps||!L.preps[st.id]) pr='<div class="small">這一條的資料暫時無法取得，請稍後重新整理。</div>';
-      else if(F){const ps=F.probs[st.id]; const best=ps.slice().sort((a,b)=>b.p-a.p)[0];
-        pr='<div class="small">'+esc(nextM)+' 持有機率（模擬 '+F.n.toLocaleString('en-US')+' 次）</div><div class="pbar" role="img" aria-label="'+esc(ps.map(x=>T(x.w)+' '+pc(x.p)).join('，'))+'">'+ps.filter(x=>x.p>0).map(x=>'<span class="'+cls(x.w)+'" style="width:'+(x.p*100).toFixed(2)+'%"></span>').join('')+'</div>'
-          +'<ul class="plist">'+ps.map(x=>'<li><span class="badge '+cls(x.w)+'">'+T(x.w)+'</span> <b>'+pc(x.p)+'</b></li>').join('')+'</ul>'
-          +'<div class="hold" style="font-size:22px;margin-top:6px">最可能：'+T(best.w)+'（'+pc(best.p)+'）</div>';}
-      else pr='<div class="small">模擬計算中…</div>';
-      const parts=[]; if(fl.down) parts.push('月底收盤 ≤ <b class="num">'+fl.down.raw.toFixed(2)+'</b> → '+T(fl.down.w)); if(fl.up) parts.push('月底收盤 ≥ <b class="num">'+fl.up.raw.toFixed(2)+'</b> → '+T(fl.up.w));
-      return '<div class="card"><h4>'+esc(st.id)+'</h4>'+pr
-        +'<div class="next"><div class="small">用最新收盤（'+esc(market.asof)+'，'+c.c.toFixed(2)+'）當作 '+esc(c.m)+' 月底收盤 → '+esc(nextM)+' 持有</div><div class="hold" style="font-size:20px">'+T(pv)+'</div>'
-        +'<div class="small">翻轉價位：'+(parts.length?parts.join('；')+'（±40% 範圍內）':'±40% 範圍內結論不變')+'</div></div></div>';};
-    $('#cards').innerHTML=VIS.map(st=>card(st,isME?{n:1,probs:Object.fromEntries(VIS.map(s=>[s.id,s.levels.map(w=>({w,p:w===L.provisional.w[s.id]?1:0}))]))}:null)).join('');
-    if(!isME){
-      setTimeout(async()=>{try{const fhs=await get('data/qqq_fhs.json'); const F=rules.forecast(market,fhs,{n:10000,preps:Object.fromEntries(VIS.map(st=>[st.id,L.preps[st.id]]))});   // 只模擬開通的模型（每條路徑的價格與模型無關，結果和全部一起算相同）
+    // 下個月機率：先畫「用最新價格推算」，再非同步跑模擬。
+    // 2026-11-24 站主：所有股價計算都用最新的即時價格 → 開盤期間（含美股盤前盤後）用 QQQ 即時成交當作月底收盤（assets/liveq.js）：
+    //   換法見 assets/liveq.js 的 qqqMarket（同一個月才換；還原價＝即時價 × market.json 的 k；本月最高／最低納入即時價）。
+    //   翻轉價位、模擬機率都跟著重算（間隔依這台裝置算一次要多久自動拉長）。
+    const statusBase=$('#status').innerHTML, fhsP=get('data/qqq_fhs.json');
+    let seq=0, lastF=null, cost=0;
+    function cardsFor(mk,lv){
+      const my=++seq, t0=performance.now(), Lk=mk===market?L:rules.latest(mk,tb), cc=mk.current, left=rules.tradingDaysLeft(mk.asof,cc.m);
+      if(mk!==market)cost=Math.max(cost,performance.now()-t0);
+      const fin=left===0&&!(lv&&lv.ph!=='close');   // 本月最後一個交易日已收盤：就是正式判斷
+      const pxTxt=lv&&lv.ph!=='close'?'QQQ '+BN.liveq.tag(lv)+' 即時價（'+esc(lv.ses)+'，'+lv.p.toFixed(2)+'）':'最新收盤（'+esc(mk.asof)+'，'+cc.c.toFixed(2)+'）';
+      $('#status').innerHTML=statusBase+(lv?'｜QQQ '+esc(BN.liveq.tag(lv))+' <b class="num">'+lv.p.toFixed(2)+'</b>（'+esc(lv.ses)+'，開盤期間每 1～15 分鐘重算下面的推算）':'');
+      $('#prob-head').innerHTML=fin?'最新收盤已是 '+esc(cc.m)+' 最後一個交易日：下面的結果就是 '+esc(nextM)+' 的正式判斷。'
+        :left===0?'今天是 '+esc(cc.m)+' 最後一個交易日，下面用'+pxTxt+'推算；收盤後才是 '+esc(nextM)+' 的正式判斷。'
+        :'下個月＝<b>'+esc(nextM)+'</b>。'+esc(cc.m)+' 還有 <b>'+left+'</b> 個交易日，月底收盤還沒出來，所以用模擬估計機率（計算中…）';
+      const card=(st,F)=>{const pv=Lk.provisional.w[st.id], fl=Lk.flips[st.id]||{};
+        let pr='';
+        if(!Lk.preps||!Lk.preps[st.id]) pr='<div class="small">這一條的資料暫時無法取得，請稍後重新整理。</div>';
+        else if(F){const ps=F.probs[st.id]; const best=ps.slice().sort((a,b)=>b.p-a.p)[0];
+          pr='<div class="small">'+esc(nextM)+' 持有'+(F.n===1?'（'+(fin?'正式判斷':'以'+pxTxt+'推算')+'）':'機率（模擬 '+F.n.toLocaleString('en-US')+' 次'+(F.from?'，從 QQQ '+F.from.toFixed(2)+' 起算':'')+'）')+'</div><div class="pbar" role="img" aria-label="'+esc(ps.map(x=>T(x.w)+' '+pc(x.p)).join('，'))+'">'+ps.filter(x=>x.p>0).map(x=>'<span class="'+cls(x.w)+'" style="width:'+(x.p*100).toFixed(2)+'%"></span>').join('')+'</div>'
+            +'<ul class="plist">'+ps.map(x=>'<li><span class="badge '+cls(x.w)+'">'+T(x.w)+'</span> <b>'+pc(x.p)+'</b></li>').join('')+'</ul>'
+            +'<div class="hold" style="font-size:22px;margin-top:6px">最可能：'+T(best.w)+'（'+pc(best.p)+'）</div>';}
+        else pr='<div class="small">模擬計算中…</div>';
+        const parts=[]; if(fl.down) parts.push('月底收盤 ≤ <b class="num">'+fl.down.raw.toFixed(2)+'</b> → '+T(fl.down.w)); if(fl.up) parts.push('月底收盤 ≥ <b class="num">'+fl.up.raw.toFixed(2)+'</b> → '+T(fl.up.w));
+        return '<div class="card"><h4>'+esc(st.id)+'</h4>'+pr
+          +'<div class="next"><div class="small">用'+pxTxt+'當作 '+esc(cc.m)+' 月底收盤 → '+esc(nextM)+' 持有</div><div class="hold" style="font-size:20px">'+T(pv)+'</div>'
+          +'<div class="small">翻轉價位：'+(parts.length?parts.join('；')+'（±40% 範圍內）':'±40% 範圍內結論不變')+'</div></div></div>';};
+      const det={n:1,probs:Object.fromEntries(VIS.map(s=>[s.id,s.levels.map(w=>({w,p:w===Lk.provisional.w[s.id]?1:0}))]))};
+      if(left===0){$('#cards').innerHTML=VIS.map(st=>card(st,det)).join('');return;}
+      // 機率模擬：價格和上次模擬差不到 1%、且 15 分鐘內算過，就沿用上次的結果（標明起算價）
+      const px=cc.c, reuse=lastF&&lastF.asof===mk.asof&&Math.abs(px/lastF.from-1)<0.01&&Date.now()-lastF.at<15*60e3;   // 換了交易日（剩下的天數不同）一定重算
+      const fHead=F=>'下個月＝<b>'+esc(nextM)+'</b>。'+esc(cc.m)+' 還有 <b>'+F.days+'</b> 個交易日。模擬方法：QQQ 自 '+esc(F.poolFrom)+' 起 '+F.poolN.toLocaleString('en-US')+' 個交易日的報酬與日內高低，依目前波動（EWMA λ＝'+F.lambda+'，日波動 '+(F.sigma*100).toFixed(2)+'%）重抽樣，從 '+esc(F.fromTxt)+' '+F.from.toFixed(2)+' 模擬到月底 '+F.n.toLocaleString('en-US')+' 次，再用規則判斷每一次的月底結果。月底收盤 90% 落在 '+F.price.p5.toFixed(2)+'～'+F.price.p95.toFixed(2)+'（中位數 '+F.price.p50.toFixed(2)+'）。這是估計，不是保證；同一份資料每次結果相同。'+(F!==lastF||px===F.from?'':'（價格和模擬起算價相差不到 1%，15 分鐘內沿用這次模擬；上面「用…當作月底收盤」與翻轉價位是用最新價格算的）');
+      $('#cards').innerHTML=VIS.map(st=>card(st,reuse?lastF:null)).join('');
+      if(reuse){$('#prob-head').innerHTML=fHead(lastF);return;}
+      setTimeout(async()=>{try{const fhs=await fhsP; if(my!==seq)return; const F=rules.forecast(mk,fhs,{n:10000,preps:Object.fromEntries(VIS.map(st=>[st.id,Lk.preps[st.id]]))});   // 只模擬開通的模型（每條路徑的價格與模型無關，結果和全部一起算相同）
+        if(my!==seq)return; F.from=px; F.fromTxt=lv&&lv.ph!=='close'?'即時價':'最新收盤'; F.at=Date.now(); F.asof=mk.asof; lastF=F;
         $('#cards').innerHTML=VIS.map(st=>card(st,F)).join('');
-        $('#prob-head').innerHTML='下個月＝<b>'+esc(nextM)+'</b>。'+esc(c.m)+' 還有 <b>'+F.days+'</b> 個交易日。模擬方法：QQQ 自 '+esc(F.poolFrom)+' 起 '+F.poolN.toLocaleString('en-US')+' 個交易日的報酬與日內高低，依目前波動（EWMA λ＝'+F.lambda+'，日波動 '+(F.sigma*100).toFixed(2)+'%）重抽樣，模擬到月底 '+F.n.toLocaleString('en-US')+' 次，再用規則判斷每一次的月底結果。月底收盤 90% 落在 '+F.price.p5.toFixed(2)+'～'+F.price.p95.toFixed(2)+'（中位數 '+F.price.p50.toFixed(2)+'）。這是估計，不是保證；同一份資料每次結果相同。';
+        $('#prob-head').innerHTML=fHead(F);
       }catch(e){$('#prob-head').innerHTML='<span class="msg err">機率計算失敗：'+esc(e.message||e)+'</span>';}},30);
     }
+    cardsFor(market,null);
+    // 即時：QQQ 有新成交就重算（至少間隔 1 分鐘；這台裝置算一次超過 0.6 秒時間隔拉長到算一次時間的 100 倍，最多 15 分鐘）
+    if(window.BN&&BN.liveq){let lastAt=0,lastPx=0;BN.liveq.want(['US']);
+      const go=()=>{const mk=BN.liveq.qqqMarket(market),q=mk&&mk.live;if(!mk||document.hidden)return;
+        const gap=Math.min(15*60e3,Math.max(60e3,cost*100));if(Date.now()-lastAt<gap&&Math.abs(q.p/lastPx-1)<0.003)return;
+        lastAt=Date.now();lastPx=q.p;setTimeout(()=>{try{cardsFor(mk,q);}catch(err){/* 下一次再試 */}},0);};
+      BN.liveq.on(go);setTimeout(go,0);}
     window.BN.memberTargets={month:holdM,list:VIS.filter(st=>L.lastComplete.w[st.id]!=null).map(st=>({id:st.id,w:L.lastComplete.w[st.id],text:T(L.lastComplete.w[st.id])}))};
     document.dispatchEvent(new CustomEvent('bn:targets',{detail:window.BN.memberTargets}));
   }catch(err){$('#nowbody').innerHTML='<tr><td colspan="4"><span class="msg err">載入失敗：'+esc(err.message||err)+'</span></td></tr>';$('#cards').innerHTML='';$('#prob-head').textContent='';}
 })();
 </script>
-<script src="assets/liveq.js?v=f326910399"></script><script src="assets/mh-core.js?v=85f0ef4592"></script><script src="assets/pie3d.js?v=2c8d64a690"></script><script src="assets/mh.js?v=e855a2fbf8"></script>
+<script src="assets/mh-core.js?v=85f0ef4592"></script><script src="assets/pie3d.js?v=2c8d64a690"></script><script src="assets/mh.js?v=e855a2fbf8"></script>
 </main>
 <footer class="site-foot">
   <div class="wrap foot-tools"><div class="tools"><form class="search" role="search"><label class="sr-only" for="q">站內搜尋</label><input id="q" type="search" placeholder="搜尋本站（例：最大回撤）"><button type="submit">搜尋</button></form></div></div>

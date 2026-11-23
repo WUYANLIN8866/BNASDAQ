@@ -145,7 +145,7 @@
   </div>
   <div class="note"><p>安全提醒：accounts.json 是公開檔案。登入只比對密碼雜湊（PBKDF2 310,000 次）；供管理員查看的密碼副本用 RSA-3072 加密，私鑰與網站寫入權杖都用管理員的個人金鑰加密，只有管理員登入後解得開。所以<b>管理員密碼要夠長、不要和其他網站共用</b>；會員密碼建議用「產生」的隨機密碼，避免會員把在別處使用的密碼交給本站。</p></div>
 </div></div>
-<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=286770f832"></script><script src="assets/pwchange.js?v=93b3525f42"></script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=286770f832"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=1375dd68e6"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -413,8 +413,17 @@
     const exp=rules.validUntil&&c.m>rules.validUntil?'｜<b style="color:var(--bad)">模型已到期，需要重新訓練</b>':'';
     $('#mstat').innerHTML='資料截至 <b>'+market.asof+'</b>｜QQQ 收盤 '+c.c.toFixed(2)+'（U '+c.U.toFixed(4)+'，本月高 '+c.H.toFixed(4)+'／低 '+c.L.toFixed(4)+'）｜來源 '+esc(market.source)+'｜更新 '+esc(market.updated)+'｜規則版本 <b>'+esc(rules.built)+'</b>（模型有效至 '+esc(rules.validUntil)+'）｜'+sync+exp;
     $('#sig-cur').innerHTML='<h3>正式訊號：'+L.lastComplete.month+' 月底（決定 '+nextMonth(L.lastComplete.month)+' 持有）</h3>'+condRows(L.lastComplete);
-    $('#sig-prov').innerHTML='<h3>推算：把最新收盤 '+c.c.toFixed(2)+' 當作 '+c.m+' 月底收盤（決定 '+nextMonth(c.m)+' 持有）</h3>'+condRows(L.provisional)
-      +'<p class="small">翻轉價位（原始價）：'+rules.STRATEGIES.map(st=>{const f=L.flips[st.id]||{};return esc(st.id)+' 往下 '+(f.down?f.down.raw.toFixed(2)+' → '+rules.holdingText(f.down.w):'無')+'、往上 '+(f.up?f.up.raw.toFixed(2)+' → '+rules.holdingText(f.up.w):'無');}).join('｜')+'</p>';
+    // 推算：把最新價格當作本月底收盤。2026-11-24 起開盤期間（含美股盤前盤後）用 QQQ 即時成交（assets/liveq.js 的 qqqMarket；還原價＝即時價 × k，本月高低納入即時價），約每分鐘重算
+    const mstat0=$('#mstat').innerHTML;
+    const prov=(m2,L2)=>{const c2=m2.current,lv=m2.live&&m2.live.ph!=='close'?m2.live:null;
+      if(lv)$('#mstat').innerHTML=mstat0+'｜QQQ '+esc(BN.liveq.tag(lv))+' 即時 <b>'+c2.c.toFixed(2)+'</b>（'+esc(lv.ses)+'，U '+c2.U.toFixed(4)+'，本月高 '+c2.H.toFixed(4)+'／低 '+c2.L.toFixed(4)+'）';
+      $('#sig-prov').innerHTML='<h3>推算：把'+(lv?'QQQ '+esc(BN.liveq.tag(lv))+' 即時價 ':'最新收盤 ')+c2.c.toFixed(2)+' 當作 '+c2.m+' 月底收盤（決定 '+nextMonth(c2.m)+' 持有）</h3>'+condRows(L2.provisional)
+      +'<p class="small">翻轉價位（原始價）：'+rules.STRATEGIES.map(st=>{const f=L2.flips[st.id]||{};return esc(st.id)+' 往下 '+(f.down?f.down.raw.toFixed(2)+' → '+rules.holdingText(f.down.w):'無')+'、往上 '+(f.up?f.up.raw.toFixed(2)+' → '+rules.holdingText(f.up.w):'無');}).join('｜')+'</p>';};
+    prov(market,L);
+    if(window.BN&&BN.liveq&&!window.__admLive){window.__admLive=true;let last=0,lastPx=0;BN.liveq.want(['US']);
+      const go=()=>{const m2=BN.liveq.qqqMarket(market);if(!m2||document.hidden)return;if(Date.now()-last<60e3&&Math.abs(m2.current.c/lastPx-1)<0.003)return;last=Date.now();lastPx=m2.current.c;
+        setTimeout(()=>{try{prov(m2,rules.latest(m2,tb));}catch(e){/* 下一次再試 */}},0);};
+      BN.liveq.on(go);setTimeout(go,0);}
     $('#custom').addEventListener('input',()=>{const px=+$('#custom').value;if(!(px>0))return;const e=rules.provisional(S,px*market.k,c,L.preps);$('#sig-custom').innerHTML='<h3>自訂收盤 '+px.toFixed(2)+' 的推算</h3>'+condRows(e);});
     // 最近 24 個完整月
     $('#hist-head').innerHTML='<tr><th class="l">訊號月</th><th>還原收盤</th>'+rules.STRATEGIES.map(st=>'<th>'+esc(st.id)+' 成立</th><th>'+esc(st.id)+' 下月持有</th>').join('')+'</tr>';

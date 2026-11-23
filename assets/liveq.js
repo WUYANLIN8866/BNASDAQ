@@ -15,6 +15,7 @@
      BN.liveq.fx()               → {rate 美元兌台幣, prev 前收, t, date 台北日期, src}，沒有就 null
      BN.liveq.codes()            → 快照裡全部代號
      BN.liveq.tag(q)             → 給畫面用的短說明，例「盤中 10:15」「盤前 17:42」「盤後 05:30」「收盤」（台北時間）
+     BN.liveq.qqqMarket(market)  → market.json 換成 QQQ 即時價當作本月最新收盤的複本（會員規則推算本月底用），不能換就 null
      BN.liveq.on(fn)             → 有新快照時呼叫 fn({mk})
    每日市場分析頁（daily.html）自己就在讀快照（window.BN.live、bn-live 事件；BN.liveOwn＝true）：這裡不重複讀，直接跟著它，
    需要的市場透過 BN.liveWant／BN.liveKick 請它一起讀。 */
@@ -140,5 +141,17 @@
     const w = q.ph === 'pre' ? '盤前' : q.ph === 'post' ? '盤後' : q.settling ? '剛收盤' : '盤中';
     return w + ' ' + hhmm(q.t) + (q.stale ? '（更新中斷）' : '');
   }
-  BN.liveq = { want, get, fx, codes, tag, hhmm, phase, snap: mk => LIVE[mk] || null, on: fn => { if (typeof fn === 'function') SUBS.push(fn); } };
+  // data/market.json（QQQ 月資料，scripts/fetch_market.py）換成「QQQ 即時價當作本月最新收盤」的版本，給會員規則推算本月底用；不能換就回 null。
+  //   只在即時資料和 market.json 同一個月、交易日不早於 market.json 時換；還原價 U＝即時價 × k（fetch_market.py 同一個定義，當天的還原係數＝1），
+  //   本月最高／最低納入即時價；當天已在逐日資料裡就換掉那一天，否則加一天；其他月份不動。回傳的是複本，原物件不變。
+  function qqqMarket(m) {
+    const q = get('QQQ', 'US'), cu0 = m && m.current, k = m && +m.k;
+    if (!q || !(q.p > 0) || !cu0 || !q.ses || q.ses < (cu0.asof || '') || q.ses.slice(0, 7) !== cu0.m || !(k > 0)) return null;
+    const U = k * q.p, mk = JSON.parse(JSON.stringify(m)), cu = mk.current, d = cu.daily || (cu.daily = []);
+    cu.c = q.p; cu.U = U; cu.H = Math.max(cu.H, U); cu.L = Math.min(cu.L, U);
+    if (d.length && d[d.length - 1].d === q.ses) { d[d.length - 1].c = q.p; d[d.length - 1].U = U; } else { d.push({ d: q.ses, c: q.p, U }); cu.days = (cu.days || 0) + 1; }
+    cu.asof = q.ses; mk.asof = q.ses; mk.live = q;
+    return mk;
+  }
+  BN.liveq = { want, get, fx, codes, tag, hhmm, phase, qqqMarket, snap: mk => LIVE[mk] || null, on: fn => { if (typeof fn === 'function') SUBS.push(fn); } };
 })();

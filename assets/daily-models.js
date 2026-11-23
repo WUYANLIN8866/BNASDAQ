@@ -99,6 +99,26 @@
       ST.adm = build(rules, rules.latest(market, tb), market, rs, tj);
       box.innerHTML = adminPanel(ST.adm);
       root.querySelectorAll('.dm.ok[data-dm]').forEach(adminLine);
+      // 即時（2026-11-24 站主：所有股價計算都用最新的即時價格）：開盤期間（含美股盤前盤後）QQQ 有新成交，就用即時價當作本月最新收盤重算
+      // （BN.liveq.qqqMarket；至少間隔 1 分鐘，價格變動超過 0.3% 才提早）；已經展開的明細保持展開
+      if (BN.liveq) {
+        let last = 0, lastPx = 0; BN.liveq.want(['US']);
+        const go = () => {
+          const mk = BN.liveq.qqqMarket(market); if (!mk || document.hidden) return;
+          if (Date.now() - last < 60e3 && Math.abs(mk.current.c / lastPx - 1) < 0.003) return;
+          last = Date.now(); lastPx = mk.current.c;
+          setTimeout(() => { try {
+            const openAll = [...box.querySelectorAll('details.dm-all')].map(d => d.open);
+            const openAdm = new Set([...root.querySelectorAll('.dm.ok[data-dm]')].filter(el => { const d = el.querySelector('.dm-adm'); return d && d.open; }).map(el => el.getAttribute('data-dm')));
+            ST.adm = build(rules, rules.latest(mk, tb), mk, rs, tj);
+            box.innerHTML = adminPanel(ST.adm);
+            box.querySelectorAll('details.dm-all').forEach((d, i) => { if (openAll[i]) d.open = true; });
+            root.querySelectorAll('.dm-adm').forEach(x => x.remove());
+            root.querySelectorAll('.dm.ok[data-dm]').forEach(el => { adminLine(el); if (openAdm.has(el.getAttribute('data-dm'))) { const d = el.querySelector('.dm-adm'); if (d) d.open = true; } });
+          } catch (e) { /* 下一次再試 */ } }, 0);
+        };
+        BN.liveq.on(go); setTimeout(go, 0);
+      }
     } catch (e) {
       say('<p class="msg err">管理員專區載入失敗：' + esc(e && e.name === 'OperationError' ? '會員規則暫時無法解密（多半是剛更換金鑰），請稍後再試' : (e && e.message) || e) + '</p>');
     }
@@ -159,12 +179,13 @@
       return p.length ? p.join('<br>') : '±40% 範圍內結論不變';
     };
     let h = '<h3>管理員專區：' + esc(group()) + '的判斷條件</h3>';
-    h += '<p class="small">只有管理員登入時顯示，會員與訪客看不到這一區。市場資料截至 <b>' + esc(A.market.asof) + '</b>' + (c ? '（QQQ 收盤 <b>' + c.c.toFixed(2) + '</b>）；下面把最新收盤當作 ' + esc(c.m) + ' 月底收盤來推算（決定 ' + esc(nextM) + ' 持有）' : '') + '。規則版本 ' + esc(R.built) + '。</p>';
+    const lv = A.market.live && A.market.live.ph !== 'close' ? A.market.live : null, lvTxt = lv && BN.liveq ? BN.liveq.tag(lv) + ' 即時價' : '收盤';
+    h += '<p class="small">只有管理員登入時顯示，會員與訪客看不到這一區。市場資料截至 <b>' + esc(A.market.asof) + '</b>' + (c ? '（QQQ ' + esc(lvTxt) + ' <b>' + c.c.toFixed(2) + '</b>）；下面把' + (lv ? '即時價' : '最新收盤') + '當作 ' + esc(c.m) + ' 月底收盤來推算（決定 ' + esc(nextM) + ' 持有）' + (lv ? '，開盤期間約每分鐘重算' : '') : '') + '。規則版本 ' + esc(R.built) + '。</p>';
     if (ST.session && A.market.asof && ST.session < A.market.asof) h += '<p class="small">你正在看的是美股 ' + esc(ST.session) + ' 的舊報告；下面的數值是目前最新的，不是報告當天的。</p>';
     if (warn.length) h += '<p class="msg err">' + esc(warn.join('；')) + '</p>';
-    h += '<div class="tblwrap"><table class="tbl dm-ov"><thead><tr><th class="l">模型</th><th class="l">' + esc(holdM) + ' 持有</th><th class="l">推算 ' + esc(nextM) + ' 持有</th><th>條件成立</th><th class="l">翻轉價位（距最新收盤）</th></tr></thead><tbody>'
+    h += '<div class="tblwrap"><table class="tbl dm-ov"><thead><tr><th class="l">模型</th><th class="l">' + esc(holdM) + ' 持有</th><th class="l">推算 ' + esc(nextM) + ' 持有</th><th>條件成立</th><th class="l">翻轉價位（距最新價格）</th></tr></thead><tbody>'
       + A.ms.map(m => '<tr><td class="l"><b>' + esc(m.id) + '</b></td><td class="l" data-l="' + esc(holdM) + ' 持有">' + badge(m.hold) + '</td><td class="l" data-l="推算 ' + esc(nextM) + ' 持有">' + (A.prov ? badge(m.next) : '—')
-        + '</td><td data-l="條件成立">' + (m.d ? m.d.votes + '／' + m.d.of : '—') + '</td><td class="l" data-l="翻轉價位（距最新收盤）">' + flip(m) + '</td></tr>').join('')
+        + '</td><td data-l="條件成立">' + (m.d ? m.d.votes + '／' + m.d.of : '—') + '</td><td class="l" data-l="翻轉價位（距最新價格）">' + flip(m) + '</td></tr>').join('')
       + '</tbody></table></div>';
     h += A.ms.map(m => '<details class="dm-all"><summary><span>' + esc(m.id) + '：全部 ' + m.rows.length + ' 項判斷條件與對應的消息主題</span></summary><div class="ans">'
       + (m.rows.length ? '<div class="tblwrap"><table class="tbl dm-t dm-full"><thead><tr><th class="l">判斷條件</th><th>目前數值</th><th class="c">是否成立</th><th class="l">對應的消息主題</th></tr></thead><tbody>'
@@ -173,7 +194,7 @@
       + '<p class="dm-n">' + (m.d ? esc(m.d.summary) : '資料暫時無法取得') + '</p></div></details>').join('');
     h += '<ul class="dm-notes"><li>每則消息下方的「判斷條件｜管理員」：依消息主題列出各模型<b>直接對應</b>的條件（主題和條件用的是同一類公開數據）；沒有對應條件的模型，這則消息只會透過 QQQ 月線影響它。</li>'
       + '<li>消息主題：新的報告由排程逐則標記；沒有標記的舊報告改用關鍵字比對（可能不準），並標示「關鍵字比對」。</li>'
-      + '<li>數值是把最新收盤當作月底時會採用的數值；之後才公布的月資料，要等公布後的月底才會進到模型。完整訊號與自訂收盤推算在<a href="admin.html">管理後台</a>。</li></ul>';
+      + '<li>數值是把最新價格（開盤期間是 QQQ 即時成交）當作月底收盤時會採用的數值；之後才公布的月資料，要等公布後的月底才會進到模型。完整訊號與自訂收盤推算在<a href="admin.html">管理後台</a>。</li></ul>';
     return h;
   }
 
