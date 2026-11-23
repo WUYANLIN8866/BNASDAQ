@@ -19,5 +19,9 @@ jobs:
           sparse-checkout: |
             scripts
             data/heatmap
-      - name: Probe Yahoo pre/post market sources
-        run: python3 scripts/probe_ext.py
+      - name: New heatmap_live.py against real pre-market data (once, no publish)
+        run: |
+          python3 scripts/heatmap_live.py once --market US --ext pre
+          sleep 65
+          python3 scripts/heatmap_live.py once --market US --ext pre
+          python3 scripts/heatmap_live.py once --market US
