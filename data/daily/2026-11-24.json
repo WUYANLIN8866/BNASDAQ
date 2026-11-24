@@ -1,0 +1,935 @@
+{
+ "schema": "bnasdaq-daily/1",
+ "date": "2026-11-24",
+ "session": "2026-11-23",
+ "generated": "2026-11-24T13:10:48Z",
+ "headline": "盤前版：晶片股獲利了結，美股盤前 SOXX −4.44%、輝達 −4.76%、QQQ −1.73%、SPY −0.93%，Anthropic 一度跌破 83 美元承銷價；11/23 黃仁勳回任引爆 2025 年 4 月以來最大漲幅：費半 +14.03%、那指 100 +6.86%、標普 +4.73%、羅素 +3.40%、道瓊 +3.01%；台股今收 +8.99% 創史上最大漲點",
+ "summary": "美股 11/24（週二）盤前，台北 21:05（美東 08:05）本站即時快照（Yahoo Finance，盤前成交）：QQQ −1.73%、SOXX −4.44%（SOXQ −4.18%）、SPY −0.93%、DIA −0.44%、IWM −0.58%，那指 100 推估約 26,283、費半約 9,163；VIX 28.82（+8.26%）。①晶片股回吐前一天漲幅：英特爾 −6.20%、美光 −6.11%、輝達 −4.76%、Arm −4.45%、超微 −3.95%、博通 −3.39%、台積電 ADR −1.87%（本站即時）；Yahoo Finance／Stocktwits 稱美東 04:30 那指 100 期貨已由漲轉跌 −0.61%。②政策：美國商務部 11/23 將輝達合作夥伴 Megaspeed 與阿里巴巴新加坡子公司 Apex 等 7 家列入實體清單，理由是 AI 晶片轉運風險（stockanalysis 引路透），阿里巴巴盤前 −2.78%；中國把暫停對美鎵、鍺、銻出口管制延長兩個月至 2027-01-27（Tribune、Seoul Economic Daily）。③財報與個股（盤前）：HPE −11.77%、ADI −9.44%（Q4 營收 43.73 億美元、年增 42%）、Dell −6.56%（今晚財報）、Best Buy +5.67%（同店銷售 +6.1%、五年最高，上調全年財測）；Anthropic 美東 06:35 報 82.40、跌破 83 美元承銷價（unite.ai）。④亞歐：台股收 40,122.35（+3,310.46 點、+8.99%）創史上最大漲點，台積電漲停收 2,230 元（聯合新聞網）；KOSPI 收 5,006.03（+6.32%）、日經 225 收 58,644.63（+3.91%）；STOXX 600 格林威治 08:10 +0.1%，賽諾菲宣布以每股 175 美元、約 410 億美元收購 Insmed（賽諾菲新聞稿）。⑤其他：FT 稱特斯拉與 SpaceX 指派 5 名董事主導全換股合併談判（RTÉ 引路透）；伊朗革命衛隊稱 3 艘油輪在荷莫茲觸雷起火（未獲證實，Euronews）；布蘭特美東 04:30 −0.84% 至 88.62（Yahoo Finance／Stocktwits）。11/23 收盤回顧：那指 100 26,746.10（+6.86%）、費半 9,588.05（+14.03%）、標普 7,237.17（+4.73%）、道瓊 49,595.31（+3.01%）、羅素 2000 2,669.66（+3.40%）、那斯達克綜合 24,089.56（+6.51%），標普與那斯達克創 2025 年 4 月以來最大單日漲幅（CappNotes、中央社）；輝達 +31.48%、2003 年 5 月以來最大單日漲幅；VIX 26.62（−25.83%）；10 年期 4.92% 持平（財政部）；CME 12/9 升息 1 碼機率 95.3%（TheStreet）。今晚：消費者信心，盤後 Dell、HP、Workday 財報；11/25 10 月 PCE；11/26 感恩節休市、11/27 美東 13:00 提早收盤。本版分析時間台北 21:05（盤前版；盤前數字為當時報價），同時整理 11/23 收盤；指數表、週表的收盤欄是 11/23（報告 session），最新點位看各表「最新」欄（約每分鐘更新）。",
+ "indices": [
+  {
+   "key": "NDX",
+   "name": "那斯達克 100",
+   "close": 26746.1,
+   "chg": 6.86,
+   "prev_week": 25028.98,
+   "wk": 6.86,
+   "note": "+1,717.12 點（CappNotes；26,746.10−25,028.98 驗算一致）；收盤÷11/20 收盤現算 +6.86%，本週一故一週＝單日；QQQ +7.00%（本站 us-close）；較 11/13 收盤仍 −4.29%，收復上週跌點約 59%"
+  },
+  {
+   "key": "SOX",
+   "name": "費城半導體",
+   "close": 9588.05,
+   "chg": 14.03,
+   "prev_week": 8408.59,
+   "wk": 14.03,
+   "note": "+1,179.46 點（中央社、中時；9,588.05−8,408.59 驗算一致）；SOXX +13.63%、SOXQ +13.92%（本站 us-close）；輝達 +31.48%、美光 +19.04%、英特爾 +16.34%、Arm +16.08%、台積電 ADR +14.08%、超微 +6.85%、博通 +3.00%（CappNotes、中時、本站熱力圖）；收復上週跌點約 68%"
+  },
+  {
+   "key": "SPX",
+   "name": "標普 500",
+   "close": 7237.17,
+   "chg": 4.73,
+   "prev_week": 6910.39,
+   "wk": 4.73,
+   "note": "+326.78 點（CappNotes、中央社）；2025 年 4 月以來最大單日漲幅、終結七連黑（Yahoo Finance、中時）；上漲 417 家、下跌 83 家；科技類股 +8.97%，能源 −1.06%、必需消費 −0.09%（CappNotes）"
+  },
+  {
+   "key": "DJI",
+   "name": "道瓊工業",
+   "close": 49595.31,
+   "chg": 3.01,
+   "prev_week": 48147.33,
+   "wk": 3.01,
+   "note": "+1,447.98 點（CappNotes、中央社、中時一致）；DIA +3.03%（本站 us-close）；較 11/13 收盤仍 −5.26%"
+  },
+  {
+   "key": "RUT",
+   "name": "羅素 2000",
+   "close": 2669.66,
+   "chg": 3.4,
+   "prev_week": 2581.79,
+   "wk": 3.4,
+   "note": "+87.87 點（收盤 2,669.66 取自 CappNotes，−11/20 收盤 2,581.79 現算）；IWM +3.56%（本站 us-close）交叉驗證；標普中型股 400 +3.42%、小型股 600 +3.08%（CappNotes）"
+  },
+  {
+   "key": "IXIC",
+   "name": "那斯達克綜合",
+   "close": 24089.56,
+   "chg": 6.51,
+   "prev_week": 22617.73,
+   "wk": 6.51,
+   "note": "+1,471.83 點（CappNotes、中央社、中時一致）；2025 年 4 月 9 日以來最大單日漲幅（CappNotes）"
+  }
+ ],
+ "week_path": {
+  "dates": [
+   "11/13",
+   "11/16",
+   "11/17",
+   "11/18",
+   "11/19",
+   "11/20",
+   "11/23"
+  ],
+  "note": "11/13 為基期（＝100），延伸到本週一 11/23，呈現「上週五天全跌、週五輝達傳 SEC 會計調查引爆 AI 股崩跌 → 本週一黃仁勳即日回任、AI 股報復性反彈」。11/16～11/20 逐日漲跌取自各期報告（那指 100 的 11/20 用指數官方收盤 −5.63%），11/23 取本版收盤。六條線逐日漲跌累乘 11/13→11/23：那斯達克 100 −4.29%、費城半導體 −5.49%、標普 500 −4.30%、道瓊 −5.24%、那斯達克綜合 −4.15%、羅素 2000 −4.29%；與收盤÷11/13 收盤現算（那斯達克 100 −4.29%、費城半導體 −5.50%、標普 500 −4.29%、道瓊 −5.26%、那斯達克綜合 −4.16%、羅素 2000 −4.33%）差 ≤0.05 個百分點，為逐日漲跌四捨五入。",
+  "series": [
+   {
+    "name": "那斯達克 100",
+    "chg": [
+     0,
+     -2.67,
+     -0.72,
+     0.42,
+     -2.19,
+     -5.63,
+     6.86
+    ]
+   },
+   {
+    "name": "費城半導體",
+    "chg": [
+     0,
+     -5.28,
+     0.34,
+     0.1,
+     -2.41,
+     -10.73,
+     14.03
+    ]
+   },
+   {
+    "name": "標普 500",
+    "chg": [
+     0,
+     -1.92,
+     -1.03,
+     -0.23,
+     -2.02,
+     -3.7,
+     4.73
+    ]
+   },
+   {
+    "name": "道瓊",
+    "chg": [
+     0,
+     -1.41,
+     -1.64,
+     -1.11,
+     -2.19,
+     -1.93,
+     3.01
+    ]
+   },
+   {
+    "name": "那斯達克綜合",
+    "chg": [
+     0,
+     -2.49,
+     -0.74,
+     0.42,
+     -2.25,
+     -5.28,
+     6.51
+    ]
+   },
+   {
+    "name": "羅素 2000",
+    "chg": [
+     0,
+     -1.7,
+     -1.5,
+     0.52,
+     -2.2,
+     -2.76,
+     3.4
+    ]
+   }
+  ]
+ },
+ "big_move": {
+  "triggered": true,
+  "threshold": 2,
+  "intro": "美股 11/24 盤前（台北 21:05＝美東 08:05，本站即時快照，Yahoo Finance）：指數沒有盤前報價，以追蹤 ETF 的盤前成交對前一交易日收盤推估——費半（SOXX）−4.44%，超過 ±2%；那指 100（QQQ）−1.73%、那斯達克綜合 −1.73%（ONEQ 盤前尚無成交，比照網頁改用 QQQ 推估）、標普 500（SPY）−0.93%、羅素 2000（IWM）−0.58%、道瓊（DIA）−0.44%。下面是這個交易日盤前大跌的分析，盤中（台北 23:16、02:16）會依漲跌再檢視；11/23 收盤大漲的主因（黃仁勳即日回任）請選日期 2026-11-23 查看。機率為本站依新聞證據權重所作的主觀估計（合計 100%），不是統計推論。",
+  "causes": [
+   {
+    "p": 55,
+    "title": "獲利了結：前一天漲最多的 AI 晶片股，盤前跌最多",
+    "evidence": [
+     "11/23 費半 +14.03%、輝達 +31.48%（2003 年 5 月以來最大單日漲幅）、美光 +19.04%、英特爾 +16.34%、Arm +16.08%、Dell +20.46%（CappNotes、中時）",
+     "盤前（台北 21:05，本站即時）：英特爾 −6.20%、美光 −6.11%、Dell −6.56%、輝達 −4.76%、Arm −4.45%、科林研發 −4.41%、SOXX −4.44%；同時段 SPY 只 −0.93%、DIA −0.44%，跌勢集中在前一天的領漲股",
+     "Yahoo Finance／Stocktwits：美東 04:30 那指 100 期貨已由漲轉跌 −0.61%；TradingKey：AI 晶片股與光通訊股集體回落、未能延續前一天漲勢；Investing.com 標題「美國晶片股在輝達領漲後盤前下跌」"
+    ],
+    "counter": "沒有出現新的基本面壞消息；SOXX 盤前 −4.44% 只抵銷 11/23 漲幅（+13.63%）約三分之一，且亞洲晶片股今天仍大漲（台股 +8.99%、KOSPI +6.32%、Advantest +12.45%），顯示買盤沒有全面撤退。",
+    "tags": [
+     "mkt",
+     "tech"
+    ]
+   },
+   {
+    "p": 30,
+    "title": "出口管制再收緊：商務部把輝達合作夥伴 Megaspeed 與阿里巴巴子公司列入實體清單",
+    "evidence": [
+     "美國商務部 11/23 將 Megaspeed（新加坡、馬來西亞、泰國關係企業）、阿里巴巴新加坡子公司 Apex Enterprise Solutions、Swiftdata 等 7 家列入實體清單，許可審查採「推定拒絕」，理由是先進 AI 晶片可能被轉給未經美方許可的買家；規則 11/25 刊登聯邦公報（stockanalysis 引路透）",
+     "Megaspeed 出租輝達晶片算力、自 2024 年起被美方調查（stockanalysis）；Yahoo Finance／Stocktwits 稱輝達盤前一度跌逾 8%，市場關注可能的領導層變動與更嚴格的晶片管制",
+     "輝達須在 11/25 前向財政部說明是否規避出口管制（Motley Fool 引貝森特 11/22 談話）；阿里巴巴稱列入清單「錯誤」、將循法律途徑，盤前 −2.78%（stockanalysis、本站即時）"
+    ],
+    "counter": "Megaspeed 只是輝達眾多客戶之一，這次是針對特定轉運管道而非全面性新禁令；中國同日把暫停對美鎵、鍺、銻出口管制延長兩個月，美中休兵仍在（Tribune、Seoul Economic Daily）。",
+    "tags": [
+     "trade",
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "p": 15,
+    "title": "升息預期升溫與 AI 股籌碼壓力",
+    "evidence": [
+     "CME FedWatch：12/9 升息 1 碼機率 95.3%，1/27 再升 1 碼機率由 11/20 的 49% 升到 69%（TheStreet，美東 11/24 06:33）；威廉斯 11/23：通膨約 3.5%，「還有工作要做」（CappNotes、TheStreet）",
+     "超微提交 S-3，登記最多 3.369 億股供既有股東與策略夥伴轉售（含 OpenAI、Meta 協議相關股票），超微本身不收取款項（Yahoo Finance／Stocktwits）；盤前 −3.95%（本站即時）",
+     "Anthropic 美東 06:35 盤前 82.40、跌破 83 美元承銷價（unite.ai），AI 新股熱度降溫"
+    ],
+    "counter": "10 年期殖利率 11/23 持平在 4.92%（財政部），利率面變化不大；升息預期影響所有股票，但這次盤前跌幅集中在晶片股，SPY 只 −0.93%。",
+    "tags": [
+     "rate",
+     "corp",
+     "mkt"
+    ]
+   }
+  ],
+  "live": {
+   "session": "2026-11-24",
+   "phase": "盤前",
+   "asof": "2026-11-24T13:05:00Z",
+   "moves": {
+    "NDX": -1.73,
+    "SOX": -4.44,
+    "SPX": -0.93,
+    "DJI": -0.44,
+    "RUT": -0.58,
+    "IXIC": -1.73
+   }
+  }
+ },
+ "weekly": {
+  "range": "2026-11-20 → 2026-11-23（本週一；收盤÷上週五 11/20 收盤現算，週一故與單日相同；括號內附上週 11/13→11/20）",
+  "cols": [
+   "11/20",
+   "11/23"
+  ],
+  "stock": {
+   "title": "股市：上週崩跌後週一報復性反彈，五大指數漲 3%～14%，標普、那斯達克創 2025 年 4 月以來最大單日漲幅",
+   "rows": [
+    [
+     "那斯達克 100",
+     "25,028.98",
+     "26,746.10",
+     "+6.86%（上週 −10.43%）"
+    ],
+    [
+     "費城半導體",
+     "8,408.59",
+     "9,588.05",
+     "+14.03%（上週 −17.13%）"
+    ],
+    [
+     "標普 500",
+     "6,910.39",
+     "7,237.17",
+     "+4.73%（上週 −8.61%）"
+    ],
+    [
+     "道瓊工業",
+     "48,147.33",
+     "49,595.31",
+     "+3.01%（上週 −8.02%）"
+    ],
+    [
+     "羅素 2000",
+     "2,581.79",
+     "2,669.66",
+     "+3.40%（上週 −7.48%）"
+    ],
+    [
+     "VIX",
+     "35.89",
+     "26.62",
+     "−25.83%（26.62÷35.89 現算；CappNotes、中時一致）"
+    ]
+   ],
+   "text": "一週趨勢：上週（11/13→11/20）五大指數重挫 7.5%～17.1%，週一黃仁勳即日回任輝達執行長，輝達 +31.48%、費半 +14.03%，標普終結七連黑。漲勢集中在 AI 硬體：科技類股 +8.97%，能源 −1.06%、必需消費 −0.09%（CappNotes）。以點數計，週一收復上週跌點的比例：費半約 68%、那指 100 約 59%、標普約 50%、羅素約 42%、道瓊約 35%（本表收盤現算）。11/24 盤前晶片股回吐，SOXX −4.44%、QQQ −1.73%（本站即時，見第 2 節）。本週焦點：今天消費者信心、11/25 10 月 PCE、11/26 感恩節休市、11/27 美東 13:00 提早收盤。"
+  },
+  "fx": {
+   "title": "匯市：股市大漲但升息預期升溫，美元指數升 0.5%，歐元跌到 19 個月低點",
+   "rows": [
+    [
+     "美元指數 DXY",
+     "103.84",
+     "約 104.35",
+     "+0.49%（104.35÷103.84 現算；CappNotes 標示 +0.52%，基期口徑差 0.03 個百分點）"
+    ],
+    [
+     "USD/JPY",
+     "約 158.51",
+     "約 158.94",
+     "+0.27%（CappNotes；11/20 欄由 158.94 與 +0.27% 反推）"
+    ],
+    [
+     "EUR/USD",
+     "約 1.0970",
+     "1.0904",
+     "−0.60%（CappNotes；美元兌歐元創逾 19 個月高點；11/20 欄由 1.0904 與 −0.60% 反推，與 11/19 的 1.0969 相近）"
+    ]
+   ],
+   "text": "一週趨勢：週一 CME 12/9 升息 1 碼機率由週五約 88% 升到約 98%（CappNotes），美元指數升至約 104.35、英鎊 −0.44% 至 1.3029（CappNotes）。investingLive 11/24 標題稱美元在風險偏好回升時仍「不動如山」。本站即時快照（台北 21:05，Yahoo Finance）：DXY 103.91（對 11/23 收盤 104.32 −0.39%）、USD/JPY 159.14、EUR/USD 1.0967，原因未見報導。"
+  },
+  "bond": {
+   "title": "債市：股市大漲、升息預期升溫，殖利率持平，10 年期守在 4.92%",
+   "rows": [
+    [
+     "2 年",
+     "4.63%",
+     "4.63%",
+     "0 bp"
+    ],
+    [
+     "10 年",
+     "4.92%",
+     "4.92%",
+     "0 bp"
+    ],
+    [
+     "30 年",
+     "5.31%",
+     "5.29%",
+     "−2 bp"
+    ]
+   ],
+   "text": "一週趨勢：財政部 Daily Treasury Par Yield 11/23：2 年 4.63%、10 年 4.92%、30 年 5.29%（本站 data/treasury.json；CappNotes 一致），2s10s 約 29 bp。上週避險買盤使殖利率全線下降 16～25 bp，週一股市大漲但殖利率沒有回升。Fed 目標區間 3.75%～4.00%（10 月以 10 比 2 維持）；CME 12/9 升息 1 碼機率 95.3%、1/27 再升機率 69%（TheStreet）。亞洲時段 10 年期約 4.94%（Business Recorder 引路透）。"
+  },
+  "other": {
+   "title": "商品與加密：油價跌至 3 個月低點，黃金反彈 3.4%，比特幣盤前回到 6 萬附近",
+   "rows": [
+    [
+     "WTI 原油",
+     "約 83.62～83.98",
+     "80.17",
+     "−3.88%（CappNotes；8/26 以來最低收盤。11/20 欄為 12 月合約結算，該合約 11/20 到期，11/23 起為 1 月合約，兩欄直接相除口徑不同）"
+    ],
+    [
+     "黃金",
+     "3,515.40",
+     "3,634.30",
+     "+3.38%（3,634.30÷3,515.40 現算，與 CappNotes 一致；12 月期貨）"
+    ],
+    [
+     "比特幣",
+     "約 59,100",
+     "約 61,250",
+     "約 +3.6%（61,250÷59,100 現算；CappNotes 24 小時口徑標示 +0.14%）"
+    ]
+   ],
+   "text": "油價：利比亞 Sharara 管線恢復、中東出口增加，WTI −3.88% 至 80.17、布蘭特 −3.46% 至 89.37（CappNotes）；11/24 美東 04:30 布蘭特 −0.84% 至 88.62、WTI −0.74% 至 79.58（Yahoo Finance／Stocktwits 引 CNBC），伊朗革命衛隊稱 3 艘油輪在荷莫茲觸雷起火（未獲證實）。黃金：12 月期貨 +3.38% 至 3,634.30，白銀 +4.74%、銅 +2.46%、天然氣 +3.66%（CappNotes）。比特幣：11/24 TradingKey 報 59,499（−2.8%），本站即時 60,393（台北 21:05）。"
+  }
+ },
+ "events": [
+  {
+   "cat": "科技與那斯達克",
+   "items": [
+    "美國商務部 11/23 將 7 家公司列入實體清單：Megaspeed 國際（新加坡）與其馬來西亞、泰國關係企業、阿里巴巴新加坡子公司 Apex Enterprise Solutions、Swiftdata 等；理由是先進 AI 晶片可能被轉給未經許可的買家，許可採「推定拒絕」；Apex 曾預付約 42 億美元租用東南亞算力；阿里巴巴稱列入有誤、將循一切法律途徑（stockanalysis 引路透、Techzine）",
+    "Anthropic 盤前跌破 83 美元承銷價：美東 06:35 報 82.40（−5.98%，前收 87.64），盤前區間 81.28～86.46；上市後收盤 97.17（11/19）→88.91（11/20）→87.64（11/23）（unite.ai）",
+    "超微提交 S-3，登記最多 3.369 億股供既有股東與策略夥伴轉售（含 OpenAI、Meta 協議，以及收購 World Labs、Taalas 相關股票），超微不發新股、不收取款項（Yahoo Finance／Stocktwits）",
+    "HPE 11/23 盤後財報優於預期、財測高於預期並加碼 50 億美元庫藏股（CappNotes），但盤前 −11.77%（本站即時，台北 21:05）；執行長 Neri 表示未向新雲端（neocloud）或高風險客戶提供融資（Yahoo Finance／Stocktwits）",
+    "ADI 11/24 盤前公布 FY2026 Q4：營收 43.73 億美元、年增 42%，GAAP EPS 3.40 美元；Q1 FY2027 營收指引 44 億 ±1.5 億美元，與 Q4 相近（ADI 新聞稿、securities.io）；盤前 −9.44%（本站即時）",
+    "Best Buy FY2027 Q3：營收 102.36 億美元、同店銷售 +6.1%（五年最高）、調整後 EPS 1.62 美元；全年營收財測上調至 430～433 億美元、調整後 EPS 6.90～7.05 美元（Best Buy 8-K）；盤前 +5.67%（本站即時）",
+    "今晚盤後財報：Dell、HP、Workday、Ambarella（Yahoo Finance／Stocktwits）；Dell 11/23 +20.46%（CappNotes）、盤前 −6.56%（本站即時）",
+    "CNBC 11/24 標題：Signal 繼聯合航空與多家銀行之後限制 AI 代理存取，理由是客戶風險"
+   ],
+   "tags": [
+    [
+     "trade",
+     "corp",
+     "tech"
+    ],
+    [
+     "corp",
+     "mkt"
+    ],
+    [
+     "corp"
+    ],
+    [
+     "corp",
+     "tech"
+    ],
+    [
+     "corp",
+     "tech"
+    ],
+    [
+     "corp"
+    ],
+    [
+     "corp"
+    ],
+    [
+     "tech",
+     "corp"
+    ]
+   ]
+  },
+  {
+   "cat": "貨幣政策與央行",
+   "items": [
+    "紐約 Fed 總裁威廉斯 11/23：通膨約 3.5%，Fed「還有工作要做」，暗示利率可能需隨時間調高（CappNotes；TheStreet 引紐約 Fed 講稿；CNBC 標題）",
+    "CME FedWatch：12/9 升息 1 碼機率 95.3%、升 2 碼已排除；1/27 再升 1 碼至 4.25%～4.50% 機率 69%（11/20 為 49%）、6/9 升至 4.50%～4.75% 機率 62.5%（TheStreet，美東 11/24 06:33）；CappNotes 稱 11/23 收盤約 98%（11/20 約 88%）",
+    "本週與下週數據：11/25 公布 10 月 PCE 物價，12/4 公布 11 月非農就業（TheStreet）"
+   ],
+   "tags": [
+    [
+     "rate"
+    ],
+    [
+     "rate"
+    ],
+    [
+     "pce",
+     "jobs"
+    ]
+   ]
+  },
+  {
+   "cat": "美國政治與政策",
+   "items": [
+    "川普在近一小時的 CNBC 電話訪問中稱黃仁勳是「國家寶藏」、自己對董事會的介入促成其回任（TheStreet、CappNotes）；兩黨各有議員批評這項決定，要求收緊對中國晶片管制（中時）",
+    "美國財政部 11/23 以「Operation Economic Outcast」制裁 22 個實體與 8 人，鎖定伊朗影子銀行網絡，多數在杜拜，另有香港、土耳其公司，含伊朗外匯黃金交易中心（Iran International）"
+   ],
+   "tags": [
+    [
+     "pol",
+     "corp",
+     "trade"
+    ],
+    [
+     "trade",
+     "geo"
+    ]
+   ]
+  },
+  {
+   "cat": "國際情勢",
+   "items": [
+    "伊朗革命衛隊海軍稱 3 艘油輪在荷莫茲海峽觸雷，發生強烈爆炸與大火（1 艘在海峽南岸、2 艘在東側），並稱當時有美軍大規模空中護航；聯合海事資訊中心稱未獲證實，其 11/19～21 報告記錄 114 艘次在美方協助下通過（Euronews、Iran International）",
+    "伊朗軍方將領哈塔米 11/23 下令海軍「逐日擴大」封鎖荷莫茲，直到伊朗 7 項條件獲滿足；卡達首相在華府會晤魯比歐與范斯，稱區域「承受不起再次升級」，正促雙方重回談判（Euronews）",
+    "中國商務部把暫停對美部分兩用物項出口管制（鎵、鍺、銻、超硬材料，以及石墨最終用途嚴格審查）延長兩個月至 2027-01-27（原 11/27 到期），軍事用途禁令不變；習近平預計下月訪美，12/14～15 邁阿密 G20 與川普會面（Tribune 引 SCMP、Seoul Economic Daily）"
+   ],
+   "tags": [
+    [
+     "geo",
+     "oil"
+    ],
+    [
+     "geo",
+     "oil"
+    ],
+    [
+     "trade",
+     "geo"
+    ]
+   ]
+  },
+  {
+   "cat": "金融環境",
+   "items": [
+    "亞股 11/24：台股收 40,122.35（+3,310.46 點、+8.99%），漲點超越 2026/7/31 的 3,186.45 點、創史上最大，台積電漲停收 2,230 元（+9.85%），成交 4,194 億元（聯合新聞網、Yahoo 奇摩新聞）；KOSPI 收 5,006.03（+6.32%）（Seoul Economic Daily）；日經 225 收 58,644.63（+3.91%，週一休市）；恒生 22,219.65（−0.73%）、上證 3,548.37（+0.27%）、澳洲 ASX 200 +1.82%（nerosignal）",
+    "歐股：STOXX 600 格林威治 08:10 +0.1% 至 637.43（前一日創 5 月初以來最大漲幅），Aixtron 遭 UBS 降評為賣出 −7.7%（Business Recorder 引路透）；開盤 DAX −0.3%、CAC +0.3%、FTSE 持平（investingLive）",
+    "賽諾菲宣布以每股 175 美元現金收購 Insmed，股權價值約 410 億美元（376 億歐元），取得支氣管擴張症新藥 Brinsupri（2026 年前三季營收 10.9 億美元）與 Arikayce，預計 2027 年上半年完成（賽諾菲新聞稿）；賽諾菲 +4.5%（Business Recorder），CNBC 標題稱 Insmed 盤前 +14%、為藥業三年來最大併購",
+    "11/23 S&P Global 美國 11 月綜合 PMI 初值 54.6（前值 55.9，7 月以來最低），服務業 54.7（預期 55.7）、製造業 54.5（符合預期）；德國綜合 PMI 55.0，2022 年 3 月以來最高（CappNotes）",
+    "行事曆：今天公布消費者信心，盤後 Dell、HP、Workday、Ambarella 財報（Yahoo Finance／Stocktwits）；11/26 感恩節休市，11/27 股市美東 13:00、債市 14:00 提早收盤（CappNotes）"
+   ],
+   "tags": [
+    [
+     "mkt"
+    ],
+    [
+     "mkt",
+     "corp"
+    ],
+    [
+     "corp"
+    ],
+    [
+     "mfg",
+     "intl"
+    ],
+    [
+     "sentiment",
+     "corp",
+     "mkt"
+    ]
+   ]
+  }
+ ],
+ "mega": {
+  "intro": "依 11/23 收盤市值排名（本站熱力圖 data/heatmap/latest.json：Nasdaq 篩選器市值依 11/23 收盤換算），股價與單日漲跌取自同一份熱力圖（Yahoo Finance 收盤）。Anthropic 市值＝前一版約 1.18 兆 × 87.64 ÷ 88.91 現算；沙烏地阿美未取得最新市值，沿用 11/4，股價為 11/23 收盤（里亞爾）。盤前版：新聞欄更新到台北 21:05；盤前漲跌見各列「最新」欄（約每分鐘更新）。",
+  "wk_label": "11/23 單日",
+  "rows": [
+   {
+    "t": "AAPL",
+    "n": "Apple",
+    "cap": "5.07 兆",
+    "px": "349.08",
+    "wk": "+1.90%",
+    "news": "鉅亨號專欄標題稱 Apple 結束 AI 功能「試用期」、開始收費（未見官方公告）；CMoney 稱 Signal 點名微軟、蘋果等科技巨頭，限制 AI 代理存取隱私資料；盤前 −0.03%（本站即時）。",
+    "impact": "AI 功能若開始收費可增加服務營收；週一漲幅遠小於晶片股，屬資金由防禦股轉向 AI 硬體。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "NVDA",
+    "n": "Nvidia",
+    "cap": "3.98 兆",
+    "px": "165.05",
+    "wk": "+31.48%",
+    "news": "11/23 黃仁勳即日回任，股價 +31.48%、2003 年 5 月以來最大單日漲幅（Yahoo Finance 引 Bespoke），依本站熱力圖市值單日增加約 9,524 億美元（Bespoke 稱逾 1 兆）；川普稱是他說服董事會（TheStreet）；商務部 11/23 將輝達合作夥伴 Megaspeed 列入實體清單（stockanalysis）；CNBC 標題稱分析師認為黃仁勳「大到不能開除」、公司治理受關注；11/25 須向財政部答覆出口管制疑問；盤前 −4.76%（本站即時）。",
+    "impact": "領導層不確定性解除，但出口管制、SEC 與加州檢察長調查仍在，治理疑慮可能讓估值折價；短線漲多回吐。",
+    "win": [
+     "TSM（AI 晶片代工）",
+     "MU（HBM 記憶體）",
+     "CRWV（GPU 雲端）"
+    ],
+    "lose": [
+     "BABA（新加坡子公司 Apex 被列入實體清單）"
+    ],
+    "tags": [
+     "corp",
+     "trade",
+     "tech"
+    ]
+   },
+   {
+    "t": "MSFT",
+    "n": "Microsoft",
+    "cap": "3.66 兆",
+    "px": "492.50",
+    "wk": "+1.65%",
+    "news": "Cool3c 標題：微軟推出 RDMA over USB4 多機串接技術，AI 模型執行延遲可縮減 4 倍；NOWnews 標題：一款免費 10 年的 App 明年退場〔無重大財務消息〕；盤前 −0.50%（本站即時）。",
+    "impact": "產品消息影響有限；週一漲幅遠小於晶片股。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "GOOGL",
+    "n": "Alphabet",
+    "cap": "3.47 兆",
+    "px": "282.10",
+    "wk": "+6.34%",
+    "news": "香港經濟日報標題：Google 搜尋 AI 模式升級，整合錢包與雲端硬碟；盤前 −0.53%（本站即時）〔無重大財務消息〕。",
+    "impact": "AI 搜尋持續整合自家服務；自研 TPU 被視為輝達以外的 AI 算力選項。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "AMZN",
+    "n": "Amazon",
+    "cap": "2.76 兆",
+    "px": "255.39",
+    "wk": "+3.47%",
+    "news": "TradingKey 引知情人士：亞馬遜計畫以約 75 億美元取得 AI 新創 Decart 的晶片優化技術，補強 Trainium 自研晶片軟體（Mashdigi 標題同）；Anthropic 主要股東，ANT 盤前跌破 83 美元承銷價；盤前 −1.01%（本站即時）。",
+    "impact": "自研 AI 晶片生態系補強，長期降低對輝達依賴；Anthropic 股價走弱降低帳面利得。",
+    "win": [
+     "AMZN（Trainium 生態系）"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "TSM",
+    "n": "台積電",
+    "cap": "1.89 兆",
+    "px": "363.60",
+    "wk": "+14.08%",
+    "news": "台股 11/24 台積電漲停收 2,230 元（+9.85%），帶動台股史上最大漲點（聯合新聞網）；ADR 11/23 +14.08%（中時）、盤前 −1.87%（本站即時）；鉅亨網標題：226 億美元新廠能否落腳德州，減稅是關鍵。",
+    "impact": "AI 需求預期回升；ADR 盤前隨美國晶片股回吐。",
+    "win": [
+     "2330.TW",
+     "ASX（封測）"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "mkt",
+     "tech"
+    ]
+   },
+   {
+    "t": "SPCX",
+    "n": "SpaceX",
+    "cap": "1.81 兆",
+    "px": "133.35",
+    "wk": "+4.35%",
+    "news": "FT（經路透）：SpaceX 與特斯拉指派 5 名董事（特斯拉 Denholm、Wilson-Thompson、Hartung，SpaceX Botha、Glein）主導兩個獨立董事特別委員會的合併談判，顧問研擬全換股合併；SpaceX 顧問為摩根士丹利、高盛，特斯拉為 Evercore；彭博先前稱最快 12 月宣布，路透未能立即證實（RTÉ）；Jefferies 11/23 首評買進、目標價 210 美元（Yahoo Finance）；盤前 −1.35%（本站即時）。",
+    "impact": "合併可整合太空、衛星與 AI，但涉及國防合約與中國市場等監管疑慮；換股比例未公布，對雙方股東的影響未定。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "META",
+    "n": "Meta",
+    "cap": "1.53 兆",
+    "px": "597.60",
+    "wk": "+6.55%",
+    "news": "Investing.com 香港引智通財經：股東訴訟阻擋資本重組，C 類股發行暫停，可能影響 AI 融資與併購布局；Meta Muse 在英國推出（KONGGOK 標題）；盤前 −1.27%（本站即時）。",
+    "impact": "股權融資管道受限，但營運現金流充足，短期影響有限。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "META"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "TSLA",
+    "n": "Tesla",
+    "cap": "1.52 兆",
+    "px": "385.46",
+    "wk": "+11.46%",
+    "news": "FT（經路透）：特斯拉與 SpaceX 指派董事主導全換股合併談判（見 SpaceX 列）；11/23 +11.46%（中時）、盤前 −0.44%（本站即時）。",
+    "impact": "合併題材推升估值想像，但換股比例與監管審查仍不確定。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "AVGO",
+    "n": "Broadcom",
+    "cap": "1.50 兆",
+    "px": "313.55",
+    "wk": "+3.00%",
+    "news": "11/23 只漲 3.00%，遠落後費半 +14.03%（本站熱力圖）；旺得富標題：Google TPU 風向變，法人對博通、聯發科看法分歧；盤前 −3.39%（本站即時）〔無重大新公司公告〕。",
+    "impact": "跟隨晶片股回吐；週一漲幅明顯落後其他 AI 晶片股。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "AVGO"
+    ],
+    "tags": [
+     "mkt",
+     "tech"
+    ]
+   },
+   {
+    "t": "LLY",
+    "n": "禮來",
+    "cap": "1.28 兆",
+    "px": "1,364.60",
+    "wk": "+1.30%",
+    "news": "商傳媒標題：以 7.25 億美元收購英國生技廠、布局亨丁頓舞蹈症新藥；觀點網標題：今年以來併購逾 200 億美元、押注腫瘤領域；盤前 +1.02%（本站即時）。",
+    "impact": "持續以併購擴充產品線；賽諾菲收購 Insmed 也帶動大型藥廠併購題材。",
+    "win": [
+     "LLY"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "BRK.B",
+    "n": "波克夏",
+    "cap": "1.26 兆",
+    "px": "572.36",
+    "wk": "+0.41%",
+    "news": "無重大新公司公告（本站熱力圖 +0.41%）；盤前 +0.56%（本站即時）〔無重大新公司公告〕。",
+    "impact": "價值型、現金充裕，AI 大漲日相對落後。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "mkt"
+    ]
+   },
+   {
+    "t": "ANT",
+    "n": "Anthropic",
+    "cap": "約 1.16 兆",
+    "px": "87.64",
+    "wk": "−1.43%",
+    "news": "盤前跌破 83 美元承銷價：美東 06:35 報 82.40（−5.98%）（unite.ai），本站即時 83.41（−4.83%，台北 21:05）；11/23 錯過 AI 大漲、−1.43%（CappNotes）；Zoom 持有的 Anthropic 股權估值約 38 億美元（Yahoo Finance／Stocktwits）。",
+    "impact": "AI 新股熱度降溫，跌破承銷價可能壓抑後續 AI IPO；持股公司帳面利得縮水。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "AMZN、GOOGL（股東）",
+     "ZM（持股估值約 38 億美元）"
+    ],
+    "tags": [
+     "corp",
+     "mkt"
+    ]
+   },
+   {
+    "t": "WMT",
+    "n": "沃爾瑪",
+    "cap": "1.03 兆",
+    "px": "129.58",
+    "wk": "+1.27%",
+    "news": "執行長 Furner 出售約 169 萬美元股票，另有高管出售約 36 萬、240 萬美元（Investing.com 香港，依申報資料）；盤前 +0.35%（本站即時）。",
+    "impact": "高管售股金額相對市值很小，影響有限。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "2222.SR",
+    "n": "沙烏地阿美",
+    "cap": "約 1.69 兆（11/4）",
+    "px": "26.14",
+    "wk": "—",
+    "news": "胡塞武裝稱襲擊沙國紅海沿岸拉比格煉油廠，受損情況未明（富聯網、民視，11/22～23）；11/24 沙國股市報 26.30 里亞爾（+0.61%，本站即時快照）。",
+    "impact": "中東設施風險仍在，但油價因供給增加跌至 3 個月低點。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "geo",
+     "oil"
+    ]
+   }
+  ]
+ },
+ "sources": [
+  {
+   "t": "本站即時報價（Yahoo Finance，台北 21:05）：heatmap-live 分支 us.json（ETF 盤前成交、個股盤前漲跌、匯率、商品）",
+   "u": "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/us.json"
+  },
+  {
+   "t": "本站即時新聞 news.json（鉅亨網、Google 新聞、CNBC、MarketWatch 與兆元企業標題，台北 20:00 擷取）",
+   "u": "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/news.json"
+  },
+  {
+   "t": "本站 data/heatmap/latest.json 與 data/lt/us-close.json（Yahoo Finance 11/23 收盤：兆元企業市值、股價與單日漲跌、QQQ／SOXX／SOXQ／DIA／IWM）",
+   "u": "https://wuyanlin8866.github.io/BNASDAQ/daily.html"
+  },
+  {
+   "t": "美國財政部 Daily Treasury Par Yield Curve（本站 data/treasury.json，asof 2026-11-23：2 年 4.63%、10 年 4.92%、30 年 5.29%）",
+   "u": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve"
+  },
+  {
+   "t": "CappNotes：Closing Look — Monday, November 23, 2026（指數收盤、類股、殖利率、匯率、商品、PMI、盤後財報）",
+   "u": "https://cappnotes.substack.com/p/closing-look-monday-november-23-2026"
+  },
+  {
+   "t": "中央社（11/24）：黃仁勳返輝達股價飆31% 美股收盤大漲、費半勁揚14%",
+   "u": "https://www.cna.com.tw/news/afe/202611240012.aspx"
+  },
+  {
+   "t": "中時（11/24）：《美股掃瞄》黃仁勳回歸 費半暴漲14% 韓股飆到暫停程式交易",
+   "u": "https://www.chinatimes.com/realtimenews/20261124001514-260410"
+  },
+  {
+   "t": "Yahoo Finance 直播（11/23）：Dow, S&P 500, Nasdaq post best day since April 2025 as Nvidia stock soars 31%",
+   "u": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-23-dow-sp-500-nasdaq-surge-after-nvidia-reinstates-jensen-huang-182039397.html"
+  },
+  {
+   "t": "Yahoo Finance／Stocktwits（11/24 美東 04:30）：US Futures Mixed After Monday’s Nvidia-Led Chip Rally — ZM, HPE, AMD, BABA In Focus",
+   "u": "https://finance.yahoo.com/markets/stocks/articles/us-futures-mixed-monday-nvidia-093016990.html"
+  },
+  {
+   "t": "TradingKey（11/24）：US Pre-Market — Nvidia Drops Over 5%, Anthropic Falls Below $83 Offering Price",
+   "u": "https://www.tradingkey.com/analysis/stocks/us-stocks/262319957-us-pre-market-trump-jensen-huang-nvidia-ai-chips-xau-wti-oil-gold-ant-tradingkey"
+  },
+  {
+   "t": "Investing.com（11/24，標題）：U.S. chip stocks fall premarket after Nvidia-led rally on Huang’s return",
+   "u": "https://www.investing.com/news/stock-market-news/us-chip-stocks-fall-premarket-after-nvidialed-rally-on-huangs-return-5047723"
+  },
+  {
+   "t": "TheStreet（11/24 美東 06:33）：Nvidia Rally Sends Fed Rate-Hike Bets Soaring for December",
+   "u": "https://www.thestreet.com/fed/nvidia-rally-fed-rate-hike-bets-december-2026"
+  },
+  {
+   "t": "CNBC（11/23，標題）：Fed’s John Williams indicates higher interest rates likely ‘over time’ to address inflation",
+   "u": "https://www.cnbc.com/2026/11/23/john-williams-fed-inflation-rate-hikes.html"
+  },
+  {
+   "t": "unite.ai（11/24）：Anthropic Shares Fall Below IPO Price in Nasdaq Premarket",
+   "u": "https://www.unite.ai/anthropic-shares-fall-below-ipo-price-in-nasdaq-premarket/"
+  },
+  {
+   "t": "stockanalysis（11/24，引路透）：US blacklists an Alibaba unit and Nvidia partner Megaspeed, seven companies in all",
+   "u": "https://stockanalysis.com/news/us-blacklists-alibaba-unit-megaspeed/"
+  },
+  {
+   "t": "Techzine（11/24）：U.S. adds Megaspeed and Alibaba subsidiary to blacklist",
+   "u": "https://www.techzine.eu/news/privacy-compliance/146021/u-s-adds-megaspeed-and-alibaba-subsidiary-to-blacklist/"
+  },
+  {
+   "t": "CNBC（11/24，標題）：U.S. adds Megaspeed to trade blacklist over export control concerns amid Nvidia controversy",
+   "u": "https://www.cnbc.com/2026/11/24/us-adds-megaspeed-to-trade-blacklist-over-export-control-concerns-.html"
+  },
+  {
+   "t": "Motley Fool（11/22）：Bessent Just Delivered Great News to Former Nvidia CEO Jensen Huang（11/25 期限）",
+   "u": "https://www.fool.com/investing/2026/11/22/u-s-treasury-secretary-scott-bessent-just-delivered-great-news-to-former-nvidia-ceo-jensen-huang-should-you-buy-nvidia-stock-before-nov-25/"
+  },
+  {
+   "t": "CNBC（11/24，標題）：Jensen Huang is ‘too big to fire,’ putting Nvidia’s governance in focus: analysts",
+   "u": "https://www.cnbc.com/2026/11/24/nvidia-jensen-huang-governance.html"
+  },
+  {
+   "t": "ADI 新聞稿（11/24）：Analog Devices Reports Record Fourth Quarter and Fiscal 2026 Financial Results",
+   "u": "https://www.prnewswire.com/news-releases/analog-devices-reports-record-fourth-quarter-and-fiscal-2026-financial-results-302948778.html"
+  },
+  {
+   "t": "securities.io（11/24）：Analog Devices Q4 Revenue Rises 42% to Record $4.37 Billion",
+   "u": "https://www.securities.io/analog-devices-q4-revenue-rises-42-to-record-4-37-billion/"
+  },
+  {
+   "t": "Best Buy 8-K 附件 99（11/24）：Best Buy Reports Third Quarter Results",
+   "u": "https://www.sec.gov/Archives/edgar/data/0000764478/000076447826000045/bby-fy27q3xexx99.htm"
+  },
+  {
+   "t": "賽諾菲 6-K 附件 99.1（11/24）：Sanofi to acquire Insmed（每股 175 美元現金）",
+   "u": "https://www.sec.gov/Archives/edgar/data/0001121404/000119312526473314/d130092dex991.htm"
+  },
+  {
+   "t": "CNBC（11/24，標題）：Drugmaker Insmed shares rally 14% after Sanofi agrees to buy it in pharma’s biggest deal in three years",
+   "u": "https://www.cnbc.com/2026/11/24/insmed-sanofi-deal-stock-pharma.html"
+  },
+  {
+   "t": "RTÉ（11/24，引路透／FT）：SpaceX, Tesla appoint directors to guide merger talks",
+   "u": "https://www.rte.ie/news/business/2026/1124/1600411-spacex-tesla-appoint-directors-to-guide-merger-talks-ft/"
+  },
+  {
+   "t": "MarketScreener（11/24）：SpaceX, Tesla appoint five directors to guide merger talks, FT reports",
+   "u": "https://www.marketscreener.com/news/spacex-tesla-appoint-five-directors-to-guide-merger-talks-ft-reports-ce7851dad188f023"
+  },
+  {
+   "t": "Euronews（11/24）：Iran orders Hormuz closed ‘further day by day’ as Qatar seeks to revive peace talks",
+   "u": "https://www.euronews.com/2026/11/24/iran-orders-hormuz-closed-further-day-by-day-as-qatar-seeks-to-revive-peace-talks"
+  },
+  {
+   "t": "Iran International（11/23）：IRGC Navy says three tankers hit mines, catch fire in Strait of Hormuz（含財政部制裁）",
+   "u": "https://www.iranintl.com/en/202611232940"
+  },
+  {
+   "t": "CNBC（11/24，標題）：Iran says three tankers hit mines in Hormuz despite U.S. escort, as Treasury widens sanctions",
+   "u": "https://www.cnbc.com/2026/11/24/iran-trump-hormuz-crude-.html"
+  },
+  {
+   "t": "The Tribune（11/24，引 SCMP）：China extends suspension of select export restrictions on US by two months",
+   "u": "https://www.tribuneindia.com/news/business/china-extends-suspension-of-select-export-restrictions-on-us-by-two-months/"
+  },
+  {
+   "t": "Seoul Economic Daily（11/24）：China Extends Suspension of Gallium Export Curbs Ahead of Xi’s U.S. Trip",
+   "u": "https://en.sedaily.com/world/2026/11/24/china-extends-suspension-of-gallium-export-curbs-ahead-of"
+  },
+  {
+   "t": "聯合新聞網（11/24）：台股量凍勁揚3,310點刷新收盤漲點紀錄 台積電一盤到底收高200元",
+   "u": "https://udn.com/news/story/7251/9898603"
+  },
+  {
+   "t": "Yahoo 奇摩新聞（11/24）：黃仁勳回歸點火！台股收漲3310點創史上最大漲點",
+   "u": "https://tw.news.yahoo.com/%E9%BB%83%E4%BB%81%E5%8B%B3%E5%9B%9E%E6%AD%B8%E9%BB%9E%E7%81%AB-%E5%8F%B0%E8%82%A1%E6%94%B6%E6%BC%B23310%E9%BB%9E%E5%89%B5%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%A4%A7%E6%BC%B2%E9%BB%9E-103800210.html"
+  },
+  {
+   "t": "Seoul Economic Daily（11/24）：KOSPI Closes at 5,006.03, Up 297.49 Points or 6.32%",
+   "u": "https://en.sedaily.com/market/2026/11/24/kospi-closes-at-500603-up-29749-points-or-632-percent"
+  },
+  {
+   "t": "nerosignal（11/24）：Tokyo Opened 1,100 Points Below Chicago’s Price. It Closed 535 Above It.（日經、TOPIX、亞股收盤）",
+   "u": "https://nerosignal.substack.com/p/tokyo-opened-1100-points-below-chicagos"
+  },
+  {
+   "t": "Business Recorder（11/24，引路透）：Asian stocks rally as Huang’s Nvidia return revives AI trade",
+   "u": "https://www.brecorder.com/news/40450475/asian-stocks-rally-as-huangs-nvidia-return-revives-ai-trade?v=bVvn5XlCi7hHNcYtVGedxAx6"
+  },
+  {
+   "t": "Business Recorder（11/24，引路透）：Europe’s STOXX 600 subdued after AI-driven rally",
+   "u": "https://www.brecorder.com/news/40450510/europes-stoxx-600-subdued-after-ai-driven-rally?v=hgmiYSW7jdgFnyaUkU3Fawx6"
+  },
+  {
+   "t": "investingLive（11/24）：European stock market open: A more tentative mood after yesterday’s big rebound",
+   "u": "https://investinglive.com/stocks/european-stock-market-open-a-more-tentative-mood-after-yesterday-s-big-rebound/"
+  },
+  {
+   "t": "CNBC（11/24，標題）：Signal joins United Airlines, banks in limiting AI agents over customer risks",
+   "u": "https://www.cnbc.com/2026/11/24/signal-airlines-banks-ai-limit.html"
+  },
+  {
+   "t": "鉅亨網（11/24，標題）：台積電226億美元新廠落腳德州？能否減稅成關鍵",
+   "u": "https://news.cnyes.com/news/id/6671000"
+  },
+  {
+   "t": "鉅亨網（11/24，標題）：馬斯克推動特斯拉、SpaceX合併！《FT》稱雙方已派出5名董事主導談判",
+   "u": "https://news.cnyes.com/news/id/6670951"
+  },
+  {
+   "t": "鉅亨網（11/24，標題）：單日飆漲超30%一天後 輝達美股盤前回跌逾4%",
+   "u": "https://news.cnyes.com/news/id/6670988"
+  }
+ ]
+}
