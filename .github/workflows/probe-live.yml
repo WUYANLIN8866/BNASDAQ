@@ -7,18 +7,12 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           sparse-checkout: |
             scripts
-      - name: cnyes
-        run: timeout 200 python3 scripts/_probe_rt2.py cnyes 2>&1 | cut -c1-3200
-      - name: misc
-        if: always()
-        run: timeout 120 python3 scripts/_probe_rt2.py misc 2>&1 | cut -c1-3700
       - name: cnyesjs
-        if: always()
-        run: timeout 240 python3 scripts/_probe_rt2.py cnyesjs 2>&1 | cut -c1-600
+        run: timeout 280 python3 -u scripts/_probe_rt3.py 2>&1 | cut -c1-400
