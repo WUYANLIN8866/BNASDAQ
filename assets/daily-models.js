@@ -33,6 +33,7 @@
     return (readyP = (async () => {
       try { ST.codes = (await BN.auth.grants(S0)).codes; }
       catch (e) { ST.codes = Array.isArray(S0.codes) ? S0.codes : null; }
+      try { ST.order = await BN.auth.modelOrder(); if (ST.codes) ST.codes = BN.auth.sortModels(ST.codes, ST.order, x => x); } catch (e) { ST.order = []; }   // 管理員設定的模型顯示順序
     })());
   }
   function begin() { ST.items = []; }
@@ -97,7 +98,7 @@
       if (!(rules.version >= 2)) { say('<p class="msg err">管理員專區：會員規則還是舊版，請先到管理後台完成「會員規則金鑰」設定。</p>'); return; }
       await new Promise(r => setTimeout(r, 30));   // 先讓「計算中」畫出來
       ST.adm = build(rules, rules.latest(market, tb), market, rs, tj);
-      box.innerHTML = adminPanel(ST.adm);
+      box.innerHTML = adminPanel(ST.adm); if (BN.sigpie) BN.sigpie.bind(box);
       root.querySelectorAll('.dm.ok[data-dm]').forEach(adminLine);
       // 即時（2026-11-24 站主：所有股價計算都用最新的即時價格）：開盤期間（含美股盤前盤後）QQQ 有新成交，就用即時價當作本月最新收盤重算
       // （BN.liveq.qqqMarket；至少間隔 1 分鐘，價格變動超過 0.3% 才提早）；已經展開的明細保持展開
@@ -127,7 +128,7 @@
   function build(rules, L, market, rs, tj) {
     const tp = (tj.topics || []).map(t => ({ code: t.code, name: t.name, kw: t.kw ? new RegExp(t.kw, 'i') : null, rule: t.rule ? new RegExp(t.rule) : null }));
     const prov = L.provisional || null, base = prov || L.lastComplete;
-    const ms = rules.STRATEGIES.map(st => {
+    const ms = BN.auth.sortModels(rules.STRATEGIES, ST.order || []).map(st => {
       const d = (base.detail && base.detail[st.id]) || null;
       const rows = ((d && d.rows) || []).map(r => { const label = String(r[0]); return { label, val: String(r[1]), ok: !!r[2], topics: tp.filter(t => t.rule && t.rule.test(label)).map(t => t.code) }; });
       return { id: st.id, d, rows, hold: L.lastComplete.w[st.id], next: prov ? prov.w[st.id] : null, flips: (L.flips && L.flips[st.id]) || {} };
@@ -187,11 +188,13 @@
       + A.ms.map(m => '<tr><td class="l"><b>' + esc(m.id) + '</b></td><td class="l" data-l="' + esc(holdM) + ' 持有">' + badge(m.hold) + '</td><td class="l" data-l="推算 ' + esc(nextM) + ' 持有">' + (A.prov ? badge(m.next) : '—')
         + '</td><td data-l="條件成立">' + (m.d ? m.d.votes + '／' + m.d.of : '—') + '</td><td class="l" data-l="翻轉價位（距最新價格）">' + flip(m) + '</td></tr>').join('')
       + '</tbody></table></div>';
-    h += A.ms.map(m => '<details class="dm-all"><summary><span>' + esc(m.id) + '：全部 ' + m.rows.length + ' 項判斷條件與對應的消息主題</span></summary><div class="ans">'
-      + (m.rows.length ? '<div class="tblwrap"><table class="tbl dm-t dm-full"><thead><tr><th class="l">判斷條件</th><th>目前數值</th><th class="c">是否成立</th><th class="l">對應的消息主題</th></tr></thead><tbody>'
-        + m.rows.map(r => '<tr><td class="l">' + esc(r.label) + '</td><td data-l="目前數值">' + esc(r.val) + '</td><td class="c" data-l="是否成立">' + yn(r.ok) + '</td><td class="l" data-l="對應的消息主題">' + (r.topics.length ? esc(r.topics.map(x => A.byCode.get(x).name).join('、')) : '<span class="muted">—（依 QQQ 月線計算）</span>') + '</td></tr>').join('')
-        + '</tbody></table></div>' : '')
-      + '<p class="dm-n">' + (m.d ? esc(m.d.summary) : '資料暫時無法取得') + '</p></div></details>').join('');
+    // 2026-11-24：全部判斷條件改成圓餅（assets/sigpie.js）：每一塊＝一項條件，藍＝成立、灰＝不成立；每塊旁邊寫目前數值、怎麼判斷、下次更新時間、對應的消息主題
+    const N = BN.sigpie ? BN.sigpie.next(R, A.market) : null, nx = N ? (A.prov ? { price: N.price, macro: N.macro } : { price: N.official, macro: N.official }) : {};
+    h += A.ms.map(m => '<details class="dm-all"><summary><span>' + esc(m.id) + '：全部 ' + m.rows.length + ' 項判斷條件（圓餅：藍＝成立、灰＝不成立）與對應的消息主題</span></summary><div class="ans">'
+      + (BN.sigpie ? BN.sigpie.html([{ id: m.id, d: m.d, topics: m.rows.map(r => r.topics.length ? r.topics.map(x => A.byCode.get(x).name).join('、') : '—（依 QQQ 月線計算）') }],
+          { kind: A.prov ? 'prov' : 'official', next: nx, isMacro: (l, j) => !!(m.rows[j] && m.rows[j].topics.length) })
+        : '<p class="dm-n">' + (m.d ? esc(m.d.summary) : '資料暫時無法取得') + '</p>')
+      + '</div></details>').join('');
     h += '<ul class="dm-notes"><li>每則消息下方的「判斷條件｜管理員」：依消息主題列出各模型<b>直接對應</b>的條件（主題和條件用的是同一類公開數據）；沒有對應條件的模型，這則消息只會透過 QQQ 月線影響它。</li>'
       + '<li>消息主題：新的報告由排程逐則標記；沒有標記的舊報告改用關鍵字比對（可能不準），並標示「關鍵字比對」。</li>'
       + '<li>數值是把最新價格（開盤期間是 QQQ 即時成交）當作月底收盤時會採用的數值；之後才公布的月資料，要等公布後的月底才會進到模型。完整訊號與自訂收盤推算在<a href="admin.html">管理後台</a>。</li></ul>';

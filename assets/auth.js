@@ -103,6 +103,18 @@
       .then(j => (j.strategies || []).filter(x => x && x.role && x.code)).catch(e => { STRATP = null; throw e; });
     return STRATP;
   }
+  // 模型顯示順序（2026-11-24 站主：讓管理員可以更改模型顯示順序）：管理後台存在 data/site.json 的 model_order（策略代號的陣列）。
+  //   會員專區的模型卡片與本月持有、會員持有資產的策略差額、管理後台的訊號明細與模型權限、每日市場分析的管理員專區都照這個順序；
+  //   沒列到的模型排在後面（維持專案 B 區的順序）。公開頁的回測圖不受影響（線的顏色跟著策略走）。
+  let ORDP = null;
+  function modelOrder() {
+    if (!ORDP) ORDP = fetch('data/site.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : {}).then(j => Array.isArray(j.model_order) ? j.model_order.filter(x => typeof x === 'string') : []).catch(() => []);
+    return ORDP;
+  }
+  function sortModels(list, order, key) {   // key：取出策略代號的函式（預設 x.id）；order 裡找不到的照原順序排在後面
+    const k = key || (x => x.id), ix = new Map((order || []).map((c, i) => [c, i]));
+    return (list || []).map((x, i) => [x, i]).sort((a, b) => { const ia = ix.has(k(a[0])) ? ix.get(k(a[0])) : 1e6 + a[1], ib = ix.has(k(b[0])) ? ix.get(k(b[0])) : 1e6 + b[1]; return ia - ib; }).map(p => p[0]);
+  }
   function modelsOf(rec) { return rec.role === 'admin' ? '*' : Array.isArray(rec.models) ? rec.models.filter(x => typeof x === 'string') : DEFAULT_MODELS.slice(); }
   function codesOf(models, list) { return list.filter(x => models === '*' || models.indexOf(x.role) >= 0).map(x => x.code); }
   // g＝grants() 的結果；st＝規則裡的一條策略（{ id：策略代號, ref：專案節次 }）。代號對不上時（規則與公開頁改名的時間差）改用節次對照
@@ -280,5 +292,5 @@
   async function ghDispatch(pat) { const r = await fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/site.yml/dispatches', { method: 'POST', headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + pat, 'Content-Type': 'application/json' }, body: JSON.stringify({ ref: 'main' }) }); if (r.status !== 204) throw new Error('無法觸發更新（' + r.status + '）；PAT 需要 Actions: Read and write'); }
 
   window.BN = window.BN || {};
-  BN.auth = { REPO, ITER, DEFAULT_MODELS, strategies, modelsOf, codesOf, allowed, grants, patBox, ukFrom, viewSetup, sealPw, openPw, rewrapView, login, session, logout, require, loadRules, fetchJSON, fetchAccounts, makeRecord, genPassword, savePAT, loadPAT, clearPAT, ghGet, ghPut, ghPutAt, ghPutB64, ghDelete, ghTest, ghDispatch, aesEnc, aesDec, pbkdf2, b64, rnd };
+  BN.auth = { REPO, ITER, DEFAULT_MODELS, strategies, modelOrder, sortModels, modelsOf, codesOf, allowed, grants, patBox, ukFrom, viewSetup, sealPw, openPw, rewrapView, login, session, logout, require, loadRules, fetchJSON, fetchAccounts, makeRecord, genPassword, savePAT, loadPAT, clearPAT, ghGet, ghPut, ghPutAt, ghPutB64, ghDelete, ghTest, ghDispatch, aesEnc, aesDec, pbkdf2, b64, rnd };
 })();
