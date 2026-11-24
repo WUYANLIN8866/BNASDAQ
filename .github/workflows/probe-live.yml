@@ -15,13 +15,13 @@ jobs:
           sparse-checkout: |
             scripts
       - name: fixtures
-        run: timeout 280 python3 -u scripts/_probe_rt4.py 2>&1 | cut -c1-2700
+        run: timeout 280 python3 -u scripts/_probe_rt5.py 2>&1 | cut -c1-1500
       - name: save fixtures to the scratch branch probe-out3 (normal commit, no force)
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           git clone -q --depth 1 --branch probe-out3 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" out
-          rm -rf out/fx && cp -r fx out/fx
+          mkdir -p out/fx && cp -r fx/. out/fx/
           cd out && git config user.name "bnasdaq-bot" && git config user.email "bnasdaq-bot@users.noreply.github.com"
           git add -A && git commit -q -m "probe fixtures $(date -u +%FT%TZ) (temporary)" && git push -q origin HEAD:probe-out3
