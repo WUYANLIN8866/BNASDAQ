@@ -372,7 +372,7 @@ def yahoo_ext(batch, nonce=None):
 BOARD = ['^NDX', '^SOX', '^GSPC', '^DJI', '^RUT', '^IXIC', '^VIX', 'DX-Y.NYB', '^TNX', '^TYX', '^FVX', 'JPY=X', 'EURUSD=X', 'TWD=X',
          'CL=F', 'BZ=F', 'GC=F', 'BTC-USD', 'QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT', '2222.SR']
 BOARD_EXT = ['QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT']
-BOARDS = {'US': BOARD, 'TW': ['TWD=X', '^TWII']}   # 台股 session 也抓美元兌台幣（全站台幣換算用）與加權指數；2026-11-24 起   # 盤前盤後要看成交的：推估指數用的 ETF、熱力圖裡沒有的大型股
+BOARDS = {'US': BOARD, 'TW': ['TWD=X']}   # 台股 session 也抓美元兌台幣（全站台幣換算用）；加權指數另外用 tw_index() 讀（見該函式）；2026-11-24 起   # 盤前盤後要看成交的：推估指數用的 ETF、熱力圖裡沒有的大型股
 NEWS_FILE, NEWS_EVERY = 'news.json', 3600   # 新聞一小時更新一次（交易時段內由 session 順便做；其他時間由 news.yml 補）
 NEWS_SRC = [   # (語言, 來源名稱, 格式, 網址)；2026-11-23 從 GitHub runner 實測都回 200
     ('zh', '鉅亨網', 'cnyes', 'https://api.cnyes.com/media/api/v1/newslist/category/us_stock?limit=30'),
@@ -658,6 +658,38 @@ def ytw(codes):
         except Exception:
             pass
     return out
+
+
+def tw_index():
+    """加權指數 {'^TWII': (現價, 昨收, 報價時間)}，放進台股快照的 mb.q。
+    來源：Yahoo奇摩股市 stockList（symbols=^TWII）；讀不到改鉅亨網 TWS:TSE01:INDEX。兩個都讀不到就回空的（呼叫端保留上一輪的值）。
+    不用 Yahoo Finance 國際版的 ^TWII：2026-11-24 09:20 實測它給 [39148.91, 36033.29, 09:00:05]——報價停在 20 分鐘前、昨收也不對；
+    同一時間 Yahoo奇摩股市是 40143.85（09:34:50，昨收 36811.89）、鉅亨網 40145.33（09:34:45，昨收 36811.89）。"""
+    raw = lambda v: num(v.get('raw')) if isinstance(v, dict) else num(v)
+    try:
+        st, body = http('https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=%5ETWII', ua=BUA,
+                        headers={'Referer': 'https://tw.stock.yahoo.com/', 'Accept-Language': 'zh-TW,zh;q=0.9'}, timeout=10)
+        j = json.loads(body)
+        for a in (j if isinstance(j, list) else []):
+            if str(a.get('symbol') or '') != '^TWII':
+                continue
+            p, ch, prev, t = raw(a.get('price')), raw(a.get('change')), raw(a.get('regularMarketPreviousClose')), iso_ts(a.get('regularMarketTime'))
+            ref = (p - ch) if (p is not None and ch is not None) else prev
+            if p and ref and t and p > 0 and ref > 0:
+                return {'^TWII': (p, ref, t)}
+    except Exception as e:  # noqa
+        log('加權指數（Yahoo奇摩股市）讀取失敗', repr(e)[:80])
+    try:
+        st, body = http('https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX?column=G,QUOTES', ua=BUA,
+                        headers={'Origin': 'https://www.cnyes.com', 'Referer': 'https://www.cnyes.com/'}, timeout=8)
+        for a in json.loads(body).get('data') or []:
+            p, ch, prev, t = num(a.get('6')), num(a.get('11')), num(a.get('21')), num(a.get('200007'))
+            ref = (p - ch) if (p is not None and ch is not None) else prev
+            if p and ref and t and p > 0 and ref > 0:
+                return {'^TWII': (p, ref, int(t))}
+    except Exception as e:  # noqa
+        log('加權指數（鉅亨網）讀取失敗', repr(e)[:80])
+    return {}
 
 
 def _try(f, b):
@@ -1033,7 +1065,7 @@ class Session:
 
     def poll_board(self, kind=None):
         """每日市場分析頁的報價板（見 BOARD 的說明）。kind＝'pre'／'post'：另外抓 BOARD_EXT 的盤前／盤後成交（算法同 poll_ext）。
-        美股與台股各自的清單見 BOARDS（台股只有匯率與加權指數、沒有盤前盤後）；這一輪沒抓到的代號保留上一輪的值。"""
+        美股與台股各自的清單見 BOARDS（台股只有匯率，加權指數另用 tw_index()；沒有盤前盤後）；這一輪沒抓到的代號保留上一輪的值。"""
         bl = BOARDS.get(self.mk) or []
         if not bl:
             return False
@@ -1041,6 +1073,9 @@ class Session:
         got, stat = fetch_us([q_sym(s) for s in bl], nonce)
         for s, v in got.items():
             self.mb_q[s] = [v[0], v[1], int(v[2])]
+        if self.mk == 'TW':   # 加權指數：Yahoo奇摩股市（備援鉅亨網），即時、昨收正確
+            for s, v in tw_index().items():
+                self.mb_q[s] = [v[0], v[1], int(v[2])]
         if kind and self.mk == 'US':
             s_ = self.sess
             lo, hi = (s_['pre'], s_['open']) if kind == 'pre' else (s_['close'], s_['post'])

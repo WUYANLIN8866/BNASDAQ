@@ -364,13 +364,42 @@ def test_extras(hm, fails):
     asked = []
     def fake_us(syms, nonce=None, f=None):
         asked.append(list(syms))
-        return {'TWD=X': (32.5, 32.6, int(clock()) - 30), '^TWII': (23000.0, 22800.0, int(clock()) - 5)}, {'ok': 1, '429': 0, 'fail': 0}
+        return {'TWD=X': (32.5, 32.6, int(clock()) - 30)}, {'ok': 1, '429': 0, 'fail': 0}
     hm.fetch_us = fake_us
+    real_index = hm.tw_index; hm.tw_index = lambda: {'^TWII': (23000.0, 22800.0, int(clock()) - 5)}
     hm.Session('TW', hm.session('TW', clock()), ['2330', '0050', '6488'], pub, clock=clock, sleep=clock.sleep, t0=clock()).run()
     s1 = [s for t_, s in pub.log if s['state'] == 'open'][5]
-    check(s1['q'].get('0050', [0])[0] == 100.0 and s1.get('mb', {}).get('q', {}).get('TWD=X', [0])[0] == 32.5 and '^TWII' in s1['mb']['q'],
-          '台股盤中快照：0050 有報價、mb.q 有 TWD=X 與 ^TWII', fails)
-    check(asked and all(a == ['TWD%3DX', '%5ETWII'] for a in asked), f'台股報價板只抓匯率與加權指數（{len(asked)} 輪）', fails)
+    check(s1['q'].get('0050', [0])[0] == 100.0 and s1.get('mb', {}).get('q', {}).get('TWD=X', [0])[0] == 32.5 and s1['mb']['q'].get('^TWII', [0, 0])[:2] == [23000.0, 22800.0],
+          '台股盤中快照：0050 有報價、mb.q 有 TWD=X 與 ^TWII（加權指數來自 tw_index）', fails)
+    check(asked and all(a == ['TWD%3DX'] for a in asked), f'台股報價板向 Yahoo Finance 只問匯率（{len(asked)} 輪）；加權指數不再向它問', fails)
+    # 加權指數的來源（2026-11-24）：Yahoo奇摩股市 → 鉅亨網；用當天 09:34 實際抓到的回應格式
+    hm.tw_index = real_index
+    ytw_body = json.dumps([{'symbol': '^TWII', 'price': {'raw': '40143.85'}, 'change': {'raw': '3331.96'}, 'regularMarketPreviousClose': {'raw': '36811.89'}, 'regularMarketTime': '2026-11-24T01:34:50Z'},
+                           {'symbol': '^TWOII', 'price': {'raw': '293.21'}, 'change': {'raw': '22.31'}, 'regularMarketPreviousClose': {'raw': '270.9'}, 'regularMarketTime': '2026-11-24T01:34:50Z'}])
+    cny_body = json.dumps({'data': [{'200010': 'TSE01', '6': 40145.33, '11': 3333.44, '21': 36811.89, '200007': 1795484085}]})
+    calls = []
+    def fake_http(mode):
+        def f(url, **kw):
+            calls.append(url)
+            if 'tw.stock.yahoo.com' in url:
+                if mode == 'yahoo': return 200, ytw_body
+                raise RuntimeError('HTTP 503')
+            if 'ws.api.cnyes.com' in url:
+                if mode != 'none': return 200, cny_body
+                raise RuntimeError('timeout')
+            raise RuntimeError('unexpected ' + url)
+        return f
+    old_http = hm.http
+    try:
+        hm.http = fake_http('yahoo'); a = hm.tw_index()
+        check(list(a) == ['^TWII'] and abs(a['^TWII'][0] - 40143.85) < 1e-9 and abs(a['^TWII'][1] - 36811.89) < 1e-6 and a['^TWII'][2] == 1795484090 and len(calls) == 1 and '%5ETWII' in calls[0],
+              f'加權指數：Yahoo奇摩股市 40143.85、昨收 36811.89（＝現價−漲跌）、報價時間 09:34:50；只讀一次', fails)
+        calls.clear(); hm.http = fake_http('cnyes'); b = hm.tw_index()
+        check(abs(b['^TWII'][0] - 40145.33) < 1e-9 and abs(b['^TWII'][1] - 36811.89) < 1e-6 and b['^TWII'][2] == 1795484085 and len(calls) == 2 and 'TWS:TSE01:INDEX' in calls[1],
+              '加權指數：Yahoo奇摩股市讀不到 → 鉅亨網 40145.33、昨收 36811.89', fails)
+        hm.http = fake_http('none'); check(hm.tw_index() == {}, '加權指數：兩個來源都讀不到 → 回空的（保留上一輪的值）', fails)
+    finally:
+        hm.http = old_http
     # 美股盤前：多抓的代號有盤前成交（x），但沒有盤前走勢（xpp）
     hm2 = load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_ex2')
     syms = [f'S{i:02d}' for i in range(12)] + ['QLD']
