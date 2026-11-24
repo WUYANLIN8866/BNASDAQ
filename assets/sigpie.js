@@ -8,7 +8,9 @@
      BN.sigpie.html(list, ctx) → HTML
        list：[{ id, ref, d: { rows: [[條件, 數值, 成立, 距門檻], …], votes, of, summary }, topics: [每一列的主題文字] }]
        ctx：{ kind: 'official'｜'prov'｜'custom', next: { price, macro }（下次更新的文字）, isMacro: (條件, 第幾列) => 是否為金融環境數列 }
-     BN.sigpie.bind(root)               掛上滑鼠／鍵盤連動
+       ctx.fold（選填）：每個模型的區塊可以收合，狀態記在這台瀏覽器（管理後台用）
+     BN.sigpie.bind(root)               掛上滑鼠／鍵盤連動與收合
+     BN.sigpie.foldAll(root, 收合?)     全部收合／展開
      BN.sigpie.next(rules, market, opt) → { official, price, macro, custom }：依交易日曆（會員規則的 tradingDaysLeft）算下次更新時間的文字 */
 (function () {
   'use strict';
@@ -75,17 +77,32 @@
     return s;
   }
 
+  // ---------- 每個模型的區塊可以收合（ctx.fold＝狀態的分類名稱；記在這台瀏覽器 localStorage bn-sp-fold）----------
+  const FK = 'bn-sp-fold'; let FS = null;
+  const fload = () => { if (!FS) { try { FS = JSON.parse(localStorage.getItem(FK) || '{}') || {}; } catch (e) { FS = {}; } } return FS; };
+  const fget = k => !!fload()[k];
+  const fset = (k, off) => { const s = fload(); if (off) s[k] = 1; else delete s[k]; try { localStorage.setItem(FK, JSON.stringify(s)); } catch (e) { } };
+  function foldOne(one, off, keep) {
+    const b = one.querySelector(':scope > .sp-h .sp-ft'); if (!b) return;
+    one.classList.toggle('sp-off', off); b.setAttribute('aria-expanded', String(!off)); if (!keep) fset(b.getAttribute('data-fold'), off);
+  }
+  function foldAll(root, off) { (root || document).querySelectorAll('.sp-one').forEach(o => foldOne(o, off)); }
+
   let seq = 0;
   function html(list, ctx) {
     ctx = ctx || {};
     const nx = ctx.next || {}, isMacro = ctx.isMacro || (() => false);
     return '<div class="sp-wrap">' + list.map(x => {
-      const d = x.d, k = 'sp' + (++seq);
-      const head = '<h4 class="sp-h">' + esc(x.id) + (x.ref ? '<small>（專案 ' + esc(x.ref) + '）</small>' : '') + '</h4>';
-      if (!d) return '<div class="sp-one">' + head + '<p class="small">這個月份沒有可用模型，無法計算。</p></div>';
-      const rows = d.rows || [];
-      if (!rows.length) return '<div class="sp-one">' + head + '<p class="small">' + esc(d.summary || '') + '</p><p class="small">這個月份只有定案紀錄（成立 ' + esc(d.votes) + '／' + esc(d.of) + ' 項），沒有逐項數值。</p></div>';
-      const hold = String(d.summary || '').split('→').pop().trim();
+      const d = x.d, k = 'sp' + (++seq), rows = (d && d.rows) || [];
+      const hold = d ? String(d.summary || '').split('→').pop().trim() : '';
+      const brief = !d ? '沒有可用模型' : d.votes + '／' + d.of + ' 項成立' + (hold ? ' → ' + hold : '');
+      const name = esc(x.id) + (x.ref ? '<small>（專案 ' + esc(x.ref) + '）</small>' : '');
+      const fk = ctx.fold ? ctx.fold + '|' + x.id : '', off = fk && fget(fk);
+      const head = fk ? '<h4 class="sp-h"><button type="button" class="sp-ft" data-fold="' + esc(fk) + '" aria-expanded="' + !off + '" title="點一下收合／展開"><span class="sp-fx" aria-hidden="true"></span><span class="sp-fn">' + name + '</span><span class="sp-hs">' + esc(brief) + '</span></button></h4>'
+        : '<h4 class="sp-h">' + name + '</h4>';
+      const open = '<div class="sp-one' + (off ? ' sp-off' : '') + '">';
+      if (!d) return open + head + '<p class="small sp-sum">這個月份沒有可用模型，無法計算。</p></div>';
+      if (!rows.length) return open + head + '<div class="sp-body sp-body1"><p class="small">' + esc(d.summary || '') + '</p><p class="small">這個月份只有定案紀錄（成立 ' + esc(d.votes) + '／' + esc(d.of) + ' 項），沒有逐項數值。</p></div></div>';
       // 計分的是前 of 列；多出來的列（不計入成立數、另外判斷的條件）畫成第二個小圓餅，顏色規則一樣
       const of = +d.of > 0 && +d.of < rows.length ? +d.of : rows.length;
       const all = rows.map((r, j) => ({ r, j })), main = all.slice(0, of), extra = all.slice(of);
@@ -107,7 +124,7 @@
         + (onMain !== +d.votes ? '<p class="small sp-note">中間的成立數以定案紀錄為準（見下方說明）；各塊是重算的逐項結果。</p>' : '')
         + (extra.length ? '<p class="sp-x">另外判斷的條件（不算在 ' + of + ' 項裡）</p>' + pie(k, extra, texts, { a: onX, b: extra.length }, 'sp-mini') : '')
         + '<p class="sp-leg"><span class="sp-sw on"></span>成立 ' + onAll + '<span class="sp-sw off"></span>不成立 ' + (rows.length - onAll) + '</p>';
-      return '<div class="sp-one">' + head
+      return open + head
         + '<div class="sp-body"><div class="sp-fig">' + fig + '</div>'
         + '<ol class="sp-list">' + items + '</ol></div>'
         + '<p class="small sp-sum">' + esc(d.summary || '') + '</p></div>';
@@ -129,7 +146,11 @@
     root.addEventListener('mouseout', e => { const t = tgt(e); if (t) pick(t, false, false); });
     root.addEventListener('focusin', e => { const t = tgt(e); if (t) pick(t, true, true); });
     root.addEventListener('focusout', e => { const t = tgt(e); if (t) pick(t, false, false); });
-    root.addEventListener('click', e => { const t = e.target && e.target.closest && e.target.closest('.sp-sl'); if (t) { root.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); pick(t, true, true); } });
+    root.addEventListener('click', e => {
+      const f = e.target && e.target.closest && e.target.closest('.sp-ft');
+      if (f) { const one = f.closest('.sp-one'); if (one) foldOne(one, !one.classList.contains('sp-off')); return; }
+      const t = e.target && e.target.closest && e.target.closest('.sp-sl'); if (t) { root.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); pick(t, true, true); }
+    });
   }
 
   // ---------- 下次更新時間（台北時間）----------
@@ -171,5 +192,5 @@
     };
   }
 
-  BN.sigpie = { html, bind, how, next };
+  BN.sigpie = { html, bind, how, next, foldAll };
 })();

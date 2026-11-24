@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=afc14ea3ec">
+<link rel="stylesheet" href="assets/site.css?v=0960db310a">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
@@ -51,20 +51,20 @@
 <main id="main">
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 管理後台</div><h1>管理後台</h1><p class="lede">管理員可以看到一切資訊、管理一切帳號與公告。</p></div></div>
 <div class="main"><div class="wrap">
-  <div class="panel"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>管理員：<b id="who">—</b></div><div class="actions"><a class="btn line" href="#mperm">模型權限</a><a class="btn line" href="member.html">會員專區畫面</a><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div></div>
+  <div class="panel" data-cb-skip><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center"><div>管理員：<b id="who">—</b></div><div class="actions"><button class="btn line" type="button" id="cb-none">全部收合</button><button class="btn line" type="button" id="cb-all">全部展開</button><a class="btn line" href="#mperm">模型權限</a><a class="btn line" href="member.html">會員專區畫面</a><button class="btn line" type="button" onclick="BN.auth.logout()">登出</button></div></div></div>
 
   <h2 id="signals">訊號明細（所有策略）</h2>
   <p class="small" id="mstat">載入中…</p>
-  <div class="panel" id="mo-panel"><h3>模型顯示順序</h3><p class="small">按 ↑ ↓ 調整，再按「儲存順序」。會員專區（模型卡片、本月持有、持有資產的策略差額）、本頁的訊號明細與模型權限、每日市場分析的管理員專區都照這個順序；公開頁的回測圖不受影響（線的顏色跟著策略走）。</p><ol class="mo-list" id="mo-list"><li>載入中…</li></ol><div class="actions"><button class="btn navy" type="button" id="mo-save">儲存順序</button><button class="btn line" type="button" id="mo-reset">恢復預設（專案 B 區順序）</button></div><div id="mo-msg"></div></div>
+  <div class="panel" id="mo-panel"><h3>模型顯示順序</h3><p class="small">按 ↑ ↓ 調整：本頁的正式訊號、推算、自訂收盤、最近 24 個月與模型權限<b>立刻</b>照新順序；最後一次調整 2 秒後<b>自動存到網站</b>（不用再按儲存），約 3 分鐘後會員專區（模型卡片、本月持有、持有資產的策略差額）與每日市場分析的管理員專區也照新順序；公開頁的回測圖不受影響（線的顏色跟著策略走）。</p><ol class="mo-list" id="mo-list"><li>載入中…</li></ol><div class="actions"><button class="btn line" type="button" id="mo-reset">恢復預設（專案 B 區順序）</button><a id="mo-dl" class="btn line" download="site.json" hidden>下載 site.json（手動上傳用）</a></div><div id="mo-msg"></div></div>
   <p class="small">圓餅每一塊是一項判斷條件：<b style="color:var(--sig-on-ink)">藍色＝成立</b>、灰色＝不成立；旁邊每一塊都寫目前數值、怎麼判斷、下次更新時間（滑鼠移到圓餅的某一塊，對應的說明會框起來）。</p>
-  <div class="panel" id="sig-cur"></div>
-  <div class="panel" id="sig-prov"></div>
-  <div class="panel"><div class="field" style="max-width:320px"><label for="custom">自訂 QQQ 月底收盤價試算</label><input id="custom" type="number" step="0.01" placeholder="例如 687.29"></div><div id="sig-custom"></div></div>
-  <details><summary>最近 24 個月的正式訊號</summary><div class="ans"><div class="tblwrap"><table class="tbl"><thead id="hist-head"><tr><th class="l">訊號月</th><th>還原收盤</th></tr></thead><tbody id="hist-body"></tbody></table></div></div></details>
-  <div class="panel"><h3>市場資料</h3><p class="small">每個交易日美股收盤後由 GitHub Actions 自動更新（Yahoo Finance）；也可以手動觸發。</p><div class="actions"><button class="btn navy" type="button" id="dispatch">立即更新市場資料並重新部署</button><a class="btn line" href="https://github.com/WUYANLIN8866/BNASDAQ/actions" target="_blank" rel="noopener">查看自動更新紀錄</a></div><div id="data-msg"></div></div>
+  <div class="panel" id="sig-cur-box"><h3><span id="sig-cur-t">正式訊號</span></h3><div id="sig-cur"><p class="small">載入中…</p></div></div>
+  <div class="panel" id="sig-prov-box"><h3><span id="sig-prov-t">推算</span></h3><div id="sig-prov"><p class="small">載入中…</p></div></div>
+  <div class="panel" id="custom-box"><h3>自訂 QQQ 月底收盤價試算</h3><div class="field" style="max-width:320px"><label for="custom">QQQ 月底收盤價（原始價）</label><input id="custom" type="number" step="0.01" placeholder="例如 687.29"></div><div id="sig-custom"></div></div>
+  <div class="panel" id="hist-box" data-cb="off"><h3>最近 24 個月的正式訊號</h3><div class="tblwrap"><table class="tbl"><thead id="hist-head"><tr><th class="l">訊號月</th><th>還原收盤</th></tr></thead><tbody id="hist-body"></tbody></table></div></div>
+  <div class="panel" id="data-box"><h3>市場資料</h3><p class="small">每個交易日美股收盤後由 GitHub Actions 自動更新（Yahoo Finance）；也可以手動觸發。</p><div class="actions"><button class="btn navy" type="button" id="dispatch">立即更新市場資料並重新部署</button><a class="btn line" href="https://github.com/WUYANLIN8866/BNASDAQ/actions" target="_blank" rel="noopener">查看自動更新紀錄</a></div><div id="data-msg"></div></div>
 
   <h2 id="accounts">帳號管理</h2>
-  <div class="panel">
+  <div class="panel" id="pat-box">
     <h3>網站寫入權限（只需設定一次）</h3>
     <p class="small">本站沒有伺服器；新增／修改／刪除帳號與公告時，網頁會在背景直接存到網站的 GitHub 儲存庫，你不用開 GitHub。只需要第一次設定一把存取權杖（PAT）：存好後會用你的管理員金鑰加密、跟著管理員帳號走，<b>之後在任何裝置登入管理員都能直接新增、修改、刪除</b>。權杖到期或被撤銷時才需要重貼。</p>
     <ol class="small" style="margin:4px 0 12px;padding-left:1.4em;line-height:1.8"><li>按「在 GitHub 建立權杖」（名稱、期限 366 天、Contents 與 Actions 的讀寫權限都已幫你填好）</li><li>在 <b>Repository access</b> 選 <b>Only select repositories</b> → 選 <b>BNASDAQ</b>（這一步 GitHub 不讓網址預先填）</li><li>按最下面 <b>Generate token</b>，複製 <code>github_pat_…</code>（只顯示這一次）</li><li>貼進下面的框，按「測試並儲存」</li></ol>
@@ -108,7 +108,7 @@
     <div class="actions"><button class="btn line" type="button" id="pwcp-run">立即檢查</button></div>
     <div id="pwcp-log"></div>
   </div>
-  <div class="panel">
+  <div class="panel" id="acct-box">
     <h3>帳號清單 <span class="small">（最後更新 <span id="acct-updated">—</span>）</span></h3>
     <div id="pv-setup"></div>
     <div class="actions" style="margin:0 0 8px"><button class="btn line sm" type="button" id="pv-all">全部顯示密碼</button></div>
@@ -145,9 +145,66 @@
     <div id="ann-msg"></div><a id="dl2" class="btn line" download="site.json" hidden>下載 site.json（手動上傳用）</a>
     <form class="form" id="annf"><div class="row2"><div class="field"><label for="ad">日期</label><input id="ad" type="date"></div><div class="field"><label for="at">標題</label><input id="at" type="text" required></div></div><div class="field"><label for="ab">內文（可留空）</label><textarea id="ab" rows="3"></textarea></div><div class="actions"><button class="btn navy" type="submit">發布公告</button></div></form>
   </div>
-  <div class="note"><p>安全提醒：accounts.json 是公開檔案。登入只比對密碼雜湊（PBKDF2 310,000 次）；供管理員查看的密碼副本用 RSA-3072 加密，私鑰與網站寫入權杖都用管理員的個人金鑰加密，只有管理員登入後解得開。所以<b>管理員密碼要夠長、不要和其他網站共用</b>；會員密碼建議用「產生」的隨機密碼，避免會員把在別處使用的密碼交給本站。</p></div>
+  <div class="note" id="note-box" data-cb-title="安全提醒"><p>安全提醒：accounts.json 是公開檔案。登入只比對密碼雜湊（PBKDF2 310,000 次）；供管理員查看的密碼副本用 RSA-3072 加密，私鑰與網站寫入權杖都用管理員的個人金鑰加密，只有管理員登入後解得開。所以<b>管理員密碼要夠長、不要和其他網站共用</b>；會員密碼建議用「產生」的隨機密碼，避免會員把在別處使用的密碼交給本站。</p></div>
 </div></div>
-<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=f09edf5931"></script>
+<script>
+/* 2026-11-24 站主：「管理員模式的所有區塊都要可以收合」。
+   每個大段落（h2）、每個區塊（.panel、.note）和區塊裡的小標題（h3）都變成可以點的標題：點一下收合、再點展開；
+   狀態記在這台瀏覽器（localStorage bn-admin-fold）。只搬移原本的節點（id、事件不變），不複製。
+   最上面的工具列（管理員名稱、全部收合／全部展開、登出）不收合。點頁內連結（例如「模型權限」）會自動展開目標所在的區塊。 */
+(function(){
+  'use strict';
+  const KEY='bn-admin-fold';let S={};try{S=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){S={};}
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+  const root=document.querySelector('#main .main .wrap');if(!root)return;
+  let n=0;
+  function make(box,h,body,key,defOff){
+    body.id=body.id||('cb-b'+(++n));
+    const b=document.createElement('button');b.type='button';b.className='cb-t';b.setAttribute('aria-controls',body.id);b.title='點一下收合／展開';
+    const x=document.createElement('span');x.className='cb-x';x.setAttribute('aria-hidden','true');
+    const tt=document.createElement('span');tt.className='cb-tt';while(h.firstChild)tt.appendChild(h.firstChild);
+    b.appendChild(x);b.appendChild(tt);h.appendChild(b);h.classList.add('cb-h');
+    box.classList.add('cb');
+    const set=(off,keep)=>{box.classList.toggle('cb-off',off);b.setAttribute('aria-expanded',String(!off));if(!keep){S[key]=off?1:0;save();}};
+    set(Object.prototype.hasOwnProperty.call(S,key)?!!S[key]:!!defOff,true);
+    b.addEventListener('click',()=>set(!box.classList.contains('cb-off')));
+    box.__cbset=set;}
+  // 1) 區塊：標題＝第一個 h3（沒有 h3 的用 data-cb-title）；區塊裡其他 h3 → 各自是可收合的小區塊
+  root.querySelectorAll(':scope > .panel, :scope > .note').forEach(p=>{
+    if(p.hasAttribute('data-cb-skip'))return;
+    let h=p.firstElementChild&&p.firstElementChild.tagName==='H3'?p.firstElementChild:null;
+    if(!h){const tt=p.getAttribute('data-cb-title');if(!tt)return;h=document.createElement('h3');h.textContent=tt;p.insertBefore(h,p.firstChild);}
+    const key=p.id||('p:'+h.textContent.trim().slice(0,40));
+    const body=document.createElement('div');body.className='cb-b';
+    let cur=body;
+    [...p.childNodes].filter(c=>c!==h).forEach(c=>{
+      if(c.nodeType===1&&c.tagName==='DIALOG'){document.body.appendChild(c);return;}   // 對話框放到最外層，區塊收合時照樣打得開
+      if(c.nodeType===1&&c.tagName==='H3'){const sub=document.createElement('div');sub.className='cb-sub';const sb=document.createElement('div');sb.className='cb-b';
+        body.appendChild(sub);sub.appendChild(c);sub.appendChild(sb);make(sub,c,sb,key+':'+c.textContent.trim().slice(0,40),false);cur=sb;return;}
+      cur.appendChild(c);});
+    p.appendChild(body);
+    make(p,h,body,key,p.getAttribute('data-cb')==='off');
+  });
+  // 2) 大段落：h2 到下一個 h2 之間的全部內容
+  root.querySelectorAll(':scope > h2').forEach(h2=>{
+    const sec=document.createElement('section');sec.className='cb-sec';h2.parentNode.insertBefore(sec,h2);
+    const g=document.createElement('div');g.className='cb-b cb-g';
+    let s=h2.nextSibling;while(s&&!(s.nodeType===1&&s.tagName==='H2')){const nx=s.nextSibling;g.appendChild(s);s=nx;}
+    sec.appendChild(h2);sec.appendChild(g);
+    make(sec,h2,g,'sec:'+(h2.id||h2.textContent.trim().slice(0,40)),false);
+  });
+  // 3) 頁內連結：自動展開目標所在的每一層
+  function reveal(el){for(let a=el;a&&a!==document.body;a=a.parentElement){if(a.__cbset&&a.classList.contains('cb-off'))a.__cbset(false);}}
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a)return;const id=decodeURIComponent(a.getAttribute('href').slice(1));const el=id&&document.getElementById(id);if(el)reveal(el);});
+  if(location.hash){const el=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(el)reveal(el);}
+  // 4) 全部收合／全部展開（包含每個模型的圓餅區塊）
+  const all=off=>{document.querySelectorAll('.cb').forEach(b=>b.__cbset&&b.__cbset(off));if(window.BN&&BN.sigpie&&BN.sigpie.foldAll)BN.sigpie.foldAll(document,off);};
+  const bn=document.getElementById('cb-none'),ba=document.getElementById('cb-all');
+  if(bn)bn.addEventListener('click',()=>all(true));if(ba)ba.addEventListener('click',()=>all(false));
+  window.BN=window.BN||{};window.BN.adminFold={reveal,all};
+})();
+</script>
+<script src="assets/site.js?v=f461d7f703"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=224f3f1ce6"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -293,7 +350,7 @@
   // ---------- 模型權限（2026-11-22 站主：在管理後台控制每個帳號可以看到哪幾個模型的資訊；預設只看得到入門模型） ----------
   // 每個帳號的 models＝可以看的模型（存 data/strategies.json 的 role；判斷方式與範圍見 assets/auth.js「模型權限」）。
   // 這裡先在畫面上勾選（MP[帳號]＝還沒儲存的勾選結果），按「儲存模型權限」才一次寫回 data/accounts.json；模型清單與代號一律讀 data/strategies.json，本頁不寫死任何代號。
-  let STRATS=null;const MP={};
+  let STRATS=null,STRATS0=null;const MP={};   // STRATS0＝data/strategies.json 原本的順序（專案 B 區順序；「恢復預設」與排序的基準）
   const sameSet=(a,b)=>a.length===b.length&&a.every(x=>b.indexOf(x)>=0);
   const inOrder=roles=>STRATS.filter(x=>roles.indexOf(x.role)>=0).map(x=>x.role);   // 依模型清單的順序排好，並丟掉已經不存在的模型
   const savedOf=a=>inOrder(BN.auth.modelsOf(a));   // 已儲存的權限（沒設定過＝預設）
@@ -390,7 +447,8 @@
     DB.adminPat=await BN.auth.patBox(sess.uk,pat,sess.user);DB.adminPat._v=pat.length+':'+pat.slice(-4);await saveDB('admin: store write token in admin account');}
 
   // ---------- announcements ----------
-  async function loadSite(){try{SITE=await BN.auth.fetchJSON('data/site.json');}catch(e){SITE={announcements:[]};}renderAnn();}
+  async function loadSite(){SITE=null;if(pat){try{const cur=await BN.auth.ghGet(pat,'data/site.json');if(cur&&cur.content)SITE=JSON.parse(new TextDecoder().decode(BN.auth.b64.dec(cur.content.replace(/\n/g,''))));}catch(e){SITE=null;}}   // 有 PAT：讀 GitHub 上最新那份（剛存完、網站還在部署時也是新的）
+    if(!SITE){try{SITE=await BN.auth.fetchJSON('data/site.json');}catch(e){SITE={announcements:[]};}}if(!Array.isArray(SITE.announcements))SITE.announcements=[];renderAnn();}
   function renderAnn(){$('#ann-body').innerHTML=(SITE.announcements||[]).map((a,i)=>'<tr><td class="l">'+esc(a.date)+'</td><td class="l"><b>'+esc(a.title)+'</b><br><span class="small">'+esc(a.body||'')+'</span></td><td class="l"><button class="sm danger" data-del="'+i+'">刪除</button></td></tr>').join('')||'<tr><td colspan="3">沒有公告</td></tr>';}
   async function saveSite(message){const text=JSON.stringify(SITE,null,1);if(!pat){msg('#ann-msg','沒有 PAT，無法寫回；請下載後手動上傳到 data/site.json。','err');$('#dl2').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#dl2').hidden=false;return;}msg('#ann-msg','寫入中…');try{await BN.auth.ghPut(pat,'data/site.json',text,message);msg('#ann-msg','已儲存，網站約 1 分鐘後更新。','ok');}catch(e){msg('#ann-msg',e.message,'err');}}
   $('#ann-table').addEventListener('click',async e=>{const b=e.target.closest('button[data-del]');if(!b)return;SITE.announcements.splice(+b.dataset.del,1);renderAnn();await saveSite('admin: remove announcement');});
@@ -406,7 +464,7 @@
   const STR=()=>BN.auth.sortModels(rules.STRATEGIES,(SITE&&SITE.model_order)||[]);
   function condRows(e,kind,m){const N=BN.sigpie.next(rules,m||market);
     const next=kind==='official'?{price:N.official,macro:N.official}:kind==='custom'?{custom:N.custom}:{price:N.price,macro:N.macro};
-    return BN.sigpie.html(STR().map(st=>({id:st.id,ref:st.ref,d:e.detail[st.id]})),{kind,next,isMacro:l=>TOPRE.some(re=>re.test(l))});}
+    return BN.sigpie.html(STR().map(st=>({id:st.id,ref:st.ref,d:e.detail[st.id]})),{kind,next,isMacro:l=>TOPRE.some(re=>re.test(l)),fold:'adm-'+kind});}
   const put=(sel,h)=>{const el=$(sel);el.innerHTML=h;BN.sigpie.bind(el);};
   async function loadSignals(){rules=await BN.auth.loadRules(sess);
     market=await fetch('data/market.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json());
@@ -418,21 +476,22 @@
     const sync=!rs?'<span style="color:var(--bad)">讀不到同步狀態檔</span>':rs.state!=='ok'?'<b style="color:var(--bad)">同步中：'+esc(rs.note||'B 區有更新')+'（自 '+esc(rs.since||'')+'）</b>':rs.b_ver!==bv?'<b style="color:var(--bad)">規則與 B 區最新版本不一致</b>':'<span class="ok-dot"></span>與最近一次同步檢查的 B 區版本一致（'+esc(bv)+'，每天 07:53、19:53 自動檢查）';
     const exp=rules.validUntil&&c.m>rules.validUntil?'｜<b style="color:var(--bad)">模型已到期，需要重新訓練</b>':'';
     $('#mstat').innerHTML='資料截至 <b>'+market.asof+'</b>｜QQQ 收盤 '+c.c.toFixed(2)+'（U '+c.U.toFixed(4)+'，本月高 '+c.H.toFixed(4)+'／低 '+c.L.toFixed(4)+'）｜來源 '+esc(market.source)+'｜更新 '+esc(market.updated)+'｜規則版本 <b>'+esc(rules.built)+'</b>（模型有效至 '+esc(rules.validUntil)+'）｜'+sync+exp;
-    const cur=()=>put('#sig-cur','<h3>正式訊號：'+L.lastComplete.month+' 月底（決定 '+nextMonth(L.lastComplete.month)+' 持有）</h3>'+condRows(L.lastComplete,'official',market));
+    const cur=()=>{$('#sig-cur-t').textContent='正式訊號：'+L.lastComplete.month+' 月底（決定 '+nextMonth(L.lastComplete.month)+' 持有）';put('#sig-cur',condRows(L.lastComplete,'official',market));};
     cur();
     // 推算：把最新價格當作本月底收盤。2026-11-24 起開盤期間（含美股盤前盤後）用 QQQ 即時成交（assets/liveq.js 的 qqqMarket；還原價＝即時價 × k，本月高低納入即時價），約每分鐘重算
     const mstat0=$('#mstat').innerHTML;
     let PV=[market,L];
     const prov=(m2,L2)=>{PV=[m2,L2];const c2=m2.current,lv=m2.live&&m2.live.ph!=='close'?m2.live:null;
       if(lv)$('#mstat').innerHTML=mstat0+'｜QQQ '+esc(BN.liveq.tag(lv))+' 即時 <b>'+c2.c.toFixed(2)+'</b>（'+esc(lv.ses)+'，U '+c2.U.toFixed(4)+'，本月高 '+c2.H.toFixed(4)+'／低 '+c2.L.toFixed(4)+'）';
-      put('#sig-prov','<h3>推算：把'+(lv?'QQQ '+esc(BN.liveq.tag(lv))+' 即時價 ':'最新收盤 ')+c2.c.toFixed(2)+' 當作 '+c2.m+' 月底收盤（決定 '+nextMonth(c2.m)+' 持有）</h3>'+condRows(L2.provisional,'prov',m2)
+      $('#sig-prov-t').textContent='推算：把'+(lv?'QQQ '+BN.liveq.tag(lv)+' 即時價 ':'最新收盤 ')+c2.c.toFixed(2)+' 當作 '+c2.m+' 月底收盤（決定 '+nextMonth(c2.m)+' 持有）';
+      put('#sig-prov',condRows(L2.provisional,'prov',m2)
       +'<p class="small">翻轉價位（原始價）：'+STR().map(st=>{const f=L2.flips[st.id]||{};return esc(st.id)+' 往下 '+(f.down?f.down.raw.toFixed(2)+' → '+rules.holdingText(f.down.w):'無')+'、往上 '+(f.up?f.up.raw.toFixed(2)+' → '+rules.holdingText(f.up.w):'無');}).join('｜')+'</p>');};
     prov(market,L);
     if(window.BN&&BN.liveq&&!window.__admLive){window.__admLive=true;let last=0,lastPx=0;BN.liveq.want(['US']);
       const go=()=>{const m2=BN.liveq.qqqMarket(market);if(!m2||document.hidden)return;if(Date.now()-last<60e3&&Math.abs(m2.current.c/lastPx-1)<0.003)return;last=Date.now();lastPx=m2.current.c;
         setTimeout(()=>{try{prov(m2,rules.latest(m2,tb));}catch(e){/* 下一次再試 */}},0);};
       BN.liveq.on(go);setTimeout(go,0);}
-    const custom=()=>{const px=+$('#custom').value;if(!(px>0))return;const e=rules.provisional(S,px*market.k,c,L.preps);put('#sig-custom','<h3>自訂收盤 '+px.toFixed(2)+' 的推算</h3>'+condRows(e,'custom'));};
+    const custom=()=>{const px=+$('#custom').value;if(!(px>0))return;const e=rules.provisional(S,px*market.k,c,L.preps);put('#sig-custom','<p class="sp-ch">自訂收盤 '+px.toFixed(2)+' 的推算</p>'+condRows(e,'custom'));};
     $('#custom').addEventListener('input',custom);
     // 最近 24 個完整月
     const hist=()=>{$('#hist-head').innerHTML='<tr><th class="l">訊號月</th><th>還原收盤</th>'+STR().map(st=>'<th>'+esc(st.id)+' 成立</th><th>'+esc(st.id)+' 下月持有</th>').join('')+'</tr>';
@@ -443,22 +502,39 @@
     RERENDER=()=>{cur();prov(PV[0],PV[1]);custom();hist();};}
   let RERENDER=null;
   // ---------- 模型顯示順序（data/site.json 的 model_order）----------
+  // 2026-11-24 站主回報「模型顯示順序改了，正式訊號跟推算沒改」（原本要再按「儲存順序」才套用）：
+  //   改成按 ↑ ↓ 就立刻套用到本頁（正式訊號、推算、自訂收盤、翻轉價位、最近 24 個月、模型權限），最後一次調整 2 秒後自動存到網站；
+  //   存檔前先讀 GitHub 上最新的 site.json，只改 model_order（不會蓋掉公告）；檔案剛好被別處改過（409）就重讀重試。
   let MO=[];
-  function moApply(){if(STRATS){STRATS=BN.auth.sortModels(STRATS,(SITE&&SITE.model_order)||[],x=>x.code);renderNewChips();try{renderModels();}catch(e){}}}   // 模型權限的勾選也照顯示順序
-  function moList(){const base=(STRATS||[]).map(s=>s.code);MO=BN.auth.sortModels(base,(SITE&&SITE.model_order)||[],x=>x);moDraw();}
+  function moApply(){if(STRATS0){STRATS=BN.auth.sortModels(STRATS0,(SITE&&SITE.model_order)||[],x=>x.code);renderNewChips();try{renderModels();}catch(e){}}}   // 模型權限的勾選也照顯示順序
+  function moList(){const base=(STRATS0||[]).map(s=>s.code);MO=BN.auth.sortModels(base,(SITE&&SITE.model_order)||[],x=>x);moDraw();}
   function moDraw(){const lab=c=>{const s=(STRATS||[]).find(x=>x.code===c);return s?'（專案 '+s.section+'，'+s.label+'）':'';};
     $('#mo-list').innerHTML=MO.length?MO.map((c,i)=>'<li><span class="mo-i">'+(i+1)+'.</span><b>'+esc(c)+'</b><small>'+esc(lab(c))+'</small><button class="btn line" type="button" data-ord="'+i+'" data-d="-1" aria-label="'+esc(c)+' 往上"'+(i===0?' disabled':'')+'>↑</button><button class="btn line" type="button" data-ord="'+i+'" data-d="1" aria-label="'+esc(c)+' 往下"'+(i===MO.length-1?' disabled':'')+'>↓</button></li>').join(''):'<li>讀不到模型清單（data/strategies.json）。</li>';}
-  $('#mo-list').addEventListener('click',e=>{const b=e.target.closest('button[data-ord]');if(!b)return;const i=+b.dataset.ord,j=i+(+b.dataset.d);if(j<0||j>=MO.length)return;[MO[i],MO[j]]=[MO[j],MO[i]];moDraw();const nb=$('#mo-list').querySelector('button[data-ord="'+j+'"][data-d="'+b.dataset.d+'"]')||$('#mo-list').querySelector('button[data-ord="'+j+'"]');if(nb)nb.focus();msg('#mo-msg','尚未儲存：按「儲存順序」後全站生效。');});
-  async function moSave(order,note){SITE=SITE||{announcements:[]};SITE.model_order=order;const text=JSON.stringify(SITE,null,1);
+  let moT=0,moBusy=false,moNext=null;
+  function moSet(order,note){SITE=SITE||{announcements:[]};if(order.length)SITE.model_order=order;else delete SITE.model_order;
     if(RERENDER)try{RERENDER();}catch(e){}
-    moApply();
-    if(!pat){msg('#mo-msg','沒有 PAT，無法寫回；請到下方「公告」區按「下載 site.json」手動上傳到 data/site.json。','err');$('#dl2').href='data:application/json;charset=utf-8,'+encodeURIComponent(text);$('#dl2').hidden=false;return;}
-    msg('#mo-msg','寫入中…');try{await BN.auth.ghPut(pat,'data/site.json',text,'admin: model display order（'+order.join(' → ')+'）');msg('#mo-msg',note+'已儲存，網站約 1～2 分鐘後更新（本頁已先照新順序顯示）。','ok');}catch(e){msg('#mo-msg',e.message,'err');}}
-  $('#mo-save').addEventListener('click',()=>moSave(MO.slice(),''));
-  $('#mo-reset').addEventListener('click',()=>{MO=(STRATS||[]).map(s=>s.code);moDraw();moSave([],'已恢復專案 B 區順序；');});
+    moApply();clearTimeout(moT);$('#mo-dl').hidden=true;
+    if(!pat){msg('#mo-msg','本頁已照新順序顯示。沒有 PAT，無法自動存到網站：請按「下載 site.json」，手動上傳到 data/site.json。','err');$('#mo-dl').href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(SITE,null,1));$('#mo-dl').hidden=false;return;}
+    msg('#mo-msg','本頁已照新順序顯示；2 秒後自動存到網站…');moT=setTimeout(()=>moPersist(order,note||''),2000);}
+  async function moPersist(order,note){if(moBusy){moNext=[order,note];return;}moBusy=true;msg('#mo-msg','儲存中…');
+    try{let done=false;
+      for(let k=0;k<3&&!done;k++){const cur=await BN.auth.ghGet(pat,'data/site.json');
+        const j=cur&&cur.content?JSON.parse(new TextDecoder().decode(BN.auth.b64.dec(cur.content.replace(/\n/g,'')))):{announcements:[]};
+        if(order.length)j.model_order=order;else delete j.model_order;
+        const r=await BN.auth.ghPutAt(pat,'data/site.json',JSON.stringify(j,null,1),'admin: model display order（'+(order.length?order.join(' → '):'恢復專案 B 區順序')+'）',cur&&cur.sha);
+        if(!r.conflict)done=true;}
+      if(!done)throw new Error('網站設定檔剛好被別處修改，重試 3 次仍未存成；請再調整一次順序。');
+      msg('#mo-msg','✓ '+note+'已存到網站：本頁已套用；會員專區與每日市場分析約 3 分鐘後照新順序。','ok');
+    }catch(e){msg('#mo-msg','本頁已照新順序顯示，但存到網站失敗：'+(e.message||e),'err');}
+    moBusy=false;if(moNext){const [o,n]=moNext;moNext=null;moPersist(o,n);}}
+  $('#mo-list').addEventListener('click',e=>{const b=e.target.closest('button[data-ord]');if(!b)return;const i=+b.dataset.ord,j=i+(+b.dataset.d);if(j<0||j>=MO.length)return;[MO[i],MO[j]]=[MO[j],MO[i]];moDraw();
+    const nb=$('#mo-list').querySelector('button[data-ord="'+j+'"][data-d="'+b.dataset.d+'"]:not([disabled])')||$('#mo-list').querySelector('button[data-ord="'+j+'"]:not([disabled])');if(nb)nb.focus();
+    moSet(MO.slice());});
+  $('#mo-reset').addEventListener('click',()=>{MO=(STRATS0||[]).map(s=>s.code);moDraw();moSet([],'已恢復專案 B 區順序；');});
   function nextMonth(m){const [y,mm]=m.split('-').map(Number);const d=new Date(y,mm,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
   $('#dispatch').addEventListener('click',async()=>{if(!pat){msg('#data-msg','需要 PAT（Actions: Read and write）。','err');return;}msg('#data-msg','觸發中…');try{await BN.auth.ghDispatch(pat);msg('#data-msg','已觸發，約 2～3 分鐘後重新整理本頁。','ok');}catch(e){msg('#data-msg',e.message,'err');}});
   try{STRATS=await BN.auth.strategies();}catch(e){STRATS=null;}
+  STRATS0=STRATS?STRATS.slice():null;
   renderNewChips();
   try{await loadDB();if(pat)await syncPatToAccount();}catch(e){msg('#acct-msg',e.message,'err');}
   runPwc();   // 會員送出的密碼變更：進後台就自動驗證並套用（不等下面的訊號計算）

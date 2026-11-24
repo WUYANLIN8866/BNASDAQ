@@ -693,7 +693,32 @@ ul.ind { max-width: none; }
 .sp-st{margin-left:auto;font-weight:700;white-space:nowrap}.sp-it.on .sp-st{color:var(--sig-on-ink)}.sp-it.off .sp-st{color:var(--muted)}
 .sp-l{margin-top:3px;color:var(--ink-2)}.sp-k{display:inline-block;min-width:4.6em;color:var(--muted);font-size:12px;margin-right:6px}.sp-k2{margin-left:14px}
 .sp-sum{margin:10px 0 0}
+/* 2026-11-24：每個模型的區塊可以收合（管理後台；標題列是按鈕，右邊一直顯示「成立幾項 → 結論」） */
+.sp-ft{all:unset;box-sizing:border-box;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;width:100%;cursor:pointer;font:inherit;color:inherit}
+.sp-ft:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.sp-ft:hover .sp-fn{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.sp-fx{flex:none;width:.5em;height:.5em;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-.15em) rotate(45deg);transition:transform .15s;opacity:.7}
+.sp-off .sp-fx{transform:rotate(-45deg)}
+.sp-hs{margin-left:auto;font-size:13px;font-weight:400;color:var(--ink-2)}
+.sp-off>.sp-body,.sp-off>.sp-sum{display:none}
+.sp-one.sp-off .sp-h{margin-bottom:0}
+.sp-body1{display:block}
+.sp-ch{font-weight:700;margin:12px 0 6px;max-width:none}
 /* 模型顯示順序（管理後台） */
+/* 2026-11-24：管理員模式的區塊都可以收合（管理後台、每日市場分析的管理員專區；標題列是按鈕，收合後只留標題） */
+.cb-h { margin-bottom: 0; }
+.panel > .cb-h, .note > .cb-h { margin-top: 0; }
+.cb-t { all: unset; box-sizing: border-box; display: flex; align-items: baseline; gap: 10px; width: 100%; cursor: pointer; font: inherit; color: inherit; line-height: inherit; padding: 2px 0; }
+.cb-t:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+.cb-t:hover .cb-tt { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.cb-x { flex: none; width: .55em; height: .55em; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-.18em) rotate(45deg); transition: transform .15s; opacity: .75; }
+.cb-off > .cb-h .cb-x { transform: translateY(0) rotate(-45deg); }
+.cb-off > .cb-b { display: none; }
+.cb > .cb-b { margin-top: 12px; }
+.cb-sub { margin-top: 18px; }
+.cb-sec > h2 { margin-bottom: 0; }
+.cb-sec + .cb-sec { margin-top: 26px; }
+.cb-sec.cb-off { padding-bottom: 6px; border-bottom: 1px solid var(--line); }
 .mo-list{list-style:none;margin:8px 0;padding:0;display:grid;gap:6px;max-width:560px}
 .mo-list li{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--paper)}
 .mo-list li b{flex:1}.mo-list .mo-i{min-width:1.6em;color:var(--muted);font-variant-numeric:tabular-nums}

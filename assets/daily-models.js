@@ -85,6 +85,17 @@
     try { await BN.auth.aesDec(BN.auth.b64.dec(s.uk), v.priv.iv, v.priv.ct); return true; } catch (e) { return false; }
   }
 
+  // 2026-11-24 站主：「管理員模式的所有區塊都要可以收合」：管理員專區整塊可以收合（標題列是按鈕）；
+  //   狀態和管理後台一樣記在這台瀏覽器（localStorage bn-admin-fold 的 daily-admin），即時重算重畫時保持
+  const FOLDK = 'bn-admin-fold', FOLDID = 'daily-admin';
+  const foldGet = () => { try { return !!(JSON.parse(localStorage.getItem(FOLDK) || '{}') || {})[FOLDID]; } catch (e) { return false; } };
+  const foldSet = off => { try { const s = JSON.parse(localStorage.getItem(FOLDK) || '{}') || {}; s[FOLDID] = off ? 1 : 0; localStorage.setItem(FOLDK, JSON.stringify(s)); } catch (e) { } };
+  function foldBind(box) {
+    if (box.__fold) return; box.__fold = true;
+    box.classList.add('cb'); box.classList.toggle('cb-off', foldGet());
+    box.addEventListener('click', e => { const b = e.target.closest && e.target.closest('.dm-at'); if (!b) return; const off = !box.classList.contains('cb-off'); box.classList.toggle('cb-off', off); b.setAttribute('aria-expanded', String(!off)); foldSet(off); });
+  }
+
   async function adminInit(root) {
     const box = root.querySelector('#dm-admin'), s = sess(); if (!box || !s || !BN.auth) return;
     const say = h => { box.innerHTML = h; };
@@ -98,7 +109,7 @@
       if (!(rules.version >= 2)) { say('<p class="msg err">管理員專區：會員規則還是舊版，請先到管理後台完成「會員規則金鑰」設定。</p>'); return; }
       await new Promise(r => setTimeout(r, 30));   // 先讓「計算中」畫出來
       ST.adm = build(rules, rules.latest(market, tb), market, rs, tj);
-      box.innerHTML = adminPanel(ST.adm); if (BN.sigpie) BN.sigpie.bind(box);
+      foldBind(box); box.innerHTML = adminPanel(ST.adm); if (BN.sigpie) BN.sigpie.bind(box);
       root.querySelectorAll('.dm.ok[data-dm]').forEach(adminLine);
       // 即時（2026-11-24 站主：所有股價計算都用最新的即時價格）：開盤期間（含美股盤前盤後）QQQ 有新成交，就用即時價當作本月最新收盤重算
       // （BN.liveq.qqqMarket；至少間隔 1 分鐘，價格變動超過 0.3% 才提早）；已經展開的明細保持展開
@@ -179,7 +190,8 @@
       const p = [one(m.flips.down, '≤'), one(m.flips.up, '≥')].filter(Boolean);
       return p.length ? p.join('<br>') : '±40% 範圍內結論不變';
     };
-    let h = '<h3>管理員專區：' + esc(group()) + '的判斷條件</h3>';
+    const off = foldGet();
+    let h = '<h3 class="cb-h"><button type="button" class="cb-t dm-at" aria-expanded="' + !off + '" aria-controls="dm-ab" title="點一下收合／展開"><span class="cb-x" aria-hidden="true"></span><span class="cb-tt">管理員專區：' + esc(group()) + '的判斷條件</span></button></h3><div class="cb-b" id="dm-ab">';
     const lv = A.market.live && A.market.live.ph !== 'close' ? A.market.live : null, lvTxt = lv && BN.liveq ? BN.liveq.tag(lv) + ' 即時價' : '收盤';
     h += '<p class="small">只有管理員登入時顯示，會員與訪客看不到這一區。市場資料截至 <b>' + esc(A.market.asof) + '</b>' + (c ? '（QQQ ' + esc(lvTxt) + ' <b>' + c.c.toFixed(2) + '</b>）；下面把' + (lv ? '即時價' : '最新收盤') + '當作 ' + esc(c.m) + ' 月底收盤來推算（決定 ' + esc(nextM) + ' 持有）' + (lv ? '，開盤期間約每分鐘重算' : '') : '') + '。規則版本 ' + esc(R.built) + '。</p>';
     if (ST.session && A.market.asof && ST.session < A.market.asof) h += '<p class="small">你正在看的是美股 ' + esc(ST.session) + ' 的舊報告；下面的數值是目前最新的，不是報告當天的。</p>';
@@ -198,7 +210,7 @@
     h += '<ul class="dm-notes"><li>每則消息下方的「判斷條件｜管理員」：依消息主題列出各模型<b>直接對應</b>的條件（主題和條件用的是同一類公開數據）；沒有對應條件的模型，這則消息只會透過 QQQ 月線影響它。</li>'
       + '<li>消息主題：新的報告由排程逐則標記；沒有標記的舊報告改用關鍵字比對（可能不準），並標示「關鍵字比對」。</li>'
       + '<li>數值是把最新價格（開盤期間是 QQQ 即時成交）當作月底收盤時會採用的數值；之後才公布的月資料，要等公布後的月底才會進到模型。完整訊號與自訂收盤推算在<a href="admin.html">管理後台</a>。</li></ul>';
-    return h;
+    return h + '</div>';
   }
 
   BN.dm = { ready, begin, line, sect, mount, who: () => ST.who };
