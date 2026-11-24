@@ -234,7 +234,7 @@
   const src1 = () => '鉅亨網';
   const volTxt = v => v == null ? '—' : S.mk === 'TW' ? fi(v) + ' 張' : big(v) + ' 股';
   // CNBC 的日期（11/13/26、01/27/2027(est)）→ 2026/11/13、2027/01/27（預估）；市值（5.073T、845.1B、32.5M）→ 美元金額
-  const usDate = s => { const m = String(s || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}|\d{2})\s*(\(est\))?/i); return m ? (m[3].length === 2 ? '20' + m[3] : m[3]) + '/' + p2(+m[1]) + '/' + p2(+m[2]) + (m[4] ? '（預估）' : '') : String(s || ''); };
+  const usDate = s => { const m = String(s || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4}|\d{2})\s*(\(est\))?/i); return m ? (m[3].length === 2 ? '20' + m[3] : m[3]) + '/' + p2(+m[1]) + '/' + p2(+m[2]) + (m[4] ? '（預估）' : '') : String(s || '').replace(/-/g, '/'); };
   const usCap = Lb.usCapLike;
 
   // ---------- 時段：決定多久讀一次 ----------
@@ -261,6 +261,17 @@
         const qb = b.status === 'fulfilled' ? normCnyes(b.value && b.value.data && b.value.data[0], 'US') : null;
         q = qa || qb;
         if (qa && qb) { ['avg', 'amt', 'cap', 'ses'].forEach(k => { if (qa[k] == null && qb[k] != null) qa[k] = qb[k]; }); if (qb.name) qa.zh = qb.name; qa.src = 'CNBC＋鉅亨網'; }
+        else if (qb) {   // CNBC 讀不到（它會擋部分網路環境）：鉅亨網的報價照用；盤前盤後、以及鉅亨網落後超過 90 秒時的現價，改用本站快照（Yahoo Finance，每 60 秒）
+          qb.zh = qb.name; qb.name = '';
+          const l = BN.liveq && BN.liveq.get(S.code, 'US');
+          if (l && l.p > 0 && !l.stale) {
+            // 基準價：快照只有「價格、漲跌%」，反推的基準會差幾分錢；鉅亨網的收盤價和它相差不到 0.2% 時改用鉅亨網的收盤價
+            const base = b0 => qb.p > 0 && b0 > 0 && Math.abs(qb.p / b0 - 1) < 0.002 ? qb.p : b0;
+            if (l.ph === 'pre' && l.ref > 0) { const b0 = base(l.ref); qb.ext = { type: 'pre', p: l.p, chg: l.p - b0, pct: (l.p / b0 - 1) * 100, t: l.t, snap: true }; }
+            else if (l.ph === 'post' && l.close > 0) { const b0 = base(l.close); qb.ext = { type: 'post', p: l.p, chg: l.p - b0, pct: (l.p / b0 - 1) * 100, t: l.t, snap: true }; }
+            else if (l.ph === 'open' && l.t > (qb.t || 0) + 90) { qb.p = l.p; qb.t = l.t; if (l.ref > 0) { qb.prev = l.ref; qb.chg = l.p - l.ref; qb.pct = l.chg * 100; } if (qb.high != null) qb.high = Math.max(qb.high, l.p); if (qb.low != null) qb.low = Math.min(qb.low, l.p); qb.src = '本站快照（' + (l.src || 'Yahoo Finance') + '）＋鉅亨網'; qb.mix = true; }
+          }
+        }
       }
     } catch (e) { err = e && e.message || String(e); }
     if (!S) return;
@@ -343,7 +354,7 @@
       ? '<li><b>報價、五檔、內外盤、分價量、法人、資券、主力：</b>鉅亨網的公開報價，由你的瀏覽器直接讀取；盤中每 5 秒讀一次、開盤前每 15 秒、收盤後每 60 秒。成交價、總量、成交值、均價、五檔在 2026-11-24 盤中和 Yahoo 股市逐項比對相同。</li>'
         + '<li><b>內外盤：</b>成交在委買價算內盤、在委賣價算外盤，是資料商自己統計的，各家數字不同（例：2026-11-24 09:34 統一 1216，鉅亨網內盤 871／外盤 1,682 張，Yahoo 股市 1,057／1,832 張）。漲停鎖住時鉅亨網全部記為內盤，Yahoo 股市記為外盤。</li>'
         + '<li><b>昨量：</b>鉅亨網日 K 前一根的成交量，和 Yahoo 股市的昨量可能差一點（例：統一 1216 是 20,573 對 20,518 張）。</li>'
-      : '<li><b>報價：</b>CNBC 的公開報價，由你的瀏覽器直接讀取' + (q.source ? '（CNBC 標示的來源：' + esc(q.source) + '）' : '') + '；含盤前（美東 04:00～09:30）與盤後（16:00～20:00）。正規時段每 5 秒讀一次、盤前盤後每 15 秒、其餘每 60 秒。<b>走勢與 K 線：</b>鉅亨網。兩個來源的成交量算法不同，所以「總量」只用 CNBC 的數字，走勢圖與 K 線下方的成交量是鉅亨網的數字。美股沒有公開的五檔與內外盤。</li>')
+      : '<li><b>報價：</b>CNBC 的公開報價，由你的瀏覽器直接讀取' + (q.source ? '（CNBC 標示的來源：' + esc(q.source) + '）' : '') + '；含盤前（美東 04:00～09:30）與盤後（16:00～20:00）。正規時段每 5 秒讀一次、盤前盤後每 15 秒、其餘每 60 秒。CNBC 會擋掉部分網路環境（2026-11-24 測試用的雲端瀏覽器就被擋）：讀不到時報價改用鉅亨網，盤前盤後價改用本站快照（Yahoo Finance，每 60 秒），上方狀態列會寫出當下用的來源。<b>走勢與 K 線：</b>鉅亨網。兩個來源的成交量算法不同，所以「總量」只用 CNBC 的數字，走勢圖與 K 線下方的成交量是鉅亨網的數字。美股沒有公開的五檔與內外盤。</li>')
       + '<li>即時來源讀不到時，價格改用本站的報價快照（' + (tw ? '每 30 秒' : '每 60 秒') + '更新），其餘區塊顯示「暫時無法取得」，連線恢復後自動回到即時來源。</li>'
       + '<li><b>漲跌</b>＝成交價−昨收；<b>振幅</b>＝（最高−最低）÷昨收' + (tw ? '；<b>均價</b>＝成交值÷總量（來源提供）' : '') + '。</li>'
       + '<li><b>成交明細：</b>開著這一頁時，每次讀到總量增加就記一筆（單量＝和上一次讀到的總量相差的量），不是交易所的逐筆資料；開啟本頁之前的部分是每分鐘一列。' + (tw ? '<b>分價量表</b>與每分鐘成交量是鉅亨網整理的資料，加總會比即時總量少（例：2026-11-24 09:34 統一 1216 每分鐘量加總 2,847 張、分價量加總 3,003 張，總量 3,200 張）。' : '') + '</li>'
@@ -363,10 +374,10 @@
     const fl = $('.rt-flag'); fl.hidden = !lim; fl.textContent = lim; fl.className = 'rt-flag ' + c;
     $('.rt-tags').innerHTML = (S.mk === 'US' ? [q.ex, (S.name || q.name) !== nm ? (S.name || q.name) : ''] : [q.board, q.ind, q.type === 'ETF' ? 'ETF' : '']).filter(Boolean).map(x => '<span class="rt-tag">' + esc(x) + '</span>').join('');
     const x = $('.rt-ext'), e = q.ext, live = e && e.t && now() - e.t < 1200 && (ph === 'xpre' || ph === 'xpost');
-    if (e && (live || ph === 'closed' || ph === 'xpre' || ph === 'xpost')) { x.hidden = false; x.innerHTML = '<span class="rt-tag">' + (e.type === 'pre' ? '盤前' : '盤後') + '</span><b class="' + cls(e.chg) + '">' + f2(e.p) + '</b><span class="' + cls(e.chg) + '">' + fchg(e.chg) + '（' + fpct(e.pct) + '）</span><small>' + (e.t ? '台北 ' + mdT(e.t) + ' ' + tpe(e.t) : '') + '｜' + (e.type === 'pre' ? '對前一交易日收盤' : '對當天收盤') + '</small>'; } else x.hidden = true;
+    if (e && (live || ph === 'closed' || ph === 'xpre' || ph === 'xpost')) { x.hidden = false; x.innerHTML = '<span class="rt-tag">' + (e.type === 'pre' ? '盤前' : '盤後') + '</span><b class="' + cls(e.chg) + '">' + f2(e.p) + '</b><span class="' + cls(e.chg) + '">' + fchg(e.chg) + '（' + fpct(e.pct) + '）</span><small>' + (e.t ? '台北 ' + mdT(e.t) + ' ' + tpe(e.t) : '') + '｜' + (e.type === 'pre' ? '對前一交易日收盤' : '對當天收盤') + (e.snap ? '｜本站快照' : '') + '</small>'; } else x.hidden = true;
     const age = q.t ? now() - q.t : null, on = ph === 'open' && !q.fallback && !q.stale;
-    const what = q.stale ? '連線中斷，顯示最後一次報價' : ph === 'open' ? (age != null && age < 180 ? '盤中即時' : '盤中（最後成交 ' + (q.t ? tpe(q.t, true) : '—') + '）') : ph === 'pre' ? '開盤前（顯示前一交易日收盤）' : ph === 'xpre' ? '美股盤前時段' : ph === 'xpost' ? '美股盤後時段' : '已收盤';
-    $('.rt-st').textContent = what + '｜' + (q.t ? (S.mk === 'US' ? '台北 ' : '') + mdT(q.t) + ' ' + tpe(q.t, true) : '') + '｜' + q.src + (on ? '｜每 ' + every() + ' 秒更新' : '') + (q.fallback ? '｜即時來源暫時讀不到，改用快照' : '');
+    const what = q.stale ? '連線中斷，顯示最後一次報價' : ph === 'open' ? (q.mix ? '盤中' : age != null && age < 180 ? '盤中即時' : '盤中（最後成交 ' + (q.t ? tpe(q.t, true) : '—') + '）') : ph === 'pre' ? '開盤前（顯示前一交易日收盤）' : ph === 'xpre' ? '美股盤前時段' : ph === 'xpost' ? '美股盤後時段' : '已收盤';
+    $('.rt-st').textContent = what + '｜' + (q.t ? (S.mk === 'US' ? '台北 ' : '') + mdT(q.t) + ' ' + tpe(q.t, true) : '') + '｜' + q.src + (on ? (q.mix ? '｜快照每 60 秒更新' : '｜每 ' + every() + ' 秒更新') : '') + (q.fallback ? '｜即時來源暫時讀不到，改用快照' : '');
     $('.rt-dot').className = 'rt-dot' + (q.stale || q.fallback ? ' bad' : on ? ' live' : '');
   }
   const dd = (k, v, c) => '<div><dt>' + k + '</dt><dd' + (c ? ' class="' + c + '"' : '') + '>' + v + '</dd></div>';
@@ -440,7 +451,7 @@
       S.tape.forEach(x => rows.push('<tr><td>' + tpe(x.t, true) + '</td><td class="' + (q && q.prev > 0 ? cls(x.p - q.prev) : '') + '">' + f2(x.p) + '</td><td class="' + (q && q.prev > 0 ? cls(x.p - q.prev) : '') + '">' + (q && q.prev > 0 ? fchg(x.p - q.prev) : '—') + '</td><td>' + fi(x.dv) + '</td><td>' + fi(x.vol) + '</td></tr>'));
       if (D && D.t.length) { const mrows = [], msum = D.v.reduce((s, v) => s + v, 0); for (let i = D.t.length - 1; i >= 0; i--) { if (first != null && D.t[i] + 60 > first) continue; const c = q && q.prev > 0 ? cls(D.c[i] - q.prev) : '';
           mrows.push('<tr class="min"><td>' + tpe(D.t[i]) + '</td><td class="' + c + '">' + f2(D.c[i]) + '</td><td class="' + c + '">' + (q && q.prev > 0 ? fchg(D.c[i] - q.prev) : '—') + '</td><td>' + fi(D.v[i]) + '</td><td class="mut">—</td></tr>'); }
-        if (mrows.length) rows.push('<tr class="sep"><td colspan="5">' + (S.tape.length ? '以下是開啟本頁之前：' : '') + '每分鐘一列（成交價＝該分鐘最後一筆；單量＝該分鐘成交量，' + src1() + '整理，全部加總 ' + fi(msum) + ' ' + unit() + '，會比即時總量少）' + (S.tape.length ? '' : '。開著這一頁時，上方會逐次記錄每次報價更新的成交') + '</td></tr>'); rows.push.apply(rows, mrows.slice(0, 400)); }
+        if (mrows.length) rows.push('<tr class="sep"><td colspan="5">' + (S.tape.length ? '以下是開啟本頁之前：' : '') + '每分鐘一列（成交價＝該分鐘最後一筆；單量＝該分鐘成交量，' + src1() + '整理，全部加總 ' + fi(msum) + ' ' + unit() + (S.mk === 'TW' ? '，會比即時總量少）' : '；和上方「總量」的算法不同，兩個數字不會相等）') + (S.tape.length ? '' : '。開著這一頁時，上方會逐次記錄每次報價更新的成交') + '</td></tr>'); rows.push.apply(rows, mrows.slice(0, 400)); }
       const CUT = 30, more = rows.length > CUT + 1 && !S.tapeAll, sig = rows.length + '|' + (S.tape[0] ? S.tape[0].t + '/' + S.tape[0].vol : '') + '|' + (D && D.t.length ? D.t[D.t.length - 1] + '/' + D.v[D.v.length - 1] : '') + '|' + !!S.tapeAll + '|' + (q ? q.prev : '');
       if (el._sig === sig) return; el._sig = sig;   // 內容沒變就不重畫（每 5 秒讀一次報價）
       el.innerHTML = rows.length ? '<div class="tblwrap rt-scroll"><table class="tbl rt-tape"><thead><tr><th>時間</th><th>成交價</th><th>漲跌</th><th>單量（' + unit() + '）</th><th>總量（' + unit() + '）</th></tr></thead><tbody>' + (more ? rows.slice(0, CUT) : rows).join('') + '</tbody></table></div>' + (rows.length > CUT + 1 ? '<p class="rt-allp"><button type="button" class="btn line rt-all">' + (S.tapeAll ? '只顯示最近 ' + CUT + ' 列' : '顯示全部 ' + (rows.length - 1) + ' 列') + '</button></p>' : '') : '<p class="small">' + (D === false ? '成交明細暫時無法取得。' : '今天還沒有成交（或資料載入中）。') + '</p>';
