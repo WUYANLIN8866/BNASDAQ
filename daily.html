@@ -665,6 +665,8 @@ function spark(arr,pn,w,h,full){   // full＝動態走勢重播時用整天的�
 // 2026-11-20 使用者：跌停或跌到熔斷 → 紅色閃爍；漲停或漲到熔斷 → 綠色閃爍
 // 台股個股：現價剛好等於漲停／跌停價才算（參考價×110% 往下取到升降單位、×90% 往上取；參考價＝現價÷(1＋漲跌)）
 const twTick=p=>p<10?0.01:p<50?0.05:p<100?0.1:p<500?0.5:p<1000?1:5;
+// 美股沒有漲跌停：畫面上的漲跌（盤前、盤中、盤後各自的漲跌）超過 ±10% 就閃爍；剛好 10% 不算
+function usBig(t){const c=t[4];return c==null||!isFinite(c)?0:c>10?1:c<-10?-1:0;}
 function twLimit(t){const p=t[5],c=t[4];if(p==null||c==null||!(p>0)||Math.abs(c)<9)return 0;const ref=p/(1+c/100);
   const xu=ref*1.1,tu=twTick(xu),up=Math.floor(xu/tu+1e-9)*tu,xd=ref*0.9,td=twTick(xd),dn=Math.ceil(xd/td-1e-9)*td;
   return Math.abs(p-up)<tu/2?1:Math.abs(p-dn)<td/2?-1:0;}
@@ -814,20 +816,20 @@ function draw(){
     squarify(r.i.ts.map(t=>({v:t[3],t})),r.x,r.y+head,r.w,r.h-head).forEach(q=>{const t=q.i.t, a=Math.sqrt(q.w*q.h), fs=Math.max(9,Math.min(26,a/4.6));
       const tw=S.market==='TW', nm=tw?t[1]:t[0], f1=tw?Math.min(fs,(q.w-8)/nm.length):fs, lab=((tw?f1>=9:q.w>26)&&q.h>14)?'<i style="font-size:'+f1.toFixed(1)+'px">'+esc(nm)+'</i>'+((q.h>f1*2.3&&q.w>38)?'<u style="font-size:'+(Math.min(fs*0.78,Math.max(9,f1))).toFixed(1)+'px">'+pct(t[4])+'</u>'+((q.h>f1*3.6&&q.w>48&&dCap(t)!=null)?'<em style="font-size:'+(Math.min(fs*0.6,Math.max(9,f1*0.8))).toFixed(1)+'px">'+dcapTxt(dCap(t),S,false)+'</em>'+((()=>{if(!PP||!PP.pp[t[0]]||q.w<70)return '';const uf=Math.min(fs*0.78,Math.max(9,f1)),ef=Math.min(fs*0.6,Math.max(9,f1*0.8)),sh=Math.round(Math.min(34,Math.max(16,q.h*0.16)));   // 名稱＋漲跌＋市值增減＋走勢圖疊起來放得下才畫
       return q.h>=(f1+uf+ef)*1.15+sh+12?spark(PP.pp[t[0]],PP.pn,Math.round(Math.min(q.w*0.62,150)),sh):'';})()):''):''):'';
-      const lim=S.market==='TW'?twLimit(t):0;
-      html+='<div class="tl'+(lim>0?' lim-up':lim<0?' lim-dn':'')+'" data-s="'+esc(t[0])+'"'+(lim?' title="'+(lim>0?'漲停':'跌停')+'"':'')+' style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;width:'+q.w.toFixed(1)+'px;height:'+q.h.toFixed(1)+'px;background:'+col(t[4])+'">'+lab+'</div>';});
+      const lim=S.market==='TW'?twLimit(t):usBig(t);   // 台股：漲停／跌停；美股：漲跌超過 10%（2026-11-24 站主：「美股漲跌超過 10% 也要閃爍」）
+      html+='<div class="tl'+(lim>0?' lim-up':lim<0?' lim-dn':'')+'" data-s="'+esc(t[0])+'"'+(lim?' title="'+(S.market==='TW'?(lim>0?'漲停':'跌停'):(lim>0?'漲幅超過 10%':'跌幅超過 10%'))+'"':'')+' style="left:'+q.x.toFixed(1)+'px;top:'+q.y.toFixed(1)+'px;width:'+q.w.toFixed(1)+'px;height:'+q.h.toFixed(1)+'px;background:'+col(t[4])+'">'+lab+'</div>';});
   });
   const keep=(tip&&!tip.hidden)?tipSym:null;   // 盤中重畫時，正在看的那一格提示要留著
   box.innerHTML=html; tip=null;
   if(keep){const el=[...box.querySelectorAll('.tl')].find(e=>e.dataset.s===keep); if(el) show(el,tipXY);}
   const up=T.filter(t=>t[4]>0).length, dn=T.filter(t=>t[4]<0).length, none=L?T.filter(t=>t[4]==null).length:0;
-  const limU=S.market==='TW'?T.filter(t=>twLimit(t)>0).length:0, limD=S.market==='TW'?T.filter(t=>twLimit(t)<0).length:0;
+  const limOf=S.market==='TW'?twLimit:usBig, limU=T.filter(t=>limOf(t)>0).length, limD=T.filter(t=>limOf(t)<0).length;
   const sb=$('hm-ses'); if(sb){sb.hidden=S.market!=='US'; sb.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ses===SES)));}
   const lab0=X?xLabel(S,L,X):L?liveLabel(S,L):[(S.market==='TW'?'台股 ':'美股 ')+(S.session||D.session)+' 收盤',false];
   const lab=V.miss?['（還沒有'+(V.miss==='pre'?'盤前':'盤後')+'資料：'+(V.miss==='pre'?'美股盤前台北 17:00（夏令 16:00）開始':'美股盤後台北 05:00（夏令 04:00）開始')+'，下面先顯示盤中／收盤）'+lab0[0],lab0[1]]:lab0, mk=lab[0];
   const capNote=L?'，依'+(XN?XN+'價':'現價')+'換算':S.cap_rolled?'；'+(S.cap_rolled>=S.n?'':S.cap_rolled>0?S.cap_rolled+' 檔':'部分公司')+'股數依 '+S.cap_asof+' 篩選器，市值隨每日收盤更新':'';   // Nasdaq 篩選器取不到市值時（fetch_heatmap.py）
   $('hm-meta').classList.toggle('live',lab[1]);
-  $('hm-meta').textContent=mk+'｜'+(S.union?S.union.join('＋')+'，去掉重複共 ':'')+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+(none?'、'+(XN?XN+'尚無成交 ':'今天還沒成交 ')+none:'')+(limU||limD?'｜漲停 '+limU+'、跌停 '+limD+'（閃爍）':'')+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+capNote+'）、顏色＝'+(XN?XN+'漲跌':'單日漲跌');
+  $('hm-meta').textContent=mk+'｜'+(S.union?S.union.join('＋')+'，去掉重複共 ':'')+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+(none?'、'+(XN?XN+'尚無成交 ':'今天還沒成交 ')+none:'')+(limU||limD?(S.market==='TW'?'｜漲停 '+limU+'、跌停 '+limD:'｜漲逾 10% '+limU+'、跌逾 10% '+limD)+'（閃爍）':'')+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+capNote+'）、顏色＝'+(XN?XN+'漲跌':'單日漲跌');
   $('hm-lg').textContent=XN?XN+'漲跌':'單日漲跌';
   box.setAttribute('aria-label',S.name+'市值熱力圖，'+mk+'：上漲 '+up+' 檔、下跌 '+dn+' 檔');
   const links=(S.sources||D.sources).map(s=>'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.t)+'</a>').join('；');
