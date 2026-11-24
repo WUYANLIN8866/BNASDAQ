@@ -1,4 +1,4 @@
-name: probe news (temporary)
+name: probe realtime sources (temporary)
 on:
   push:
     branches: [probe-live-20261124]
@@ -14,7 +14,11 @@ jobs:
           fetch-depth: 1
           sparse-checkout: |
             scripts
-            data/heatmap
-            data/daily
-      - name: news preview
-        run: timeout 300 python3 scripts/heatmap_live.py news --print 2>&1 | tail -80
+      - name: tw fields
+        run: timeout 120 python3 scripts/_probe_rt.py tw 2>&1 | cut -c1-600
+      - name: cors
+        if: always()
+        run: timeout 120 python3 scripts/_probe_rt.py cors 2>&1 | cut -c1-900
+      - name: yahoo page
+        if: always()
+        run: timeout 240 python3 scripts/_probe_rt.py page 2>&1 | cut -c1-2500
