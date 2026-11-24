@@ -273,8 +273,10 @@
       S.err = err || '來源沒有回應';
     } else { S.fails = 0; S.err = ''; }
     if (!q) { renderHead(); return; }
+    // 來源偶爾回傳比上一次更舊的報價（2026-11-24 10:34 實測 2330：總量 8,603 → 8,602 → 8,603）：成交時間或總量倒退的那一次不採用
+    const old = S.q; if (old && !old.fallback && !old.stale && !q.fallback && !q.stale && q.t && old.t && (q.t < old.t || (q.t === old.t && q.vol != null && old.vol != null && q.vol < old.vol))) { renderHead(); return; }
     // 成交明細：總量增加就記一筆（單量＝這次比上次多的量）
-    if (q.vol != null && !q.fallback && !q.stale) { if (S.lastVol != null && q.vol > S.lastVol && q.t) { S.tape.unshift({ t: q.t, p: q.p, dv: q.vol - S.lastVol, vol: q.vol }); if (S.tape.length > 400) S.tape.length = 400; } S.lastVol = q.vol; }
+    if (q.vol != null && !q.fallback && !q.stale) { if (S.lastVol != null && q.vol > S.lastVol && q.t) { S.tape.unshift({ t: q.t, p: q.p, dv: q.vol - S.lastVol, vol: q.vol }); if (S.tape.length > 400) S.tape.length = 400; } if (S.lastVol == null || q.vol > S.lastVol || (old && qDate(q) !== qDate(old))) S.lastVol = q.vol; }
     S.q = q; if (!S.how1 && !q.fallback) { S.how1 = 1; const hw = $('.rt-how .ans'); if (hw) hw.innerHTML = howHtml(); }
     patchK(); renderHead(); renderStats(); renderBook(); if (S.tab === 'day' || S.tab === 'D') drawChart(); if (S.pane === 'tape') renderPane();
   }
@@ -439,9 +441,12 @@
       if (D && D.t.length) { const mrows = [], msum = D.v.reduce((s, v) => s + v, 0); for (let i = D.t.length - 1; i >= 0; i--) { if (first != null && D.t[i] + 60 > first) continue; const c = q && q.prev > 0 ? cls(D.c[i] - q.prev) : '';
           mrows.push('<tr class="min"><td>' + tpe(D.t[i]) + '</td><td class="' + c + '">' + f2(D.c[i]) + '</td><td class="' + c + '">' + (q && q.prev > 0 ? fchg(D.c[i] - q.prev) : '—') + '</td><td>' + fi(D.v[i]) + '</td><td class="mut">—</td></tr>'); }
         if (mrows.length) rows.push('<tr class="sep"><td colspan="5">' + (S.tape.length ? '以下是開啟本頁之前：' : '') + '每分鐘一列（成交價＝該分鐘最後一筆；單量＝該分鐘成交量，' + src1() + '整理，全部加總 ' + fi(msum) + ' ' + unit() + '，會比即時總量少）' + (S.tape.length ? '' : '。開著這一頁時，上方會逐次記錄每次報價更新的成交') + '</td></tr>'); rows.push.apply(rows, mrows.slice(0, 400)); }
-      el.innerHTML = rows.length ? '<div class="tblwrap rt-scroll"><table class="tbl rt-tape"><thead><tr><th>時間</th><th>成交價</th><th>漲跌</th><th>單量（' + unit() + '）</th><th>總量（' + unit() + '）</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>' : '<p class="small">' + (D === false ? '成交明細暫時無法取得。' : '今天還沒有成交（或資料載入中）。') + '</p>';
+      const CUT = 30, more = rows.length > CUT + 1 && !S.tapeAll, sig = rows.length + '|' + (S.tape[0] ? S.tape[0].t + '/' + S.tape[0].vol : '') + '|' + (D && D.t.length ? D.t[D.t.length - 1] + '/' + D.v[D.v.length - 1] : '') + '|' + !!S.tapeAll + '|' + (q ? q.prev : '');
+      if (el._sig === sig) return; el._sig = sig;   // 內容沒變就不重畫（每 5 秒讀一次報價）
+      el.innerHTML = rows.length ? '<div class="tblwrap rt-scroll"><table class="tbl rt-tape"><thead><tr><th>時間</th><th>成交價</th><th>漲跌</th><th>單量（' + unit() + '）</th><th>總量（' + unit() + '）</th></tr></thead><tbody>' + (more ? rows.slice(0, CUT) : rows).join('') + '</tbody></table></div>' + (rows.length > CUT + 1 ? '<p class="rt-allp"><button type="button" class="btn line rt-all">' + (S.tapeAll ? '只顯示最近 ' + CUT + ' 列' : '顯示全部 ' + (rows.length - 1) + ' 列') + '</button></p>' : '') : '<p class="small">' + (D === false ? '成交明細暫時無法取得。' : '今天還沒有成交（或資料載入中）。') + '</p>';
       return;
     }
+    el._sig = '';
     const d = S.pd[P];
     if (d === undefined) { el.innerHTML = '<p class="small">載入中…</p>'; loadPane(P); return; }
     if (!d) { el.innerHTML = '<p class="small">這項資料暫時無法取得（來源沒有回應，或這檔沒有這項資料）。</p>'; return; }
@@ -476,6 +481,7 @@
       const t = e.target.closest('[data-tab]'); if (t) { S.tab = t.dataset.tab; S.hov = null; S.view = null; store.set('bn-rt-tab', S.tab); r.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b === t))); tools(); if (S.tab !== 'day' && !S.K[S.tab]) { drawChart(); loadK(S.tab); } else { fitView(); drawChart(); } return; }
       const p = e.target.closest('[data-pane]'); if (p) { S.pane = p.dataset.pane; r.querySelectorAll('[data-pane]').forEach(b => b.setAttribute('aria-selected', String(b === p))); if (S.pane !== 'tape' && S.pd[S.pane] !== undefined && now() - (S.pdAt[S.pane] || 0) > (S.pane === 'pd' ? 20 : 600)) delete S.pd[S.pane]; renderPane(); return; }
       const g = e.target.closest('[data-range]'); if (g) { S.range[S.tab] = g.dataset.range; fitView(); tools(); drawChart(); return; }
+      if (e.target.closest('.rt-all')) { S.tapeAll = !S.tapeAll; renderPane(); return; }
       if (e.target.closest('.rt-color')) { S.color = S.color === 'tw' ? 'us' : 'tw'; store.set('bn-rt-color', S.color); r.firstChild.classList.toggle('rt-twc', S.color === 'tw'); e.target.closest('.rt-color').textContent = S.color === 'tw' ? '紅漲綠跌' : '綠漲紅跌'; drawChart(); }
     });
     r.addEventListener('change', e => { const t = e.target; if (t.matches('[data-ma]')) { const n = +t.dataset.ma; S.ma = MAS.filter(m => m === n ? t.checked : S.ma.indexOf(m) >= 0); store.set('bn-rt-ma', S.ma.join(',')); drawChart(); } else if (t.matches('[data-boll]')) { S.boll = t.checked; drawChart(); } else if (t.matches('[data-ind]')) { S.ind = t.value; store.set('bn-rt-ind', S.ind); drawChart(); } });
