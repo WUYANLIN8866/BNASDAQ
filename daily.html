@@ -238,7 +238,7 @@ a.dm-mo:hover{border-color:var(--gold);color:var(--gold)}
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 每日市場分析</div><h1>每日市場分析</h1><p class="lede">每個美股交易日收盤後更新：五大指數、單日漲跌逾 2% 的主因分析、股匯債一週趨勢、24 小時內與投資相關的國際大事，以及市值逾一兆美元企業的新聞與影響。所有數字附來源，可逐項查證。</p></div></div>
 <section class="mychg" id="mychg" hidden aria-labelledby="mychg-h"><div class="wrap"></div></section>
 <section class="hm" id="heatmap" aria-labelledby="hm-h"><div class="wrap">
-  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button><button type="button" role="tab" aria-selected="false" data-set="tw50">台灣 50</button><button type="button" role="tab" aria-selected="false" data-set="twse">台股全上市</button><button type="button" role="tab" aria-selected="false" data-set="tpex">台股全上櫃</button></div><div class="hm-ses" id="hm-ses" role="group" aria-label="美股時段"><button type="button" data-ses="auto" title="依現在時間自動顯示（盤前時段看盤前、盤後時段看盤後，其他時間看盤中或收盤）">自動</button><button type="button" data-ses="pre">盤前</button><button type="button" data-ses="open">盤中</button><button type="button" data-ses="post">盤後</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
+  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button><button type="button" role="tab" aria-selected="false" data-set="usall">美股全指數公司</button><button type="button" role="tab" aria-selected="false" data-set="tw50">台灣 50</button><button type="button" role="tab" aria-selected="false" data-set="twse">台股全上市</button><button type="button" role="tab" aria-selected="false" data-set="tpex">台股全上櫃</button><button type="button" role="tab" aria-selected="false" data-set="twall">台股全公司</button></div><div class="hm-ses" id="hm-ses" role="group" aria-label="美股時段"><button type="button" data-ses="auto" title="依現在時間自動顯示（盤前時段看盤前、盤後時段看盤後，其他時間看盤中或收盤）">自動</button><button type="button" data-ses="pre">盤前</button><button type="button" data-ses="open">盤中</button><button type="button" data-ses="post">盤後</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
   <div class="hm-box" id="hm-box" role="img" aria-label="市值熱力圖"></div>
   <div class="hm-foot"><div class="hm-legend" aria-hidden="true"><span id="hm-lg">單日漲跌</span><div><div class="bar" id="hm-bar"></div><div class="ticks"><span>−3%</span><span>−2%</span><span>−1%</span><span>0</span><span>+1%</span><span>+2%</span><span>+3%</span></div></div></div><p class="hm-src" id="hm-src"></p></div>
   <details id="hm-list"><summary><span>看列表（依市值排序）</span><span id="hm-sum" aria-live="polite"></span></summary><div class="tblwrap"><table class="tbl" id="hm-tbl"></table></div></details>
@@ -682,6 +682,7 @@ function squarify(items,x,y,w,h){
   if(row.length) flush();
   return out;
 }
+let TBL=null;   // 列表（看列表）要用的表格建構函式：展開時才執行
 let D=null, cur='ndx', tip=null, lastPT='mouse', armed=null, shown=[], shownLive=false, shownX=null, tipSym=null, tipXY=null;   // shownX：畫面上是不是美股盤前（'pre'）／盤後（'post'）
 // ---- 盤中即時：scripts/heatmap_live.py 開盤期間定時（台股每 30 秒、美股每 60 秒）把最新價寫到 heatmap-live 分支；這裡用同樣的間隔讀、重畫。讀不到就照舊顯示正式收盤資料。
 // 檔名有兩種：<市場>-<時間格>.json（時間格＝UNIX 秒÷間隔；每一格一個新檔名，才不會被 raw 的 5 分鐘快取卡住）、<市場>.json（最新一份；收盤後就是收盤那一份）
@@ -824,9 +825,9 @@ function draw(){
   const sb=$('hm-ses'); if(sb){sb.hidden=S.market!=='US'; sb.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ses===SES)));}
   const lab0=X?xLabel(S,L,X):L?liveLabel(S,L):[(S.market==='TW'?'台股 ':'美股 ')+(S.session||D.session)+' 收盤',false];
   const lab=V.miss?['（還沒有'+(V.miss==='pre'?'盤前':'盤後')+'資料：'+(V.miss==='pre'?'美股盤前台北 17:00（夏令 16:00）開始':'美股盤後台北 05:00（夏令 04:00）開始')+'，下面先顯示盤中／收盤）'+lab0[0],lab0[1]]:lab0, mk=lab[0];
-  const capNote=L?'，依'+(XN?XN+'價':'現價')+'換算':S.cap_rolled?'；'+(S.cap_rolled>=S.n?'':S.cap_rolled+' 檔')+'股數依 '+S.cap_asof+' 篩選器，市值隨每日收盤更新':'';   // Nasdaq 篩選器取不到市值時（fetch_heatmap.py）
+  const capNote=L?'，依'+(XN?XN+'價':'現價')+'換算':S.cap_rolled?'；'+(S.cap_rolled>=S.n?'':S.cap_rolled>0?S.cap_rolled+' 檔':'部分公司')+'股數依 '+S.cap_asof+' 篩選器，市值隨每日收盤更新':'';   // Nasdaq 篩選器取不到市值時（fetch_heatmap.py）
   $('hm-meta').classList.toggle('live',lab[1]);
-  $('hm-meta').textContent=mk+'｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+(none?'、'+(XN?XN+'尚無成交 ':'今天還沒成交 ')+none:'')+(limU||limD?'｜漲停 '+limU+'、跌停 '+limD+'（閃爍）':'')+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+capNote+'）、顏色＝'+(XN?XN+'漲跌':'單日漲跌');
+  $('hm-meta').textContent=mk+'｜'+(S.union?S.union.join('＋')+'，去掉重複共 ':'')+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+(none?'、'+(XN?XN+'尚無成交 ':'今天還沒成交 ')+none:'')+(limU||limD?'｜漲停 '+limU+'、跌停 '+limD+'（閃爍）':'')+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+capNote+'）、顏色＝'+(XN?XN+'漲跌':'單日漲跌');
   $('hm-lg').textContent=XN?XN+'漲跌':'單日漲跌';
   box.setAttribute('aria-label',S.name+'市值熱力圖，'+mk+'：上漲 '+up+' 檔、下跌 '+dn+' 檔');
   const links=(S.sources||D.sources).map(s=>'<a href="'+esc(s.u)+'" target="_blank" rel="noopener">'+esc(s.t)+'</a>').join('；');
@@ -838,7 +839,8 @@ function draw(){
   const cb=S.market==='US'&&!X?cbLevel(sumPct):0, cbC=cb<0?'cb-dn':cb>0?'cb-up':'', cbT=cb<0?'｜達熔斷第 '+(-cb)+' 級門檻':cb>0?'｜漲幅達 7%':'';   // 熔斷只看正規時段
   $('hm-sum').innerHTML=has.length?S.name+'（'+has.length+' 家）市值合計'+(XN?'（'+XN+'）':shownLive?'（盤中）':'')+' '+capAbs(sumNow)+(S.cur==='TWD'?'台幣':'美元')+'｜'+(XN||(shownLive?'今天':'單日'))+'<b class="'+(sumD>0?'pos':sumD<0?'neg':'')+(cbC?' '+cbC:'')+'">'+(sumD>=0?'增加 ':'減少 ')+capAbs(Math.abs(sumD))+(S.cur==='TWD'?'台幣':'美元')+'（'+pct(sumPct)+'）'+cbT+'</b>':'';
   const refTd=t=>{const r=t[7];return '<td>'+(r&&r[0]!=null&&isFinite(r[0])?(+r[0]).toFixed(2)+(r[1]!=null&&isFinite(r[1])?'<br><small class="'+(r[1]>0?'pos':r[1]<0?'neg':'')+'">'+pct(+r[1])+'</small>':''):'—')+'</td>';};   // 盤前／盤後對照的收盤價（與當日漲跌）
-  $('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th>'+(X?'<th>'+(X==='pre'?'前一交易日收盤':'當天收盤')+'</th>':'')+'<th>'+(XN?XN+'價':shownLive?'現價':'收盤')+'</th><th>'+(XN?XN+'漲跌':'單日漲跌')+'</th><th>'+(XN?XN+'市值增減':'市值增減')+'</th></tr></thead><tbody>'+T.map(t=>'<tr><td class="l"><a href="valuation.html#code='+encodeURIComponent(t[0])+'"><b>'+esc(t[0])+'</b></a></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3],S)+(t[6]?'（估）':'')+'</td>'+(X?refTd(t):'')+'<td>'+(t[5]==null?(XN?'尚無成交':'—'):t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+dcapTxt(dCap(t),S,true)+'</td></tr>').join('')+'</tbody>';
+  TBL=()=>{$('hm-tbl').innerHTML='<thead><tr><th class="l">代號</th><th class="l">公司</th><th class="l">產業</th><th>市值</th>'+(X?'<th>'+(X==='pre'?'前一交易日收盤':'當天收盤')+'</th>':'')+'<th>'+(XN?XN+'價':shownLive?'現價':'收盤')+'</th><th>'+(XN?XN+'漲跌':'單日漲跌')+'</th><th>'+(XN?XN+'市值增減':'市值增減')+'</th></tr></thead><tbody>'+T.map(t=>'<tr><td class="l"><a href="valuation.html#code='+encodeURIComponent(t[0])+'"><b>'+esc(t[0])+'</b></a></td><td class="l">'+esc(t[1])+'</td><td class="l">'+esc(t[2])+'</td><td>'+cap(t[3],S)+(t[6]?'（估）':'')+'</td>'+(X?refTd(t):'')+'<td>'+(t[5]==null?(XN?'尚無成交':'—'):t[5].toFixed(2))+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+pct(t[4])+'</td><td class="'+(t[4]>0?'pos':t[4]<0?'neg':'')+'">'+dcapTxt(dCap(t),S,true)+'</td></tr>').join('')+'</tbody>';};
+  if($('hm-list').open){TBL();TBL=null;}else $('hm-tbl').innerHTML='';   // 列表收合時不建表格，展開時才建（見下方 toggle）
   setupReplay(S,T,PP);
 }
 // 2026-11-21 站主：動態走勢——重播這個交易日盤中的漲跌（美股每 15 分鐘、台股每 10 分鐘一格，資料＝盤中快照的 pp）：
@@ -891,6 +893,7 @@ box.addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';},{passive:
 box.addEventListener('click',e=>{const el=e.target.closest('.tl');if(!el)return;   // 滑鼠：點一下就開個股分析；觸控：第一下看提示、同一格再點一下才開
   if(lastPT==='mouse'||armed===el.dataset.s){go(el.dataset.s);return;}
   armed=el.dataset.s;show(el,e);});
+$('hm-list').addEventListener('toggle',()=>{if($('hm-list').open&&TBL){TBL();TBL=null;}});
 document.querySelectorAll('#hm-ses button').forEach(b=>b.addEventListener('click',()=>{if(RP&&window.BN&&BN.play)BN.play.detach(hmSec);SES=b.dataset.ses;try{localStorage.setItem('bn-hm-ses',SES);}catch(e){}
   if(SES==='pre'||SES==='post') xsLoad(SES,true); draw();}));
 if(SES==='pre'||SES==='post') xsLoad(SES,true);
@@ -899,6 +902,19 @@ let rt=0; if('ResizeObserver' in window) new ResizeObserver(()=>{clearTimeout(rt
 fetch('data/heatmap/latest.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);
   const sv=Date.parse(r.headers.get('date')||''); if(isFinite(sv)&&Math.abs(sv+500-Date.now())>2500) skew=sv+500-Date.now();   // 回應標頭的時間只到秒，差 2.5 秒以上才校正
   return r.json();}).then(d=>{D=d;
+  // 2026-11-24 站主：「在美股指數最後面新增美股全指數公司、在台股指數最後面新增台股全公司」
+  //   usall＝標普 500＋那斯達克 100＋費城半導體 的聯集（同一家公司只算一次，產業別以標普 500 的分類優先）；twall＝台股全上市＋全上櫃。
+  //   在瀏覽器把現有分頁合併（依市值由大到小），不另外存檔；交易日取各分頁中較早的那一天（某個分頁還沒更新時，改用即時快照補到同一天）。
+  //   缺任何一個來源分頁就不合併（按鈕隱藏）。
+  const union=(key,name,parts)=>{const P=parts.map(k=>d.sets[k]); if(P.some(S=>!S||!Array.isArray(S.tiles)||!S.tiles.length)) return;
+    const seen=new Set(), tiles=[]; P.forEach(S=>S.tiles.forEach(t=>{if(t&&!seen.has(t[0])){seen.add(t[0]);tiles.push(t);}}));
+    tiles.sort((a,b)=>(b[3]||0)-(a[3]||0));
+    const ses=P.map(S=>S.session||d.session).sort()[0], src=[], st=new Set();
+    P.forEach(S=>(S.sources||[]).forEach(x=>{if(x&&x.t&&!st.has(x.t)){st.add(x.t);src.push(x);}}));
+    const rolled=P.filter(S=>S.cap_rolled>0), all=P.every(S=>S.cap_rolled>=S.n);
+    d.sets[key]=Object.assign({name,market:P[0].market,cur:P[0].cur,cap_unit:P[0].cap_unit,session:ses,n:tiles.length,tiles,union:parts.map(k=>d.sets[k].name)},
+      src.length?{sources:src}:{}, rolled.length?{cap_rolled:all?tiles.length:-1,cap_asof:rolled[0].cap_asof}:{});};
+  union('usall','美股全指數公司',['spx','ndx','sox']); union('twall','台股全公司',['twse','tpex']);
   document.querySelectorAll('.hm-tabs button').forEach(b=>{if(!d.sets[b.dataset.set])b.hidden=true;});
   draw(); liveAll().then(liveLoop);}).catch(()=>{$('hm-meta').textContent='熱力圖資料暫時無法載入';box.style.height='120px';});
 })();
