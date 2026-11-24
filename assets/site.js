@@ -186,7 +186,9 @@
       if (roots.size) idle(work); else busy = false;
     }
     const queue = r => { if (!r) return; roots.add(r); if (!busy && COV) { busy = true; idle(work); } };
-    const start = () => fetch('assets/fonts/cover.json').then(r => r.json()).then(j => {
+    // 字型清單的網址帶 site.css 的版本號：字型一重建 site.css 的版本號就變，清單與字型檔永遠是同一批（不會拿到舊清單）
+    const CV = (() => { const l = document.querySelector('link[rel="stylesheet"][href*="assets/site.css"]'), m = l && /[?&]v=([A-Za-z0-9]+)/.exec(l.getAttribute('href') || ''); return m ? '?v=' + m[1] : ''; })();
+    const start = () => fetch('assets/fonts/cover.json' + CV).then(r => r.json()).then(j => {
       COV = {}; for (const k in j) COV[k] = new Set(Array.from(j[k]));
       queue(document.body);
       new MutationObserver(ms => ms.forEach(m => queue(m.type === 'characterData' ? m.target.parentNode : m.target))).observe(document.body, { childList: true, subtree: true, characterData: true });

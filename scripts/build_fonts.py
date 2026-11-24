@@ -8,6 +8,7 @@
   1) python3 -m http.server 8765 &   （開本機伺服器）
   2) node scripts/fonts/collect_chars.js http://127.0.0.1:8765/   → scripts/fonts/observed.json（各字重實際畫面用字）
   3) python3 scripts/build_fonts.py                               → assets/fonts/bn-*.woff2、assets/fonts/cover.json
+     （最後會自動跑 scripts/stamp_assets.py，替字型網址與各頁引用的檔案蓋上內容雜湊版本號）
 需要：pip install fonttools brotli；npm（第一次會下載 @fontsource 字型套件到 ~/.cache/bnasdaq-fonts）。
 
 字型沒收錄的字（例如使用者新加入的個股名稱）：site.js 的「字型補字」會向 Google Fonts 只下載那幾個字，外觀一樣；
@@ -147,5 +148,7 @@ def main():
     s = s[:a] + '/* @fonts-start */\n' + '\n'.join(css) + '\n' + s[b:]
     open(cp, 'w', encoding='utf-8').write(s)
     print('cover.json %d bytes；site.css 字型區塊 %d 行' % (os.path.getsize(p), len(css)))
+    # 字型檔名不變、內容變了：一定要重蓋版本號（site.css 的字型網址、各頁的 preload 與 site.css 本身），否則訪客會拿到舊字型、新字改用系統字型
+    subprocess.check_call([sys.executable, os.path.join(ROOT, 'scripts', 'stamp_assets.py')])
 
 if __name__ == '__main__': main()

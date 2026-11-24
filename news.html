@@ -10,8 +10,8 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=79dd413261">
-<link rel="preload" href="assets/fonts/bn-sans-400.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/site.css?v=f24d2bdca6">
+<link rel="preload" href="assets/fonts/bn-sans-400.woff2?v=a1038e59ac" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2?v=250c9c9193" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2?v=5339cee8cc" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
 <body>
@@ -54,7 +54,7 @@
 </div>
 <aside><div class="side toc"><h3>本頁內容</h3><ul><li><a href="#ann">公告</a></li><li><a href="#video">完整影片</a></li><li><a href="#updates">研究更新</a></li></ul></div><div class="side"><h3>相關頁面</h3><ul><li><a href="index.html">首頁</a></li><li><a href="faq.html">常見問題</a></li></ul></div></aside>
 </div></div></div>
-<script src="assets/site.js?v=f461d7f703"></script>
+<script src="assets/site.js?v=c57986514d"></script>
 <script>
 fetch('data/site.json').then(r=>r.json()).then(j=>{const ul=document.getElementById('ann-list');ul.innerHTML='';(j.announcements||[]).forEach(a=>{const li=document.createElement('li');li.innerHTML='<time>'+a.date+'</time><span><b>'+a.title.replace(/[<>]/g,'')+'</b>'+(a.body?'<br>'+a.body.replace(/[<>]/g,''):'')+'</span>';ul.appendChild(li);});if(!ul.children.length)ul.innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';}).catch(()=>{document.getElementById('ann-list').innerHTML='<li><time>—</time><span>目前沒有公告。</span></li>';});
 </script>
