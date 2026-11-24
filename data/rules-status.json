@@ -1,7 +1,7 @@
 {
  "schema": "bnasdaq-rules-status/1",
- "state": "ok",
- "b_ver": "43c1595ced58afd1",
+ "state": "updating",
+ "b_ver": "c142f9ba20b88553",
  "strategies": [
   "BNASDAQ-26110",
   "BNASDAQ-26111",
@@ -9,6 +9,6 @@
   "BNASDAQ-26113"
  ],
  "rules_built": "2026-11-21",
- "since": "2026-11-21",
- "note": ""
+ "since": "2026-11-25",
+ "note": "專案 B 區 2026-11-25 有更新，會員規則同步中"
 }
