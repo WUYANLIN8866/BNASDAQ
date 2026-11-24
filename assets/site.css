@@ -208,12 +208,8 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 .hero .hero-top h1 { margin-bottom: 0; }
 .hero .hero-top .cta { margin-top: 0; }
 .hero .stat.hx { padding: 28px 28px 28px; }
-.hero .hx-head { display: block; }
-.hero .hx-q { margin: 0; padding: 0; font-family: var(--serif); font-weight: 600; font-size: clamp(28px, 3.1vw, 40px); line-height: 1.38; letter-spacing: .02em; color: #fff; }
-.hero .hx-q::before { display: none; }
-.hero .hx-q span { display: inline-block; }
-/* 三個數字 */
-.hero .hd-beats { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 14px 26px; margin-top: 22px; }
+/* 三個數字（2026-11-24 站主：上方標題「月存萬元，堅持卅載，滿載而歸」移除，這一列成為區塊第一列，不再留標題下方的間距） */
+.hero .hd-beats { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 14px 26px; }
 .hero .hd-ar { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--gold-hi); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .hero .hd-beats > .hd-ar { width: 26px; height: 26px; margin-bottom: 30px; }
 .hero .hd-beat { flex: none; min-width: 0; }
@@ -283,9 +279,10 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 }
 /* 1100 以下：三個數字改直排（名稱在左、數字在右；第三個獨立一塊） */
 @media (max-width: 1100px) {
-  .hero .hd-beats { display: block; margin-top: 14px; }
+  .hero .hd-beats { display: block; }
   .hero .hd-beats > .hd-ar { display: none; }
   .hero .hd-beat { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t v" "n v"; column-gap: 10px; padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, .1); }
+  .hero .hd-b1 { padding-top: 0; border-top: 0; }   /* 第一列上面已經沒有標題，不畫分隔線 */
   .hero .hd-bt { grid-area: t; align-self: end; font-size: 14.5px; }
   .hero .hd-bn { grid-area: n; align-self: start; margin-top: 0; font-size: 12.5px; }
   .hero .hd-bv { grid-area: v; align-self: center; margin-top: 0; }
@@ -298,17 +295,15 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 }
 @media (max-width: 860px) { .hero { padding: 40px 0 44px; } .hero .wrap { gap: 22px; } .hero .stat.hx { padding: 20px 16px 18px; } .hero .hd-ai { padding: 15px 16px 2px; } .hero .hd-title { font-size: 21px; margin-bottom: 12px; } .hero .hd-lanes { column-gap: 28px; } }
 @media (max-width: 699px) { .hero .hd-lanes { grid-template-columns: minmax(0, 1fr); } }
-/* 手機：標題三句各一行；三個數字縮小 */
+/* 手機：三個數字縮小 */
 @media (max-width: 640px) {
-  .hero .hx-q { font-size: 31px; }
-  .hero .hx-q span { display: block; }
   .hero .hd-sub { display: none; }
   .hero .hd-b2 .hd-bn > span:nth-child(n+2) { display: none; }
   .hero .hd-b1 .hd-bv { font-size: 26px; }
   .hero .hd-b2 .hd-bv { font-size: 32px; }
   .hero .hd-b3 .hd-bv { font-size: 42px; }
 }
-@media (max-width: 360px) { .hero .hx-q { font-size: 28px; } .hero .hd-b3 .hd-bv { font-size: 38px; } .hero .hd-c { column-gap: 8px; } }
+@media (max-width: 360px) { .hero .hd-b3 .hd-bv { font-size: 38px; } .hero .hd-c { column-gap: 8px; } }
 
 /* ---------- buttons ---------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; border-radius: 2px; text-decoration: none; font-weight: 600; font-size: 15px; letter-spacing: .05em; border: 1px solid transparent; cursor: pointer; font-family: inherit; line-height: 1.4; transition: background .15s, color .15s, border-color .15s; }
