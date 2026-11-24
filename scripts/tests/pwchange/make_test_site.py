@@ -45,5 +45,11 @@ json.dump({'pat': PAT, 'sync': SYNC, 'syncRepo': SYNC_REPO, 'ck': b(ck), 'pw': p
 if os.path.isdir(DST): shutil.rmtree(DST)
 shutil.copytree(SRC, DST, ignore=shutil.ignore_patterns('.git', '__pycache__', 'shots'))
 shutil.copy(T + '/accounts.json', DST + '/data/accounts.json')
+# 測試站一律用預設的模型顯示順序（專案 B 區順序）：正式網站的 data/site.json 可能帶著管理員自己調過的 model_order，
+# 後台的模型權限會照那個順序排（存檔訊息、models 欄位的順序跟著變），測試的預期值寫的是預設順序（2026-11-24 t3_admin 因此失敗過）
+try:
+    sj = json.load(open(DST + '/data/site.json', encoding='utf-8'))
+    if sj.pop('model_order', None) is not None: json.dump(sj, open(DST + '/data/site.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+except Exception: pass
 json.dump(dict({'schema': 'bnasdaq-sync-key/1', 'created': '2026-11-22', 'note': 'test'}, **wrap(ck, json.dumps({'repo': SYNC_REPO, 'token': SYNC}).encode())), open(DST + '/data/sync-key.json', 'w'), indent=1)
 print('test site ready:', DST, '| accounts:', ', '.join(a[0] for a in ACCS))

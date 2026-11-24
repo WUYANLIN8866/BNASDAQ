@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=f24d2bdca6">
+<link rel="stylesheet" href="assets/site.css?v=d588dcf04e">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2?v=a1038e59ac" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2?v=250c9c9193" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2?v=5339cee8cc" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
@@ -56,7 +56,8 @@
   <h2 id="signals">訊號明細（所有策略）</h2>
   <p class="small" id="mstat">載入中…</p>
   <div class="panel" id="mo-panel"><h3>模型顯示順序</h3><p class="small">按 ↑ ↓ 調整：本頁的正式訊號、推算、自訂收盤、最近 24 個月與模型權限<b>立刻</b>照新順序；最後一次調整 2 秒後<b>自動存到網站</b>（不用再按儲存），約 3 分鐘後會員專區（模型卡片、本月持有、持有資產的策略差額）與每日市場分析的管理員專區也照新順序；公開頁的回測圖不受影響（線的顏色跟著策略走）。</p><ol class="mo-list" id="mo-list"><li>載入中…</li></ol><div class="actions"><button class="btn line" type="button" id="mo-reset">恢復預設（專案 B 區順序）</button><a id="mo-dl" class="btn line" download="site.json" hidden>下載 site.json（手動上傳用）</a></div><div id="mo-msg"></div></div>
-  <p class="small">圓餅每一塊是一項判斷條件：<b style="color:var(--sig-on-ink)">藍色＝成立</b>、灰色＝不成立；旁邊每一塊都寫目前數值、怎麼判斷、下次更新時間（滑鼠移到圓餅的某一塊，對應的說明會框起來）。</p>
+  <p class="small">圓餅每一塊是一項判斷條件：<b style="color:var(--sig-on-ink)">藍色＝成立</b>、灰色＝不成立；旁邊每一塊都寫目前數值、怎麼判斷、下次更新時間，以及這個條件的白話說明（滑鼠移到圓餅的某一塊，對應的說明會框起來）。</p>
+  <p class="small" id="expl-stat" hidden></p>
   <div class="panel" id="sig-cur-box"><h3><span id="sig-cur-t">正式訊號</span></h3><div id="sig-cur"><p class="small">載入中…</p></div></div>
   <div class="panel" id="sig-prov-box"><h3><span id="sig-prov-t">推算</span></h3><div id="sig-prov"><p class="small">載入中…</p></div></div>
   <div class="panel" id="custom-box"><h3>自訂 QQQ 月底收盤價試算</h3><div class="field" style="max-width:320px"><label for="custom">QQQ 月底收盤價（原始價）</label><input id="custom" type="number" step="0.01" placeholder="例如 687.29"></div><div id="sig-custom"></div></div>
@@ -204,7 +205,7 @@
   window.BN=window.BN||{};window.BN.adminFold={reveal,all};
 })();
 </script>
-<script src="assets/site.js?v=c57986514d"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=224f3f1ce6"></script>
+<script src="assets/site.js?v=c57986514d"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=f980d1191f"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -462,9 +463,37 @@
   // 模型順序＝管理員設定的 data/site.json model_order（下方「模型顯示順序」）；kind：official 正式訊號、prov 推算、custom 自訂收盤
   let TOPRE=[];   // data/daily-topics.json 的數列規則：條件名稱對到就是金融環境數列（下次更新時間不同）
   const STR=()=>BN.auth.sortModels(rules.STRATEGIES,(SITE&&SITE.model_order)||[]);
+  // 2026-11-24 站主：「訊號明細的每個條件都要在『下次更新』下方新增一欄『白話說明』」。
+  //   白話說明寫的是每個條件在看什麼、現在代表什麼，屬於策略內容，所以不放在任何公開檔：明文在私人 Artifact，網站只放加密檔 data/explain.enc.json
+  //   （scripts/build_explain.py 產生；內容用一次性 AES-256-GCM 金鑰加密，該金鑰再用「管理員查看密碼」的公鑰 accounts.json view.pub 包起來，
+  //   和會員更改密碼的申請同一種包法——只有管理員登入後的個人金鑰解得開，會員的金鑰解不開）。
+  //   解開後＝{ b_ver, written, models: [{ id, ref, rows: [{ key, what, on, off, offLo, offHi }] }] }；每一列對到哪一筆由 BN.sigpie.plainRows 處理。
+  //   讀不到、解不開、某個條件沒有對應的說明時，那一欄照樣顯示，寫明原因（不會影響其他功能）。
+  let EXPL={st:'load'};
+  const EXPL_MSG={load:'白話說明載入中…',none:'網站上還沒有白話說明檔（data/explain.enc.json）；請在對話請 Claude 產生。',noview:'白話說明用「管理員查看密碼」的金鑰加密：請先在下方「帳號管理」啟用密碼查看，再在對話請 Claude 重新產生白話說明。',
+    notowner:'白話說明只有啟用密碼查看的管理員解得開。',rekey:'白話說明是用舊的管理員金鑰加密的（金鑰換過了）；請在對話請 Claude 重新產生白話說明。',fail:'白話說明解不開；請重新登入後再試，還是不行就在對話請 Claude 重新產生白話說明。',
+    nodb:'讀不到帳號資料，白話說明暫時解不開；請重新整理本頁。',miss:'這個條件還沒有白話說明（規則有更新時，請在對話請 Claude 補上）。'};
+  async function loadExplain(){
+    try{const r=await fetch('data/explain.enc.json?t='+Date.now(),{cache:'no-store'});if(r.status===404){EXPL={st:'none'};return;}if(!r.ok)throw new Error('HTTP '+r.status);
+      const env=await r.json();
+      if(!DB){EXPL={st:'nodb'};return;}
+      if(!DB.view||!DB.view.pub||!DB.view.priv){EXPL={st:'noview'};return;}
+      if(DB.view.owner!==sess.user){EXPL={st:'notowner'};return;}
+      if(env.key_fp){const fp=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',BN.auth.b64.dec(DB.view.pub))),x=>x.toString(16).padStart(2,'0')).join('').slice(0,16);if(fp!==env.key_fp){EXPL={st:'rekey'};return;}}
+      const k=BN.auth.b64.dec(await BN.auth.openPw(DB.view,sess,env.ek));
+      const j=JSON.parse(new TextDecoder().decode(await BN.auth.aesDec(k,env.iv,env.ct)));
+      EXPL={st:'ok',b_ver:j.b_ver||env.b_ver||'',written:j.written||env.built||'',models:Array.isArray(j.models)?j.models:[]};
+    }catch(e){EXPL={st:'fail'};}}
+  function explStat(){const el=$('#expl-stat');if(!el)return;const bv=rules&&rules.spec&&rules.spec.b_ver;
+    if(EXPL.st!=='ok'){el.innerHTML='白話說明：<b style="color:var(--bad)">'+esc(EXPL_MSG[EXPL.st]||EXPL_MSG.fail)+'</b>';el.hidden=false;return;}
+    el.innerHTML='白話說明：只有管理員解得開（加密檔 data/explain.enc.json）；依專案 B 區版本 '+esc(EXPL.b_ver||'—')+' 寫成'+(EXPL.written?'（'+esc(EXPL.written)+'）':'')+'。'
+      +(bv&&EXPL.b_ver&&bv!==EXPL.b_ver?'<b style="color:var(--bad)">目前規則是 B 區版本 '+esc(bv)+'，和當時不同，內容可能需要更新：請在對話請 Claude 更新白話說明。</b>':'');el.hidden=false;}
+  function plainOf(st,d){const rows=(d&&d.rows)||[];if(EXPL.st!=='ok')return rows.map(()=>EXPL_MSG[EXPL.st]||EXPL_MSG.fail);
+    const M=EXPL.models.find(x=>x&&x.id===st.id)||EXPL.models.find(x=>x&&x.ref&&x.ref===st.ref);
+    return BN.sigpie.plainRows(M&&M.rows,rows).map(t=>t||EXPL_MSG.miss);}
   function condRows(e,kind,m){const N=BN.sigpie.next(rules,m||market);
     const next=kind==='official'?{price:N.official,macro:N.official}:kind==='custom'?{custom:N.custom}:{price:N.price,macro:N.macro};
-    return BN.sigpie.html(STR().map(st=>({id:st.id,ref:st.ref,d:e.detail[st.id]})),{kind,next,isMacro:l=>TOPRE.some(re=>re.test(l)),fold:'adm-'+kind});}
+    return BN.sigpie.html(STR().map(st=>({id:st.id,ref:st.ref,d:e.detail[st.id],plain:plainOf(st,e.detail[st.id])})),{kind,next,isMacro:l=>TOPRE.some(re=>re.test(l)),fold:'adm-'+kind});}
   const put=(sel,h)=>{const el=$(sel);el.innerHTML=h;BN.sigpie.bind(el);};
   async function loadSignals(){rules=await BN.auth.loadRules(sess);
     market=await fetch('data/market.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json());
@@ -472,6 +501,7 @@
     const rs=await fetch('data/rules-status.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
     try{const tj=await fetch('data/daily-topics.json',{cache:'no-store'}).then(r=>r.json());TOPRE=(tj.topics||[]).filter(x=>x.rule).map(x=>new RegExp(x.rule));}catch(e){TOPRE=[];}
     if(!(rules.version>=2)){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">會員規則還是舊版（第 1 版）：請先完成下方「帳號管理」裡的「會員規則金鑰（一次性設定）」，新版規則會自動發布。</p>';return;}
+    await loadExplain();explStat();
     const L=rules.latest(market,tb);const S=L.series;const c=market.current;const bv=rules.spec&&rules.spec.b_ver;
     const sync=!rs?'<span style="color:var(--bad)">讀不到同步狀態檔</span>':rs.state!=='ok'?'<b style="color:var(--bad)">同步中：'+esc(rs.note||'B 區有更新')+'（自 '+esc(rs.since||'')+'）</b>':rs.b_ver!==bv?'<b style="color:var(--bad)">規則與 B 區最新版本不一致</b>':'<span class="ok-dot"></span>與最近一次同步檢查的 B 區版本一致（'+esc(bv)+'，每天 07:53、19:53 自動檢查）';
     const exp=rules.validUntil&&c.m>rules.validUntil?'｜<b style="color:var(--bad)">模型已到期，需要重新訓練</b>':'';

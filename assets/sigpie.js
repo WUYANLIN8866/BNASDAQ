@@ -4,9 +4,14 @@
    圓餅旁每一塊都有一段文字：條件、目前數值、怎麼判斷、距門檻、下次更新時間。
    「怎麼判斷」只從條件名稱裡的比較符號與門檻讀出來（條件名稱、數值、門檻都來自解密後的會員規則）：這個檔案是公開的，不寫任何策略內容。
    滑鼠移到（或鍵盤選到、點）某一塊，旁邊對應的文字會標出來；反過來也一樣。
+   2026-11-24 站主：「管理後台的訊號明細的每個條件都要在『下次更新』下方新增一欄『白話說明』」。
+     白話說明的文字由呼叫端提供（管理後台解開 data/explain.enc.json 之後傳進來）；這個檔案只負責對到每一列、排版，不寫任何策略內容。
    用法：
      BN.sigpie.html(list, ctx) → HTML
-       list：[{ id, ref, d: { rows: [[條件, 數值, 成立, 距門檻], …], votes, of, summary }, topics: [每一列的主題文字] }]
+       list：[{ id, ref, d: { rows: [[條件, 數值, 成立, 距門檻], …], votes, of, summary }, topics: [每一列的主題文字], plain: [每一列的白話說明] }]
+         plain 有給才會多出「白話說明」那一欄（在「下次更新」下方）；每一列可以是一段文字，或 [這一項在看什麼, 現在代表什麼]（第二段另起一行）；空的就不顯示
+     BN.sigpie.plainRows(entries, rows) → [每一列的 [在看什麼, 現在代表什麼] 或 null]：entries＝[{ key, what, on, off, offLo, offHi }]（見下方說明）
+     BN.sigpie.side(條件, 數值)         區間條件「… 在 (a, b)」：目前數值在下限以下 'lo'、上限以上 'hi'、其餘 ''
        ctx：{ kind: 'official'｜'prov'｜'custom', next: { price, macro }（下次更新的文字）, isMacro: (條件, 第幾列) => 是否為金融環境數列 }
        ctx.fold（選填）：每個模型的區塊可以收合，狀態記在這台瀏覽器（管理後台用）
      BN.sigpie.bind(root)               掛上滑鼠／鍵盤連動與收合
@@ -48,6 +53,26 @@
     }
     if (V && !/\d/.test(V)) return '這一項不比大小，看狀態：目前「' + V + '」→ ' + res + '。';
     return '依條件名稱的規則判斷：目前 ' + (V || '—') + ' → ' + res + '。';
+  }
+
+  // ---------- 白話說明（文字由呼叫端提供；這裡只負責替每一列挑出對應的那一筆）----------
+  // side：條件名稱是區間「… 在 (a, b)」時，目前數值落在區間的哪一邊（讀不出數字、或數值在區間內就回傳 ''）
+  const num = s => { const m = String(s == null ? '' : s).replace(/−/g, '-').match(/-?\d+(?:\.\d+)?/); return m ? +m[0] : NaN; };
+  function side(label, val) {
+    const m = String(label).match(/在\s*([(\[])\s*([^,，]+?)\s*[,，]\s*([^)\]]+?)\s*([)\]])/); if (!m) return '';
+    const v = num(val), lo = num(m[2]), hi = num(m[3]); if (!(v === v) || !(lo === lo) || !(hi === hi)) return '';
+    return (m[1] === '[' ? v < lo : v <= lo) ? 'lo' : (m[4] === ']' ? v > hi : v >= hi) ? 'hi' : '';
+  }
+  // plainRows：entries＝某一個模型的白話說明 [{ key, what, on, off, offLo, offHi }]，rows＝規則算出來的條件列。
+  //   key＝條件名稱裡一定會出現的字；先看同一個位置的那一筆，對不上再找名稱含有 key 的第一筆；都對不上＝null（由呼叫端決定要顯示什麼）。
+  //   回傳 [what（這一項在看什麼）, 現在代表什麼]：成立時用 on；不成立時用 off（區間條件看數值在哪一邊，有 offLo／offHi 就用它）。
+  function plainRows(entries, rows) {
+    const E = Array.isArray(entries) ? entries : [], hit = (e, L) => !!(e && typeof e.key === 'string' && e.key && L.indexOf(e.key) >= 0);
+    return (rows || []).map((r, j) => {
+      const L = String(r[0]), e = hit(E[j], L) ? E[j] : E.find(x => hit(x, L)); if (!e) return null;
+      const sd = r[2] ? '' : side(L, r[1]), tail = r[2] ? e.on : (sd === 'lo' && e.offLo) || (sd === 'hi' && e.offHi) || e.off;
+      const out = [e.what, tail].filter(x => typeof x === 'string' && x); return out.length ? out : null;
+    });
   }
 
   // ---------- 圓餅 ----------
@@ -108,15 +133,17 @@
       const all = rows.map((r, j) => ({ r, j })), main = all.slice(0, of), extra = all.slice(of);
       const onMain = main.filter(o => o.r[2]).length, onAll = all.filter(o => o.r[2]).length, onX = onAll - onMain;
       const nextOf = j => ctx.kind === 'custom' ? (nx.custom || '自訂收盤價的試算，不會自動更新。') : isMacro(rows[j][0], j) ? (nx.macro || nx.price || '') : (nx.price || '');
-      const texts = rows.map((r, j) => r[0] + '｜數值 ' + r[1] + '｜' + (r[2] ? '成立（藍）' : '不成立（灰）') + '｜怎麼判斷：' + how(r[0], r[1], r[2], r[3]) + '｜下次更新：' + nextOf(j));
+      const plainOf = j => { const t = x.plain && x.plain[j]; return (Array.isArray(t) ? t : [t]).filter(s => typeof s === 'string' && s); };   // 白話說明（呼叫端有給才有）：一段或兩段文字
+      const texts = rows.map((r, j) => r[0] + '｜數值 ' + r[1] + '｜' + (r[2] ? '成立（藍）' : '不成立（灰）') + '｜怎麼判斷：' + how(r[0], r[1], r[2], r[3]) + '｜下次更新：' + nextOf(j) + (plainOf(j).length ? '｜白話說明：' + plainOf(j).join('') : ''));
       const items = rows.map((r, j) => {
-        const on = !!r[2], tp = x.topics && x.topics[j];
+        const on = !!r[2], tp = x.topics && x.topics[j], pl = plainOf(j);
         return (j === of && extra.length ? '<li class="sp-gap">另外判斷的條件（' + (of + 1) + (rows.length > of + 1 ? '～' + rows.length : '') + '，不算在上面的 ' + of + ' 項裡）</li>' : '')
           + '<li class="sp-it ' + (on ? 'on' : 'off') + '" data-k="' + k + '" data-i="' + j + '" tabindex="-1">'
           + '<div class="sp-t"><span class="sp-n" aria-hidden="true">' + (j + 1) + '</span><b>' + esc(r[0]) + '</b><span class="sp-st">' + (on ? '✓ 成立' : '✕ 不成立') + '</span></div>'
           + '<div class="sp-l"><span class="sp-k">目前數值</span>' + esc(r[1]) + (r[3] !== '' && r[3] != null ? '<span class="sp-k sp-k2">距門檻</span>' + esc(r[3]) : '') + '</div>'
           + '<div class="sp-l"><span class="sp-k">怎麼判斷</span>' + esc(how(r[0], r[1], r[2], r[3])) + '</div>'
           + '<div class="sp-l"><span class="sp-k">下次更新</span>' + esc(nextOf(j)) + '</div>'
+          + (pl.length ? '<div class="sp-l sp-pl"><span class="sp-k">白話說明</span>' + pl.map((t, q) => q ? '<span class="sp-p2">' + esc(t) + '</span>' : esc(t)).join('') + '</div>' : '')
           + (tp ? '<div class="sp-l"><span class="sp-k">消息主題</span>' + esc(tp) + '</div>' : '')
           + '</li>';
       }).join('');
@@ -192,5 +219,5 @@
     };
   }
 
-  BN.sigpie = { html, bind, how, next, foldAll };
+  BN.sigpie = { html, bind, how, next, foldAll, side, plainRows };
 })();

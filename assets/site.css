@@ -776,6 +776,7 @@ ul.ind { max-width: none; }
 .sp-it.on .sp-n{background:var(--sig-on);color:#fff}
 .sp-st{margin-left:auto;font-weight:700;white-space:nowrap}.sp-it.on .sp-st{color:var(--sig-on-ink)}.sp-it.off .sp-st{color:var(--muted)}
 .sp-l{margin-top:3px;color:var(--ink-2)}.sp-k{display:inline-block;min-width:4.6em;color:var(--muted);font-size:12px;margin-right:6px}.sp-k2{margin-left:14px}
+.sp-p2{display:block;margin-top:2px;color:var(--ink)}   /* 白話說明的第二段（現在代表什麼）另起一行、顏色深一階；不改字重，免得精簡字型缺字 */
 .sp-sum{margin:10px 0 0}
 /* 2026-11-24：每個模型的區塊可以收合（管理後台；標題列是按鈕，右邊一直顯示「成立幾項 → 結論」） */
 .sp-ft{all:unset;box-sizing:border-box;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;width:100%;cursor:pointer;font:inherit;color:inherit}
