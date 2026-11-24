@@ -212,7 +212,8 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 @media (max-width: 1180px) { .hero .hrow.hrow4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hero .hrow4 .hs .big { font-size: clamp(40px, 6vw, 64px); } }
 /* 2026-11-24 站主：首頁四大模型區塊——「框裡的資訊不明顯、第一次來的人看不懂四個模型的優勢、顯示要友善」
    標題改成一句問句（大字）；條件（本金、資料日期）做成標籤；先給對照基準（同一筆錢放 QQQ 長抱）；
-   四張卡片由左到右＝入門 → 旗艦：等級標籤、一句特色、期末價值、QQQ 的幾倍、相對長條（最長＝四個之中最高）、年化報酬／最大回撤／正報酬年數。
+   四張卡片由左到右＝入門 → 旗艦：等級標籤、期末價值、相對長條（最長＝四個之中最高）、年化報酬／最大回撤／本金 360 萬的幾倍。
+   （同日 13:17 站主看過第一版：卡片上的一句特色與「＝QQQ 長抱的 N 倍」拿掉、「正報酬年數」改成本金的幾倍；對照列同步改）
    首頁上半部在兩種主題都是深色底：策略色固定用深色主題那一組（淺色主題的紫、洋紅在深色底上太暗） */
 .hero { --s-fund: #3987e5; --s-sat: #e66767; --s-sat2: #6447b8; --s-sat3: #f410e0; }
 .hero { padding: 54px 0 60px; }
@@ -240,29 +241,24 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 .hero .hrow4 a.hs { display: flex; flex-direction: column; text-decoration: none; color: inherit; transition: border-color .15s, background .15s; }
 .hero .hrow4 a.hs:hover { background: rgba(255, 255, 255, .055); border-color: rgba(255, 255, 255, .22); border-top-color: var(--c); }
 .hero .hrow4 a.hs:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
-.hero .hrow4 .hcode { gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.hero .hrow4 .hcode { gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .hero .htier { padding: 2px 11px; border-radius: 999px; border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 26%, transparent); color: #fff; font-size: 12.5px; font-weight: 700; letter-spacing: .14em; }
-.hero .htag { margin: 0 0 14px; font-size: 14.5px; line-height: 1.55; color: #cfcbc2; max-width: none; }
-.hero .hval { margin-top: auto; }   /* 特色說明行數不同時，四張卡片的期末價值仍對齊在同一條線 */
-.hero .hxq { margin-top: 8px; font-size: 14.5px; color: var(--gold-hi); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
-.hero .hbar { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .1); margin-top: 12px; overflow: hidden; }
+.hero .hbar { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .1); margin-top: 14px; overflow: hidden; }
 .hero .hbar i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--c); transition: width .7s cubic-bezier(.2, .7, .2, 1); }
 @media (prefers-reduced-motion: reduce) { .hero .hbar i { transition: none; } }
-.hero .hm.hm3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.hero .hm.hm3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.4fr); gap: 8px; margin-top: 14px; }   /* 第三格「本金 360 萬的」標籤較長，給寬一點 */
+.hero .hm3 dt { white-space: nowrap; }
 .hero .hm3 dd { font-size: 16px; }
 .hero .hx-note { margin: 16px 0 0; max-width: none; font-size: 12.5px; line-height: 1.7; color: #8f8b83; }
 .hero .hx-note a { color: #d6d3cc; white-space: nowrap; }
 @media (max-width: 860px) { .hero { padding: 40px 0 44px; } .hero .wrap { gap: 22px; } .hero .stat.hx { padding: 18px 16px 16px; } .hero .hx-base { padding: 10px 14px; } }
-/* 手機：四張卡片改成一欄；期末價值與「QQQ 的幾倍」排在同一列 */
+/* 手機：四張卡片改成一欄 */
 @media (max-width: 640px) {
   .hero .hrow.hrow4 { grid-template-columns: 1fr; gap: 10px; }
   .hero .hrow4 .hs { padding: 14px 14px 12px; }
   .hero .hrow4 .hs .big { font-size: clamp(34px, 10.5vw, 44px); }
-  .hero .hval { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; }
-  .hero .hval .hxq { margin-top: 0; }
   .hero .hbar { margin-top: 10px; }
   .hero .hm.hm3 { margin-top: 12px; padding-top: 10px; }
-  .hero .htag { margin-bottom: 8px; font-size: 14px; }
   .hero .hx-facts li { padding: 5px 12px; font-size: 13.5px; }
   .hero .hx-base { font-size: 13.5px; gap: 4px 16px; }
   .hero .hx-bl { flex-basis: 100%; }
