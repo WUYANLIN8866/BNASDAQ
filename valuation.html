@@ -24,7 +24,12 @@
 <nav class="nav" aria-label="主導覽"><div class="wrap"><button class="burger" aria-expanded="false" aria-controls="mainmenu" aria-label="選單"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><ul id="mainmenu"><li><a href="index.html">首頁</a></li><li><a href="daily.html">每日市場分析</a></li><li><a href="taiwan.html">個股對比</a></li><li><a href="valuation.html" aria-current=page>個股目標價試算</a></li><li><a href="lookthrough.html">投資組合透視</a></li><li><a href="research.html">研究與回測</a></li><li><a href="dca.html">定期定額與退休</a></li><li><a href="calculator.html">目標資產試算</a></li><li><a href="explore.html">最新策略探索進度</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="plans.html">會員方案</a></li><li><a href="about.html">關於 BNASDAQ</a></li><li><a href="faq.html">常見問題</a></li><li><a class="acct" href="login.html" data-acct>登入／會員專區</a></li></ul></div></nav>
 <main id="main">
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 個股目標價試算</div><h1>個股目標價試算</h1><p class="lede">將公司未來的獲利折算為今日的合理價值。只需輸入四項假設——目前每股盈餘、盈餘成長率、成長期間、出場本益比——後三項皆以最低與最高值設定區間；試算器以最接近成長年數的美國公債殖利率加上股市風險溢價作為折現率，計算由便宜到昂貴的合理價區間，並標示目前股價所在區段。免登入即可使用。</p></div></div>
-<div class="main"><div class="wrap"><div class="cols">
+<nav class="snav" id="snav" aria-label="本頁功能" hidden><div class="wrap"><ul></ul></div></nav>
+<div class="snav fix" id="snav-fix" hidden><div class="wrap"><ul aria-label="本頁功能（捲動時固定在上方）"></ul></div></div>
+<div class="main"><div class="wrap">
+<div id="rtv" hidden></div>
+<div id="nwv" hidden></div>
+<div class="cols" id="anv">
 <div>
   <div class="panel">
     <form class="form" id="cf" novalidate><div class="row2"><div class="field"><label for="code">輸入股票代號，自動帶入參數（台股如 2330、美股如 NVDA）</label><input id="code" list="codelist" autocomplete="off" placeholder="2330 或 NVDA"><datalist id="codelist"></datalist></div><div class="field" style="align-self:end"><button type="submit" class="btn">讀取並帶入</button></div></div></form>
@@ -85,7 +90,7 @@
   <div class="note warn"><p><b>本試算不構成投資建議，亦非保證。</b>模型結果完全取決於輸入的假設：成長率由 30% 調整為 20%，合理價可能相差三成以上。本工具適合用於檢視「目前股價隱含了多樂觀的假設」，不宜作為買賣訊號。對虧損公司、盈餘波動劇烈的公司及金融股，本益比法容易失真。</p></div>
 </div>
 <aside>
-  <div class="side toc"><h3>本頁內容</h3><ul><li><a href="#verdict">試算結論</a></li><li><a href="#range">合理價區間</a></li><li><a href="#sens">敏感度分析</a></li><li id="toc-detail" hidden><a href="#detail-h">個股詳細分析</a></li><li><a href="#how">計算方法</a></li></ul></div>
+  <div class="side toc" hidden><h3>本頁內容</h3><ul><li><a href="#verdict">試算結論</a></li><li><a href="#range">合理價區間</a></li><li><a href="#sens">敏感度分析</a></li><li id="toc-detail" hidden><a href="#detail-h">個股詳細分析</a></li><li><a href="#how">計算方法</a></li></ul></div>
   <div class="side"><h3>美國公債殖利率（自動更新）</h3><div id="vTsy"><p class="small">載入中…</p></div></div>
   <div class="side"><h3>相關頁面</h3><ul><li><a href="calculator.html">目標資產試算</a></li><li><a href="risk.html">風險與代價</a></li><li><a href="data.html">資料口徑與免責</a></li></ul></div>
 </aside>
@@ -167,8 +172,118 @@ main .btn.ghost:hover{color:var(--ink);background:var(--band);border-color:var(-
 .esg dt{color:var(--muted)}.esg dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 @media(max-width:900px){.esg{grid-template-columns:1fr}}
 .glos{margin-top:10px}.glos summary{cursor:pointer;font-weight:600}.glos td{font-size:13.5px;vertical-align:top}.glos td:first-child{white-space:nowrap}
+
+/* 2026-11-24 站主：右側「本頁內容」搬到上方橫列（.snav）；個股模式第一個是「即時資訊」（預設頁）、第二個「即時新聞」，其餘是試算與公司分析的各小節 */
+.snav{background:var(--paper);border-bottom:1px solid var(--line)}
+.snav .wrap{padding-top:12px;padding-bottom:12px}
+.snav ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 6px;max-width:none;align-items:center}
+.snav li.gap{margin-top:2px}
+.snav li{margin:0}
+.snav li.gap{flex-basis:100%;height:0}
+.snav a{display:block;padding:4px 11px;border:1px solid var(--line);border-radius:999px;font-size:13.5px;line-height:1.35;text-decoration:none;color:var(--ink-2);white-space:nowrap;background:var(--paper)}
+.snav a:hover{border-color:var(--gold-hi);color:var(--ink)}
+.snav a.pri{font-weight:700;font-size:15.5px;padding:7px 20px;border-color:var(--gold-hi);color:var(--ink)}
+.snav li.gap+li::before{content:none}
+body.am .pagehead{padding:30px 0 26px}
+body.am .pagehead .lede{max-width:none;font-size:16px}
+.snav a.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.snav a:focus-visible{outline:none;box-shadow:var(--focus)}
+.snav.fix{position:fixed;left:0;right:0;top:var(--navh,49px);z-index:40;box-shadow:0 6px 16px rgba(0,0,0,.14)}
+.snav.fix .wrap{padding-top:7px;padding-bottom:7px}
+.snav.fix ul{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+.snav.fix li.gap{display:none}
+.snav.fix a,.snav.fix a.pri{font-size:13.5px;padding:5px 12px}
+@media (max-width:760px){.snav ul{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:4px}.snav li.gap{display:none}.snav a.pri{font-size:14.5px;padding:7px 15px}}
+@media print{.snav{display:none!important}}
+#verdict,#range,#sens,#how,#detail-h,#detail h3{scroll-margin-top:112px}
+#rtv,#nwv{margin-top:0}
+body.am .snav+.snav+.main,body.am .snav+.main{padding-top:26px}
+#anv[hidden],#rtv[hidden],#nwv[hidden],.snav[hidden]{display:none}   /* .cols 的 display:grid 會蓋過瀏覽器內建的 [hidden] */
+/* 即時資訊（assets/rt.js） */
+.rt{--rt-up:var(--good);--rt-dn:var(--bad);font-variant-numeric:tabular-nums}
+.rt.rt-twc{--rt-up:var(--bad);--rt-dn:var(--good)}
+.rt .up{color:var(--rt-up)}.rt .dn{color:var(--rt-dn)}.rt .eq{color:var(--ink)}.rt .mut{color:var(--muted)}
+.rt .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.rt-top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px 24px;flex-wrap:wrap}
+.rt-id{display:flex;align-items:baseline;gap:8px 14px;flex-wrap:wrap}
+.rt-id h2{margin:0;padding:0;font-size:clamp(24px,2.6vw,32px)}.rt-id h2::before{display:none}
+.rt-code{font-family:var(--sans);font-weight:500;font-size:.62em;color:var(--muted);margin-left:10px}
+.rt-tag{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:1px 8px;font-size:12.5px;color:var(--ink-2);margin-right:6px;white-space:nowrap}
+.rt-find{display:flex;gap:8px}.rt-find input{font:inherit;font-size:14.5px;padding:7px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);width:210px;max-width:52vw}.rt-find .btn{padding:7px 16px;font-size:14.5px}
+.rt-pxrow{display:flex;align-items:flex-end;gap:10px 28px;flex-wrap:wrap;margin:14px 0 16px}
+.rt-px{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.rt-last{font-family:var(--sans);font-weight:700;font-size:clamp(40px,5vw,58px);line-height:1}
+.rt-chg{font-size:clamp(18px,2vw,23px);font-weight:600}.rt-chg span{margin-left:4px}
+.rt-flag{font-size:13px;font-weight:700;border:1.5px solid currentColor;border-radius:3px;padding:1px 8px}
+.rt-ext{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:15px}.rt-ext b{font-size:19px}.rt-ext small{color:var(--muted);font-size:12.5px}
+.rt-status{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);flex-wrap:wrap}
+.rt-dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}.rt-dot.live{background:var(--good);animation:rt-pulse 1.6s ease-in-out infinite}.rt-dot.bad{background:var(--bad)}
+@keyframes rt-pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.rt-dot.live{animation:none}}
+.rt-color{font:inherit;font-size:12.5px;padding:3px 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink-2);cursor:pointer}
+.rt-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:18px;align-items:start}
+@media (max-width:1040px){.rt-grid{display:flex;flex-direction:column;align-items:stretch}.rt-grid>.rt-main,.rt-grid>.rt-side{display:contents}.rt-chart{order:1}.rt-stats{order:2}.rt-bookc{order:3}.rt-more{order:4}.rt-status{margin-left:0}}   /* 窄螢幕：走勢 → 報價 → 五檔 → 成交明細 */
+.rt-card{border:1px solid var(--line);border-top:2px solid var(--ink);background:var(--paper);padding:14px 16px 16px;min-width:0}
+.rt-card h3{margin:0 0 10px;font-size:16px;font-family:var(--sans);font-weight:700}
+.rt-side,.rt-main{display:grid;gap:18px;min-width:0;align-content:start}
+.rt p{max-width:none}
+.rt-tabs{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--line);margin:-4px 0 10px}
+.rt-tabs button{font:inherit;font-size:14.5px;padding:8px 14px;border:0;border-bottom:3px solid transparent;background:none;color:var(--ink-2);cursor:pointer;margin-bottom:-1px}
+.rt-tabs button:hover{color:var(--ink)}
+.rt-tabs button[aria-selected="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--gold-hi)}
+.rt-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:13px;color:var(--ink-2);margin:0 0 8px}
+.rt-tl{color:var(--muted);margin-left:8px}.rt-tl:first-child{margin-left:0}
+.rt-tools button{font:inherit;font-size:13px;padding:3px 11px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink-2);cursor:pointer}
+.rt-tools button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.rt-tools label{display:inline-flex;align-items:center;gap:3px;cursor:pointer;margin:0;font-weight:400;font-size:13px;letter-spacing:0}
+.rt-tools input{margin:0;accent-color:var(--gold)}
+.rt-tools select{font:inherit;font-size:13px;padding:3px 6px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.rt-read{display:flex;flex-wrap:wrap;gap:2px 14px;font-size:13px;min-height:22px;color:var(--ink-2);margin-bottom:4px}.rt-read b{color:var(--ink)}
+.rt-cv{height:440px;position:relative}.rt-cv canvas{width:100%;height:100%;display:block;touch-action:pan-y;cursor:crosshair}
+@media (max-width:640px){.rt-cv{height:340px}}
+.rt-cnote{margin:8px 0 0;max-width:none;color:var(--muted)}
+.rt-dl{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;margin:0}
+.rt-dl>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid var(--line-2)}
+.rt-dl dt{color:var(--muted);font-size:13.5px;white-space:nowrap}.rt-dl dd{margin:0;font-weight:600;font-size:15px;text-align:right}.rt-dl dd small{display:block;font-weight:400;font-size:11.5px;color:var(--muted)}
+.rt-iobar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line)}.rt-iobar i{display:block;height:100%}.rt-iobar i.up{background:var(--rt-up)}.rt-iobar i.dn{background:var(--rt-dn)}
+.rt-iotxt{display:flex;justify-content:space-between;font-size:13px;margin:5px 0 12px;font-weight:600}
+.rt-bk{width:100%;border-collapse:collapse;font-size:14.5px}
+.rt-bk th{font-weight:500;font-size:12.5px;color:var(--muted);padding:4px 6px;border-bottom:1px solid var(--line)}
+.rt-bk td{padding:6px 6px;text-align:center;border-bottom:1px solid var(--line-2)}
+.rt-bk td.bv,.rt-bk td.av{position:relative;width:30%}
+.rt-bk td.bv{text-align:left}.rt-bk td.av{text-align:right}
+.rt-bk td i{position:absolute;top:5px;bottom:5px;opacity:.18;border-radius:2px}.rt-bk td.bv i{right:0;background:var(--rt-up)}.rt-bk td.av i{left:0;background:var(--rt-dn)}
+.rt-bk td span{position:relative}
+.rt-bk tfoot td{font-size:12.5px;color:var(--muted);border-bottom:0}
+.rt-scroll{max-height:460px;overflow:auto}
+.rt-tape td,.rt-pd td{white-space:nowrap}
+.rt-tape tr.min td{color:var(--ink-2)}
+.rt-tape tr.sep td{text-align:left;font-size:12.5px;color:var(--muted);background:var(--band)}
+.rt-pd tr.now td{background:var(--gold-tint);font-weight:700}
+.rt-bar{display:inline-block;height:10px;border-radius:2px;background:var(--axis);min-width:1px;vertical-align:middle}.rt-bar.top{background:var(--gold-hi)}
+.rt-two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.rt-two h4{margin:0 0 6px;font-size:14.5px;font-family:var(--sans)}
+@media (max-width:760px){.rt-two{grid-template-columns:1fr}.rt-dl{gap:0 14px}}
+.rt-how{margin-top:18px}.rt-how ul{max-width:none;font-size:13.5px;color:var(--ink-2)}.rt-how li{margin-bottom:6px}
+/* 即時新聞 */
+.nw-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:8px}
+.nw-rng{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.nw-rng button{font:inherit;font-size:14.5px;font-weight:600;padding:7px 16px;border:0;background:var(--paper);color:var(--ink-2);cursor:pointer}
+.nw-rng button+button{border-left:1px solid var(--line)}
+.nw-rng button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.nw-loose{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:400;letter-spacing:0;margin:0;cursor:pointer;color:var(--ink-2)}
+.nw-re{margin-left:auto;padding:5px 14px;font-size:13.5px}
+.nw-meta{max-width:none;margin:0 0 6px}.nw-ld{color:var(--gold);margin-left:6px}
+.nw-day{font-family:var(--sans);font-size:14px;font-weight:700;color:var(--ink-2);margin:20px 0 4px;padding:5px 10px;background:var(--band);border-left:3px solid var(--gold-hi)}
+.nw-list{list-style:none;margin:0;padding:0;max-width:none}
+.nw-list li{display:grid;grid-template-columns:52px minmax(0,1fr);gap:12px;padding:11px 10px;border-bottom:1px solid var(--line-2);margin:0}
+.nw-list time{font-weight:700;font-size:14.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.nw-list a{font-size:16px;font-weight:600;line-height:1.5;text-decoration:none}.nw-list a:hover{text-decoration:underline}
+.nw-list p{margin:3px 0 0;font-size:13.5px;color:var(--ink-2);max-width:none;line-height:1.6}
+.nw-list small{display:block;margin-top:3px;font-size:12.5px;color:var(--muted)}
+.nw-list li.loose a{font-weight:400}
+.nw-src{margin-top:16px;max-width:none}
 </style>
-<script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/company.js?v=66e4ef466a"></script><script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
+<script src="assets/rt.js?v=732e0aa300"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/company.js?v=66e4ef466a"></script><script src="assets/site.js?v=f461d7f703"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
 <script>
 (function(){
 const $=id=>document.getElementById(id);
@@ -261,13 +376,55 @@ fetch('data/treasury.json').then(r=>r.json()).then(j=>{TSY=j;showTsy();run();}).
 const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const pctS=v=>v==null?'—':(v*100).toFixed(1)+'%';
 fetch('data/tw/index.json').then(r=>r.json()).then(j=>{const dl=$('codelist');(j.list||[]).forEach(x=>{if(!x[4])return;const o=document.createElement('option');o.value=x[0];o.label=x[1]||'';dl.appendChild(o);});}).catch(()=>{});
-function setMode(code,name){ // 有代號＝公司分析模式：只顯示試算結論，重點在下方分析；按鈕可展開完整試算
+function setMode(code,name){ // 有代號＝個股模式：上方橫列第一個「即時資訊」（預設）、第二個「即時新聞」，其餘是試算結論與完整公司分析
   document.body.classList.add('am');
-  const h1=document.querySelector('.pagehead h1'),cr=document.querySelector('.pagehead .crumbs');
-  h1.textContent=(name?name+'（'+code+'）':code)+' 公司分析';
-  if(cr)cr.innerHTML='<a href="index.html">首頁</a> › <a href="daily.html">每日市場分析</a> › 公司分析';
-  const ld=document.querySelector('.pagehead .lede');if(ld)ld.textContent='試算結論在最上方；下方是完整公司分析：股東結構、營收結構、市占與競爭力、財務體質、估值與預期、與主要對手比較。所有數字附資料來源與算法。';
-  document.title=(name||code)+' 公司分析｜BNASDAQ';
+  const first=CODE!==code, had=!!CODE; CODE=code; if(name||first)CNAME=name||'';
+  if(first){VIEW=VIEW0||(had?VIEW:'rt');VIEW0='';}   // 第一次進個股：預設「即時資訊」；在頁面裡換另一檔（例如點同業）：留在原本的頁籤
+  headFor(); buildToc(); showView();
+}
+// ---- 上方橫列與頁籤（2026-11-24 站主：把右側「本頁內容」搬到上方；「即時資訊」第一個並設為主要頁面；「即時新聞」第二個）----
+let VIEW='an', VIEW0=(location.hash.match(/[#&]v=(rt|nw|an)\b/)||[])[1]||'', CODE='', CNAME='';
+const VNAME={rt:'即時資訊',nw:'即時新聞',an:'公司分析'};
+function headFor(){
+  if(!document.body.classList.contains('am'))return;
+  const h1=document.querySelector('.pagehead h1'),cr=document.querySelector('.pagehead .crumbs'),ld=document.querySelector('.pagehead .lede'),who=CNAME?CNAME+'（'+CODE+'）':CODE;
+  h1.textContent=who+' '+VNAME[VIEW];
+  if(cr)cr.innerHTML='<a href="index.html">首頁</a> › <a href="daily.html">每日市場分析</a> › '+VNAME[VIEW];
+  if(ld)ld.textContent=VIEW==='rt'?(/^\d/.test(CODE)?'即時價、當日走勢、K 線與技術指標、五檔與內外盤、成交明細、分價量、法人與資券；盤中每 5 秒更新。':'即時價（含盤前、盤後）、當日走勢、K 線與技術指標、基本數據；正規時段每 5 秒更新。')+'下方橫列可以切到即時新聞、試算結論與完整公司分析。'
+    :VIEW==='nw'?'這家公司的新聞由新到舊排列，可以切換 2 小時、1 天、1 週、1 個月、1 季、1 年；每 3 分鐘自動更新。'
+    :'試算結論在最上方；下方是完整公司分析：股東結構、營收結構、市占與競爭力、財務體質、估值與預期、與主要對手比較。所有數字附資料來源與算法。';
+  document.title=(CNAME||CODE)+' '+VNAME[VIEW]+'｜BNASDAQ';
+}
+function showView(id){
+  const am=document.body.classList.contains('am'); if(!am)VIEW='an';
+  $('anv').hidden=VIEW!=='an'; $('rtv').hidden=VIEW!=='rt'; $('nwv').hidden=VIEW!=='nw';
+  if(window.BN&&BN.rt){
+    if(VIEW==='rt'){const s=BN.rt.state();if(!s||s.code!==CODE)BN.rt.open($('rtv'),{code:CODE,name:CNAME,onCode:c=>{$('code').value=c;loadCode(c);},onName:n=>{if(!CNAME&&BN.rt.state()&&BN.rt.state().code===CODE){CNAME=n;headFor();}}});else{if(CNAME)BN.rt.setName(CNAME);BN.rt.resume();}}
+    else if(BN.rt.active()){const s=BN.rt.state();if(s.code!==CODE)BN.rt.close();else BN.rt.pause();}
+  }
+  if(window.BN&&BN.rtnews){
+    if(VIEW==='nw'){const s=BN.rtnews.state();if(!s||s.code!==CODE)BN.rtnews.open($('nwv'),{code:CODE,name:CNAME});}
+    else{const s=BN.rtnews.state();if(s&&s.code!==CODE)BN.rtnews.close();}
+  }
+  if(am){headFor();try{history.replaceState(null,'','#code='+CODE+(VIEW==='rt'?'':'&v='+VIEW));}catch(e){}}
+  markNav();
+  if(VIEW==='an'&&id){const el=document.getElementById(id);if(el)setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),30);}
+}
+function setView(v,id){
+  const changed=v!==VIEW; VIEW=v; showView(id);
+  if(!id){const sn=$('snav'),r=sn.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)window.scrollTo({top:r.top+scrollY-(document.querySelector('.nav')||{offsetHeight:49}).offsetHeight,behavior:'auto'});}
+}
+function markNav(){
+  let cur=VIEW==='an'?'verdict':VIEW;
+  if(VIEW==='an'){const ids=[...document.querySelectorAll('#snav a[data-id]')].map(a=>a.dataset.id);for(const id of ids){const el=document.getElementById(id);if(el&&el.offsetParent!==null&&el.getBoundingClientRect().top<150)cur=id;}}
+  document.querySelectorAll('.snav a').forEach(a=>{const on=(a.dataset.id||a.dataset.v)===cur;a.classList.toggle('on',on);if(on)a.setAttribute('aria-current','true');else a.removeAttribute('aria-current');
+    if(on&&a.closest('.fix')){const u=a.closest('ul'),x=a.offsetLeft-u.clientWidth/2+a.offsetWidth/2;if(Math.abs(u.scrollLeft-x)>40)u.scrollLeft=Math.max(0,x);}});
+}
+document.addEventListener('click',e=>{const a=e.target.closest('.snav a');if(!a)return;e.preventDefault();setView(a.dataset.v,a.dataset.id||'');});
+{ // 捲過上方橫列之後，改用固定在導覽列下方的精簡版（單列、可左右捲）
+  const sn=$('snav'),fx=$('snav-fix'),nv=document.querySelector('.nav');
+  const upd=()=>{document.documentElement.style.setProperty('--navh',((nv&&nv.offsetHeight)||49)+'px');const out=!sn.hidden&&sn.getBoundingClientRect().bottom<((nv&&nv.offsetHeight)||49);if(fx.hidden===out){fx.hidden=!out;}markNav();};
+  let tk=0;window.addEventListener('scroll',()=>{if(tk)return;tk=setTimeout(()=>{tk=0;upd();},90);},{passive:true});window.addEventListener('resize',upd);
 }
 document.addEventListener('click',e=>{const b=e.target.closest('#amToggle');if(!b)return;const on=document.body.classList.toggle('full');b.setAttribute('aria-expanded',on?'true':'false');b.textContent=on?'收合完整試算':'顯示完整試算：調整參數、合理價區間、敏感度分析';});
 async function loadCode(raw){let c=String(raw||'').trim().toUpperCase().replace(/\.TWO?$/,'');if(/^[A-Z]+\.[A-Z]$/.test(c))c=c.replace('.','-');if(!c)return;
@@ -275,9 +432,10 @@ async function loadCode(raw){let c=String(raw||'').trim().toUpperCase().replace(
  $('cMsg').innerHTML='<p class="msg info">讀取 '+esc(c)+'…</p>';$('cInfo').innerHTML='';
  DET=null;renderDetail();
  try{const r=await fetch('data/fund/'+encodeURIComponent(c)+'.json');if(!r.ok){$('cMsg').innerHTML='<p class="msg err">找不到 '+esc(c)+' 的基本面資料（可能代號有誤、ETF 無 EPS，或尚未收錄；資料每週日更新）。</p>';
+   try{history.replaceState(null,'','#code='+c+(VIEW==='rt'?'':'&v='+VIEW));}catch(e){}
    $('vOut').innerHTML='<p class="msg info">沒有 '+esc(c)+' 的基本面資料，無法自動試算；若要試算，請手動輸入目前股價、EPS 與各項假設。</p>';$('vBand').innerHTML='';$('vTable').innerHTML='';$('vSens').innerHTML='';LAST=null;
    loadDetail(c,null);return;}
-  const d=await r.json();history.replaceState(null,'','#code='+c);setMode(c,d.name||'');
+  const d=await r.json();setMode(c,d.name||'');
   if(!d.params){$('cMsg').innerHTML='<p class="msg err">'+esc(d.name||c)+'：'+esc(d.why_none||'無法自動帶入')+'。</p>';return;}
   const P=d.params;['px','eps','gLo','gHi','nLo','nHi','peLo','peHi'].forEach(k=>{if(P[k]!=null)$(k).value=+(+P[k]).toFixed(k==='px'||k==='eps'?2:1);});run();
   $('cMsg').innerHTML='<p class="msg ok">已帶入 '+esc(d.name)+'（'+esc(c)+'）的參數，資料日 '+esc(d.updated)+'；以下各項皆可再調整。</p>';
@@ -381,11 +539,13 @@ async function loadDetail(code,fund){
   if(window.BN&&BN.company)BN.company.render(code,{toc:buildToc});
   buildToc();
 }
-function buildToc(){ // 分析模式的右側目錄：試算結論＋分析各小節
-  const ul=document.querySelector('.side.toc ul');if(!ul||!document.body.classList.contains('am'))return;
-  const hs=[...document.querySelectorAll('#detail h3')].filter(h=>h.offsetParent!==null||h.closest('#detail'));
-  hs.forEach((h,i)=>{if(!h.id)h.id='d-'+i;});
-  ul.innerHTML='<li><a href="#verdict">試算結論</a></li><li><a href="#detail-h">個股詳細分析</a></li>'+hs.map(h=>'<li><a href="#'+h.id+'">'+esc(h.textContent.replace(/（.*$/,''))+'</a></li>').join('');
+function buildToc(){ // 上方橫列：個股模式＝即時資訊、即時新聞＋試算結論＋公司分析各小節；沒有代號＝試算器的四個段落
+  const am=document.body.classList.contains('am'),it=[];
+  if(am){it.push(['rt','','即時資訊',1],['nw','','即時新聞',1],['an','verdict','試算結論',1],['an','detail-h','個股詳細分析',1],['gap']);
+    [...document.querySelectorAll('#detail h3')].forEach((h,i)=>{if(!h.id)h.id='d-'+i;it.push(['an',h.id,h.textContent.replace(/（.*$/,'')]);});}
+  else [['verdict','試算結論'],['range','合理價區間'],['sens','敏感度分析'],['how','計算方法']].forEach(x=>it.push(['an',x[0],x[1]]));
+  const h=it.map(x=>x[0]==='gap'?'<li class="gap" aria-hidden="true"></li>':'<li><a href="#'+(x[1]||x[0])+'" data-v="'+x[0]+'"'+(x[1]?' data-id="'+x[1]+'"':'')+(x[3]?' class="pri"':'')+'>'+esc(x[2])+'</a></li>').join('');
+  document.querySelectorAll('.snav ul').forEach(u=>{if(u._h!==h){u._h=h;u.innerHTML=h;}});$('snav').hidden=false;markNav();
 }
 function renderDetail(){
   const sec=$('detail');if(!sec)return;
@@ -493,8 +653,9 @@ function renderDetail(){
    $('dNews').innerHTML=fund||DET.mega||nw.length||(DET.cnews&&DET.cnews.items.length)?h:'';}
 }
 $('cf').addEventListener('submit',e=>{e.preventDefault();loadCode($('code').value);});
+buildToc();   // 沒有代號時：上方橫列列出試算器的段落
 {const m=location.hash.match(/code=([0-9A-Za-z.-]+)/);if(m){$('code').value=m[1];loadCode(m[1]);}}
-window.addEventListener('hashchange',()=>{const m=location.hash.match(/code=([0-9A-Za-z.-]+)/);if(m&&m[1].toUpperCase()!==($('code').value||'').toUpperCase()){$('code').value=m[1];loadCode(m[1]);}});
+window.addEventListener('hashchange',()=>{const m=location.hash.match(/code=([0-9A-Za-z.-]+)/),mv=(location.hash.match(/[#&]v=(rt|nw|an)\b/)||[])[1];if(m&&m[1].toUpperCase()!==($('code').value||'').toUpperCase()){if(mv)VIEW0=mv;$('code').value=m[1];loadCode(m[1]);}else if(m&&document.body.classList.contains('am')&&(mv||'rt')!==VIEW){VIEW=mv||'rt';showView();}});
 })();
 </script>
 </main>
