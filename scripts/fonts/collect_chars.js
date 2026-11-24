@@ -5,7 +5,7 @@ const { chromium } = require('playwright'); const fs = require('fs'); const path
 const BASE = process.argv[2] || 'http://127.0.0.1:8765/';
 const PAGES = ['index', 'about', 'daily', 'research', 'dca', 'taiwan', 'valuation', 'lookthrough', 'calculator', 'explore', 'risk', 'faq', 'data', 'news', 'plans', 'search', 'login', 'member', 'admin', '404'];
 (async () => {
-  const b = await chromium.launch(); const sets = {};
+  const b = await chromium.launch(process.env.BN_CHROME ? { executablePath: process.env.BN_CHROME } : {}); const sets = {};   // BN_CHROME：指定本機 Chrome（沙盒環境無法下載 Playwright 瀏覽器時用；同 build_search_index.js）
   const merge = o => { for (const [k, v] of Object.entries(o)) { sets[k] = sets[k] || new Set(); for (const ch of v) sets[k].add(ch); } };
   for (const vp of [{ width: 1366, height: 900 }, { width: 390, height: 844 }]) {
     const ctx = await b.newContext({ viewport: vp }); const p = await ctx.newPage();
