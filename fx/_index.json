@@ -1,0 +1,610 @@
+[
+ {
+  "name": "cnyes_quote_2330",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:2330:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1616,
+  "at": 1795484066
+ },
+ {
+  "name": "ytw_stock_2330",
+  "url": "https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=2330.TW",
+  "status": 200,
+  "acao": null,
+  "len": 1923,
+  "at": 1795484067
+ },
+ {
+  "name": "cnyes_quote_1216",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:1216:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1573,
+  "at": 1795484067
+ },
+ {
+  "name": "ytw_stock_1216",
+  "url": "https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=1216.TW",
+  "status": 200,
+  "acao": null,
+  "len": 1931,
+  "at": 1795484067
+ },
+ {
+  "name": "cnyes_quote_2412",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:2412:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1619,
+  "at": 1795484068
+ },
+ {
+  "name": "ytw_stock_2412",
+  "url": "https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=2412.TW",
+  "status": 200,
+  "acao": null,
+  "len": 2000,
+  "at": 1795484068
+ },
+ {
+  "name": "cnyes_quote_2603",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:2603:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1607,
+  "at": 1795484068
+ },
+ {
+  "name": "ytw_stock_2603",
+  "url": "https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=2603.TW",
+  "status": 200,
+  "acao": null,
+  "len": 1977,
+  "at": 1795484069
+ },
+ {
+  "name": "cnyes_quote_6488",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:6488:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1593,
+  "at": 1795484069
+ },
+ {
+  "name": "ytw_stock_6488",
+  "url": "https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=6488.TWO",
+  "status": 200,
+  "acao": null,
+  "len": 1896,
+  "at": 1795484070
+ },
+ {
+  "name": "cnyes_quote_0050",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:0050:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1407,
+  "at": 1795484070
+ },
+ {
+  "name": "ytw_stock_0050",
+  "url": "https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=0050.TW",
+  "status": 200,
+  "acao": null,
+  "len": 1935,
+  "at": 1795484070
+ },
+ {
+  "name": "cnyes_quote_00679B",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:00679B:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1431,
+  "at": 1795484070
+ },
+ {
+  "name": "ytw_stock_00679B",
+  "url": "https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=00679B.TWO",
+  "status": 200,
+  "acao": null,
+  "len": 2009,
+  "at": 1795484071
+ },
+ {
+  "name": "cnyes_chart_2330_1",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=1&symbol=TWS:2330:STOCK&quote=1&from=1795484066&to=1795138466",
+  "status": 200,
+  "acao": "*",
+  "len": 2149,
+  "at": 1795484071
+ },
+ {
+  "name": "cnyes_chart_2330_5",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=5&symbol=TWS:2330:STOCK&quote=1&from=1795484066&to=1794447266",
+  "status": 200,
+  "acao": "*",
+  "len": 788,
+  "at": 1795484074
+ },
+ {
+  "name": "cnyes_chart_2330_10",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=10&symbol=TWS:2330:STOCK&quote=1&from=1795484066&to=1794447266",
+  "status": 200,
+  "acao": "*",
+  "len": 638,
+  "at": 1795484074
+ },
+ {
+  "name": "cnyes_chart_2330_15",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=15&symbol=TWS:2330:STOCK&quote=1&from=1795484066&to=1793756066",
+  "status": 200,
+  "acao": "*",
+  "len": 67,
+  "at": 1795484074
+ },
+ {
+  "name": "cnyes_chart_2330_30",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=30&symbol=TWS:2330:STOCK&quote=1&from=1795484066&to=1792028066",
+  "status": 200,
+  "acao": "*",
+  "len": 67,
+  "at": 1795484074
+ },
+ {
+  "name": "cnyes_chart_2330_D",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=D&symbol=TWS:2330:STOCK&quote=1&from=1795484066&to=1417052066",
+  "status": 200,
+  "acao": "*",
+  "len": 67911,
+  "at": 1795484075
+ },
+ {
+  "name": "cnyes_chart_2330_W",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=W&symbol=TWS:2330:STOCK&quote=1&from=1795484066&to=849404066",
+  "status": 200,
+  "acao": "*",
+  "len": 14543,
+  "at": 1795484075
+ },
+ {
+  "name": "cnyes_chart_2330_M",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=M&symbol=TWS:2330:STOCK&quote=1&from=1795484066&to=534044066",
+  "status": 200,
+  "acao": "*",
+  "len": 7191,
+  "at": 1795484075
+ },
+ {
+  "name": "cnyes_pd1_2330",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/priceDistribution/TWS:2330:STOCK",
+  "status": 200,
+  "acao": "*",
+  "len": 186,
+  "at": 1795484075
+ },
+ {
+  "name": "cnyes_pd2_2330",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/priceDistribution?symbol=TWS:2330:STOCK",
+  "status": 404,
+  "acao": "*",
+  "len": 148,
+  "at": 1795484076
+ },
+ {
+  "name": "cnyes_pd3_2330",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/priceDistribution/2330",
+  "status": 200,
+  "acao": "*",
+  "len": 120,
+  "at": 1795484076
+ },
+ {
+  "name": "cnyes_pd4_2330",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/priceDistribution/TWS:2330:STOCK?limit=100",
+  "status": 200,
+  "acao": "*",
+  "len": 186,
+  "at": 1795484076
+ },
+ {
+  "name": "cnyes_buysell_2330",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/investors/buysell/TWS:2330:STOCK?from=1795484066&to=1791596066",
+  "status": 200,
+  "acao": "*",
+  "len": 8922,
+  "at": 1795484076
+ },
+ {
+  "name": "cnyes_margin_2330",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/TWS:2330:STOCK/marginTrading?from=1795484066&to=1791596066",
+  "status": 200,
+  "acao": "*",
+  "len": 5739,
+  "at": 1795484076
+ },
+ {
+  "name": "cnyes_main10_2330",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/chipsObserve/10mainForce/TWS:2330:STOCK",
+  "status": 200,
+  "acao": "*",
+  "len": 1339,
+  "at": 1795484077
+ },
+ {
+  "name": "cnyes_main10d_2330",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/chipsObserve/daily10mainForce/TWS:2330:STOCK",
+  "status": 200,
+  "acao": "*",
+  "len": 2064,
+  "at": 1795484077
+ },
+ {
+  "name": "cnyes_main10b_2330",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/chipsObserve/10mainForce/2330",
+  "status": 400,
+  "acao": "*",
+  "len": 61,
+  "at": 1795484077
+ },
+ {
+  "name": "cnyes_event_2330",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/recentEvent?symbol=TWS:2330:STOCK",
+  "status": 404,
+  "acao": "*",
+  "len": 142,
+  "at": 1795484077
+ },
+ {
+  "name": "cnyes_target_2330",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/financialIndicator/targetPrice/TWS:2330:STOCK",
+  "status": 200,
+  "acao": "*",
+  "len": 263,
+  "at": 1795484077
+ },
+ {
+  "name": "cnyes_histories_2330",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/histories?resolution=D&symbols=TWS:2330:STOCK&from=1795484066&to=1794620066",
+  "status": 200,
+  "acao": "*",
+  "len": 973,
+  "at": 1795484078
+ },
+ {
+  "name": "cnyes_chart_1216_1",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=1&symbol=TWS:1216:STOCK&quote=1&from=1795484066&to=1795138466",
+  "status": 200,
+  "acao": "*",
+  "len": 1861,
+  "at": 1795484078
+ },
+ {
+  "name": "cnyes_chart_1216_5",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=5&symbol=TWS:1216:STOCK&quote=1&from=1795484066&to=1794447266",
+  "status": 200,
+  "acao": "*",
+  "len": 712,
+  "at": 1795484078
+ },
+ {
+  "name": "cnyes_chart_1216_10",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=10&symbol=TWS:1216:STOCK&quote=1&from=1795484066&to=1794447266",
+  "status": 200,
+  "acao": "*",
+  "len": 587,
+  "at": 1795484078
+ },
+ {
+  "name": "cnyes_chart_1216_15",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=15&symbol=TWS:1216:STOCK&quote=1&from=1795484066&to=1793756066",
+  "status": 200,
+  "acao": "*",
+  "len": 67,
+  "at": 1795484079
+ },
+ {
+  "name": "cnyes_chart_1216_30",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=30&symbol=TWS:1216:STOCK&quote=1&from=1795484066&to=1792028066",
+  "status": 200,
+  "acao": "*",
+  "len": 67,
+  "at": 1795484079
+ },
+ {
+  "name": "cnyes_chart_1216_D",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=D&symbol=TWS:1216:STOCK&quote=1&from=1795484066&to=1417052066",
+  "status": 200,
+  "acao": "*",
+  "len": 58715,
+  "at": 1795484079
+ },
+ {
+  "name": "cnyes_chart_1216_W",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=W&symbol=TWS:1216:STOCK&quote=1&from=1795484066&to=849404066",
+  "status": 200,
+  "acao": "*",
+  "len": 12897,
+  "at": 1795484079
+ },
+ {
+  "name": "cnyes_chart_1216_M",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=M&symbol=TWS:1216:STOCK&quote=1&from=1795484066&to=534044066",
+  "status": 200,
+  "acao": "*",
+  "len": 6618,
+  "at": 1795484080
+ },
+ {
+  "name": "cnyes_pd1_1216",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/priceDistribution/TWS:1216:STOCK",
+  "status": 200,
+  "acao": "*",
+  "len": 650,
+  "at": 1795484080
+ },
+ {
+  "name": "cnyes_pd2_1216",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/priceDistribution?symbol=TWS:1216:STOCK",
+  "status": 404,
+  "acao": "*",
+  "len": 148,
+  "at": 1795484080
+ },
+ {
+  "name": "cnyes_pd3_1216",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/priceDistribution/1216",
+  "status": 200,
+  "acao": "*",
+  "len": 120,
+  "at": 1795484080
+ },
+ {
+  "name": "cnyes_pd4_1216",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/priceDistribution/TWS:1216:STOCK?limit=100",
+  "status": 200,
+  "acao": "*",
+  "len": 650,
+  "at": 1795484081
+ },
+ {
+  "name": "cnyes_buysell_1216",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/investors/buysell/TWS:1216:STOCK?from=1795484066&to=1791596066",
+  "status": 200,
+  "acao": "*",
+  "len": 8785,
+  "at": 1795484082
+ },
+ {
+  "name": "cnyes_margin_1216",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/TWS:1216:STOCK/marginTrading?from=1795484066&to=1791596066",
+  "status": 200,
+  "acao": "*",
+  "len": 5572,
+  "at": 1795484086
+ },
+ {
+  "name": "cnyes_main10_1216",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/chipsObserve/10mainForce/TWS:1216:STOCK",
+  "status": 200,
+  "acao": "*",
+  "len": 1294,
+  "at": 1795484086
+ },
+ {
+  "name": "cnyes_main10d_1216",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/chipsObserve/daily10mainForce/TWS:1216:STOCK",
+  "status": 200,
+  "acao": "*",
+  "len": 2025,
+  "at": 1795484086
+ },
+ {
+  "name": "cnyes_main10b_1216",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/chipsObserve/10mainForce/1216",
+  "status": 400,
+  "acao": "*",
+  "len": 61,
+  "at": 1795484087
+ },
+ {
+  "name": "cnyes_event_1216",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/recentEvent?symbol=TWS:1216:STOCK",
+  "status": 404,
+  "acao": "*",
+  "len": 142,
+  "at": 1795484087
+ },
+ {
+  "name": "cnyes_target_1216",
+  "url": "https://marketinfo.api.cnyes.com/mi/api/v1/financialIndicator/targetPrice/TWS:1216:STOCK",
+  "status": 200,
+  "acao": "*",
+  "len": 245,
+  "at": 1795484087
+ },
+ {
+  "name": "cnyes_histories_1216",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/histories?resolution=D&symbols=TWS:1216:STOCK&from=1795484066&to=1794620066",
+  "status": 200,
+  "acao": "*",
+  "len": 864,
+  "at": 1795484087
+ },
+ {
+  "name": "cnyes_index_TSE01",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX,TWS:OTC01:INDEX?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 2059,
+  "at": 1795484087
+ },
+ {
+  "name": "cnyes_chart_TSE01_1",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=1&symbol=TWS:TSE01:INDEX&quote=1&from=1795484066&to=1795397666",
+  "status": 200,
+  "acao": "*",
+  "len": 2547,
+  "at": 1795484088
+ },
+ {
+  "name": "cnyes_quote_US_AAPL",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/USS:AAPL:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 993,
+  "at": 1795484088
+ },
+ {
+  "name": "cnyes_quote_US_NVDA",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/USS:NVDA:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 996,
+  "at": 1795484088
+ },
+ {
+  "name": "cnyes_quote_US_QQQ",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/USS:QQQ:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1023,
+  "at": 1795484088
+ },
+ {
+  "name": "cnyes_quote_US_BRK_B",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/USS:BRK.B:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1006,
+  "at": 1795484089
+ },
+ {
+  "name": "cnyes_quote_US_BRK_B",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/USS:BRK-B:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 67,
+  "at": 1795484089
+ },
+ {
+  "name": "cnyes_quote_US_BRK_B",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/USS:BRK%2FB:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 400,
+  "acao": null,
+  "len": 800,
+  "at": 1795484089
+ },
+ {
+  "name": "cnyes_quote_US_TSM",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/USS:TSM:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 1045,
+  "at": 1795484089
+ },
+ {
+  "name": "cnyes_quote_US_SPCX",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/USS:SPCX:STOCK?column=G,QUOTES,K,E,KEY,M,AI,I,B,F,FORMAT,D",
+  "status": 200,
+  "acao": "*",
+  "len": 987,
+  "at": 1795484089
+ },
+ {
+  "name": "cnyes_chart_US_AAPL_1",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=1&symbol=USS:AAPL:STOCK&quote=1&from=1795484066&to=1795138466",
+  "status": 200,
+  "acao": "*",
+  "len": 21430,
+  "at": 1795484090
+ },
+ {
+  "name": "cnyes_chart_US_AAPL_5",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=5&symbol=USS:AAPL:STOCK&quote=1&from=1795484066&to=1794447266",
+  "status": 200,
+  "acao": "*",
+  "len": 4724,
+  "at": 1795484090
+ },
+ {
+  "name": "cnyes_chart_US_AAPL_D",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=D&symbol=USS:AAPL:STOCK&quote=1&from=1795484066&to=1417052066",
+  "status": 200,
+  "acao": "*",
+  "len": 74619,
+  "at": 1795484090
+ },
+ {
+  "name": "cnyes_chart_US_AAPL_W",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=W&symbol=USS:AAPL:STOCK&quote=1&from=1795484066&to=849404066",
+  "status": 200,
+  "acao": "*",
+  "len": 15304,
+  "at": 1795484091
+ },
+ {
+  "name": "cnyes_chart_US_AAPL_M",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=M&symbol=USS:AAPL:STOCK&quote=1&from=1795484066&to=534044066",
+  "status": 200,
+  "acao": "*",
+  "len": 7354,
+  "at": 1795484091
+ },
+ {
+  "name": "cnyes_chart_US_QQQ_1",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=1&symbol=USS:QQQ:STOCK&quote=1&from=1795484066&to=1795138466",
+  "status": 200,
+  "acao": "*",
+  "len": 21443,
+  "at": 1795484091
+ },
+ {
+  "name": "cnyes_chart_US_QQQ_5",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=5&symbol=USS:QQQ:STOCK&quote=1&from=1795484066&to=1794447266",
+  "status": 200,
+  "acao": "*",
+  "len": 4760,
+  "at": 1795484091
+ },
+ {
+  "name": "cnyes_chart_US_QQQ_D",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=D&symbol=USS:QQQ:STOCK&quote=1&from=1795484066&to=1417052066",
+  "status": 200,
+  "acao": "*",
+  "len": 74804,
+  "at": 1795484092
+ },
+ {
+  "name": "cnyes_chart_US_QQQ_W",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=W&symbol=USS:QQQ:STOCK&quote=1&from=1795484066&to=849404066",
+  "status": 200,
+  "acao": "*",
+  "len": 15384,
+  "at": 1795484092
+ },
+ {
+  "name": "cnyes_chart_US_QQQ_M",
+  "url": "https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=M&symbol=USS:QQQ:STOCK&quote=1&from=1795484066&to=534044066",
+  "status": 200,
+  "acao": "*",
+  "len": 7319,
+  "at": 1795484092
+ },
+ {
+  "name": "cnbc_us",
+  "url": "https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=AAPL%7CNVDA%7CQQQ%7CBRK.B%7CBRK-B%7CTSM%7CSPCX%7C.IXIC%7C.SPX%7C.NDX%7C.SOX&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json&events=1",
+  "status": 200,
+  "acao": "*",
+  "len": 13892,
+  "at": 1795484093
+ },
+ {
+  "name": "ytw_index",
+  "url": "https://tw.stock.yahoo.com/_td-stock/api/resource/StockServices.stockList;symbols=%5ETWII,%5ETWOII",
+  "status": 200,
+  "acao": null,
+  "len": 5901,
+  "at": 1795484093
+ }
+]
