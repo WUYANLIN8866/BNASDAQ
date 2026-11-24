@@ -15,7 +15,7 @@ jobs:
           sparse-checkout: |
             scripts
       - name: fixtures
-        run: timeout 280 python3 -u scripts/_probe_rt5.py 2>&1 | cut -c1-1500
+        run: timeout 280 python3 -u scripts/_probe_rt6.py 2>&1 | cut -c1-700
       - name: save fixtures to the scratch branch probe-out3 (normal commit, no force)
         if: always()
         env:
