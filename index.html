@@ -123,7 +123,7 @@
   </ul>
 </div></section>
 
-<script src="assets/site.js?v=c57986514d"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/bt-sat3-30.js?v=4e77b68d53"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=f4affab552"></script><script src="assets/charts.js?v=ec11cd8d91"></script>
+<script src="assets/site.js?v=c57986514d"></script><script src="assets/data.js?v=969d80a426"></script><script src="assets/bt.js?v=4e11cd9315"></script><script src="assets/bt-sat.js?v=670a1af1ce"></script><script src="assets/bt-sat30.js?v=4746283f1f"></script><script src="assets/bt-sat2.js?v=fd94e6eef8"></script><script src="assets/bt-sat2-30.js?v=e7f14ffed0"></script><script src="assets/bt-sat3.js?v=67b2e609b7"></script><script src="assets/bt-sat3-30.js?v=4e77b68d53"></script><script>window.BT_LIVE=true</script><script src="assets/period.js?v=f4affab552"></script><script src="assets/charts.js?v=ea174abb93"></script>
 <script>
 (function(){
   // 最新發布分頁與公告
@@ -147,7 +147,9 @@ const strip=h=>{const fig=h.querySelector('.fig');if(fig){fig.style.border='0';f
 const yearTicks=(xs,step,first)=>{const out=[];let last=null;xs.forEach((s,i)=>{const y=+String(s).slice(0,4);if(y!==last){last=y;if(y%step===first%step)out.push([i,String(y)]);}});return out;};
 const span=(a,b)=>{const y=(+b.slice(0,4))-(+a.slice(0,4));return y>30?10:y>=13?5:y>=6?3:1;};
 const spanTW=(a,b)=>{const y=(+b.slice(0,4))-(+a.slice(0,4));return y>30?10:y>=14?5:3;};
-const MINI={W:380,height:220,padL:66};
+// 2026-11-24 站主：定期定額、個股對比兩張卡片「沒有對應商品名稱」——線加到 7、8 條後超過 charts.js 直接標名稱的 6 條上限，名稱整個不見，又沒放圖例。
+// 改用 endNames（名稱排在圖右邊、同色圓點＋引線接到線尾，不限條數）；畫布由 380 放寬到 396，右欄放得下最長的名稱、X 軸刻度維持原樣。檢查：scripts/tests/chart_names/check.js
+const MINI={W:396,height:229,padL:66};
 const cpt=v=>Math.abs(v)>=1e8?(+(v/1e8).toFixed(1))+' 億':Math.abs(v)>=1e4?(+(v/1e4).toFixed(0)).toLocaleString('zh-Hant-TW')+' 萬':Math.round(v).toLocaleString('zh-Hant-TW');
 const pct=(x,d)=>(x*100).toFixed(d==null?1:d)+'%';
 let ALL=null,idxUpdated='',FX=null,TW=null,TSMC=null,TWMIN=null,J50=null,J33=null;
@@ -249,7 +251,7 @@ function renderMini(start){
   const f0=[B.first('sat'),B.first('sat2'),B.first('sat3')].sort()[2],s2=start<f0?f0:start;
   (()=>{const h=$('f-dca');h.innerHTML='';const D={fund:B.dca('fund',start),qld:B.dca('qld',start),qqq:B.dca('qqq',start),inv:B.dca('inv',start),sat:B.dca('sat',s2),sat2:B.dca('sat2',s2),sat3:B.dca('sat3',s2)};const M=D.fund.months;
     const al=k=>{const mi=new Map(D[k].months.map((m,i)=>[m,i]));return M.map(m=>mi.has(m)?D[k].series[mi.get(m)]:null);},vS=al('sat'),vS2=al('sat2'),vS3=al('sat3');
-    BN.charts.line(h,Object.assign({},MINI,{padR:116,x:M,xTicks:yearTicks(M,span(M[0],M[M.length-1]),2005),log:true,yfmt:cpt,tipfmt:f.big,series:[{name:'BNASDAQ-26110',values:D.fund.series,color:'var(--s-fund)'},{name:'BNASDAQ-26111',values:vS,color:'var(--s-sat)'},{name:'BNASDAQ-26112',values:vS2,color:'var(--s-sat2)'},{name:'BNASDAQ-26113',values:vS3,color:'var(--s-sat3)'},{name:'QLD',values:D.qld.series,color:'var(--s-qld)'},{name:'QQQ',values:D.qqq.series,color:'var(--s-qqq)'},{name:'投入本金',short:'本金',values:D.inv.series,color:'var(--s-save)',dash:'5 4'}],noLegend:true,note:'每月 1 萬定期定額的帳戶價值，'+start+' 起'+(s2!==start?'（BNASDAQ-26111、BNASDAQ-26112、BNASDAQ-26113 自 '+s2+' 起扣款）':'')+'、美元含息、對數刻度'}));strip(h);})();
+    BN.charts.line(h,Object.assign({},MINI,{padR:132,endNames:true,x:M,xTicks:yearTicks(M,span(M[0],M[M.length-1]),2005),log:true,yfmt:cpt,tipfmt:f.big,series:[{name:'BNASDAQ-26110',values:D.fund.series,color:'var(--s-fund)'},{name:'BNASDAQ-26111',values:vS,color:'var(--s-sat)'},{name:'BNASDAQ-26112',values:vS2,color:'var(--s-sat2)'},{name:'BNASDAQ-26113',values:vS3,color:'var(--s-sat3)'},{name:'QLD',values:D.qld.series,color:'var(--s-qld)'},{name:'QQQ',values:D.qqq.series,color:'var(--s-qqq)'},{name:'投入本金',short:'本金',values:D.inv.series,color:'var(--s-save)',dash:'5 4'}],noLegend:true,note:'每月 1 萬定期定額的帳戶價值，'+start+' 起'+(s2!==start?'（BNASDAQ-26111、BNASDAQ-26112、BNASDAQ-26113 自 '+s2+' 起扣款）':'')+'、美元含息、對數刻度'}));strip(h);})();
   // 回撤水位
   (()=>{const h=$('f-risk');h.innerHTML='';const d={fund:B.drawdown('fund',start),qqq:B.drawdown('qqq',start),qld:B.drawdown('qld',start),sat:B.drawdown('sat',s2),sat2:B.drawdown('sat2',s2),sat3:B.drawdown('sat3',s2)};const sm={};const ev=Math.max(3,Math.round(d.fund.dates.length/600));['fund','qqq','qld','sat','sat2','sat3'].forEach(k=>{sm[k]=B.sample(d[k].dates,d[k].dd,ev);});
     const xs=sm.fund.x,al=k=>{const m=new Map(sm[k].x.map((x,i)=>[x,sm[k].y[i]]));const dd=d[k],idx=new Map(dd.dates.map((x,i)=>[x,i]));return xs.map(x=>m.has(x)?m.get(x):(idx.has(x)?dd.dd[idx.get(x)]:null));};
@@ -263,7 +265,7 @@ function renderMini(start){
     const rel=(arr,j)=>{if(st>='2013-12'&&j&&j.monthly){const mm={};j.monthly.forEach(x=>{mm[x[0]]=x[1];});const b=mm[M[0]];return b?M.map(ym=>mm[ym]==null?null:mm[ym]/b*1e6):null;}if(!arr)return null;const b=arr[off];return b?M.map((ym,i)=>arr[off+i]==null?null:arr[off+i]/b*1e6):null;};
     const series=[{name:'BNASDAQ-26110',values:conv(base('fund')),color:'var(--s-fund)'}];if(base('sat')&&base('sat')[off]!=null)series.push({name:'BNASDAQ-26111',values:conv(base('sat')),color:'var(--s-sat)'});if(base('sat2')&&base('sat2')[off]!=null)series.push({name:'BNASDAQ-26112',values:conv(base('sat2')),color:'var(--s-sat2)'});if(base('sat3')&&base('sat3')[off]!=null)series.push({name:'BNASDAQ-26113',values:conv(base('sat3')),color:'var(--s-sat3)'});series.push({name:'QLD',values:conv(base('qld')),color:'var(--s-qld)'},{name:'QQQ',values:conv(base('qqq')),color:'var(--s-qqq)'});
     const v2330=rel(TSMC,J33),v0050=rel(TW,J50);if(v2330)series.push({name:'台積電',values:v2330,color:'var(--s-tsmc)'});if(v0050)series.push({name:'0050',values:v0050,color:'var(--s-tw)'});
-    h.innerHTML='';BN.charts.line(h,Object.assign({},MINI,{padR:116,x:M,xTicks:yearTicks(M,spanTW(M[0],M[M.length-1]),2014),log:true,yTicks:[1e6,2e6,5e6,1e7,2e7,5e7,1e8,2e8,5e8,1e9],yfmt:cpt,tipfmt:f.big,series,noLegend:true,note:ymd(st)+' 各放 100 萬台幣、持有至 '+ymd(M[M.length-1])+'、含息、月底資料、對數刻度'}));strip(h);})();
+    h.innerHTML='';BN.charts.line(h,Object.assign({},MINI,{padR:132,endNames:true,x:M,xTicks:yearTicks(M,spanTW(M[0],M[M.length-1]),2014),log:true,yTicks:[1e6,2e6,5e6,1e7,2e7,5e7,1e8,2e8,5e8,1e9],yfmt:cpt,tipfmt:f.big,series,noLegend:true,note:ymd(st)+' 各放 100 萬台幣、持有至 '+ymd(M[M.length-1])+'、含息、月底資料、對數刻度'}));strip(h);})();
 }
 
 function renderInd(start){

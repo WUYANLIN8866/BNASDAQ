@@ -1,5 +1,5 @@
 /* BNASDAQ 內嵌 SVG 圖表（無外部函式庫）：折線（含對數）、分組直條、橫條、直方圖、回撤面積。
-   設計規則：細線 2px、資料端圓角 4px、網格退後、≥2 條序列一定有圖例、滑鼠十字線＋提示框、深淺色用 CSS 變數。 */
+   設計規則：細線 2px、資料端圓角 4px、網格退後、≥2 條序列一定有圖例（小圖可改用 endNames：名稱排在圖右邊、引線接到線尾）、滑鼠十字線＋提示框、深淺色用 CSS 變數。 */
 (function () {
   'use strict';
   const NS = 'http://www.w3.org/2000/svg';
@@ -25,13 +25,34 @@
     svg.addEventListener('mouseleave', () => { line.style.display = 'none'; BN.tip.hide(); onLeave && onLeave(); });
   }
 
+  // 右欄名稱的上下位置：維持線尾由高到低的順序、彼此至少相隔 gap、不超出 [top, bot]，在這些條件下讓每個名稱離自己的線尾最近
+  // （保序迴歸：擠在一起的名稱當成一組，整組以平均位置為中心上下排開，不是一路往下推）。全部排不下時才縮小間距。
+  function spread(L, gap, top, bot) {
+    const n = L.length; if (!n) return L;
+    L.sort((a, b) => a.y0 - b.y0);
+    const g = n > 1 ? Math.min(gap, Math.max(0, bot - top) / (n - 1)) : gap, B = [];
+    L.forEach((l, i) => { B.push({ s: l.y0 - i * g, c: 1 }); while (B.length > 1 && B[B.length - 2].s / B[B.length - 2].c > B[B.length - 1].s / B[B.length - 1].c) { const b = B.pop(), a = B[B.length - 1]; a.s += b.s; a.c += b.c; } });
+    let k = 0; B.forEach(b => { for (let j = 0; j < b.c; j++, k++) L[k].y = b.s / b.c + k * g; });
+    if (L[0].y < top) L[0].y = top; for (let i = 1; i < n; i++) if (L[i].y < L[i - 1].y + g) L[i].y = L[i - 1].y + g;
+    if (L[n - 1].y > bot) { L[n - 1].y = bot; for (let i = n - 2; i >= 0; i--) if (L[i].y > L[i + 1].y - g) L[i].y = L[i + 1].y - g; }
+    return L;
+  }
+
   // ---------------- line chart ----------------
   function line(host, o) {
-    const body = wrapFig(host, o);
+    // 保底（2026-11-24）：兩條以上的序列，卻不放圖例（noLegend）、線尾也標不出名稱（超過 6 條或 noEndLabels，又沒用 endNames／endVals）時，
+    // 自動把圖例放回來——圖上不能沒有名稱。動態走勢的每一格（_frame）只取 svg，不需要。
+    const bare = !o._frame && o.noLegend && o.series && o.series.length > 1 && !o.endNames && !o.endVals && (o.series.length > 6 || o.noEndLabels);
+    const body = wrapFig(host, bare ? Object.assign({}, o, { noLegend: false }) : o);
     // o.endVals＝{ fmt, W, height, padR, minWidth }：游標不在圖上時，每條線的終點標出最新值（數值＋名稱，上下錯開不重疊）；游標移入時隱藏、改看提示框。
     // 畫面寬度小於 minWidth（預設 700px）時字會太小，不畫，改看圖下表格。
     const EV = o.endVals && !(typeof window !== 'undefined' && window.innerWidth < (o.endVals.minWidth || 700)) ? o.endVals : null;
     const W = (EV && EV.W) || o.W || 820, H = (EV && EV.height) || o.height || 360, pad = { l: o.padL || 64, r: EV ? (EV.padR || 200) : (o.padR || 16), t: 14, b: 34 };
+    // o.endNames＝true 或 { gap, weight, leader, leaderDash }：不放圖例的小圖用（首頁特色卡）；和 endVals 擇一。每條線的名稱固定排在圖右邊留白那一欄（欄寬＝padR），
+    // 名稱前一個同色圓點、一條同色細引線接到線尾；依線尾高低排序，上下錯開不重疊、不超出繪圖區，並盡量貼近自己的線尾（spread）。
+    // 不受下面「6 條以內才直接標名稱」的限制（2026-11-24：首頁兩張卡片加到 7、8 條線後名稱整個不見，又沒放圖例）。
+    // 名稱用文字色、不用線的顏色（淺色線當文字看不清楚）；放不下欄寬時縮小字級，不裁切。動態走勢播放時名稱留在右欄、引線跟著線頭走。
+    const EN = o.endNames ? (typeof o.endNames === 'object' ? o.endNames : {}) : null;
     const svg = frame(body, W, H);
     const n = o.x.length;
     // X 位置：預設一點一格（月線、日線本來就等距）。給 o.xPos（每點的數值位置，例如時間毫秒）就依實際間距排，
@@ -74,10 +95,27 @@
       el('path', { d, fill: 'none', stroke: s.color, 'stroke-width': s.width || 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'stroke-dasharray': s.dash || null }, svg);
       const dot = el('circle', { r: 4, fill: s.color, stroke: 'var(--paper)', 'stroke-width': 2, style: 'display:none' }, svg); dots.push(dot);
       // direct label at the end (collected, then pushed apart)
-      if (o.series.length <= 6 && !o.noEndLabels) { let li = s.values.length - 1; while (li >= 0 && (s.values[li] == null || !isFinite(s.values[li]))) li--; if (li >= 0) endLabels.push({ x: xOf(li), y: yOf(s.values[li]), t: s.short || s.name, c: s.color }); }
+      if (!EN && o.series.length <= 6 && !o.noEndLabels) { let li = s.values.length - 1; while (li >= 0 && (s.values[li] == null || !isFinite(s.values[li]))) li--; if (li >= 0) endLabels.push({ x: xOf(li), y: yOf(s.values[li]), t: s.short || s.name, c: s.color }); }
     });
     endLabels.sort((a, b) => a.y - b.y); for (let i = 1; i < endLabels.length; i++) if (endLabels[i].y - endLabels[i - 1].y < 13) endLabels[i].y = endLabels[i - 1].y + 13;
     endLabels.forEach(l => text(svg, Math.min(l.x + 4, W - 2), l.y + 4, l.t, { class: 'viz-txt', 'font-weight': 600, 'text-anchor': (W - l.x) < 70 ? 'end' : 'start', fill: l.c }));
+    if (EN) {
+      const L = [];
+      o.series.forEach(s => { let li = s.values.length - 1; while (li >= 0 && (s.values[li] == null || !isFinite(s.values[li]) || (o.log && s.values[li] <= 0))) li--; if (li >= 0) L.push({ s, x0: xOf(li), y0: yOf(s.values[li]) }); });
+      if (L.length) {
+        const eng = el('g', { class: 'viz-endnames' }, svg), xe = W - pad.r, bx = xe + 11, lx = bx + 6;
+        L.forEach(l => { l.t = text(eng, lx, 0, l.s.short || l.s.name, { class: 'viz-txt', 'font-weight': EN.weight || 600 }); });
+        let fs = 12; try { fs = parseFloat(getComputedStyle(L[0].t).fontSize) || 12; } catch (e) { /* 量不到就用預設字級 */ }
+        spread(L, EN.gap || fs * 1.08, pad.t + fs * .4, H - pad.b - fs * .3);
+        L.forEach(l => {
+          el('path', { d: 'M' + (l.x0 + 2).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + (xe + 2).toFixed(1) + ' ' + l.y0.toFixed(1) + 'L' + bx.toFixed(1) + ' ' + l.y.toFixed(1), fill: 'none', stroke: l.s.color, 'stroke-width': 1, 'stroke-linejoin': 'round', 'stroke-opacity': EN.leader != null ? EN.leader : .8, 'stroke-dasharray': EN.leaderDash || null }, eng);   // 線尾 → 圓點（圓點後畫，蓋住引線末端）
+          el('circle', { cx: bx, cy: l.y.toFixed(1), r: 3, fill: l.s.color }, eng);
+          l.t.setAttribute('y', (l.y + fs * .35).toFixed(1));
+          let w = 0; try { w = l.t.getComputedTextLength(); } catch (e) { /* 量不到就不縮 */ }
+          const room = W - 2 - lx; if (w > room && room > 0) l.t.style.fontSize = (fs * room / w).toFixed(2) + 'px';
+        });
+      }
+    }
     let evg = null;
     if (EV) {
       evg = el('g', { class: 'viz-endvals' }, svg);
@@ -201,7 +239,7 @@
   function frameSvg(kind, fig, o) {   // 在原圖框內的隱藏區畫一格（樣式、字寬量法都和原圖相同），取出 svg
     let tmp = fig._bnTmp;
     if (!tmp || !tmp.isConnected) { tmp = document.createElement('div'); tmp.setAttribute('aria-hidden', 'true'); tmp.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:0;overflow:hidden;visibility:hidden;pointer-events:none'; fig.appendChild(tmp); fig._bnTmp = tmp; }
-    tmp.innerHTML = ''; RAW[kind](tmp, Object.assign({}, o, { noPlay: true, title: null, sub: null, note: null, noLegend: true }));
+    tmp.innerHTML = ''; RAW[kind](tmp, Object.assign({}, o, { noPlay: true, title: null, sub: null, note: null, noLegend: true, _frame: true }));
     const s = tmp.querySelector('svg'); if (s) s.remove(); tmp.innerHTML = ''; return s;
   }
   function lineSpec(fig, o) {
@@ -217,9 +255,10 @@
     const T = U && U.t ? (U.t[n - 1] - U.t[i0]) / U.k : 0, d1 = v => v.toFixed(U && U.w === '年' || T < 10 ? 1 : 0);
     const cnt = i => P.count === false ? '' : U && U.u ? '（第 ' + nf(i - i0 + 1) + '／' + nf(n - i0) + ' ' + U.u + '）' : U && U.t ? '（已播 ' + d1((U.t[i] - U.t[i0]) / U.k) + '／' + d1(T) + ' ' + U.w + '）' : '（' + Math.round((i - i0) / (n - 1 - i0) * 100) + '%）';
     const EV = o.endVals ? Object.assign({}, o.endVals, { leader: .22, leaderDash: '2 4' }) : o.endVals;
+    const ENp = o.endNames ? Object.assign({}, typeof o.endNames === 'object' ? o.endNames : {}, { leader: .35, leaderDash: '2 4' }) : o.endNames;   // 右欄名稱：播放時引線改淡虛線（線頭還沒走到右邊）
     return {
       n: idx.length,
-      frame: f => { const i = idx[f]; return frameSvg('line', fig, Object.assign({}, o, { yMin, yMax, endVals: EV, marks: (o.marks || []).filter(m => m.i <= i), series: o.series.map(s => Object.assign({}, s, { values: s.values.map((v, j) => j <= i ? v : null) })) })); },
+      frame: f => { const i = idx[f]; return frameSvg('line', fig, Object.assign({}, o, { yMin, yMax, endVals: EV, endNames: ENp, marks: (o.marks || []).filter(m => m.i <= i), series: o.series.map(s => Object.assign({}, s, { values: s.values.map((v, j) => j <= i ? v : null) })) })); },
       label: f => (idx[f] > i0 ? lab(i0) + ' → ' : '') + lab(idx[f]) + cnt(idx[f])
     };
   }
