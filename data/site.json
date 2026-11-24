@@ -37,9 +37,9 @@
   }
  ],
  "model_order": [
-  "BNASDAQ-26111",
-  "BNASDAQ-26112",
   "BNASDAQ-26113",
+  "BNASDAQ-26112",
+  "BNASDAQ-26111",
   "BNASDAQ-26110"
  ]
 }
