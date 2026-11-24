@@ -742,7 +742,11 @@ function view(S){   // 這個分頁要畫的方塊：盤中快照的交易日比
       const k=t[5]>0?p/t[5]:1; return [t[0],t[1],t[2],(k>0.5&&k<2)?t[3]*k:t[3],c,p,t[6],ref];})};
   }
   if(!L||!(L.session>ses)) return {T:S.tiles,L:null,miss};
-  if(S.tiles.filter(t=>L.q&&L.q[t[0]]).length<S.tiles.length*0.5) return {T:S.tiles,L:null,miss};   // 盤中快照沒涵蓋這個分頁大部分的公司（例如盤中更新還是舊的成分股清單）：先顯示正式收盤，不要整片灰色
+  // 盤中快照沒涵蓋這個分頁大部分的公司（例如盤中更新還是舊的成分股清單）：先顯示正式收盤。
+  // 2026-11-24 站主：「09:00 剛開盤還是舊資料，我要即時股價」——開盤第一份快照（09:00:00）台灣 50 只有 22% 已成交，被這條擋回昨天收盤；
+  // 改成：盤中（state open／settling）只要有任何一檔有今天的成交就用即時快照，還沒成交的顯示灰色（說明列寫「今天還沒成交 N」）
+  const cov=S.tiles.filter(t=>L.q&&L.q[t[0]]).length;
+  if(cov===0||(cov<S.tiles.length*0.5&&!(L.state==='open'||L.state==='settling'))) return {T:S.tiles,L:null,miss};   // 盤中快照沒涵蓋這個分頁大部分的公司（例如盤中更新還是舊的成分股清單）：先顯示正式收盤，不要整片灰色
   return {L,T:S.tiles.map(t=>{const q=L.q[t[0]], p=Array.isArray(q)?+q[0]:NaN, c=Array.isArray(q)?+q[1]:NaN;
     if(!isFinite(p)||!isFinite(c)||!(p>0)||Math.abs(c)>100) return [t[0],t[1],t[2],t[3],null,null,t[6]];   // 今天還沒有成交（或資料不合理）：灰色
     const k=t[5]>0?p/t[5]:1; return [t[0],t[1],t[2],(k>0.5&&k<2)?t[3]*k:t[3],c,p,t[6]];}),miss};
