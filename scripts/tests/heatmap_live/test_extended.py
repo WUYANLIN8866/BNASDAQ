@@ -267,6 +267,10 @@ def test_full_day(hm, fails):
     lp = post[-1][1]
     check(lp['xpn'] == 16 and lp['xopen'] == fake.close and lp['xclose'] == fake.post, f'盤後走勢 16 點、起訖 16:00～20:00，實際 {lp["xpn"]}', fails)
     check(max(len(v) for v in lp['pp'].values()) == 26, '正規時段走勢 26 點（交棒後接得上）', fails)
+    # 2026-11-24：盤前、盤後另留一份（網頁切換 盤前／盤中／盤後 用；過了那個時段還讀得到）
+    xp, xq = json.loads(pub.files.get('us_pre.json') or 'null'), json.loads(pub.files.get('us_post.json') or 'null')
+    check(xp and xp['ext'] == 'pre' and xp['xstate'] == 'closed' and xp['x'] == pre[-1][1]['x'], 'us_pre.json＝盤前最後一份（xstate＝closed），盤中、盤後都還在', fails)
+    check(xq and xq['ext'] == 'post' and xq['x'] == lp['x'], 'us_post.json＝盤後最後一份', fails)
     return snaps
 
 

@@ -1136,7 +1136,12 @@ class Session:
         ext = f' {snap["ext"]}-{snap["xstate"]} {snap["xn"]}/{snap["n"]}' if snap.get('ext') else ''   # 盤前盤後：另外寫有成交的檔數
         msg = f'heatmap live {self.mk} {hm} {state} {snap["have"]}/{snap["n"]}{ext}' + (' +news' if self.extra else '') + f' run={os.environ.get("GITHUB_RUN_ID", "local")}'
         text = json.dumps(snap, ensure_ascii=False, separators=(',', ':'))
-        ok = self.pub.publish(self.mk, slot, text, msg, extra=self.extra) if self.extra else self.pub.publish(self.mk, slot, text, msg)
+        # 2026-11-24 站主：熱力圖要能切換 盤前／盤中／盤後 → 盤前、盤後的快照另外留一份 us_pre.json／us_post.json
+        # （檔名用底線，不會被時間格檔的清理規則 us-* 刪掉）；過了那個時段還是讀得到當天最後一份
+        extra = dict(self.extra)
+        if snap.get('ext'):
+            extra[f'{MARKETS[self.mk]["file"]}_{snap["ext"]}.json'] = text
+        ok = self.pub.publish(self.mk, slot, text, msg, extra=extra) if extra else self.pub.publish(self.mk, slot, text, msg)
         if ok:
             self.extra = {}
         return ok, snap

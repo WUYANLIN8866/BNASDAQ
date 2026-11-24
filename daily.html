@@ -118,6 +118,13 @@ td .lvs{display:block;font-size:11.5px;color:var(--muted);margin-top:1px}
 .hm-tabs{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden}
 .hm-tabs button{font:inherit;font-size:13.5px;padding:5px 14px;border:0;background:var(--paper);color:var(--ink-2);cursor:pointer}
 .hm-tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+/* 2026-11-24 站主：每個熱力圖可以切換 盤前／盤中／盤後（只有美股；台股分頁不顯示） */
+.hm-ses{display:inline-flex;border:1px solid var(--line);border-radius:2px;overflow:hidden;margin-left:8px}
+.hm-ses button{font:inherit;font-size:13.5px;padding:5px 12px;border:0;background:var(--paper);color:var(--ink-2);cursor:pointer}
+.hm-ses button+button{border-left:1px solid var(--line)}
+.hm-ses button[aria-pressed="true"]{background:var(--gold,#b8954a);color:#111}
+.hm-ses[hidden]{display:none}
+.hm-miss{color:var(--bad)}
 .hm-meta{font-size:13px;color:var(--muted)}
 .hm-meta.live::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#1f8f4a;margin-right:6px;vertical-align:1px;animation:hm-live 2s ease-in-out infinite}
 @keyframes hm-live{50%{opacity:.35}}
@@ -231,7 +238,7 @@ a.dm-mo:hover{border-color:var(--gold);color:var(--gold)}
 <div class="pagehead"><div class="wrap"><div class="crumbs"><a href="index.html">首頁</a> › 每日市場分析</div><h1>每日市場分析</h1><p class="lede">每個美股交易日收盤後更新：五大指數、單日漲跌逾 2% 的主因分析、股匯債一週趨勢、24 小時內與投資相關的國際大事，以及市值逾一兆美元企業的新聞與影響。所有數字附來源，可逐項查證。</p></div></div>
 <section class="mychg" id="mychg" hidden aria-labelledby="mychg-h"><div class="wrap"></div></section>
 <section class="hm" id="heatmap" aria-labelledby="hm-h"><div class="wrap">
-  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button><button type="button" role="tab" aria-selected="false" data-set="tw50">台灣 50</button><button type="button" role="tab" aria-selected="false" data-set="twse">台股全上市</button><button type="button" role="tab" aria-selected="false" data-set="tpex">台股全上櫃</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
+  <div class="hm-head"><h2 id="hm-h">市值熱力圖</h2><div class="hm-tabs" role="tablist" aria-label="選擇指數"><button type="button" role="tab" aria-selected="true" data-set="ndx">那斯達克 100</button><button type="button" role="tab" aria-selected="false" data-set="spx">標普 500</button><button type="button" role="tab" aria-selected="false" data-set="sox">費城半導體</button><button type="button" role="tab" aria-selected="false" data-set="tw50">台灣 50</button><button type="button" role="tab" aria-selected="false" data-set="twse">台股全上市</button><button type="button" role="tab" aria-selected="false" data-set="tpex">台股全上櫃</button></div><div class="hm-ses" id="hm-ses" role="group" aria-label="美股時段"><button type="button" data-ses="auto" title="依現在時間自動顯示（盤前時段看盤前、盤後時段看盤後，其他時間看盤中或收盤）">自動</button><button type="button" data-ses="pre">盤前</button><button type="button" data-ses="open">盤中</button><button type="button" data-ses="post">盤後</button></div><span class="hm-meta" id="hm-meta">載入中…</span></div>
   <div class="hm-box" id="hm-box" role="img" aria-label="市值熱力圖"></div>
   <div class="hm-foot"><div class="hm-legend" aria-hidden="true"><span id="hm-lg">單日漲跌</span><div><div class="bar" id="hm-bar"></div><div class="ticks"><span>−3%</span><span>−2%</span><span>−1%</span><span>0</span><span>+1%</span><span>+2%</span><span>+3%</span></div></div></div><p class="hm-src" id="hm-src"></p></div>
   <details id="hm-list"><summary><span>看列表（依市值排序）</span><span id="hm-sum" aria-live="polite"></span></summary><div class="tblwrap"><table class="tbl" id="hm-tbl"></table></div></details>
@@ -714,20 +721,31 @@ function xmode(S,L){
   if(L.xstate==='closed'?t>L.xclose+900:t-L.at>5400) return null;
   return S.tiles.some(x=>L.x[x[0]])?L.ext:null;
 }
+// 2026-11-24 站主：「每個熱力圖可以讓我切換 盤前／盤中／盤後」：SES＝auto（照舊依時間自動）／pre／open／post（記在這台瀏覽器）
+// 盤前、盤後的資料：正在進行的時段用最新快照；過了那個時段改讀 heatmap-live 分支的 us_pre.json／us_post.json（當天最後一份，scripts/heatmap_live.py 另留）
+let SES='auto'; try{SES=localStorage.getItem('bn-hm-ses')||'auto';}catch(e){} if(!['auto','pre','open','post'].includes(SES)) SES='auto';
+const XS={pre:null,post:null}, XSAT={pre:0,post:0};
+async function xsLoad(k,force){if(!force&&Date.now()-XSAT[k]<120e3) return; XSAT[k]=Date.now();
+  try{const j=await getJ(RAW+'us_'+k+'.json'); if(okSnap(j,'US')&&j.ext===k&&j.x&&(!XS[k]||j.at>=XS[k].at)){XS[k]=j; if(SES===k&&D&&mkOf(D.sets[cur]||{})==='US') draw();}}catch(e){}}
+function xsrc(k){const L=LIVE.US, a=L&&L.ext===k&&L.x?L:null, b=XS[k]; if(!a) return b; if(!b) return a; return (b.session>a.session||(b.session===a.session&&b.at>a.at))?b:a;}
 function view(S){   // 這個分頁要畫的方塊：盤中快照的交易日比正式資料新，就用快照的現價與漲跌，市值依現價換算；否則用正式資料
-  const L=LIVE[mkOf(S)], ses=S.session||D.session, X=xmode(S,L);
+  let L=LIVE[mkOf(S)]; const ses=S.session||D.session, F=mkOf(S)==='US'&&SES!=='auto'?SES:null;
+  let X=null, miss=null;
+  if(F==='pre'||F==='post'){const src=xsrc(F); if(src&&S.tiles.some(t=>src.x[t[0]])){L=src;X=F;} else miss=F;}
+  else if(!F) X=xmode(S,L);
+  if(F==='open'||miss){if(L&&L.ext&&!(L.session>ses)) L=null;}   // 只看盤中／收盤
   if(X){   // 盤前／盤後：價格與漲跌換成盤前／盤後，市值依盤前／盤後價換算；t[7]＝對照的收盤 [價格, 當日漲跌]（盤前＝前一交易日、盤後＝當天）
     const same=ses===L.session;
     return {L,X,T:S.tiles.map(t=>{const v=L.x[t[0]], p=Array.isArray(v)?+v[0]:NaN, c=Array.isArray(v)?+v[1]:NaN, q=L.q&&L.q[t[0]];
-      const ref=(X==='pre'||same)?[t[5],t[4]]:(Array.isArray(q)&&+q[0]>0?[+q[0],+q[1]]:[null,null]);
+      const ref=X==='pre'?(same?[null,null]:[t[5],t[4]]):same?[t[5],t[4]]:(Array.isArray(q)&&+q[0]>0?[+q[0],+q[1]]:[null,null]);   // 盤前而且正式資料已經是同一天：前一交易日收盤不在手上
       if(!isFinite(p)||!isFinite(c)||!(p>0)||Math.abs(c)>100) return [t[0],t[1],t[2],t[3],null,null,t[6],ref];   // 這個時段還沒有成交：灰色
       const k=t[5]>0?p/t[5]:1; return [t[0],t[1],t[2],(k>0.5&&k<2)?t[3]*k:t[3],c,p,t[6],ref];})};
   }
-  if(!L||!(L.session>ses)) return {T:S.tiles,L:null};
-  if(S.tiles.filter(t=>L.q&&L.q[t[0]]).length<S.tiles.length*0.5) return {T:S.tiles,L:null};   // 盤中快照沒涵蓋這個分頁大部分的公司（例如盤中更新還是舊的成分股清單）：先顯示正式收盤，不要整片灰色
+  if(!L||!(L.session>ses)) return {T:S.tiles,L:null,miss};
+  if(S.tiles.filter(t=>L.q&&L.q[t[0]]).length<S.tiles.length*0.5) return {T:S.tiles,L:null,miss};   // 盤中快照沒涵蓋這個分頁大部分的公司（例如盤中更新還是舊的成分股清單）：先顯示正式收盤，不要整片灰色
   return {L,T:S.tiles.map(t=>{const q=L.q[t[0]], p=Array.isArray(q)?+q[0]:NaN, c=Array.isArray(q)?+q[1]:NaN;
     if(!isFinite(p)||!isFinite(c)||!(p>0)||Math.abs(c)>100) return [t[0],t[1],t[2],t[3],null,null,t[6]];   // 今天還沒有成交（或資料不合理）：灰色
-    const k=t[5]>0?p/t[5]:1; return [t[0],t[1],t[2],(k>0.5&&k<2)?t[3]*k:t[3],c,p,t[6]];})};
+    const k=t[5]>0?p/t[5]:1; return [t[0],t[1],t[2],(k>0.5&&k<2)?t[3]*k:t[3],c,p,t[6]];}),miss};
 }
 function liveLabel(S,L){   // [說明文字, 是不是正在更新]
   const nm=MKT[mkOf(S)].name+' '+L.session, age=(now()/1000-L.at)/60, at='台北 '+hhmm(L.at,L.every>0&&L.every<50), lim=Math.max(4,(L.every>0?L.every:60)/30+1);   // 超過這麼多分鐘沒更新＝中斷（發布間隔拉長時跟著放寬）
@@ -768,7 +786,7 @@ async function liveTick(mk){
   }finally{BUSY[mk]=false; if(AGAIN[mk]){AGAIN[mk]=false;liveTick(mk);}}
 }
 const liveMks=()=>{const s=new Set([mkOf(D.sets[cur]||{}),'US']);(window.BN.liveWant||[]).forEach(m=>{if(MKT[m])s.add(m);});return ['TW','US'].filter(m=>s.has(m));};   // 熱力圖這個分頁的市場；美股一定要讀（報告的即時報價）；「你的資產變化」持有台股時也讀台股（BN.liveWant）
-async function liveAll(){for(const mk of liveMks()){try{await liveTick(mk);}catch(e){}}}
+async function liveAll(){for(const mk of liveMks()){try{await liveTick(mk);}catch(e){}} if(SES==='pre'||SES==='post') xsLoad(SES);}
 function liveLoop(){clearTimeout(liveTimer); if(!D) return;   // 下一次讀的時間：市場盤中時用它的間隔（台股 30 秒），其他時候每分鐘看一次就好；兩個市場取較早的
   const t=now()/1000; let nb=Infinity;
   liveMks().forEach(mk=>{const M=MKT[mk], st=hot(phase(mk))?stepOf(mk):60; nb=Math.min(nb,(Math.floor((t-M.margin)/st)+1)*st+M.margin);});
@@ -799,7 +817,9 @@ function draw(){
   if(keep){const el=[...box.querySelectorAll('.tl')].find(e=>e.dataset.s===keep); if(el) show(el,tipXY);}
   const up=T.filter(t=>t[4]>0).length, dn=T.filter(t=>t[4]<0).length, none=L?T.filter(t=>t[4]==null).length:0;
   const limU=S.market==='TW'?T.filter(t=>twLimit(t)>0).length:0, limD=S.market==='TW'?T.filter(t=>twLimit(t)<0).length:0;
-  const lab=X?xLabel(S,L,X):L?liveLabel(S,L):[(S.market==='TW'?'台股 ':'美股 ')+(S.session||D.session)+' 收盤',false], mk=lab[0];
+  const sb=$('hm-ses'); if(sb){sb.hidden=S.market!=='US'; sb.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ses===SES)));}
+  const lab0=X?xLabel(S,L,X):L?liveLabel(S,L):[(S.market==='TW'?'台股 ':'美股 ')+(S.session||D.session)+' 收盤',false];
+  const lab=V.miss?['（還沒有'+(V.miss==='pre'?'盤前':'盤後')+'資料：'+(V.miss==='pre'?'美股盤前台北 17:00（夏令 16:00）開始':'美股盤後台北 05:00（夏令 04:00）開始')+'，下面先顯示盤中／收盤）'+lab0[0],lab0[1]]:lab0, mk=lab[0];
   const capNote=L?'，依'+(XN?XN+'價':'現價')+'換算':S.cap_rolled?'；'+(S.cap_rolled>=S.n?'':S.cap_rolled+' 檔')+'股數依 '+S.cap_asof+' 篩選器，市值隨每日收盤更新':'';   // Nasdaq 篩選器取不到市值時（fetch_heatmap.py）
   $('hm-meta').classList.toggle('live',lab[1]);
   $('hm-meta').textContent=mk+'｜'+S.n+' 檔｜上漲 '+up+'、下跌 '+dn+(none?'、'+(XN?XN+'尚無成交 ':'今天還沒成交 ')+none:'')+(limU||limD?'｜漲停 '+limU+'、跌停 '+limD+'（閃爍）':'')+'｜方塊大小＝市值（'+(S.cur==='TWD'?'台幣':'美元')+capNote+'）、顏色＝'+(XN?XN+'漲跌':'單日漲跌');
@@ -867,6 +887,9 @@ box.addEventListener('pointerdown',e=>{lastPT=e.pointerType||'mouse';},{passive:
 box.addEventListener('click',e=>{const el=e.target.closest('.tl');if(!el)return;   // 滑鼠：點一下就開個股分析；觸控：第一下看提示、同一格再點一下才開
   if(lastPT==='mouse'||armed===el.dataset.s){go(el.dataset.s);return;}
   armed=el.dataset.s;show(el,e);});
+document.querySelectorAll('#hm-ses button').forEach(b=>b.addEventListener('click',()=>{if(RP&&window.BN&&BN.play)BN.play.detach(hmSec);SES=b.dataset.ses;try{localStorage.setItem('bn-hm-ses',SES);}catch(e){}
+  if(SES==='pre'||SES==='post') xsLoad(SES,true); draw();}));
+if(SES==='pre'||SES==='post') xsLoad(SES,true);
 document.querySelectorAll('.hm-tabs button').forEach(b=>b.addEventListener('click',()=>{if(RP&&window.BN&&BN.play)BN.play.detach(hmSec);cur=b.dataset.set;document.querySelectorAll('.hm-tabs button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));draw();liveAll().then(liveLoop);}));
 let rt=0; if('ResizeObserver' in window) new ResizeObserver(()=>{clearTimeout(rt);rt=setTimeout(draw,120);}).observe(box); else window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,120);});
 fetch('data/heatmap/latest.json?t='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);
