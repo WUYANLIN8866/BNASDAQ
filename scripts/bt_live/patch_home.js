@@ -1,4 +1,5 @@
 // 同步首頁的靜態備用數字（第一次畫面就是最新值；頁面載入後仍以 bt.js 即時計算為準）：頂部四個策略的定期定額、資料終點、配置調整次數
+// 2026-11-24 首頁上半部改成方案 D：多了「只存不投資／改放 QQQ／四個模型的區間與最低倍數」幾個靜態欄位，一併同步
 // 用法：node scripts/bt_live/patch_home.js
 const vm = require('vm'), fs = require('fs'), path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..'), A = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -15,7 +16,10 @@ const set = (re, val, all) => { const n = (h.match(new RegExp(re.source, 'g')) |
 // 2026-11-21 站主：BNASDAQ-26113（第 4 張卡）的 IRR 與倍數只給會員看：靜態備用值寫「會員專屬」，會員登入後由首頁程式填入數字（assets/site.js 的 data-mo-val）
 const MOV = k => k === '4';
 const HF = (k, X) => { set(new RegExp('(id="hero-big' + k + '">)[^<]*(<)'), (X.end / 1e8).toFixed(1)); set(new RegExp('(id="hero-irr' + k + '">)[^<]*(<)'), MOV(k) ? '會員專屬' : (X.irr * 100).toFixed(1) + '%'); set(new RegExp('(id="hero-mult' + k + '">)[^<]*(<)'), MOV(k) ? '會員專屬' : nf(Math.round(X.mult)) + ' 倍'); };
-HF('', D); set(/(id="hero-prin">)[^<]*(<)/, nf(D.principal / 1e4) + ' 萬'); set(/(id="hero-end">)[^<]*(<)/, END); set(/(id="bt-end">)[^<]*(<)/, END); set(/(data-k="end">)[^<]*(<)/, END, true);
+HF('', D); set(/(id="hero-prin">)[^<]*(<)/, nf(D.principal / 1e4) + ' 萬'); set(/(id="hero-save">)[^<]*(<)/, nf(D.principal / 1e4));
+// 改放 QQQ（同一筆定期定額放 QQQ 長抱）：金額不到 1 億用「萬」，否則用「億」；倍數不到 100 取一位小數（和首頁程式同一套寫法）
+const Q = B.dca('qqq', s), MX = X => { const v = X.end / X.principal; return (v >= 100 ? nf(Math.round(v)) : v.toFixed(1)) + ' 倍'; }, qa = Q.end >= 1e8 ? [(Q.end / 1e8).toFixed(2), '億'] : [nf(Math.round(Q.end / 1e4)), '萬'];
+set(/(id="hero-qqq">)[^<]*(<)/, qa[0]); set(/(id="hero-qqq-u">)[^<]*(<)/, qa[1]); set(/(id="hero-qmult">)[^<]*(<)/, MX(Q)); set(/(id="hero-qirr">)[^<]*(<)/, (Q.irr * 100).toFixed(1) + '%'); set(/(id="hero-end">)[^<]*(<)/, END); set(/(id="bt-end">)[^<]*(<)/, END); set(/(data-k="end">)[^<]*(<)/, END, true);
 if (sw) { set(/(id="ind-sw">)[^<]*(<)/, sw[0] + ' 次'); set(/(id="ind-sw-s">)[^<]*(<)/, '平均每年 ' + (sw[0] / B.yrs('2000-05-31', END)).toFixed(2) + ' 次；' + sw[1] + ' 次全進全出、' + (sw[0] - sw[1]) + ' 次半倉進出（涉及逐月持倉，不隨起點重算）'); }
 // BNASDAQ-26111：和 BNASDAQ-26110 同一個 30 年起點的定期定額（2000-03 前接 bt-sat30.js 延伸前段）與配置調整次數
 const D2 = B.dca('sat30', s), sw2 = (B.T.sw || {}).sat;
@@ -29,5 +33,8 @@ if (sw3) { set(/(id="ind-sw3">)[^<]*(<)/, sw3[0] + ' 次'); set(/(id="ind-sw3-s"
 const D4 = B.dca('sat3_30', s), sw4 = (B.T.sw || {}).sat3;
 HF('4', D4);
 if (sw4) { set(/(id="ind-sw4">)[^<]*(<)/, sw4[0] + ' 次'); set(/(id="ind-sw4-s">)[\s\S]*?(<\/small>)/, '<span data-mo>會員專屬</span> 平均每年 ' + (sw4[0] / B.yrs('2000-05-31', END)).toFixed(2) + ' 次，皆為全進全出（不設半倉）'); }
+// 四個模型的區間：期末價值最小～最大；「倍起」＝最小的本金倍數（都是公開數字：期末價值÷投入本金）
+const ES = [D, D2, D3, D4].sort((p, q) => p.end - q.end);
+set(/(id="hero-lo">)[^<]*(<)/, (ES[0].end / 1e8).toFixed(1)); set(/(id="hero-hi">)[^<]*(<)/, (ES[3].end / 1e8).toFixed(1)); set(/(id="hero-lomult">)[^<]*(<)/, MX(ES[0]));
 if (h !== h0) fs.writeFileSync(path.join(ROOT, 'index.html'), h);
 console.log('首頁靜態數字：終點 ' + END + '｜' + big + '｜' + sub + (h !== h0 ? '（已更新）' : '（不需更新）'));
