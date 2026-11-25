@@ -1,5 +1,5 @@
 {
- "id": "0a-20261125-1",
- "jobs": ["key", "fredgraph", "yahoo", "fredmd", "cboe"],
- "opts": {"cboe_from": "2019-09-30", "cboe_budget_s": 1200}
+ "id": "0a-20261125-2",
+ "jobs": ["key", "yahoo", "fredgraph", "fredmd", "cboe"],
+ "opts": {"cboe_from": "2019-09-30", "cboe_budget_s": 900}
 }

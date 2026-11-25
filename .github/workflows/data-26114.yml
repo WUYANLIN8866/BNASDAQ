@@ -28,21 +28,22 @@ jobs:
           mkdir -p /tmp/pub
           curl -sSfL --retry 3 "https://raw.githubusercontent.com/${{ github.repository }}/main/data/macro-key.json" -o /tmp/pub/macro-key.json
           python3 -c "import json;d=json.load(open('/tmp/pub/macro-key.json'));assert d['alg']=='RSA-OAEP-3072-SHA256';print('public key ok', d['schema'])"
-      - name: Fetch
+      - name: Fetch (one job at a time, commit after each)
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           PUBKEY_JSON: /tmp/pub/macro-key.json
-        run: python3 fetch/run.py
-      - name: Commit results
-        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data status
-          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
-          git commit -q -m "data-26114: fetch results (run ${{ github.run_id }})"
-          for i in 1 2 3 4 5; do
-            if git pull -q --rebase origin data-26114 && git push -q origin HEAD:data-26114; then echo pushed; exit 0; fi
-            sleep 7
+          for job in $(python3 fetch/run.py); do
+            echo "::group::job $job"
+            timeout 240m python3 fetch/run.py "$job" || echo "job $job exit $?"
+            echo "::endgroup::"
+            git add -A data status
+            if git diff --cached --quiet; then echo "no changes"; continue; fi
+            git commit -q -m "data-26114: $job (run ${{ github.run_id }})"
+            for i in 1 2 3 4 5; do
+              if git pull -q --rebase origin data-26114 && git push -q origin HEAD:data-26114; then echo pushed; break; fi
+              sleep 7
+            done
           done
-          exit 1

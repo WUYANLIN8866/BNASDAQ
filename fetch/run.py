@@ -12,7 +12,7 @@ import urllib.request, urllib.error, urllib.parse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'data'); STAT = os.path.join(ROOT, 'status')
-UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+UA = 'Mozilla/5.0 (BNASDAQ data fetch)'      # 與 main 分支 scripts/fetch_macro.py 相同寫法（已知在 GitHub Actions 上可用）
 PART = 24 * 1024 * 1024
 T0 = time.time()
 
@@ -76,22 +76,28 @@ def _curl(url, timeout, hdr):
             return -2, type(e).__name__.encode(), {}
 
 
-def get(url, timeout=120, tries=3, hdr=None, pause=2.0):
-    """回傳 (狀態碼, 內容, 回應標頭)。先用 urllib，不是 200 再用 curl；都失敗就重試。"""
-    h = {'User-Agent': UA, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,text/csv,application/json,*/*;q=0.8',
-         'Accept-Language': 'en-US,en;q=0.9'}
+FAILS = [0]          # 連續失敗次數（給各工作做「連續失敗就停」用）
+
+
+def get(url, timeout=40, tries=2, hdr=None, pause=2.0, curl=True):
+    """回傳 (狀態碼, 內容, 回應標頭)。先用 urllib；失敗（非 404）再用 curl；都失敗就重試。逾時短、不死等。"""
+    h = {'User-Agent': UA}
     if hdr:
         h.update(hdr)
     last = (0, b'', {})
     for k in range(tries):
-        for fn in (_urllib, _curl):
+        for fn in ((_urllib, _curl) if curl else (_urllib,)):
             st, body, rh = fn(url, timeout, h)
             if st == 200 and body:
+                FAILS[0] = 0
                 return st, body, rh
-            last = (st, body if st < 0 else b'', rh)
-        if last[0] == 404:
+            last = (st, b'', rh)
+            if st == 404:
+                break
+        if last[0] == 404 or k == tries - 1:
             break
         time.sleep(pause * (k + 1))
+    FAILS[0] += 1
     return last
 
 
@@ -179,7 +185,8 @@ KNOWN = [
 
 def job_fredmd(opts):
     items, meta = [], dict(fetched=utc(), landing=None, files=[])
-    st, body, rh = get(LANDING, timeout=60)
+    st, body, rh = get(LANDING, timeout=45)
+    log('landing', st, len(body))
     meta['landing'] = dict(status=st, bytes=len(body))
     links = []
     if st == 200:
@@ -194,10 +201,16 @@ def job_fredmd(opts):
         if k not in seen:
             seen.add(k); order.append(h)
     log('fredmd links', len(links), 'from page;', len(order), 'to try')
+    nfail_known = 0
     for h in order:
         fn = h.split('?')[0].rsplit('/', 1)[-1]
         guess = (h not in links)
-        st, body, rh = get(BASE + h if h.startswith('/') else h, timeout=300, tries=1 if guess else 3)
+        if guess and nfail_known >= 6:
+            continue                                         # 猜測網址連續失敗 → 不再試
+        big = fn.lower().endswith('.zip')
+        st, body, rh = get(BASE + h if h.startswith('/') else h, timeout=(240 if big else 45) if not guess or big else 20, tries=1 if guess else 2)
+        nfail_known = 0 if st == 200 else nfail_known + (1 if guess else 0)
+        log('fredmd', fn, st, len(body))
         rec = dict(name=fn, status=st, bytes=len(body) if st == 200 else 0, from_page=not guess, last_modified=rh.get('last-modified'))
         if st != 200:
             if not guess:
@@ -251,14 +264,17 @@ YAHOO = {
 
 def job_yahoo(opts):
     items, rows, p2 = [], [], int(time.time()) + 86400
+    stop = False; nbad = 0
     hosts = ['query2.finance.yahoo.com', 'query1.finance.yahoo.com']
     for grp, tks in YAHOO.items():
         for tk in tks:
             rec = dict(ticker=tk, group=grp, status=0, n=0)
-            for a in range(4):
+            if stop:
+                rows.append(rec); continue
+            for a in range(3):
                 url = 'https://%s/v8/finance/chart/%s?period1=0&period2=%d&interval=1d&events=div%%2Csplit&includeAdjustedClose=true' % (
                     hosts[a % 2], urllib.parse.quote(tk, safe=''), p2)
-                st, body, rh = get(url, timeout=60, tries=1)
+                st, body, rh = get(url, timeout=40, tries=1, hdr={'User-Agent': 'Mozilla/5.0 (BNASDAQ market fetch)'})
                 rec['status'] = st
                 if st == 200:
                     try:
@@ -274,7 +290,13 @@ def job_yahoo(opts):
                         rec['status'] = 204
                     except Exception as e:  # noqa
                         rec['status'] = 599; rec['err'] = type(e).__name__
-                time.sleep(2 + 2 * a)
+                if st == 404:
+                    break
+                time.sleep(3 + 3 * a)
+            nbad = 0 if rec['n'] else nbad + 1
+            if nbad >= 8 and not items:
+                stop = True; log('yahoo: 8 consecutive failures at start -> stop')
+            log('yahoo', tk, rec['status'], rec['n'], rec.get('first'))
             rows.append(rec); time.sleep(0.8)
     ok = [r for r in rows if r['n'] > 0]
     summ = None
@@ -306,12 +328,21 @@ FREDG = {
 
 def job_fredgraph(opts):
     items, rows, done = [], [], set()
+    FAILS[0] = 0
     for grp, ids in FREDG.items():
         for sid in ids:
             if sid in done:
                 continue
             done.add(sid)
-            st, body, rh = get('https://fred.stlouisfed.org/graph/fredgraph.csv?id=' + sid, timeout=60, tries=3)
+            if FAILS[0] >= 8:
+                rows.append(dict(id=sid, group=grp, status=-9, n=0)); continue           # 連續 8 次失敗 → 其餘略過
+            st, body, rh = get('https://fred.stlouisfed.org/graph/fredgraph.csv?id=' + sid, timeout=40, tries=2, curl=False)
+            if st != 200:
+                st2, body2, _ = get('https://fred.stlouisfed.org/data/%s.txt' % sid, timeout=40, tries=1, curl=False)
+                if st2 == 200:
+                    conv = ['DATE,' + sid] + ['%s,%s' % tuple(x.split()) for x in body2.decode('utf-8', 'replace').splitlines()
+                                              if len(x.split()) == 2 and len(x.split()[0]) == 10 and x[:4].isdigit()]
+                    st, body = 200, ('\n'.join(conv) + '\n').encode()
             rec = dict(id=sid, group=grp, status=st, n=0)
             if st == 200:
                 ls = [x for x in body.decode('utf-8', 'replace').splitlines() if x[:4].isdigit()]
@@ -319,6 +350,8 @@ def job_fredgraph(opts):
                 if vals:
                     rec.update(n=len(vals), first=vals[0][:10], last=vals[-1][:10])
                     items.append(('fredgraph/%s.csv' % sid, body))
+            if len(rows) % 10 == 0:
+                log('fredgraph', sid, st, rec['n'])
             rows.append(rec); time.sleep(0.35)
     ok = [r for r in rows if r['n'] > 0]
     summ = None
@@ -336,7 +369,8 @@ CBOE_ARCH = ['totalpc.csv', 'equitypc.csv', 'indexpc.csv', 'etppc.csv', 'vixpc.c
 def job_cboe(opts):
     items, rows = [], []
     for fn in CBOE_ARCH:
-        st, body, rh = get('https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/' + fn, timeout=60, tries=2)
+        st, body, rh = get('https://cdn.cboe.com/resources/options/volume_and_call_put_ratios/' + fn, timeout=40, tries=1)
+        log('cboe', fn, st, len(body))
         rec = dict(name=fn, status=st, bytes=len(body) if st == 200 else 0)
         if st == 200:
             items.append(('cboe/arch/' + fn, body)); rec['lines'] = body.count(b'\n')
@@ -346,7 +380,9 @@ def job_cboe(opts):
     while d <= end and time.time() - t0 < budget:
         if d.weekday() < 5:
             n_try += 1
-            st, body, rh = get('https://cdn.cboe.com/data/us/options/market_statistics/daily/%s_daily_options' % d.isoformat(), timeout=30, tries=1)
+            st, body, rh = get('https://cdn.cboe.com/data/us/options/market_statistics/daily/%s_daily_options' % d.isoformat(), timeout=20, tries=1, curl=False)
+            if n_try == 40 and n_ok == 0:
+                log('cboe daily: first 40 all failed -> stop', codes); break
             codes[str(st)] = codes.get(str(st), 0) + 1
             if st == 200:
                 try:
@@ -370,25 +406,26 @@ JOBS = dict(key=job_key, fredmd=job_fredmd, yahoo=job_yahoo, fredgraph=job_fredg
 
 def main():
     req = load_json(os.path.join(ROOT, 'request', 'run.json')) or {}
-    jobs = req.get('jobs') or []; opts = req.get('opts') or {}
-    log('request', req.get('id'), jobs)
-    res = {}
-    for jn in jobs:
-        fn = JOBS.get(jn)
+    opts = req.get('opts') or {}
+    if len(sys.argv) < 2:
+        print(' '.join(req.get('jobs') or [])); return 0           # 沒給工作名稱：印出要跑的工作清單（給 workflow 用）
+    jn = sys.argv[1]
+    log('request', req.get('id'), 'job', jn)
+    fn = JOBS.get(jn); t = time.time()
+    try:
         if fn is None:
-            try:
-                mod = __import__('job_' + jn); fn = mod.run
-            except Exception as e:  # noqa
-                res[jn] = 'unknown job (%s)' % type(e).__name__; continue
-        t = time.time()
-        try:
-            fn(opts); res[jn] = 'ok %.0fs' % (time.time() - t)
-        except Exception as e:  # noqa
-            import traceback
-            tb = traceback.extract_tb(e.__traceback__)[-1]
-            res[jn] = 'error %s at %s:%d' % (type(e).__name__, os.path.basename(tb.filename), tb.lineno)
-        log('job', jn, res[jn])
-    write_json(os.path.join(STAT, 'run.json'), dict(request=req.get('id'), finished=utc(), seconds=round(time.time() - T0), jobs=res))
+            fn = __import__('job_' + jn).run
+        fn(opts); res = 'ok %.0fs' % (time.time() - t)
+    except Exception as e:  # noqa
+        import traceback
+        tb = traceback.extract_tb(e.__traceback__)[-1]
+        res = 'error %s at %s:%d' % (type(e).__name__, os.path.basename(tb.filename), tb.lineno)
+    log('job', jn, res)
+    st = load_json(os.path.join(STAT, 'run.json')) or {}
+    if st.get('request') != req.get('id'):
+        st = dict(request=req.get('id'), jobs={})
+    st['jobs'][jn] = res; st['finished'] = utc()
+    write_json(os.path.join(STAT, 'run.json'), st)
     return 0
 
 
