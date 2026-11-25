@@ -814,5 +814,5 @@ ul.ind { max-width: none; }
 .sp-fb.cur{border-color:var(--sig-on);color:var(--ink);box-shadow:inset 4px 0 0 var(--sig-on);font-weight:700}
 .sp-fb.cur b{color:var(--ink)}
 .sp-fnote{margin:2px 0 0;font-size:12px;line-height:1.5;color:var(--muted);max-width:none}
-.sp-f-q .sp-it:not(.sd-q),.sp-f-s .sp-it:not(.sd-s),.sp-f-fx .sp-it:not(.fx){display:none}
-.sp-f-q .sp-sl:not(.sd-q),.sp-f-s .sp-sl:not(.sd-s),.sp-f-fx .sp-sl:not(.fx){opacity:.22}
+.sp-f-q .sp-it:not(.sd-q),.sp-f-s .sp-it:not(.sd-s),.sp-f-fx .sp-it:not(.fx),.sp-f-pd .sp-it:not(.pd){display:none}
+.sp-f-q .sp-sl:not(.sd-q),.sp-f-s .sp-sl:not(.sd-s),.sp-f-fx .sp-sl:not(.fx),.sp-f-pd .sp-sl:not(.pd){opacity:.22}

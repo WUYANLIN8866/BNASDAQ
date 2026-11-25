@@ -139,12 +139,13 @@
       //   本月確定＝月底判斷前不會再變：正式訊號全部都是；推算裡只有「下一次官方公布在月底收盤之後」的金融環境數列（nx.fixedOf）；跟著 QQQ 價格算的都不是。
       const sideOf = j => (j < of ? !!rows[j][2] : !rows[j][2]) ? 'q' : 's';
       const fixOf = j => ctx.kind === 'official' ? true : !!(isMacro(rows[j][0], j) && nx.fixedOf && nx.fixedOf(rows[j][0]));
-      const tag = j => ' sd-' + sideOf(j) + (fixOf(j) ? ' fx' : '');
-      const cnt = { all: rows.length, q: rows.filter((r, j) => sideOf(j) === 'q').length, fx: rows.filter((r, j) => fixOf(j)).length };
+      const pdOf = j => ctx.kind === 'official' ? false : !!(isMacro(rows[j][0], j) && nx.pendOf && nx.pendOf(rows[j][0]));
+      const tag = j => ' sd-' + sideOf(j) + (fixOf(j) ? ' fx' : '') + (pdOf(j) ? ' pd' : '');
+      const cnt = { all: rows.length, q: rows.filter((r, j) => sideOf(j) === 'q').length, fx: rows.filter((r, j) => fixOf(j)).length, pd: rows.filter((r, j) => pdOf(j)).length };
       const fkey = (ctx.fold || ctx.kind || '') + '|' + x.id, fcur = FLT[fkey] || 'all';
       const fbtn = (f, t, n) => '<button type="button" class="sp-fb' + (fcur === f ? ' cur' : '') + '" data-f="' + f + '" aria-pressed="' + (fcur === f) + '">' + t + '<b>' + n + '</b></button>';
-      const flt = '<div class="sp-flt" role="group" aria-label="篩選條件" data-fk="' + esc(fkey) + '">' + fbtn('all', '全數條件', cnt.all) + fbtn('q', '僅 QLD 條件', cnt.q) + fbtn('s', '僅 SHV 條件', cnt.all - cnt.q) + fbtn('fx', '本月判斷確定條件', cnt.fx)
-        + '<p class="sp-fnote">QLD 條件＝目前把票投給 QLD 的；本月判斷確定＝月底判斷前不會再變的（官方下一次公布在月底之後）。</p></div>';
+      const flt = '<div class="sp-flt" role="group" aria-label="篩選條件" data-fk="' + esc(fkey) + '">' + fbtn('all', '全數條件', cnt.all) + fbtn('q', '僅 QLD 條件', cnt.q) + fbtn('s', '僅 SHV 條件', cnt.all - cnt.q) + fbtn('fx', '本月判斷確定條件', cnt.fx) + fbtn('pd', '本月未定案', cnt.pd)
+        + '<p class="sp-fnote">QLD 條件＝目前把票投給 QLD 的；本月判斷確定＝月底判斷前不會再變的（官方下一次公布在月底之後）；本月未定案＝官方公布時間在現在到月底判斷之間的官方數據。</p></div>';
       const plainOf = j => { const t = x.plain && x.plain[j]; return (Array.isArray(t) ? t : [t]).filter(s => typeof s === 'string' && s); };   // 白話說明（呼叫端有給才有）：一段或兩段文字
       const texts = rows.map((r, j) => r[0] + '｜數值 ' + r[1] + '｜' + (r[2] ? '成立（藍）' : '不成立（灰）') + '｜怎麼判斷：' + how(r[0], r[1], r[2], r[3]) + '｜下次更新：' + nextOf(j) + (plainOf(j).length ? '｜白話說明：' + plainOf(j).join('') : ''));
       const items = rows.map((r, j) => {
@@ -190,7 +191,7 @@
       if (fb) {
         const g = fb.closest('.sp-flt'), one = fb.closest('.sp-one'), f = fb.getAttribute('data-f'); if (!g || !one) return;
         if (f === 'all') delete FLT[g.getAttribute('data-fk')]; else FLT[g.getAttribute('data-fk')] = f;
-        ['q', 's', 'fx'].forEach(c => one.classList.toggle('sp-f-' + c, f === c));
+        ['q', 's', 'fx', 'pd'].forEach(c => one.classList.toggle('sp-f-' + c, f === c));
         g.querySelectorAll('.sp-fb').forEach(b => { const c = b === fb; b.classList.toggle('cur', c); b.setAttribute('aria-pressed', String(c)); });
         return;
       }
@@ -243,8 +244,11 @@
     // 本月確定：那一類數據下一次官方公布在月底收盤之後，而且上一次公布已經過了 3 小時（網站已經抓到）
     const closeMs = T ? (() => { const [y, mo, dd] = T.split('-').map(Number), g = Date.UTC(y, mo - 1, dd, 16); return g + etOffset(g) * 36e5; })() : 0;
     const relFixed = code => { const r = cal && cal.releases && cal.releases[code]; if (!r || !closeMs) return false; const ts = (r.times || []).map(x => Date.parse(x.replace('Z', ':00Z'))); const nx = ts.filter(x => x > now).sort((a, b) => a - b)[0], pv = ts.filter(x => x <= now).sort((a, b) => b - a)[0]; return !!nx && nx > closeMs && !(pv && now - pv < 3 * 36e5); };
+    // 本月未定案（2026-11-25 站主）：官方公布時間介於現在和月底判斷時間之間的官方數據（剛公布未滿 3 小時、網站可能還沒抓到的也算）
+    const relPend = code => { const r = cal && cal.releases && cal.releases[code]; if (!r || !closeMs) return false; const ts = (r.times || []).map(x => Date.parse(x.replace('Z', ':00Z'))); const nx = ts.filter(x => x > now).sort((a, b) => a - b)[0], pv = ts.filter(x => x <= now).sort((a, b) => b - a)[0]; return (!!nx && nx <= closeMs) || !!(pv && now - pv < 3 * 36e5); };
+    const pendOf = label => { for (const t of tps) if (t.re.test(label)) return relPend(t.rel); return false; };
     const fixedOf = label => { for (const t of tps) if (t.re.test(label)) return relFixed(t.rel); return false; };
-    return { official: fin, price: fin, macro, macroOf, fixedOf, custom: '無（不會自動更新）' };
+    return { official: fin, price: fin, macro, macroOf, fixedOf, pendOf, custom: '無（不會自動更新）' };
   }
 
   BN.sigpie = { html, bind, how, next, foldAll, side, plainRows };
