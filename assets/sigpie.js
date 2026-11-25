@@ -132,7 +132,7 @@
       const of = +d.of > 0 && +d.of < rows.length ? +d.of : rows.length;
       const all = rows.map((r, j) => ({ r, j })), main = all.slice(0, of), extra = all.slice(of);
       const onMain = main.filter(o => o.r[2]).length, onAll = all.filter(o => o.r[2]).length, onX = onAll - onMain;
-      const nextOf = j => ctx.kind === 'custom' ? (nx.custom || '無（不會自動更新）') : isMacro(rows[j][0], j) ? (nx.macro || nx.price || '') : (nx.price || '');
+      const nextOf = j => ctx.kind === 'custom' ? (nx.custom || '無（不會自動更新）') : isMacro(rows[j][0], j) ? ((nx.macroOf && nx.macroOf(rows[j][0])) || nx.macro || nx.price || '') : (nx.price || '');
       const plainOf = j => { const t = x.plain && x.plain[j]; return (Array.isArray(t) ? t : [t]).filter(s => typeof s === 'string' && s); };   // 白話說明（呼叫端有給才有）：一段或兩段文字
       const texts = rows.map((r, j) => r[0] + '｜數值 ' + r[1] + '｜' + (r[2] ? '成立（藍）' : '不成立（灰）') + '｜怎麼判斷：' + how(r[0], r[1], r[2], r[3]) + '｜下次更新：' + nextOf(j) + (plainOf(j).length ? '｜白話說明：' + plainOf(j).join('') : ''));
       const items = rows.map((r, j) => {
@@ -209,10 +209,18 @@
     let cron = '';
     for (let k = 0; k < 8; k++) { const d = new Date(now + k * 864e5), wd = d.getUTCDay(), ms = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 22, 45); if (wd >= 1 && wd <= 5 && ms > now) { cron = tpe(ms); break; } }
     const liveOn = opt.live === true || nxt === 'now';
-    // 2026-11-25 站主：「所有的下次更新時間只要有台北時間幾號的幾點幾分」→ 只留一個台北時間，不寫其他說明
-    //   價格條件＝月底定案後網站更新的時間（月底最後一個交易日的隔天台北 06:45）；金融環境數列＝網站下一次排程抓 FRED 的時間
-    const fin = T ? '台北 ' + md(addDay(T, 1)) + '06:45' : '—';
-    return { official: fin, price: fin, macro: cron ? '台北 ' + cron : fin, custom: '無（不會自動更新）' };
+    // 2026-11-25 站主：「所有的下次更新時間只要有台北時間幾號的幾點幾分」「我要的更新時間是官方數據公布時間」
+    //   價格條件＝月底最後一個交易日美股收盤（美東 16:00）的台北時間；
+    //   金融環境數列＝那一類數據下一次官方公布的台北時間（opt.cal＝data/release-calendar.json、opt.topics＝data/daily-topics.json 的 topics；
+    //   條件名稱對到哪個主題就用哪個時間表）。時間表裡找不到（沒有對應的時間表或日期已用完）才退回網站下一次排程抓資料的時間。
+    //   approx＝官方沒有公告日期、依過去規律推定的，前面加「約」。
+    let fin = '—';
+    if (T) { const [y, mo, dd] = T.split('-').map(Number), g = Date.UTC(y, mo - 1, dd, 16); fin = '台北 ' + tpe(g + etOffset(g) * 36e5); }
+    const cal = opt.cal || null, tps = (opt.topics || []).filter(t => t && t.rule && cal && cal.topics && cal.topics[t.code]).map(t => ({ re: new RegExp(t.rule), rel: cal.topics[t.code] }));
+    const macro = cron ? '台北 ' + cron : fin;
+    const relNext = code => { const r = cal && cal.releases && cal.releases[code]; if (!r) return ''; const t = (r.times || []).map(x => Date.parse(x.replace('Z', ':00Z'))).filter(x => x > now).sort((a, b) => a - b)[0]; return t ? (r.approx ? '約 ' : '') + '台北 ' + tpe(t) : ''; };
+    const macroOf = label => { for (const t of tps) if (t.re.test(label)) { const v = relNext(t.rel); if (v) return v; } return macro; };
+    return { official: fin, price: fin, macro, macroOf, custom: '無（不會自動更新）' };
   }
 
   BN.sigpie = { html, bind, how, next, foldAll, side, plainRows };

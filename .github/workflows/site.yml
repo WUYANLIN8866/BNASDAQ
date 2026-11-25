@@ -6,6 +6,12 @@ on:
   schedule:
     # 每個交易日美股收盤後（22:45 UTC ＝ 台北 06:45；夏令美股 20:00 UTC 收盤、冬令 21:00 UTC 收盤）
     - cron: '45 22 * * 1-5'
+    # 2026-11-25 站主：「更新的時間應該設在官方公布後就自動更新」。美國官方數據多在美東 08:30（CPI、PPI、個人所得與支出）或 09:15（G.17）公布；
+    # 下面三個時段是公布後 20～95 分鐘（冬令、夏令都涵蓋，後面的時段兼作重試）。gate 會先看 data/release-calendar.json：
+    # 剛剛沒有官方公布就整個略過，不抓資料也不部署。美東下午才公布的（匯率、利差月平均等）由上面 22:45 那一次接到。
+    - cron: '50 12 * * 1-5'
+    - cron: '50 13 * * 1-5'
+    - cron: '50 14 * * 1-5'
   workflow_dispatch:
 
 permissions:
@@ -18,7 +24,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.g.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts/release_due.py
+            data/release-calendar.json
+          sparse-checkout-cone-mode: false
+      - id: g
+        name: Run unless this is an official-release time slot with no release just published
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ] || [ "${{ github.event.schedule }}" = "45 22 * * 1-5" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif python3 scripts/release_due.py; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

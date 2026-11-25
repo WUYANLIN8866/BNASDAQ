@@ -205,7 +205,7 @@
   window.BN=window.BN||{};window.BN.adminFold={reveal,all};
 })();
 </script>
-<script src="assets/site.js?v=c57986514d"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=8a8c7e9980"></script>
+<script src="assets/site.js?v=c57986514d"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=06dfb00df6"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -461,7 +461,8 @@
   const yn=b=>b?'<b style="color:var(--good)">成立</b>':'<span style="color:var(--bad)">不成立</span>';
   // 2026-11-24：訊號明細改成圓餅（assets/sigpie.js）：每一塊＝一項條件，藍＝成立、灰＝不成立；每塊旁邊寫目前數值、怎麼判斷、下次更新時間
   // 模型順序＝管理員設定的 data/site.json model_order（下方「模型顯示順序」）；kind：official 正式訊號、prov 推算、custom 自訂收盤
-  let TOPRE=[];   // data/daily-topics.json 的數列規則：條件名稱對到就是金融環境數列（下次更新時間不同）
+  let TOPRE=[],TOPICS=[],RCAL=null;   // TOPICS＝主題清單、RCAL＝data/release-calendar.json（官方公布時間表；2026-11-25 起「下次更新」顯示官方公布的台北時間）
+     // data/daily-topics.json 的數列規則：條件名稱對到就是金融環境數列（下次更新時間不同）
   const STR=()=>BN.auth.sortModels(rules.STRATEGIES,(SITE&&SITE.model_order)||[]);
   // 2026-11-24 站主：「訊號明細的每個條件都要在『下次更新』下方新增一欄『白話說明』」。
   //   白話說明寫的是每個條件在看什麼、現在代表什麼，屬於策略內容，所以不放在任何公開檔：明文在私人 Artifact，網站只放加密檔 data/explain.enc.json
@@ -491,15 +492,16 @@
   function plainOf(st,d){const rows=(d&&d.rows)||[];if(EXPL.st!=='ok')return rows.map(()=>EXPL_MSG[EXPL.st]||EXPL_MSG.fail);
     const M=EXPL.models.find(x=>x&&x.id===st.id)||EXPL.models.find(x=>x&&x.ref&&x.ref===st.ref);
     return BN.sigpie.plainRows(M&&M.rows,rows).map(t=>t||EXPL_MSG.miss);}
-  function condRows(e,kind,m){const N=BN.sigpie.next(rules,m||market);
-    const next=kind==='official'?{price:N.official,macro:N.official}:kind==='custom'?{custom:N.custom}:{price:N.price,macro:N.macro};
+  function condRows(e,kind,m){const N=BN.sigpie.next(rules,m||market,{cal:RCAL,topics:TOPICS});
+    const next=kind==='official'?{price:N.official,macro:N.official}:kind==='custom'?{custom:N.custom}:{price:N.price,macro:N.macro,macroOf:N.macroOf};
     return BN.sigpie.html(STR().map(st=>({id:st.id,ref:st.ref,d:e.detail[st.id],plain:plainOf(st,e.detail[st.id])})),{kind,next,isMacro:l=>TOPRE.some(re=>re.test(l)),fold:'adm-'+kind});}
   const put=(sel,h)=>{const el=$(sel);el.innerHTML=h;BN.sigpie.bind(el);};
   async function loadSignals(){rules=await BN.auth.loadRules(sess);
     market=await fetch('data/market.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json());
     const tb=await fetch('data/tb3ms.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).catch(()=>null);
     const rs=await fetch('data/rules-status.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
-    try{const tj=await fetch('data/daily-topics.json',{cache:'no-store'}).then(r=>r.json());TOPRE=(tj.topics||[]).filter(x=>x.rule).map(x=>new RegExp(x.rule));}catch(e){TOPRE=[];}
+    try{const tj=await fetch('data/daily-topics.json',{cache:'no-store'}).then(r=>r.json());TOPICS=tj.topics||[];TOPRE=TOPICS.filter(x=>x.rule).map(x=>new RegExp(x.rule));}catch(e){TOPRE=[];TOPICS=[];}
+    RCAL=await fetch('data/release-calendar.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
     if(!(rules.version>=2)){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">會員規則還是舊版（第 1 版）：請先完成下方「帳號管理」裡的「會員規則金鑰（一次性設定）」，新版規則會自動發布。</p>';return;}
     await loadExplain();explStat();
     const L=rules.latest(market,tb);const S=L.series;const c=market.current;const bv=rules.spec&&rules.spec.b_ver;

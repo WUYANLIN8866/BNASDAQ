@@ -106,6 +106,7 @@
     try {
       const [rules, market, tb, rs, tj] = await Promise.all([BN.auth.loadRules(s), getJSON('data/market.json', true), getJSON('data/tb3ms.json', true).catch(() => null),
         getJSON('data/rules-status.json', true).catch(() => null), getJSON('data/daily-topics.json')]);
+      RTOP = tj.topics || []; RCAL = await getJSON('data/release-calendar.json', true).catch(() => null);   // 官方公布時間表（「下次更新」顯示官方公布的台北時間）
       if (!(rules.version >= 2)) { say('<p class="msg err">管理員專區：會員規則還是舊版，請先到管理後台完成「會員規則金鑰」設定。</p>'); return; }
       await new Promise(r => setTimeout(r, 30));   // 先讓「計算中」畫出來
       ST.adm = build(rules, rules.latest(market, tb), market, rs, tj);
@@ -136,6 +137,7 @@
     }
   }
 
+  let RCAL = null, RTOP = [];
   function build(rules, L, market, rs, tj) {
     const tp = (tj.topics || []).map(t => ({ code: t.code, name: t.name, kw: t.kw ? new RegExp(t.kw, 'i') : null, rule: t.rule ? new RegExp(t.rule) : null }));
     const prov = L.provisional || null, base = prov || L.lastComplete;
@@ -201,7 +203,7 @@
         + '</td><td data-l="條件成立">' + (m.d ? m.d.votes + '／' + m.d.of : '—') + '</td><td class="l" data-l="翻轉價位（距最新價格）">' + flip(m) + '</td></tr>').join('')
       + '</tbody></table></div>';
     // 2026-11-24：全部判斷條件改成圓餅（assets/sigpie.js）：每一塊＝一項條件，藍＝成立、灰＝不成立；每塊旁邊寫目前數值、怎麼判斷、下次更新時間、對應的消息主題
-    const N = BN.sigpie ? BN.sigpie.next(R, A.market) : null, nx = N ? (A.prov ? { price: N.price, macro: N.macro } : { price: N.official, macro: N.official }) : {};
+    const N = BN.sigpie ? BN.sigpie.next(R, A.market, { cal: RCAL, topics: RTOP }) : null, nx = N ? (A.prov ? { price: N.price, macro: N.macro, macroOf: N.macroOf } : { price: N.official, macro: N.official }) : {};
     h += A.ms.map(m => '<details class="dm-all"><summary><span>' + esc(m.id) + '：全部 ' + m.rows.length + ' 項判斷條件（圓餅：藍＝成立、灰＝不成立）與對應的消息主題</span></summary><div class="ans">'
       + (BN.sigpie ? BN.sigpie.html([{ id: m.id, d: m.d, topics: m.rows.map(r => r.topics.length ? r.topics.map(x => A.byCode.get(x).name).join('、') : '—（依 QQQ 月線計算）') }],
           { kind: A.prov ? 'prov' : 'official', next: nx, isMacro: (l, j) => !!(m.rows[j] && m.rows[j].topics.length) })
