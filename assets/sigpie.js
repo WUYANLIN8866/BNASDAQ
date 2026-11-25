@@ -126,7 +126,7 @@
       const fk = ctx.fold ? ctx.fold + '|' + x.id : '', off = fk && fget(fk);
       const head = fk ? '<h4 class="sp-h"><button type="button" class="sp-ft" data-fold="' + esc(fk) + '" aria-expanded="' + !off + '" title="點一下收合／展開"><span class="sp-fx" aria-hidden="true"></span><span class="sp-fn">' + name + '</span><span class="sp-hs">' + esc(brief) + '</span></button></h4>'
         : '<h4 class="sp-h">' + name + '</h4>';
-      const open = '<div class="sp-one' + (off ? ' sp-off' : '') + (FLT[(ctx.fold || ctx.kind || '') + '|' + x.id] ? ' sp-f-' + FLT[(ctx.fold || ctx.kind || '') + '|' + x.id] : '') + '">';
+      const open = '<div class="sp-one' + (off ? ' sp-off' : '') + (FLT[(ctx.fold || ctx.kind || '') + '|' + x.id] || []).map(c => ' sp-f-' + c).join('') + '">';
       if (!d) return open + head + '<p class="small sp-sum">這個月份沒有可用模型，無法計算。</p></div>';
       if (!rows.length) return open + head + '<div class="sp-body sp-body1"><p class="small">' + esc(d.summary || '') + '</p><p class="small">這個月份只有定案紀錄（成立 ' + esc(d.votes) + '／' + esc(d.of) + ' 項），沒有逐項數值。</p></div></div>';
       // 計分的是前 of 列；多出來的列（不計入成立數、另外判斷的條件）畫成第二個小圓餅，顏色規則一樣
@@ -142,10 +142,10 @@
       const pdOf = j => ctx.kind === 'official' ? false : !!(isMacro(rows[j][0], j) && nx.pendOf && nx.pendOf(rows[j][0]));
       const tag = j => ' sd-' + sideOf(j) + (fixOf(j) ? ' fx' : '') + (pdOf(j) ? ' pd' : '');
       const cnt = { all: rows.length, q: rows.filter((r, j) => sideOf(j) === 'q').length, fx: rows.filter((r, j) => fixOf(j)).length, pd: rows.filter((r, j) => pdOf(j)).length };
-      const fkey = (ctx.fold || ctx.kind || '') + '|' + x.id, fcur = FLT[fkey] || 'all';
-      const fbtn = (f, t, n) => '<button type="button" class="sp-fb' + (fcur === f ? ' cur' : '') + '" data-f="' + f + '" aria-pressed="' + (fcur === f) + '">' + t + '<b>' + n + '</b></button>';
+      const fkey = (ctx.fold || ctx.kind || '') + '|' + x.id, fsel = FLT[fkey] || [];
+      const fbtn = (f, t, n) => '<button type="button" class="sp-fb' + ((f === 'all' ? !fsel.length : fsel.includes(f)) ? ' cur' : '') + '" data-f="' + f + '" aria-pressed="' + (f === 'all' ? !fsel.length : fsel.includes(f)) + '">' + t + '<b>' + n + '</b></button>';
       const flt = '<div class="sp-flt" role="group" aria-label="篩選條件" data-fk="' + esc(fkey) + '">' + fbtn('all', '全數條件', cnt.all) + fbtn('q', '僅 QLD 條件', cnt.q) + fbtn('s', '僅 SHV 條件', cnt.all - cnt.q) + fbtn('fx', '本月判斷確定條件', cnt.fx) + fbtn('pd', '本月未定案', cnt.pd)
-        + '<p class="sp-fnote">QLD 條件＝目前把票投給 QLD 的；本月判斷確定＝月底判斷前不會再變的（官方下一次公布在月底之後）；本月未定案＝官方公布時間在現在到月底判斷之間的官方數據。</p></div>';
+        + '<p class="sp-fnote">QLD 條件＝目前把票投給 QLD 的；本月判斷確定＝月底判斷前不會再變的（官方下一次公布在月底之後）；本月未定案＝官方公布時間在現在到月底判斷之間的官方數據。可以複選（例：僅 SHV＋本月未定案），同一類互斥的會自動換掉。</p></div>';
       const plainOf = j => { const t = x.plain && x.plain[j]; return (Array.isArray(t) ? t : [t]).filter(s => typeof s === 'string' && s); };   // 白話說明（呼叫端有給才有）：一段或兩段文字
       const texts = rows.map((r, j) => r[0] + '｜數值 ' + r[1] + '｜' + (r[2] ? '成立（藍）' : '不成立（灰）') + '｜怎麼判斷：' + how(r[0], r[1], r[2], r[3]) + '｜下次更新：' + nextOf(j) + (plainOf(j).length ? '｜白話說明：' + plainOf(j).join('') : ''));
       const items = rows.map((r, j) => {
@@ -166,7 +166,7 @@
         + '<p class="sp-leg"><span class="sp-sw on"></span>成立 ' + onAll + '<span class="sp-sw off"></span>不成立 ' + (rows.length - onAll) + '</p>' + flt;
       return open + head
         + '<div class="sp-body"><div class="sp-fig">' + fig + '</div>'
-        + '<ol class="sp-list">' + items + '</ol></div>'
+        + '<div><p class="small sp-fempty"' + (fsel.length && !rows.some((r, j) => fsel.every(c => c === 'q' || c === 's' ? sideOf(j) === c : c === 'fx' ? fixOf(j) : pdOf(j))) ? '' : ' hidden') + '>沒有符合這個篩選的條件。</p><ol class="sp-list">' + items + '</ol></div></div>'
         + '<p class="small sp-sum">' + esc(d.summary || '') + '</p></div>';
     }).join('') + '</div>';
   }
@@ -190,9 +190,15 @@
       const fb = e.target && e.target.closest && e.target.closest('.sp-fb');
       if (fb) {
         const g = fb.closest('.sp-flt'), one = fb.closest('.sp-one'), f = fb.getAttribute('data-f'); if (!g || !one) return;
-        if (f === 'all') delete FLT[g.getAttribute('data-fk')]; else FLT[g.getAttribute('data-fk')] = f;
-        ['q', 's', 'fx', 'pd'].forEach(c => one.classList.toggle('sp-f-' + c, f === c));
-        g.querySelectorAll('.sp-fb').forEach(b => { const c = b === fb; b.classList.toggle('cur', c); b.setAttribute('aria-pressed', String(c)); });
+        // 2026-11-25 站主：「我要可以多選，如果衝突就自動取消之前衝突的選項」。兩組各選一個、可以同時成立（交集）：
+        //   持有方向（僅 QLD／僅 SHV）、定案狀態（本月判斷確定／本月未定案）；同一組再選另一個會換掉前一個，再點一次已選的＝取消；「全數條件」＝全部清掉
+        const fk = g.getAttribute('data-fk'), GRP = { q: 's', s: 'q', fx: 'pd', pd: 'fx' };
+        let sel = (FLT[fk] || []).slice();
+        if (f === 'all') sel = []; else if (sel.includes(f)) sel = sel.filter(c => c !== f); else sel = sel.filter(c => c !== GRP[f]).concat(f);
+        if (sel.length) FLT[fk] = sel; else delete FLT[fk];
+        ['q', 's', 'fx', 'pd'].forEach(c => one.classList.toggle('sp-f-' + c, sel.includes(c)));
+        g.querySelectorAll('.sp-fb').forEach(b => { const bf = b.getAttribute('data-f'), c = bf === 'all' ? !sel.length : sel.includes(bf); b.classList.toggle('cur', c); b.setAttribute('aria-pressed', String(c)); });
+        const em = one.querySelector('.sp-fempty'); if (em) em.hidden = !!one.querySelector('.sp-it' + sel.map(c => c === 'q' || c === 's' ? '.sd-' + c : '.' + c).join(''));
         return;
       }
       const f = e.target && e.target.closest && e.target.closest('.sp-ft');
