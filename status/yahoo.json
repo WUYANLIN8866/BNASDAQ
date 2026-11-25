@@ -1,0 +1,1328 @@
+{
+ "fetched": "2026-11-25T14:49:12Z",
+ "n_ok": 129,
+ "n_all": 132,
+ "enc": {
+  "name": "yahoo",
+  "parts": 1,
+  "bytes": 12175728,
+  "all_sha": "25451db71cf8d503141c00ded7542109f116d958d89219cba35635f3ffd93e11",
+  "changed": true,
+  "files": [
+   {
+    "file": "yahoo.p00.enc.json",
+    "bytes": 16235296
+   }
+  ]
+ },
+ "rows": [
+  {
+   "ticker": "QQQ",
+   "group": "core",
+   "status": 200,
+   "n": 6973,
+   "first": "1999-03-10",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6973
+  },
+  {
+   "ticker": "QLD",
+   "group": "core",
+   "status": 200,
+   "n": 5141,
+   "first": "2006-06-21",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5141
+  },
+  {
+   "ticker": "SHV",
+   "group": "core",
+   "status": 200,
+   "n": 5001,
+   "first": "2007-01-11",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5001
+  },
+  {
+   "ticker": "^NDX",
+   "group": "core",
+   "status": 200,
+   "n": 10369,
+   "first": "1985-10-01",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 10369
+  },
+  {
+   "ticker": "TQQQ",
+   "group": "core",
+   "status": 200,
+   "n": 4224,
+   "first": "2010-02-11",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4224
+  },
+  {
+   "ticker": "SPY",
+   "group": "core",
+   "status": 200,
+   "n": 8515,
+   "first": "1993-01-29",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 8515
+  },
+  {
+   "ticker": "IWM",
+   "group": "core",
+   "status": 200,
+   "n": 6665,
+   "first": "2000-05-26",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6665
+  },
+  {
+   "ticker": "DIA",
+   "group": "core",
+   "status": 200,
+   "n": 7259,
+   "first": "1998-01-20",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7259
+  },
+  {
+   "ticker": "BIL",
+   "group": "core",
+   "status": 200,
+   "n": 4906,
+   "first": "2007-05-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4906
+  },
+  {
+   "ticker": "^GSPC",
+   "group": "us_index",
+   "status": 200,
+   "n": 14348,
+   "first": "1970-01-02",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 14348
+  },
+  {
+   "ticker": "^DJI",
+   "group": "us_index",
+   "status": 200,
+   "n": 8788,
+   "first": "1992-01-02",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 8788
+  },
+  {
+   "ticker": "^IXIC",
+   "group": "us_index",
+   "status": 200,
+   "n": 14070,
+   "first": "1971-02-05",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 14070
+  },
+  {
+   "ticker": "^RUT",
+   "group": "us_index",
+   "status": 200,
+   "n": 9878,
+   "first": "1987-09-10",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 9878
+  },
+  {
+   "ticker": "^SOX",
+   "group": "us_index",
+   "status": 200,
+   "n": 8197,
+   "first": "1994-05-04",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 8197
+  },
+  {
+   "ticker": "^NYA",
+   "group": "us_index",
+   "status": 200,
+   "n": 14348,
+   "first": "1970-01-02",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 14348
+  },
+  {
+   "ticker": "^W5000",
+   "group": "us_index",
+   "status": 200,
+   "n": 9446,
+   "first": "1989-01-03",
+   "last": "2026-11-24",
+   "tz": "Europe/London",
+   "has_open": 9446
+  },
+  {
+   "ticker": "^OEX",
+   "group": "us_index",
+   "status": 200,
+   "n": 11170,
+   "first": "1982-08-02",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 11170
+  },
+  {
+   "ticker": "^MID",
+   "group": "us_index",
+   "status": 200,
+   "n": 11569,
+   "first": "1981-01-02",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 11569
+  },
+  {
+   "ticker": "^VIX",
+   "group": "vol",
+   "status": 200,
+   "n": 9296,
+   "first": "1990-01-02",
+   "last": "2026-11-25",
+   "tz": "America/Chicago",
+   "has_open": 9296
+  },
+  {
+   "ticker": "^VXN",
+   "group": "vol",
+   "status": 200,
+   "n": 6499,
+   "first": "2001-01-23",
+   "last": "2026-11-24",
+   "tz": "America/New_York",
+   "has_open": 6499
+  },
+  {
+   "ticker": "^VVIX",
+   "group": "vol",
+   "status": 200,
+   "n": 4998,
+   "first": "2007-01-03",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4998
+  },
+  {
+   "ticker": "^VIX3M",
+   "group": "vol",
+   "status": 200,
+   "n": 5124,
+   "first": "2006-07-17",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5124
+  },
+  {
+   "ticker": "^VIX9D",
+   "group": "vol",
+   "status": 200,
+   "n": 3998,
+   "first": "2011-01-04",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 3998
+  },
+  {
+   "ticker": "^VIX6M",
+   "group": "vol",
+   "status": 200,
+   "n": 4756,
+   "first": "2008-01-02",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4756
+  },
+  {
+   "ticker": "^SKEW",
+   "group": "vol",
+   "status": 200,
+   "n": 9219,
+   "first": "1990-01-02",
+   "last": "2026-11-24",
+   "tz": "America/New_York",
+   "has_open": 9219
+  },
+  {
+   "ticker": "^VXO",
+   "group": "vol",
+   "status": 404,
+   "n": 0
+  },
+  {
+   "ticker": "^MOVE",
+   "group": "vol",
+   "status": 200,
+   "n": 5943,
+   "first": "2002-11-12",
+   "last": "2026-11-24",
+   "tz": "America/New_York",
+   "has_open": 5943
+  },
+  {
+   "ticker": "^GVZ",
+   "group": "vol",
+   "status": 200,
+   "n": 4650,
+   "first": "2008-06-03",
+   "last": "2026-11-24",
+   "tz": "America/New_York",
+   "has_open": 4650
+  },
+  {
+   "ticker": "^OVX",
+   "group": "vol",
+   "status": 200,
+   "n": 4918,
+   "first": "2007-05-10",
+   "last": "2026-11-24",
+   "tz": "America/New_York",
+   "has_open": 4918
+  },
+  {
+   "ticker": "^RVX",
+   "group": "vol",
+   "status": 404,
+   "n": 0
+  },
+  {
+   "ticker": "^VXD",
+   "group": "vol",
+   "status": 200,
+   "n": 5280,
+   "first": "2005-11-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5280
+  },
+  {
+   "ticker": "^IRX",
+   "group": "rates",
+   "status": 200,
+   "n": 14246,
+   "first": "1970-01-02",
+   "last": "2026-11-25",
+   "tz": "America/Chicago",
+   "has_open": 14246
+  },
+  {
+   "ticker": "^FVX",
+   "group": "rates",
+   "status": 200,
+   "n": 14246,
+   "first": "1970-01-02",
+   "last": "2026-11-25",
+   "tz": "America/Chicago",
+   "has_open": 14246
+  },
+  {
+   "ticker": "^TNX",
+   "group": "rates",
+   "status": 200,
+   "n": 14246,
+   "first": "1970-01-02",
+   "last": "2026-11-25",
+   "tz": "America/Chicago",
+   "has_open": 14246
+  },
+  {
+   "ticker": "^TYX",
+   "group": "rates",
+   "status": 200,
+   "n": 12472,
+   "first": "1977-02-15",
+   "last": "2026-11-25",
+   "tz": "America/Chicago",
+   "has_open": 12472
+  },
+  {
+   "ticker": "TLT",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 6122,
+   "first": "2002-07-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6122
+  },
+  {
+   "ticker": "IEF",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 6122,
+   "first": "2002-07-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6122
+  },
+  {
+   "ticker": "SHY",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 6122,
+   "first": "2002-07-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6122
+  },
+  {
+   "ticker": "LQD",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 6122,
+   "first": "2002-07-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6122
+  },
+  {
+   "ticker": "HYG",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 4940,
+   "first": "2007-04-11",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4940
+  },
+  {
+   "ticker": "JNK",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 4775,
+   "first": "2007-12-04",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4775
+  },
+  {
+   "ticker": "TIP",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 5780,
+   "first": "2003-12-05",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5780
+  },
+  {
+   "ticker": "AGG",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 5828,
+   "first": "2003-09-29",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5828
+  },
+  {
+   "ticker": "EMB",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 4764,
+   "first": "2007-12-19",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4764
+  },
+  {
+   "ticker": "MUB",
+   "group": "bond_etf",
+   "status": 200,
+   "n": 4835,
+   "first": "2007-09-10",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4835
+  },
+  {
+   "ticker": "DX-Y.NYB",
+   "group": "fx",
+   "status": 200,
+   "n": 14194,
+   "first": "1971-01-04",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 14194
+  },
+  {
+   "ticker": "EURUSD=X",
+   "group": "fx",
+   "status": 200,
+   "n": 5964,
+   "first": "2003-12-01",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 5964
+  },
+  {
+   "ticker": "JPY=X",
+   "group": "fx",
+   "status": 200,
+   "n": 7798,
+   "first": "1996-10-30",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 7798
+  },
+  {
+   "ticker": "GBPUSD=X",
+   "group": "fx",
+   "status": 200,
+   "n": 5976,
+   "first": "2003-12-01",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 5976
+  },
+  {
+   "ticker": "TWD=X",
+   "group": "fx",
+   "status": 200,
+   "n": 5469,
+   "first": "2004-03-24",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 5469
+  },
+  {
+   "ticker": "CNY=X",
+   "group": "fx",
+   "status": 200,
+   "n": 6366,
+   "first": "2001-06-24",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 6366
+  },
+  {
+   "ticker": "KRW=X",
+   "group": "fx",
+   "status": 200,
+   "n": 5962,
+   "first": "2003-12-01",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 5962
+  },
+  {
+   "ticker": "AUDUSD=X",
+   "group": "fx",
+   "status": 200,
+   "n": 5340,
+   "first": "2006-05-15",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 5340
+  },
+  {
+   "ticker": "CHF=X",
+   "group": "fx",
+   "status": 200,
+   "n": 6030,
+   "first": "2003-09-16",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 6030
+  },
+  {
+   "ticker": "CAD=X",
+   "group": "fx",
+   "status": 200,
+   "n": 6032,
+   "first": "2003-09-16",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 6032
+  },
+  {
+   "ticker": "MXN=X",
+   "group": "fx",
+   "status": 200,
+   "n": 5985,
+   "first": "2003-12-01",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 5985
+  },
+  {
+   "ticker": "HKD=X",
+   "group": "fx",
+   "status": 200,
+   "n": 6422,
+   "first": "2001-07-15",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 6422
+  },
+  {
+   "ticker": "SGD=X",
+   "group": "fx",
+   "status": 200,
+   "n": 5976,
+   "first": "2003-12-01",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 5976
+  },
+  {
+   "ticker": "INR=X",
+   "group": "fx",
+   "status": 200,
+   "n": 5961,
+   "first": "2003-12-01",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 5961
+  },
+  {
+   "ticker": "CL=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6594,
+   "first": "2000-08-23",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6594
+  },
+  {
+   "ticker": "BZ=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 4812,
+   "first": "2007-07-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4812
+  },
+  {
+   "ticker": "NG=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6591,
+   "first": "2000-08-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6591
+  },
+  {
+   "ticker": "GC=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6586,
+   "first": "2000-08-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6586
+  },
+  {
+   "ticker": "SI=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6587,
+   "first": "2000-08-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6587
+  },
+  {
+   "ticker": "HG=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6590,
+   "first": "2000-08-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6590
+  },
+  {
+   "ticker": "PL=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6613,
+   "first": "1997-10-29",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6613
+  },
+  {
+   "ticker": "ZC=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6597,
+   "first": "2000-07-17",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6597
+  },
+  {
+   "ticker": "ZS=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6589,
+   "first": "2000-09-15",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6589
+  },
+  {
+   "ticker": "ZW=F",
+   "group": "commodity",
+   "status": 200,
+   "n": 6609,
+   "first": "2000-07-17",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6609
+  },
+  {
+   "ticker": "GLD",
+   "group": "commodity",
+   "status": 200,
+   "n": 5540,
+   "first": "2004-11-18",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5540
+  },
+  {
+   "ticker": "USO",
+   "group": "commodity",
+   "status": 200,
+   "n": 5191,
+   "first": "2006-04-10",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5191
+  },
+  {
+   "ticker": "DBC",
+   "group": "commodity",
+   "status": 200,
+   "n": 5235,
+   "first": "2006-02-06",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5235
+  },
+  {
+   "ticker": "XLB",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLE",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLF",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLI",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLK",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLP",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLU",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLV",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLY",
+   "group": "sector",
+   "status": 200,
+   "n": 7025,
+   "first": "1998-12-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7025
+  },
+  {
+   "ticker": "XLRE",
+   "group": "sector",
+   "status": 200,
+   "n": 2800,
+   "first": "2015-10-08",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 2800
+  },
+  {
+   "ticker": "XLC",
+   "group": "sector",
+   "status": 200,
+   "n": 2122,
+   "first": "2018-06-19",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 2122
+  },
+  {
+   "ticker": "SMH",
+   "group": "sector",
+   "status": 200,
+   "n": 6660,
+   "first": "2000-06-05",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6660
+  },
+  {
+   "ticker": "SOXX",
+   "group": "sector",
+   "status": 200,
+   "n": 6381,
+   "first": "2001-07-13",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6381
+  },
+  {
+   "ticker": "IBB",
+   "group": "sector",
+   "status": 200,
+   "n": 6486,
+   "first": "2001-02-12",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6486
+  },
+  {
+   "ticker": "KRE",
+   "group": "sector",
+   "status": 200,
+   "n": 5140,
+   "first": "2006-06-22",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5140
+  },
+  {
+   "ticker": "XHB",
+   "group": "sector",
+   "status": 200,
+   "n": 5235,
+   "first": "2006-02-06",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5235
+  },
+  {
+   "ticker": "IYR",
+   "group": "sector",
+   "status": 200,
+   "n": 6650,
+   "first": "2000-06-19",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6650
+  },
+  {
+   "ticker": "RSP",
+   "group": "sector",
+   "status": 200,
+   "n": 5932,
+   "first": "2003-05-01",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5932
+  },
+  {
+   "ticker": "QQEW",
+   "group": "sector",
+   "status": 200,
+   "n": 5176,
+   "first": "2006-05-02",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5176
+  },
+  {
+   "ticker": "MDY",
+   "group": "sector",
+   "status": 200,
+   "n": 7944,
+   "first": "1995-05-04",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7944
+  },
+  {
+   "ticker": "IWD",
+   "group": "sector",
+   "status": 200,
+   "n": 6665,
+   "first": "2000-05-26",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6665
+  },
+  {
+   "ticker": "IWF",
+   "group": "sector",
+   "status": 200,
+   "n": 6665,
+   "first": "2000-05-26",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6665
+  },
+  {
+   "ticker": "IJR",
+   "group": "sector",
+   "status": 200,
+   "n": 6665,
+   "first": "2000-05-26",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6665
+  },
+  {
+   "ticker": "VTV",
+   "group": "sector",
+   "status": 200,
+   "n": 5743,
+   "first": "2004-01-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5743
+  },
+  {
+   "ticker": "VUG",
+   "group": "sector",
+   "status": 200,
+   "n": 5743,
+   "first": "2004-01-30",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5743
+  },
+  {
+   "ticker": "^N225",
+   "group": "global",
+   "status": 200,
+   "n": 13988,
+   "first": "1970-01-05",
+   "last": "2026-11-25",
+   "tz": "Asia/Tokyo",
+   "has_open": 13988
+  },
+  {
+   "ticker": "^HSI",
+   "group": "global",
+   "status": 200,
+   "n": 9848,
+   "first": "1986-12-31",
+   "last": "2026-11-25",
+   "tz": "Asia/Hong_Kong",
+   "has_open": 9848
+  },
+  {
+   "ticker": "^FTSE",
+   "group": "global",
+   "status": 200,
+   "n": 10838,
+   "first": "1984-01-03",
+   "last": "2026-11-25",
+   "tz": "Europe/London",
+   "has_open": 10838
+  },
+  {
+   "ticker": "^GDAXI",
+   "group": "global",
+   "status": 200,
+   "n": 9840,
+   "first": "1987-12-30",
+   "last": "2026-11-25",
+   "tz": "Europe/Berlin",
+   "has_open": 9840
+  },
+  {
+   "ticker": "^FCHI",
+   "group": "global",
+   "status": 200,
+   "n": 9332,
+   "first": "1990-03-01",
+   "last": "2026-11-25",
+   "tz": "Europe/Paris",
+   "has_open": 9332
+  },
+  {
+   "ticker": "^KS11",
+   "group": "global",
+   "status": 200,
+   "n": 7373,
+   "first": "1996-12-11",
+   "last": "2026-11-25",
+   "tz": "Asia/Seoul",
+   "has_open": 7373
+  },
+  {
+   "ticker": "^TWII",
+   "group": "global",
+   "status": 200,
+   "n": 7204,
+   "first": "1997-07-02",
+   "last": "2026-11-25",
+   "tz": "Asia/Taipei",
+   "has_open": 7204
+  },
+  {
+   "ticker": "^STOXX50E",
+   "group": "global",
+   "status": 200,
+   "n": 4929,
+   "first": "2007-03-30",
+   "last": "2026-11-25",
+   "tz": "Europe/Zurich",
+   "has_open": 4929
+  },
+  {
+   "ticker": "000001.SS",
+   "group": "global",
+   "status": 200,
+   "n": 7122,
+   "first": "1997-07-02",
+   "last": "2026-11-25",
+   "tz": "Asia/Shanghai",
+   "has_open": 7122
+  },
+  {
+   "ticker": "^BSESN",
+   "group": "global",
+   "status": 200,
+   "n": 7242,
+   "first": "1997-07-01",
+   "last": "2026-11-25",
+   "tz": "Asia/Kolkata",
+   "has_open": 7242
+  },
+  {
+   "ticker": "^AXJO",
+   "group": "global",
+   "status": 200,
+   "n": 8599,
+   "first": "1992-11-22",
+   "last": "2026-11-25",
+   "tz": "Australia/Sydney",
+   "has_open": 8600
+  },
+  {
+   "ticker": "^GSPTSE",
+   "group": "global",
+   "status": 200,
+   "n": 11904,
+   "first": "1979-06-29",
+   "last": "2026-11-25",
+   "tz": "America/Toronto",
+   "has_open": 11904
+  },
+  {
+   "ticker": "^BVSP",
+   "group": "global",
+   "status": 200,
+   "n": 8318,
+   "first": "1993-04-27",
+   "last": "2026-11-25",
+   "tz": "America/Sao_Paulo",
+   "has_open": 8318
+  },
+  {
+   "ticker": "^MXX",
+   "group": "global",
+   "status": 200,
+   "n": 8776,
+   "first": "1991-11-08",
+   "last": "2026-11-24",
+   "tz": "America/Mexico_City",
+   "has_open": 8776
+  },
+  {
+   "ticker": "^STI",
+   "group": "global",
+   "status": 200,
+   "n": 9725,
+   "first": "1987-12-28",
+   "last": "2026-11-25",
+   "tz": "Asia/Singapore",
+   "has_open": 9725
+  },
+  {
+   "ticker": "^JKSE",
+   "group": "global",
+   "status": 200,
+   "n": 8920,
+   "first": "1990-04-06",
+   "last": "2026-11-25",
+   "tz": "Asia/Jakarta",
+   "has_open": 8920
+  },
+  {
+   "ticker": "^KLSE",
+   "group": "global",
+   "status": 200,
+   "n": 8102,
+   "first": "1993-12-03",
+   "last": "2026-11-25",
+   "tz": "Asia/Kuala_Lumpur",
+   "has_open": 8102
+  },
+  {
+   "ticker": "^NZ50",
+   "group": "global",
+   "status": 200,
+   "n": 5900,
+   "first": "2003-01-02",
+   "last": "2026-11-25",
+   "tz": "Pacific/Auckland",
+   "has_open": 5901
+  },
+  {
+   "ticker": "^SSMI",
+   "group": "global",
+   "status": 200,
+   "n": 9052,
+   "first": "1990-11-09",
+   "last": "2026-11-25",
+   "tz": "Europe/Zurich",
+   "has_open": 9052
+  },
+  {
+   "ticker": "^AEX",
+   "group": "global",
+   "status": 200,
+   "n": 8708,
+   "first": "1992-10-12",
+   "last": "2026-11-25",
+   "tz": "Europe/Amsterdam",
+   "has_open": 8708
+  },
+  {
+   "ticker": "^IBEX",
+   "group": "global",
+   "status": 200,
+   "n": 8459,
+   "first": "1993-07-12",
+   "last": "2026-11-25",
+   "tz": "Europe/Madrid",
+   "has_open": 8459
+  },
+  {
+   "ticker": "EEM",
+   "group": "global",
+   "status": 200,
+   "n": 5944,
+   "first": "2003-04-14",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5944
+  },
+  {
+   "ticker": "EFA",
+   "group": "global",
+   "status": 200,
+   "n": 6350,
+   "first": "2001-08-27",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6350
+  },
+  {
+   "ticker": "VGK",
+   "group": "global",
+   "status": 200,
+   "n": 5464,
+   "first": "2005-03-10",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5464
+  },
+  {
+   "ticker": "EWJ",
+   "group": "global",
+   "status": 200,
+   "n": 7724,
+   "first": "1996-03-18",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 7724
+  },
+  {
+   "ticker": "EWT",
+   "group": "global",
+   "status": 200,
+   "n": 6646,
+   "first": "2000-06-23",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6646
+  },
+  {
+   "ticker": "FXI",
+   "group": "global",
+   "status": 200,
+   "n": 5569,
+   "first": "2004-10-08",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 5569
+  },
+  {
+   "ticker": "EWY",
+   "group": "global",
+   "status": 200,
+   "n": 6675,
+   "first": "2000-05-12",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6675
+  },
+  {
+   "ticker": "EWZ",
+   "group": "global",
+   "status": 200,
+   "n": 6632,
+   "first": "2000-07-14",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 6632
+  },
+  {
+   "ticker": "INDA",
+   "group": "global",
+   "status": 200,
+   "n": 3725,
+   "first": "2012-02-03",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 3725
+  },
+  {
+   "ticker": "ACWI",
+   "group": "global",
+   "status": 200,
+   "n": 4697,
+   "first": "2008-03-28",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4697
+  },
+  {
+   "ticker": "VEU",
+   "group": "global",
+   "status": 200,
+   "n": 4963,
+   "first": "2007-03-08",
+   "last": "2026-11-25",
+   "tz": "America/New_York",
+   "has_open": 4963
+  },
+  {
+   "ticker": "0050.TW",
+   "group": "tw",
+   "status": 200,
+   "n": 4380,
+   "first": "2009-01-02",
+   "last": "2026-11-25",
+   "tz": "Asia/Taipei",
+   "has_open": 4380
+  },
+  {
+   "ticker": "^TWOII",
+   "group": "tw",
+   "status": 404,
+   "n": 0
+  },
+  {
+   "ticker": "2330.TW",
+   "group": "tw",
+   "status": 200,
+   "n": 6686,
+   "first": "2000-01-04",
+   "last": "2026-11-25",
+   "tz": "Asia/Taipei",
+   "has_open": 6686
+  }
+ ]
+}
