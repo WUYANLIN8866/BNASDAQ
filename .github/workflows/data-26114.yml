@@ -1,0 +1,48 @@
+name: data-26114 fetch (public data, encrypted)
+# 只在 data-26114 分支、而且 request/ 有變動的 push 才執行；不影響 main 與任何既有 workflow。
+on:
+  push:
+    branches: [data-26114]
+    paths: ['request/**']
+permissions:
+  contents: write
+concurrency:
+  group: data-26114
+  cancel-in-progress: false
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: data-26114
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python3 -m pip install --quiet cryptography
+      - name: Public key from main (data/macro-key.json)
+        run: |
+          mkdir -p /tmp/pub
+          curl -sSfL --retry 3 "https://raw.githubusercontent.com/${{ github.repository }}/main/data/macro-key.json" -o /tmp/pub/macro-key.json
+          python3 -c "import json;d=json.load(open('/tmp/pub/macro-key.json'));assert d['alg']=='RSA-OAEP-3072-SHA256';print('public key ok', d['schema'])"
+      - name: Fetch
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          PUBKEY_JSON: /tmp/pub/macro-key.json
+        run: python3 fetch/run.py
+      - name: Commit results
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data status
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -q -m "data-26114: fetch results (run ${{ github.run_id }})"
+          for i in 1 2 3 4 5; do
+            if git pull -q --rebase origin data-26114 && git push -q origin HEAD:data-26114; then echo pushed; exit 0; fi
+            sleep 7
+          done
+          exit 1
