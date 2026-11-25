@@ -1,0 +1,89 @@
+{
+ "fetched": "2026-11-25T14:58:07Z",
+ "arch": [
+  {
+   "name": "totalpc.csv",
+   "status": 200,
+   "bytes": 139830,
+   "lines": 3256
+  },
+  {
+   "name": "equitypc.csv",
+   "status": 200,
+   "bytes": 135696,
+   "lines": 3256
+  },
+  {
+   "name": "indexpc.csv",
+   "status": 200,
+   "bytes": 133796,
+   "lines": 3256
+  },
+  {
+   "name": "etppc.csv",
+   "status": 200,
+   "bytes": 132264,
+   "lines": 3256
+  },
+  {
+   "name": "vixpc.csv",
+   "status": 200,
+   "bytes": 132597,
+   "lines": 3429
+  },
+  {
+   "name": "spxpc.csv",
+   "status": 200,
+   "bytes": 98266,
+   "lines": 2332
+  },
+  {
+   "name": "pcratioarchive.csv",
+   "status": 200,
+   "bytes": 34394,
+   "lines": 2081
+  },
+  {
+   "name": "totalpcarchive.csv",
+   "status": 200,
+   "bytes": 87307,
+   "lines": 2178
+  },
+  {
+   "name": "equitypcarchive.csv",
+   "status": 200,
+   "bytes": 84114,
+   "lines": 2178
+  },
+  {
+   "name": "indexpcarchive.csv",
+   "status": 200,
+   "bytes": 83438,
+   "lines": 2179
+  }
+ ],
+ "daily": {
+  "tried": 1868,
+  "ok": 1795,
+  "codes": {
+   "403": 73,
+   "200": 1795
+  },
+  "first": "2019-10-07",
+  "last": "2026-11-24",
+  "stopped_at": "2026-11-26"
+ },
+ "enc": {
+  "name": "cboe",
+  "parts": 1,
+  "bytes": 384324,
+  "all_sha": "0e541cdfea04cf57592b838e2343279495f8573f2b75d47401e21c0810652e95",
+  "changed": true,
+  "files": [
+   {
+    "file": "cboe.p00.enc.json",
+    "bytes": 513417
+   }
+  ]
+ }
+}
