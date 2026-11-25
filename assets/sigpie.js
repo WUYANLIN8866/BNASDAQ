@@ -132,7 +132,7 @@
       const of = +d.of > 0 && +d.of < rows.length ? +d.of : rows.length;
       const all = rows.map((r, j) => ({ r, j })), main = all.slice(0, of), extra = all.slice(of);
       const onMain = main.filter(o => o.r[2]).length, onAll = all.filter(o => o.r[2]).length, onX = onAll - onMain;
-      const nextOf = j => ctx.kind === 'custom' ? (nx.custom || '自訂收盤價的試算，不會自動更新。') : isMacro(rows[j][0], j) ? (nx.macro || nx.price || '') : (nx.price || '');
+      const nextOf = j => ctx.kind === 'custom' ? (nx.custom || '無（不會自動更新）') : isMacro(rows[j][0], j) ? (nx.macro || nx.price || '') : (nx.price || '');
       const plainOf = j => { const t = x.plain && x.plain[j]; return (Array.isArray(t) ? t : [t]).filter(s => typeof s === 'string' && s); };   // 白話說明（呼叫端有給才有）：一段或兩段文字
       const texts = rows.map((r, j) => r[0] + '｜數值 ' + r[1] + '｜' + (r[2] ? '成立（藍）' : '不成立（灰）') + '｜怎麼判斷：' + how(r[0], r[1], r[2], r[3]) + '｜下次更新：' + nextOf(j) + (plainOf(j).length ? '｜白話說明：' + plainOf(j).join('') : ''));
       const items = rows.map((r, j) => {
@@ -209,14 +209,10 @@
     let cron = '';
     for (let k = 0; k < 8; k++) { const d = new Date(now + k * 864e5), wd = d.getUTCDay(), ms = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 22, 45); if (wd >= 1 && wd <= 5 && ms > now) { cron = tpe(ms); break; } }
     const liveOn = opt.live === true || nxt === 'now';
-    const fin = T ? md(T) + ' 美股收盤後定案（台北 ' + md(addDay(T, 1)) + ' 06:45 前後更新）' : '';
-    return {
-      official: '月底定案，不會再變。下次判斷：' + (T ? md(T) + ' 美股收盤後（台北 ' + md(addDay(T, 1)) + ' 06:45 前後更新）' : '—') + '。',
-      price: (liveOn ? '美股交易中（含盤前盤後）：跟著 QQQ 即時價約每分鐘重算' : '美股休市中：' + (nxt ? '台北 ' + nxt + '（美股盤前開盤）' : '下次開盤') + '起跟著 QQQ 即時價約每分鐘重算')
-        + (fin ? '；' + fin : '') + '。',
-      macro: '要等 FRED 公布新的月份數字才會變；網站在台北每個交易日 06:45 抓最新值（下次 ' + (cron || '—') + '）' + (fin ? '；' + fin.replace('定案', '用月底定案檔定案') : '') + '。',
-      custom: '自訂收盤價的試算，不會自動更新。'
-    };
+    // 2026-11-25 站主：「所有的下次更新時間只要有台北時間幾號的幾點幾分」→ 只留一個台北時間，不寫其他說明
+    //   價格條件＝月底定案後網站更新的時間（月底最後一個交易日的隔天台北 06:45）；金融環境數列＝網站下一次排程抓 FRED 的時間
+    const fin = T ? '台北 ' + md(addDay(T, 1)) + '06:45' : '—';
+    return { official: fin, price: fin, macro: cron ? '台北 ' + cron : fin, custom: '無（不會自動更新）' };
   }
 
   BN.sigpie = { html, bind, how, next, foldAll, side, plainRows };
