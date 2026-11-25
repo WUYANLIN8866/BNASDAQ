@@ -9,7 +9,8 @@
   data/macro2/asof-YYYY-MM.enc.json  月底定案檔：每個月（美東時間）結束後第一次執行時，先把「上個月最後留下的」第 2 版檔原封不動複製一份，
                                  之後永不改寫。用途：已經依月底資料做出的判斷，不會因為官方事後修正數字而改變。
   data/macro2/index.json         已有哪些月底定案檔（公開清單）
-  data/macro-status.json         這次抓取的結果（公開；只有時間、成功與否、失敗的數列代號），給自動監控用
+  data/macro-status.json         這次抓取的結果（公開；時間、成功與否、失敗的數列代號、每個數列最新觀測月份與第一次抓到的時間 obs、月底凍結的月份 frozen），
+                                 給自動監控、scripts/release_due.py（官方公布後抓到了沒）與網頁（本月確定／未定案）用
 加密：整份 JSON 用一次性 AES-256-GCM 金鑰加密；資料金鑰再用 RSA-OAEP-3072-SHA256 分別包裝給兩把公鑰：
       member＝data/rules-key.json（會員瀏覽器用同一把會員規則私鑰解開）、gen＝data/macro-key.json（私人回測產生器）。
       不需要任何秘密就能產生；只有持有私鑰的一方解得開。
@@ -222,11 +223,27 @@ def month_closed(now):
         log('month_closed check failed', repr(e)); return False
 
 
-def status(now, ok, failed, note):
+def status(now, ok, failed, note, raw=None):
+    """obs（2026-11-25）＝{數列代號: [最新一筆觀測值的月份, 這個月份第一次被抓到的時間]}：scripts/release_due.py 與網頁用它判斷
+    「官方剛公布的那一筆抓到了沒」。數列清單是整組公開資料，看不出哪個策略用了哪一個。第一次寫入（舊檔沒有 obs）時，時間一律記這一次。"""
     old = load_json(STATUS) or {}
     ts = now.strftime('%Y-%m-%dT%H:%M:%SZ')
+    obs = dict(old.get('obs') or {})
+    for sid, d in (raw or {}).items():
+        lm = max(d)
+        if not (isinstance(obs.get(sid), list) and len(obs[sid]) == 2 and obs[sid][0] == lm):
+            obs[sid] = [lm, ts]
     write_json(STATUS, dict(schema='bnasdaq-macro-status/1', checked=ts, ok=bool(ok), n_series=len(SERIES2), failed=sorted(failed),
-                            last_ok=(ts if ok else old.get('last_ok')), note=note))
+                            last_ok=(ts if ok else old.get('last_ok')), note=note, frozen=None,
+                            data_at=(load_json(OUT2) or {}).get('updated'),   # 網站上的金融環境資料內容最後一次改變的時間（網頁開著時用它發現新資料）
+                            obs={k: obs[k] for k in sorted(obs)}))
+
+
+def mark_frozen(now):
+    """月底凍結期間在 status 記下被凍結的月份（只在第一次寫）：凍結時不重抓，release_due.py 看到就不會一直要求重抓"""
+    old = load_json(STATUS) or {}
+    if old and old.get('frozen') != month_et(now):
+        old['frozen'] = month_et(now); write_json(STATUS, old)
 
 
 def main():
@@ -243,7 +260,7 @@ def main():
         except Exception as e:  # noqa
             log('no public key', p, repr(e)); return 0
     if os.path.exists(OUT1) and os.path.exists(OUT2) and month_closed(now) and '--force' not in sys.argv:
-        log('month-end close is in: data stay frozen until the month rolls over'); return 0
+        mark_frozen(now); log('month-end close is in: data stay frozen until the month rolls over'); return 0
     st = load_json(STATUS) or {}
     chk = parse_ts(st.get('checked') or '')
     gap = MIN_GAP_H if st.get('ok') else RETRY_GAP_H     # 上次失敗：隔 RETRY_GAP_H 小時就再試
@@ -277,7 +294,7 @@ def main():
         log('too short in v2 window:', empty); status(now, False, empty, '第 2 版視窗內資料太少'); return 0
     write_enc(OUT2, 'bnasdaq-macro/2', dict(schema='bnasdaq-macro-plain/2', source='FRED（https://fred.stlouisfed.org/graph/fredgraph.csv?id=…；月資料）',
                                             months=months, series=s2), pubs, len(s2), last)
-    status(now, True, [], '')
+    status(now, True, [], '', raw)
     return 0
 
 

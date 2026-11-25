@@ -16,7 +16,8 @@
        ctx.fold（選填）：每個模型的區塊可以收合，狀態記在這台瀏覽器（管理後台用）
      BN.sigpie.bind(root)               掛上滑鼠／鍵盤連動與收合
      BN.sigpie.foldAll(root, 收合?)     全部收合／展開
-     BN.sigpie.next(rules, market, opt) → { official, price, macro, custom }：依交易日曆（會員規則的 tradingDaysLeft）算下次更新時間的文字 */
+     BN.sigpie.next(rules, market, opt) → { official, price, macro, custom }：依交易日曆（會員規則的 tradingDaysLeft）算下次更新時間的文字
+       opt：{ cal＝data/release-calendar.json、topics＝data/daily-topics.json 的 topics、status＝data/macro-status.json（官方公布後網站抓到了沒） } */
 (function () {
   'use strict';
   const BN = window.BN = window.BN || {};
@@ -243,17 +244,37 @@
     //   approx＝官方沒有公告日期、依過去規律推定的，前面加「約」。
     let fin = '—';
     if (T) { const [y, mo, dd] = T.split('-').map(Number), g = Date.UTC(y, mo - 1, dd, 16); fin = '台北 ' + tpe(g + etOffset(g) * 36e5); }
-    const cal = opt.cal || null, tps = (opt.topics || []).filter(t => t && t.rule && cal && cal.topics && cal.topics[t.code]).map(t => ({ re: new RegExp(t.rule), rel: cal.topics[t.code] }));
+    // 2026-11-25 站主：「數據都公布了為何還未定案，請更新，並確保所有模型條件狀態都可以在新數據公布後更新所有條件」。
+    //   舊版用時鐘猜（公布後 3 小時內一律算未定案、3 小時後一律算確定），和網站實際有沒有抓到無關。現在看 opt.status＝data/macro-status.json：
+    //   obs＝{數列代號: [最新觀測月份, 這個月份第一次被抓到的時間]}。某一類數據「這次公布已經抓到」＝那一類數列過半數的最新月份是在公布時間之後才第一次抓到的
+    //   （和 scripts/release_due.py 的 caught 同一個規則；官方有公告時間的往前留 1 小時、推定時間的往前留 3 天；公布滿 7 天不再追）。
+    //   已公布、還沒抓到 → 算「本月未定案」，下次更新寫「已公布，網站抓取中」；抓到了 → 馬上回到正常（不必等 3 小時）。沒有 status 檔時才退回時鐘規則。
+    const cal = opt.cal || null, st = opt.status || null, obs = (st && st.obs) || null, ptime = x => Date.parse(String(x).replace(/T(\d\d:\d\d)Z$/, 'T$1:00Z'));
+    const tps = (opt.topics || []).filter(t => t && t.rule && cal && cal.topics && cal.topics[t.code]).map(t => { const re = new RegExp(t.rule); return { re, rel: cal.topics[t.code], ser: obs ? Object.keys(obs).filter(k => re.test(k)) : [] }; });
     const macro = cron ? '台北 ' + cron : fin;
-    const relNext = code => { const r = cal && cal.releases && cal.releases[code]; if (!r) return ''; const t = (r.times || []).map(x => Date.parse(x.replace('Z', ':00Z'))).filter(x => x > now).sort((a, b) => a - b)[0]; return t ? (r.approx ? '約 ' : '') + '台北 ' + tpe(t) : ''; };
-    const macroOf = label => { for (const t of tps) if (t.re.test(label)) { const v = relNext(t.rel); if (v) return v; } return macro; };
-    // 本月確定：那一類數據下一次官方公布在月底收盤之後，而且上一次公布已經過了 3 小時（網站已經抓到）
+    const relOf = code => (cal && cal.releases && cal.releases[code]) || null;
+    const timesOf = r => (r.times || []).map(ptime).filter(x => x === x);
+    const nxOf = r => timesOf(r).filter(x => x > now).sort((a, b) => a - b)[0], pvOf = r => timesOf(r).filter(x => x <= now).sort((a, b) => b - a)[0];
+    const frozen = !!(st && st.frozen && st.frozen === new Date(now - etOffset(now) * 36e5).toISOString().slice(0, 7));   // 月底收盤後到換月前不重抓（月底定案）
+    // waiting：上一次公布（7 天內）還沒抓到。回傳那一次的公布時間（毫秒），抓到了或沒有上一次就回 0
+    const waiting = tp => {
+      const r = relOf(tp.rel), pv = r && pvOf(r); if (!pv || now - pv > 7 * 864e5) return 0;
+      const lastOk = st && st.last_ok ? ptime(st.last_ok) : NaN, mg = r.approx ? 3 * 864e5 : 36e5;
+      if (!st) return now - pv < 3 * 36e5 ? pv : 0;                                   // 沒有 status 檔：舊的時鐘規則
+      if (!(lastOk >= pv - mg)) return pv;
+      if (!tp.ser.length) return lastOk >= pv + 6e5 ? 0 : pv;                        // 舊版 status（沒有 obs）：看公布後有沒有成功抓過
+      return 2 * tp.ser.filter(k => ptime((obs[k] || [])[1]) >= pv - mg).length > tp.ser.length ? 0 : pv;
+    };
+    const tpOf = label => { for (const t of tps) if (t.re.test(label)) return t; return null; };
+    const relNext = tp => { const r = relOf(tp.rel); if (!r) return ''; const w = waiting(tp), pre = (r.approx ? '約 ' : '') + '台北 ';
+      if (w) return pre + tpe(w) + (frozen ? ' 已公布，換月後更新' : r.approx ? '，等待來源更新' : ' 已公布，網站抓取中');
+      const t = nxOf(r); return t ? pre + tpe(t) : ''; };
+    const macroOf = label => { const t = tpOf(label); return (t && relNext(t)) || macro; };
     const closeMs = T ? (() => { const [y, mo, dd] = T.split('-').map(Number), g = Date.UTC(y, mo - 1, dd, 16); return g + etOffset(g) * 36e5; })() : 0;
-    const relFixed = code => { const r = cal && cal.releases && cal.releases[code]; if (!r || !closeMs) return false; const ts = (r.times || []).map(x => Date.parse(x.replace('Z', ':00Z'))); const nx = ts.filter(x => x > now).sort((a, b) => a - b)[0], pv = ts.filter(x => x <= now).sort((a, b) => b - a)[0]; return !!nx && nx > closeMs && !(pv && now - pv < 3 * 36e5); };
-    // 本月未定案（2026-11-25 站主）：官方公布時間介於現在和月底判斷時間之間的官方數據（剛公布未滿 3 小時、網站可能還沒抓到的也算）
-    const relPend = code => { const r = cal && cal.releases && cal.releases[code]; if (!r || !closeMs) return false; const ts = (r.times || []).map(x => Date.parse(x.replace('Z', ':00Z'))); const nx = ts.filter(x => x > now).sort((a, b) => a - b)[0], pv = ts.filter(x => x <= now).sort((a, b) => b - a)[0]; return (!!nx && nx <= closeMs) || !!(pv && now - pv < 3 * 36e5); };
-    const pendOf = label => { for (const t of tps) if (t.re.test(label)) return relPend(t.rel); return false; };
-    const fixedOf = label => { for (const t of tps) if (t.re.test(label)) return relFixed(t.rel); return false; };
+    // 本月確定：那一類數據下一次官方公布在月底收盤之後，而且上一次公布網站已經抓到
+    const fixedOf = label => { const t = tpOf(label), r = t && relOf(t.rel); if (!r || !closeMs) return false; const nx = nxOf(r); return !!nx && nx > closeMs && !waiting(t); };
+    // 本月未定案（2026-11-25 站主）：官方公布時間介於現在和月底判斷時間之間的官方數據；已公布但網站還沒抓到的也算
+    const pendOf = label => { const t = tpOf(label), r = t && relOf(t.rel); if (!r || !closeMs) return false; const nx = nxOf(r); return (!!nx && nx <= closeMs) || !!waiting(t); };
     return { official: fin, price: fin, macro, macroOf, fixedOf, pendOf, custom: '無（不會自動更新）' };
   }
 

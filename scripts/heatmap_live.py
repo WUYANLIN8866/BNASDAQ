@@ -83,6 +83,8 @@ BASE = os.path.join(ROOT, 'data', 'heatmap', 'latest.json')
 BRANCH = 'heatmap-live'
 WORKFLOW = 'heatmap-live.yml'
 AFTER = 'tw-latest.yml'   # 每個市場收盤後要啟動的工作流程：更新全站的最新收盤價（scripts/fetch_latest.py）並重新部署
+SITE = 'site.yml'       # 官方數據公布後要啟動的工作流程：抓 FRED 最新值、重算並重新部署（見 check_release）
+REL_EVERY = 300         # 多久檢查一次「官方數據公布了、網站抓到了沒」
 SCHEMA = 'bnasdaq-heatmap-live/1'
 KEEP = 8             # 時間格檔留最近幾個（每個市場多久發布一次寫在 MARKETS 的 step）
 LEAD = 90 * 60       # 開盤前最多提早多久進場等
@@ -1113,6 +1115,21 @@ class Session:
             self.news_at = now - NEWS_EVERY + 600
             log('新聞來源全部失敗，10 分鐘後再試')
 
+    def maybe_release(self):
+        """每 5 分鐘檢查一次官方數據公布後網站抓到了沒（check_release）；任何錯誤都不能影響報價發布。本機測試（FilePub）不檢查。"""
+        now = self.clock()
+        if now - getattr(self, 'rel_at', 0) < REL_EVERY or not hasattr(self.pub, 'call'):
+            return
+        self.rel_at = now
+        if not hasattr(self, 'rel'):
+            self.rel = {}
+        try:
+            msg = check_release(self.pub, now, self.rel)
+            if msg:
+                log(msg)
+        except Exception as e:  # noqa
+            log('官方公布檢查失敗（不影響報價）：', repr(e)[:160])
+
     def branch_news_at(self):
         return branch_news_at(self.pub)
 
@@ -1234,6 +1251,7 @@ class Session:
             ok = self.poll_ext(kind)
             self.poll_board(kind)
             self.maybe_news()
+            self.maybe_release()
             now = self.clock()
             if kind == 'pre' and now >= s['open']:   # 開盤了：盤前最後一份標成結束，交給正規時段（正規時段同一格馬上會再發布一份）
                 self.xstate = 'closed'
@@ -1284,6 +1302,7 @@ class Session:
             ok = self.poll()
             self.poll_board()   # 報價板：美股（每日市場分析頁）、台股（匯率與加權指數），見 BOARDS
             self.maybe_news()
+            self.maybe_release()
             now = self.clock()
             over = now >= self.sess['close'] + tail
             frozen = bool(self.q) and self.still >= max(10, FREEZE // self.every) and now < self.sess['close']
@@ -1311,6 +1330,53 @@ class Session:
                 return 'relay'
             every = self.every if now < self.sess['close'] else step
             nxt = (int(now) // step) * step + max(step, (every // step) * step)
+
+
+# ---------- 官方數據公布後自動更新（2026-11-25）----------
+def get_json(pub, path, ref):
+    st, j = pub.call('GET', f'/contents/{path}?ref={ref}')
+    if st != 200 or not j.get('content'):
+        return None
+    return json.loads(base64.b64decode(j['content']).decode('utf-8'))
+
+
+def check_release(pub, now, memo):
+    """2026-11-25 站主：「數據都公布了為何還未定案，請更新，並確保所有模型條件狀態都可以在新數據公布後更新所有條件」。
+    GitHub 的排程在這個 repo 會晚 3～10 小時才啟動（11/25 21:30 台北的個人所得與支出公布後，該跑的兩班都沒有準時啟動），
+    所以由盤中這個一直在跑的流程來看時間：官方公布時間表裡有「公布了、網站卻還沒抓到」的數據，而且到了該抓的時間
+    （scripts/release_due.py 的 due：公布後 3 小時內每 20 分鐘、之後拉長）→ 啟動 site.yml（抓 FRED 最新值、重算、部署）。
+    美國的官方數據都在美東 08:30～17:00 公布，落在美股盤前到盤後這段 session 一直在跑的時間裡。
+    memo＝跨次記住的東西（時間表、上次啟動時間）。回傳 None（沒事）或一句話（寫進紀錄）。"""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    try:
+        import release_due as rd
+    finally:
+        sys.path.pop(0)
+    ref = os.environ.get('GITHUB_REF_NAME') or 'main'
+    t = dt.datetime.fromtimestamp(now, dt.timezone.utc)
+    if memo.get('cal') is None or now - memo.get('cal_at', 0) > 6 * 3600:
+        cal, tj = get_json(pub, 'data/release-calendar.json', ref), get_json(pub, 'data/daily-topics.json', ref)
+        if cal is None or tj is None:
+            return '官方公布檢查：讀不到時間表或主題表'
+        memo.update(cal=cal, topics=tj.get('topics') or [], cal_at=now)
+    cal = memo['cal']
+    times = [x for r in (cal.get('releases') or {}).values() for x in (rd.parse(v) for v in r.get('times', [])) if x is not None]
+    if not any(rd.SETTLE <= t - x <= rd.EXPIRE for x in times):
+        return None   # 最近 7 天沒有任何官方公布：不必讀狀態檔
+    st = get_json(pub, 'data/macro-status.json', ref)
+    if st is None:
+        return '官方公布檢查：讀不到 data/macro-status.json'
+    go, wait = rd.due(t, cal, memo['topics'], st)
+    if not go or now - memo.get('sent_at', 0) < 15 * 60:
+        return None
+    what = '、'.join(f"{c} {x.strftime('%m-%d %H:%M')}Z" for c, x in go)
+    s2, r = pub.call('GET', f'/actions/workflows/{SITE}/runs?per_page=10')
+    if s2 == 200 and any(x.get('status') != 'completed' and x.get('event') in ('schedule', 'workflow_dispatch') for x in (r.get('workflow_runs') or [])):
+        memo['sent_at'] = now - 10 * 60   # 5 分鐘後再看一次
+        return f'官方公布檢查：{what} 還沒抓到，已經有更新在跑'
+    ok, s3, r3 = pub.dispatch(ref, {}, workflow=SITE)
+    memo['sent_at'] = now
+    return f'官方公布檢查：{what} 還沒抓到 → ' + (f'已啟動 {SITE}' if ok else f'啟動 {SITE} 失敗 {s3} {str((r3 or {}).get("message"))[:100]}')
 
 
 # ---------- 入口 ----------
@@ -1361,6 +1427,13 @@ def gate():
             catch_up(Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN']), now)
         except Exception as e:  # noqa：補救檢查失敗不能影響盤中更新
             note('補救檢查失敗：', repr(e)[:120])
+    if not relay:   # 沒有 session 在跑的時段（休市日、兩個時段之間）由 gate 順便看一次官方公布（check_release）
+        try:
+            msg = check_release(Pub(os.environ['GITHUB_REPOSITORY'], os.environ['GITHUB_TOKEN']), now, {})
+            if msg:
+                note(msg)
+        except Exception as e:  # noqa：檢查失敗不能影響盤中更新
+            note('官方公布檢查失敗：', repr(e)[:120])
     cands = [m for m in MARKETS if (not want or m == want) and active(m, now)]
     if not cands:
         note('gate：90 分鐘內（美股盤前 120 分鐘內）沒有要開始或正在進行的交易時段（週末或時間還沒到）→ 不跑'); out(go='false', market=''); return 0

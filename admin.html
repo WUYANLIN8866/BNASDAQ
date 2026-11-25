@@ -55,6 +55,7 @@
 
   <h2 id="signals">訊號明細（所有策略）</h2>
   <p class="small" id="mstat">載入中…</p>
+  <p class="msg ok" id="newdata" hidden>官方新數據已經上線：<button class="btn line" type="button" onclick="location.reload()">立刻重新整理</button>（2 分鐘沒有操作會自動重新整理，登入狀態會保留）</p>
   <div class="panel" id="mo-panel"><h3>模型顯示順序</h3><p class="small">按 ↑ ↓ 調整：本頁的正式訊號、推算、自訂收盤、最近 24 個月與模型權限<b>立刻</b>照新順序；最後一次調整 2 秒後<b>自動存到網站</b>（不用再按儲存），約 3 分鐘後會員專區（模型卡片、本月持有、持有資產的策略差額）與每日市場分析的管理員專區也照新順序；公開頁的回測圖不受影響（線的顏色跟著策略走）。</p><ol class="mo-list" id="mo-list"><li>載入中…</li></ol><div class="actions"><button class="btn line" type="button" id="mo-reset">恢復預設（專案 B 區順序）</button><a id="mo-dl" class="btn line" download="site.json" hidden>下載 site.json（手動上傳用）</a></div><div id="mo-msg"></div></div>
   <p class="small">圓餅每一塊是一項判斷條件：<b style="color:var(--sig-on-ink)">藍色＝成立</b>、灰色＝不成立；旁邊每一塊都寫目前數值、怎麼判斷、下次更新時間，以及這個條件的白話說明（滑鼠移到圓餅的某一塊，對應的說明會框起來）。</p>
   <p class="small" id="expl-stat" hidden></p>
@@ -205,7 +206,7 @@
   window.BN=window.BN||{};window.BN.adminFold={reveal,all};
 })();
 </script>
-<script src="assets/site.js?v=c57986514d"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=36b196c878"></script>
+<script src="assets/site.js?v=c57986514d"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=a9a1c691ed"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -461,7 +462,7 @@
   const yn=b=>b?'<b style="color:var(--good)">成立</b>':'<span style="color:var(--bad)">不成立</span>';
   // 2026-11-24：訊號明細改成圓餅（assets/sigpie.js）：每一塊＝一項條件，藍＝成立、灰＝不成立；每塊旁邊寫目前數值、怎麼判斷、下次更新時間
   // 模型順序＝管理員設定的 data/site.json model_order（下方「模型顯示順序」）；kind：official 正式訊號、prov 推算、custom 自訂收盤
-  let TOPRE=[],TOPICS=[],RCAL=null;   // TOPICS＝主題清單、RCAL＝data/release-calendar.json（官方公布時間表；2026-11-25 起「下次更新」顯示官方公布的台北時間）
+  let TOPRE=[],TOPICS=[],RCAL=null,MST=null;   // TOPICS＝主題清單、RCAL＝data/release-calendar.json（官方公布時間表；2026-11-25 起「下次更新」顯示官方公布的台北時間）
      // data/daily-topics.json 的數列規則：條件名稱對到就是金融環境數列（下次更新時間不同）
   const STR=()=>BN.auth.sortModels(rules.STRATEGIES,(SITE&&SITE.model_order)||[]);
   // 2026-11-24 站主：「訊號明細的每個條件都要在『下次更新』下方新增一欄『白話說明』」。
@@ -492,7 +493,7 @@
   function plainOf(st,d){const rows=(d&&d.rows)||[];if(EXPL.st!=='ok')return rows.map(()=>EXPL_MSG[EXPL.st]||EXPL_MSG.fail);
     const M=EXPL.models.find(x=>x&&x.id===st.id)||EXPL.models.find(x=>x&&x.ref&&x.ref===st.ref);
     return BN.sigpie.plainRows(M&&M.rows,rows).map(t=>t||EXPL_MSG.miss);}
-  function condRows(e,kind,m){const N=BN.sigpie.next(rules,m||market,{cal:RCAL,topics:TOPICS});
+  function condRows(e,kind,m){const N=BN.sigpie.next(rules,m||market,{cal:RCAL,topics:TOPICS,status:MST});
     const next=kind==='official'?{price:N.official,macro:N.official}:kind==='custom'?{custom:N.custom,fixedOf:N.fixedOf,pendOf:N.pendOf}:{price:N.price,macro:N.macro,macroOf:N.macroOf,fixedOf:N.fixedOf,pendOf:N.pendOf};
     return BN.sigpie.html(STR().map(st=>({id:st.id,ref:st.ref,d:e.detail[st.id],plain:plainOf(st,e.detail[st.id])})),{kind,next,isMacro:l=>TOPRE.some(re=>re.test(l)),fold:'adm-'+kind});}
   const put=(sel,h)=>{const el=$(sel);el.innerHTML=h;BN.sigpie.bind(el);};
@@ -502,6 +503,7 @@
     const rs=await fetch('data/rules-status.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
     try{const tj=await fetch('data/daily-topics.json',{cache:'no-store'}).then(r=>r.json());TOPICS=tj.topics||[];TOPRE=TOPICS.filter(x=>x.rule).map(x=>new RegExp(x.rule));}catch(e){TOPRE=[];TOPICS=[];}
     RCAL=await fetch('data/release-calendar.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);
+    MST=await fetch('data/macro-status.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);   // 官方公布後網站抓到了沒（本月確定／未定案、下次更新用；2026-11-25）
     if(!(rules.version>=2)){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">會員規則還是舊版（第 1 版）：請先完成下方「帳號管理」裡的「會員規則金鑰（一次性設定）」，新版規則會自動發布。</p>';return;}
     await loadExplain();explStat();
     const L=rules.latest(market,tb);const S=L.series;const c=market.current;const bv=rules.spec&&rules.spec.b_ver;
@@ -573,6 +575,17 @@
   await loadSite();
   moApply();
   moList();
+  // 2026-11-25 站主：「確保所有模型條件狀態都可以在新數據公布後更新所有條件」。這一頁開著的時候每 2 分鐘讀一次 data/macro-status.json：
+  //   網站上的金融環境資料換新了（data_at 或各數列最新月份變了）→ 顯示提示，2 分鐘沒有操作就自動重新整理（重新解密資料、重算全部條件；登入狀態會保留）；
+  //   只有抓取狀態變了 → 只重畫（下次更新、本月確定／未定案）。
+  let lastAct=Date.now(),NEWDATA=false;['pointerdown','keydown','input','scroll'].forEach(ev=>addEventListener(ev,()=>{lastAct=Date.now();},{passive:true,capture:true}));
+  const mkey=x=>x?(x.data_at||'')+'|'+JSON.stringify(x.obs||{}):'';
+  setInterval(async()=>{try{
+    if(!NEWDATA){if(document.hidden||!MST)return;
+      const s=await fetch('data/macro-status.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null);if(!s)return;
+      if(mkey(s)!==mkey(MST)){NEWDATA=true;const el=$('#newdata');if(el)el.hidden=false;}
+      else if(JSON.stringify(s)!==JSON.stringify(MST)){MST=s;if(RERENDER)RERENDER();}}
+    if(NEWDATA&&Date.now()-lastAct>120e3)location.reload();}catch(e){}},120000);
   try{await loadSignals();}catch(e){$('#mstat').textContent='';$('#sig-cur').innerHTML='<p class="msg err">'+(e&&e.name==='OperationError'?'規則無法用目前的會員主金鑰解密：多半是剛重新建立會員規則金鑰，規則還沒用新金鑰重新發布（每日同步檢查會自動重新發布）。':esc(e.message||e))+'</p>';}
 })();
 </script>
