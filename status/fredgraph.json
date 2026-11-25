@@ -1,0 +1,1196 @@
+{
+ "fetched": "2026-11-25T14:51:28Z",
+ "n_ok": 144,
+ "n_all": 148,
+ "enc": {
+  "name": "fredgraph",
+  "parts": 1,
+  "bytes": 1986820,
+  "all_sha": "2f94cf1d9418fac205b4ffbcc366bf60e310040907c6ba0edc8e13ee334e856c",
+  "changed": true,
+  "files": [
+   {
+    "file": "fredgraph.p00.enc.json",
+    "bytes": 2650068
+   }
+  ]
+ },
+ "rows": [
+  {
+   "id": "DFF",
+   "group": "rates",
+   "status": 200,
+   "n": 26444,
+   "first": "1954-07-01",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DTB4WK",
+   "group": "rates",
+   "status": 200,
+   "n": 6330,
+   "first": "2001-07-31",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DTB3",
+   "group": "rates",
+   "status": 200,
+   "n": 18214,
+   "first": "1954-01-04",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DTB6",
+   "group": "rates",
+   "status": 200,
+   "n": 16974,
+   "first": "1958-12-09",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DTB1YR",
+   "group": "rates",
+   "status": 200,
+   "n": 15138,
+   "first": "1959-07-15",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS1MO",
+   "group": "rates",
+   "status": 200,
+   "n": 6330,
+   "first": "2001-07-31",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS3MO",
+   "group": "rates",
+   "status": 200,
+   "n": 11306,
+   "first": "1981-09-01",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS6MO",
+   "group": "rates",
+   "status": 200,
+   "n": 11306,
+   "first": "1981-09-01",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS1",
+   "group": "rates",
+   "status": 200,
+   "n": 16208,
+   "first": "1962-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS2",
+   "group": "rates",
+   "status": 200,
+   "n": 12616,
+   "first": "1976-06-01",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS3",
+   "group": "rates",
+   "status": 200,
+   "n": 16208,
+   "first": "1962-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS5",
+   "group": "rates",
+   "status": 200,
+   "n": 16208,
+   "first": "1962-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS7",
+   "group": "rates",
+   "status": 200,
+   "n": 14338,
+   "first": "1969-07-01",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS10",
+   "group": "rates",
+   "status": 200,
+   "n": 16208,
+   "first": "1962-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS20",
+   "group": "rates",
+   "status": 200,
+   "n": 14519,
+   "first": "1962-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DGS30",
+   "group": "rates",
+   "status": 200,
+   "n": 12438,
+   "first": "1977-02-15",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DFII5",
+   "group": "rates",
+   "status": 200,
+   "n": 5977,
+   "first": "2003-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DFII10",
+   "group": "rates",
+   "status": 200,
+   "n": 5977,
+   "first": "2003-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DFII30",
+   "group": "rates",
+   "status": 200,
+   "n": 4192,
+   "first": "2010-02-22",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "T5YIE",
+   "group": "rates",
+   "status": 200,
+   "n": 5978,
+   "first": "2003-01-02",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "T10YIE",
+   "group": "rates",
+   "status": 200,
+   "n": 5978,
+   "first": "2003-01-02",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "T5YIFR",
+   "group": "rates",
+   "status": 200,
+   "n": 5978,
+   "first": "2003-01-02",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "T10Y2Y",
+   "group": "rates",
+   "status": 200,
+   "n": 12617,
+   "first": "1976-06-01",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "T10Y3M",
+   "group": "rates",
+   "status": 200,
+   "n": 11226,
+   "first": "1982-01-04",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "T10YFF",
+   "group": "rates",
+   "status": 200,
+   "n": 16206,
+   "first": "1962-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "T5YFF",
+   "group": "rates",
+   "status": 200,
+   "n": 16206,
+   "first": "1962-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "T1YFF",
+   "group": "rates",
+   "status": 200,
+   "n": 16206,
+   "first": "1962-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "T3MFF",
+   "group": "rates",
+   "status": 200,
+   "n": 11225,
+   "first": "1982-01-04",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "T6MFF",
+   "group": "rates",
+   "status": 200,
+   "n": 11225,
+   "first": "1982-01-04",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DPRIME",
+   "group": "rates",
+   "status": 200,
+   "n": 18175,
+   "first": "1955-08-04",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "SOFR",
+   "group": "rates",
+   "status": 200,
+   "n": 2159,
+   "first": "2018-04-03",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "EFFR",
+   "group": "rates",
+   "status": 200,
+   "n": 6627,
+   "first": "2000-07-03",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "OBFR",
+   "group": "rates",
+   "status": 200,
+   "n": 2697,
+   "first": "2016-03-01",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "DCPF3M",
+   "group": "rates",
+   "status": 200,
+   "n": 6772,
+   "first": "1997-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DCPN3M",
+   "group": "rates",
+   "status": 200,
+   "n": 5311,
+   "first": "1997-01-02",
+   "last": "2026-11-05"
+  },
+  {
+   "id": "MORTGAGE30US",
+   "group": "rates",
+   "status": 200,
+   "n": 2904,
+   "first": "1971-04-02",
+   "last": "2026-11-19"
+  },
+  {
+   "id": "MORTGAGE15US",
+   "group": "rates",
+   "status": 200,
+   "n": 1839,
+   "first": "1991-08-30",
+   "last": "2026-11-19"
+  },
+  {
+   "id": "DAAA",
+   "group": "credit",
+   "status": 200,
+   "n": 11018,
+   "first": "1983-01-03",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DBAA",
+   "group": "credit",
+   "status": 200,
+   "n": 10259,
+   "first": "1986-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "AAA10Y",
+   "group": "credit",
+   "status": 200,
+   "n": 10970,
+   "first": "1983-01-03",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAA10Y",
+   "group": "credit",
+   "status": 200,
+   "n": 10223,
+   "first": "1986-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "AAAFF",
+   "group": "credit",
+   "status": 200,
+   "n": 10977,
+   "first": "1983-01-03",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAAFF",
+   "group": "credit",
+   "status": 200,
+   "n": 10224,
+   "first": "1986-01-02",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLH0A0HYM2",
+   "group": "credit",
+   "status": 200,
+   "n": 784,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLH0A1HYBB",
+   "group": "credit",
+   "status": 200,
+   "n": 784,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLH0A2HYB",
+   "group": "credit",
+   "status": 200,
+   "n": 784,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLH0A3HYC",
+   "group": "credit",
+   "status": 200,
+   "n": 784,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLC0A0CM",
+   "group": "credit",
+   "status": 200,
+   "n": 783,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLC0A1CAAA",
+   "group": "credit",
+   "status": 200,
+   "n": 784,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLC0A4CBBB",
+   "group": "credit",
+   "status": 200,
+   "n": 784,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLEMCBPIOAS",
+   "group": "credit",
+   "status": 200,
+   "n": 784,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLH0A0HYM2EY",
+   "group": "credit",
+   "status": 200,
+   "n": 784,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "BAMLC0A0CMEY",
+   "group": "credit",
+   "status": 200,
+   "n": 783,
+   "first": "2023-11-27",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "TEDRATE",
+   "group": "credit",
+   "status": 200,
+   "n": 8853,
+   "first": "1986-01-02",
+   "last": "2022-01-21"
+  },
+  {
+   "id": "DTWEXBGS",
+   "group": "fx",
+   "status": 200,
+   "n": 5236,
+   "first": "2006-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DTWEXAFEGS",
+   "group": "fx",
+   "status": 200,
+   "n": 5236,
+   "first": "2006-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DTWEXEMEGS",
+   "group": "fx",
+   "status": 200,
+   "n": 5236,
+   "first": "2006-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DTWEXM",
+   "group": "fx",
+   "status": 200,
+   "n": 11834,
+   "first": "1973-01-02",
+   "last": "2019-12-31"
+  },
+  {
+   "id": "DTWEXB",
+   "group": "fx",
+   "status": 200,
+   "n": 6328,
+   "first": "1995-01-04",
+   "last": "2019-12-31"
+  },
+  {
+   "id": "DTWEXO",
+   "group": "fx",
+   "status": 200,
+   "n": 6326,
+   "first": "1995-01-04",
+   "last": "2019-12-31"
+  },
+  {
+   "id": "DEXUSEU",
+   "group": "fx",
+   "status": 200,
+   "n": 6993,
+   "first": "1999-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXJPUS",
+   "group": "fx",
+   "status": 200,
+   "n": 14008,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXUSUK",
+   "group": "fx",
+   "status": 200,
+   "n": 14014,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXCAUS",
+   "group": "fx",
+   "status": 200,
+   "n": 14020,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXSZUS",
+   "group": "fx",
+   "status": 200,
+   "n": 14014,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXCHUS",
+   "group": "fx",
+   "status": 200,
+   "n": 11454,
+   "first": "1981-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXKOUS",
+   "group": "fx",
+   "status": 200,
+   "n": 11400,
+   "first": "1981-04-13",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXTAUS",
+   "group": "fx",
+   "status": 200,
+   "n": 10527,
+   "first": "1983-10-03",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXMXUS",
+   "group": "fx",
+   "status": 200,
+   "n": 8282,
+   "first": "1993-11-08",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXUSAL",
+   "group": "fx",
+   "status": 200,
+   "n": 14007,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXINUS",
+   "group": "fx",
+   "status": 200,
+   "n": 13506,
+   "first": "1973-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXBZUS",
+   "group": "fx",
+   "status": 200,
+   "n": 7997,
+   "first": "1995-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXSIUS",
+   "group": "fx",
+   "status": 200,
+   "n": 11513,
+   "first": "1981-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXHKUS",
+   "group": "fx",
+   "status": 200,
+   "n": 11514,
+   "first": "1981-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXSDUS",
+   "group": "fx",
+   "status": 200,
+   "n": 14013,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXNOUS",
+   "group": "fx",
+   "status": 200,
+   "n": 14013,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXTHUS",
+   "group": "fx",
+   "status": 200,
+   "n": 11433,
+   "first": "1981-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXMAUS",
+   "group": "fx",
+   "status": 200,
+   "n": 13992,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXSFUS",
+   "group": "fx",
+   "status": 200,
+   "n": 11757,
+   "first": "1980-01-02",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DEXUSNZ",
+   "group": "fx",
+   "status": 200,
+   "n": 13998,
+   "first": "1971-01-04",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "DCOILWTICO",
+   "group": "commodity",
+   "status": 200,
+   "n": 9547,
+   "first": "1986-01-02",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "DCOILBRENTEU",
+   "group": "commodity",
+   "status": 200,
+   "n": 9132,
+   "first": "1987-05-20",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "DHHNGSP",
+   "group": "commodity",
+   "status": 200,
+   "n": 5732,
+   "first": "1997-01-07",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "DGASNYH",
+   "group": "commodity",
+   "status": 200,
+   "n": 9181,
+   "first": "1986-06-02",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "DGASUSGULF",
+   "group": "commodity",
+   "status": 200,
+   "n": 9242,
+   "first": "1986-06-02",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "DHOILNYH",
+   "group": "commodity",
+   "status": 200,
+   "n": 8830,
+   "first": "1986-06-02",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "DDFUELUSGULF",
+   "group": "commodity",
+   "status": 200,
+   "n": 5124,
+   "first": "2006-06-14",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "DJFUELUSGULF",
+   "group": "commodity",
+   "status": 200,
+   "n": 8081,
+   "first": "1990-04-02",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "DPROPANEMBTX",
+   "group": "commodity",
+   "status": 200,
+   "n": 8156,
+   "first": "1992-07-09",
+   "last": "2026-11-17"
+  },
+  {
+   "id": "GOLDAMGBD228NLBM",
+   "group": "commodity",
+   "status": 404,
+   "n": 0
+  },
+  {
+   "id": "GOLDPMGBD228NLBM",
+   "group": "commodity",
+   "status": 404,
+   "n": 0
+  },
+  {
+   "id": "GASREGW",
+   "group": "commodity",
+   "status": 200,
+   "n": 1887,
+   "first": "1990-08-20",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "VIXCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 9324,
+   "first": "1990-01-02",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "VXNCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 6492,
+   "first": "2001-02-02",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "VXDCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 7331,
+   "first": "1997-10-07",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "RVXCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 5759,
+   "first": "2004-01-02",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "VXVCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 4774,
+   "first": "2007-12-04",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "VXOCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 9002,
+   "first": "1986-01-02",
+   "last": "2021-09-23"
+  },
+  {
+   "id": "OVXCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 4920,
+   "first": "2007-05-10",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "GVZCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 4652,
+   "first": "2008-06-03",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "EVZCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 4360,
+   "first": "2007-11-01",
+   "last": "2025-03-11"
+  },
+  {
+   "id": "VXEEMCLS",
+   "group": "psych",
+   "status": 200,
+   "n": 3948,
+   "first": "2011-03-16",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "USEPUINDXD",
+   "group": "psych",
+   "status": 200,
+   "n": 15303,
+   "first": "1985-01-01",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "WLEMUINDXD",
+   "group": "psych",
+   "status": 200,
+   "n": 15303,
+   "first": "1985-01-01",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "NASDAQCOM",
+   "group": "equity",
+   "status": 200,
+   "n": 14070,
+   "first": "1971-02-05",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "NASDAQ100",
+   "group": "equity",
+   "status": 200,
+   "n": 10306,
+   "first": "1986-01-02",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "SP500",
+   "group": "equity",
+   "status": 200,
+   "n": 2512,
+   "first": "2016-11-25",
+   "last": "2026-11-23"
+  },
+  {
+   "id": "DJIA",
+   "group": "equity",
+   "status": 200,
+   "n": 2513,
+   "first": "2016-11-25",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "WILL5000IND",
+   "group": "equity",
+   "status": 404,
+   "n": 0
+  },
+  {
+   "id": "WILL5000PR",
+   "group": "equity",
+   "status": 404,
+   "n": 0
+  },
+  {
+   "id": "NIKKEI225",
+   "group": "equity",
+   "status": 200,
+   "n": 19246,
+   "first": "1949-05-16",
+   "last": "2026-11-25"
+  },
+  {
+   "id": "ICSA",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 3125,
+   "first": "1967-01-07",
+   "last": "2026-11-21"
+  },
+  {
+   "id": "CCSA",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 3124,
+   "first": "1967-01-07",
+   "last": "2026-11-14"
+  },
+  {
+   "id": "IC4WSA",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 3122,
+   "first": "1967-01-28",
+   "last": "2026-11-21"
+  },
+  {
+   "id": "NFCI",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 2916,
+   "first": "1971-01-08",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "ANFCI",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 2916,
+   "first": "1971-01-08",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "NFCILEVERAGE",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 2916,
+   "first": "1971-01-08",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "NFCICREDIT",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 2916,
+   "first": "1971-01-08",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "NFCIRISK",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 2916,
+   "first": "1971-01-08",
+   "last": "2026-11-20"
+  },
+  {
+   "id": "STLFSI4",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 1716,
+   "first": "1993-12-31",
+   "last": "2026-11-13"
+  },
+  {
+   "id": "WALCL",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 1249,
+   "first": "2002-12-18",
+   "last": "2026-11-18"
+  },
+  {
+   "id": "WRESBAL",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 1249,
+   "first": "2002-12-18",
+   "last": "2026-11-18"
+  },
+  {
+   "id": "WTREGEN",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 1249,
+   "first": "2002-12-18",
+   "last": "2026-11-18"
+  },
+  {
+   "id": "RRPONTSYD",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 3374,
+   "first": "2003-02-07",
+   "last": "2026-11-24"
+  },
+  {
+   "id": "WM2NS",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 2392,
+   "first": "1981-01-05",
+   "last": "2026-11-02"
+  },
+  {
+   "id": "TOTBKCR",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 2811,
+   "first": "1973-01-03",
+   "last": "2026-11-11"
+  },
+  {
+   "id": "WEI",
+   "group": "weekly_revised",
+   "status": 200,
+   "n": 985,
+   "first": "2008-01-05",
+   "last": "2026-11-14"
+  },
+  {
+   "id": "TB3MS",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 1114,
+   "first": "1934-01-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "FEDFUNDS",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 868,
+   "first": "1954-07-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "UMCSENT",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 678,
+   "first": "1952-11-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "MICH",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 586,
+   "first": "1978-01-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "USREC",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 2063,
+   "first": "1854-12-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "SAHMREALTIME",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 802,
+   "first": "1959-12-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "CFNAI",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 716,
+   "first": "1967-03-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "CFNAIMA3",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 714,
+   "first": "1967-05-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "CPIAUCNS",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 1365,
+   "first": "1913-01-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "CPILFENS",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 837,
+   "first": "1957-01-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "CPILFESL",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 837,
+   "first": "1957-01-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "PCEPILFE",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 814,
+   "first": "1959-01-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "T10Y2YM",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 605,
+   "first": "1976-06-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "USEPUINDXM",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 502,
+   "first": "1985-01-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "KCFSI",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 441,
+   "first": "1990-02-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "GS2",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 605,
+   "first": "1976-06-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "GS3",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 883,
+   "first": "1953-04-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "GS7",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 688,
+   "first": "1969-07-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "GS20",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 802,
+   "first": "1953-04-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "GS30",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 597,
+   "first": "1977-02-01",
+   "last": "2026-10-01"
+  },
+  {
+   "id": "TB1YR",
+   "group": "monthly_extra",
+   "status": 200,
+   "n": 729,
+   "first": "1959-07-01",
+   "last": "2026-10-01"
+  }
+ ]
+}

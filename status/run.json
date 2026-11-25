@@ -2,7 +2,8 @@
  "request": "0a-20261125-2",
  "jobs": {
   "key": "ok 0s",
-  "yahoo": "ok 183s"
+  "yahoo": "ok 183s",
+  "fredgraph": "ok 132s"
  },
- "finished": "2026-11-25T14:49:12Z"
+ "finished": "2026-11-25T14:51:28Z"
 }
