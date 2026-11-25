@@ -145,7 +145,7 @@
       const fkey = (ctx.fold || ctx.kind || '') + '|' + x.id, fsel = FLT[fkey] || [];
       const fbtn = (f, t, n) => '<button type="button" class="sp-fb' + ((f === 'all' ? !fsel.length : fsel.includes(f)) ? ' cur' : '') + '" data-f="' + f + '" aria-pressed="' + (f === 'all' ? !fsel.length : fsel.includes(f)) + '">' + t + '<b>' + n + '</b></button>';
       const flt = '<div class="sp-flt" role="group" aria-label="篩選條件" data-fk="' + esc(fkey) + '">' + fbtn('all', '全數條件', cnt.all) + fbtn('q', '僅 QLD 條件', cnt.q) + fbtn('s', '僅 SHV 條件', cnt.all - cnt.q) + fbtn('fx', '本月判斷確定條件', cnt.fx) + fbtn('pd', '本月未定案', cnt.pd)
-        + '<p class="sp-fnote">QLD 條件＝目前把票投給 QLD 的；本月判斷確定＝月底判斷前不會再變的（官方下一次公布在月底之後）；本月未定案＝官方公布時間在現在到月底判斷之間的官方數據。可以複選（例：僅 SHV＋本月未定案），同一類互斥的會自動換掉。</p></div>';
+        + '</div>';   // 2026-11-25 站主：按鈕下方的說明文字移除
       const plainOf = j => { const t = x.plain && x.plain[j]; return (Array.isArray(t) ? t : [t]).filter(s => typeof s === 'string' && s); };   // 白話說明（呼叫端有給才有）：一段或兩段文字
       const texts = rows.map((r, j) => r[0] + '｜數值 ' + r[1] + '｜' + (r[2] ? '成立（藍）' : '不成立（灰）') + '｜怎麼判斷：' + how(r[0], r[1], r[2], r[3]) + '｜下次更新：' + nextOf(j) + (plainOf(j).length ? '｜白話說明：' + plainOf(j).join('') : ''));
       const items = rows.map((r, j) => {
