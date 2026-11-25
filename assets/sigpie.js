@@ -84,12 +84,12 @@
   }
   const RING = 'M0 -' + R0 + 'A' + R0 + ' ' + R0 + ' 0 1 1 0 ' + R0 + 'A' + R0 + ' ' + R0 + ' 0 1 1 0 -' + R0 + 'ZM0 -' + R1 + 'A' + R1 + ' ' + R1 + ' 0 1 0 0 ' + R1 + 'A' + R1 + ' ' + R1 + ' 0 1 0 0 -' + R1 + 'Z';
   // its：[{ r: 一列, j: 這一列在整張表的序號 }]；c：中間的字 { a: 成立數, b: 總數, hold: 結論（可省略） }
-  function pie(k, its, texts, c, cls) {
+  function pie(k, its, texts, c, cls, tag) {
     const n = its.length, step = 2 * Math.PI / Math.max(1, n), fs = n <= 8 ? 15 : n <= 12 ? 13 : 11;
     let s = '<svg class="sp-pie' + (cls ? ' ' + cls : '') + '" viewBox="-108 -108 216 216" role="img" aria-label="' + esc('成立 ' + c.a + '／' + c.b + ' 項' + (c.hold ? '，' + c.hold : '') + '；' + its.map(o => (o.j + 1) + ' ' + (o.r[2] ? '成立' : '不成立')).join('，')) + '">';
     its.forEach((o, q) => {
       const a0 = -Math.PI / 2 + q * step, a1 = a0 + step, am = (a0 + a1) / 2, on = !!o.r[2];
-      s += '<g class="sp-sl ' + (on ? 'on' : 'off') + '" data-k="' + k + '" data-i="' + o.j + '" tabindex="0" role="button" aria-label="' + esc((o.j + 1) + '. ' + o.r[0] + '：' + (on ? '成立' : '不成立')) + '">'
+      s += '<g class="sp-sl ' + (on ? 'on' : 'off') + (tag ? tag(o.j) : '') + '" data-k="' + k + '" data-i="' + o.j + '" tabindex="0" role="button" aria-label="' + esc((o.j + 1) + '. ' + o.r[0] + '：' + (on ? '成立' : '不成立')) + '">'
         + '<title>' + esc((o.j + 1) + '. ' + texts[o.j]) + '</title><path d="' + (n === 1 ? RING : arc(a0, a1)) + '" fill-rule="evenodd"/>'
         + '<text x="' + ((R0 + R1) / 2 * Math.cos(am)).toFixed(2) + '" y="' + ((R0 + R1) / 2 * Math.sin(am)).toFixed(2) + '" font-size="' + fs + '" text-anchor="middle" dominant-baseline="central">' + (o.j + 1) + '</text></g>';
     });
@@ -114,6 +114,7 @@
   function foldAll(root, off) { (root || document).querySelectorAll('.sp-one').forEach(o => foldOne(o, off)); }
 
   let seq = 0;
+  const FLT = {};   // 每個模型區塊目前的篩選（all 不存）；畫面每分鐘重畫時保持
   function html(list, ctx) {
     ctx = ctx || {};
     const nx = ctx.next || {}, isMacro = ctx.isMacro || (() => false);
@@ -125,7 +126,7 @@
       const fk = ctx.fold ? ctx.fold + '|' + x.id : '', off = fk && fget(fk);
       const head = fk ? '<h4 class="sp-h"><button type="button" class="sp-ft" data-fold="' + esc(fk) + '" aria-expanded="' + !off + '" title="點一下收合／展開"><span class="sp-fx" aria-hidden="true"></span><span class="sp-fn">' + name + '</span><span class="sp-hs">' + esc(brief) + '</span></button></h4>'
         : '<h4 class="sp-h">' + name + '</h4>';
-      const open = '<div class="sp-one' + (off ? ' sp-off' : '') + '">';
+      const open = '<div class="sp-one' + (off ? ' sp-off' : '') + (FLT[(ctx.fold || ctx.kind || '') + '|' + x.id] ? ' sp-f-' + FLT[(ctx.fold || ctx.kind || '') + '|' + x.id] : '') + '">';
       if (!d) return open + head + '<p class="small sp-sum">這個月份沒有可用模型，無法計算。</p></div>';
       if (!rows.length) return open + head + '<div class="sp-body sp-body1"><p class="small">' + esc(d.summary || '') + '</p><p class="small">這個月份只有定案紀錄（成立 ' + esc(d.votes) + '／' + esc(d.of) + ' 項），沒有逐項數值。</p></div></div>';
       // 計分的是前 of 列；多出來的列（不計入成立數、另外判斷的條件）畫成第二個小圓餅，顏色規則一樣
@@ -133,12 +134,23 @@
       const all = rows.map((r, j) => ({ r, j })), main = all.slice(0, of), extra = all.slice(of);
       const onMain = main.filter(o => o.r[2]).length, onAll = all.filter(o => o.r[2]).length, onX = onAll - onMain;
       const nextOf = j => ctx.kind === 'custom' ? (nx.custom || '無（不會自動更新）') : isMacro(rows[j][0], j) ? ((nx.macroOf && nx.macroOf(rows[j][0])) || nx.macro || nx.price || '') : (nx.price || '');
+      // 2026-11-25 站主：圓餅下方新增「全數條件／僅 QLD 條件／僅 SHV 條件／本月判斷確定條件（本月確定不再更新）」。
+      //   QLD 條件＝這一項目前把票投給 QLD：計分條件成立；另外判斷的條件（成立會減碼）不成立。SHV 條件＝其餘。
+      //   本月確定＝月底判斷前不會再變：正式訊號全部都是；推算裡只有「下一次官方公布在月底收盤之後」的金融環境數列（nx.fixedOf）；跟著 QQQ 價格算的都不是。
+      const sideOf = j => (j < of ? !!rows[j][2] : !rows[j][2]) ? 'q' : 's';
+      const fixOf = j => ctx.kind === 'official' ? true : !!(isMacro(rows[j][0], j) && nx.fixedOf && nx.fixedOf(rows[j][0]));
+      const tag = j => ' sd-' + sideOf(j) + (fixOf(j) ? ' fx' : '');
+      const cnt = { all: rows.length, q: rows.filter((r, j) => sideOf(j) === 'q').length, fx: rows.filter((r, j) => fixOf(j)).length };
+      const fkey = (ctx.fold || ctx.kind || '') + '|' + x.id, fcur = FLT[fkey] || 'all';
+      const fbtn = (f, t, n) => '<button type="button" class="sp-fb' + (fcur === f ? ' cur' : '') + '" data-f="' + f + '" aria-pressed="' + (fcur === f) + '">' + t + '<b>' + n + '</b></button>';
+      const flt = '<div class="sp-flt" role="group" aria-label="篩選條件" data-fk="' + esc(fkey) + '">' + fbtn('all', '全數條件', cnt.all) + fbtn('q', '僅 QLD 條件', cnt.q) + fbtn('s', '僅 SHV 條件', cnt.all - cnt.q) + fbtn('fx', '本月判斷確定條件', cnt.fx)
+        + '<p class="sp-fnote">QLD 條件＝目前把票投給 QLD 的；本月判斷確定＝月底判斷前不會再變的（官方下一次公布在月底之後）。</p></div>';
       const plainOf = j => { const t = x.plain && x.plain[j]; return (Array.isArray(t) ? t : [t]).filter(s => typeof s === 'string' && s); };   // 白話說明（呼叫端有給才有）：一段或兩段文字
       const texts = rows.map((r, j) => r[0] + '｜數值 ' + r[1] + '｜' + (r[2] ? '成立（藍）' : '不成立（灰）') + '｜怎麼判斷：' + how(r[0], r[1], r[2], r[3]) + '｜下次更新：' + nextOf(j) + (plainOf(j).length ? '｜白話說明：' + plainOf(j).join('') : ''));
       const items = rows.map((r, j) => {
         const on = !!r[2], tp = x.topics && x.topics[j], pl = plainOf(j);
         return (j === of && extra.length ? '<li class="sp-gap">另外判斷的條件（' + (of + 1) + (rows.length > of + 1 ? '～' + rows.length : '') + '，不算在上面的 ' + of + ' 項裡）</li>' : '')
-          + '<li class="sp-it ' + (on ? 'on' : 'off') + '" data-k="' + k + '" data-i="' + j + '" tabindex="-1">'
+          + '<li class="sp-it ' + (on ? 'on' : 'off') + tag(j) + '" data-k="' + k + '" data-i="' + j + '" tabindex="-1">'
           + '<div class="sp-t"><span class="sp-n" aria-hidden="true">' + (j + 1) + '</span><b>' + esc(r[0]) + '</b><span class="sp-st">' + (on ? '✓ 成立' : '✕ 不成立') + '</span></div>'
           + '<div class="sp-l"><span class="sp-k">目前數值</span>' + esc(r[1]) + (r[3] !== '' && r[3] != null ? '<span class="sp-k sp-k2">距門檻</span>' + esc(r[3]) : '') + '</div>'
           + '<div class="sp-l"><span class="sp-k">怎麼判斷</span>' + esc(how(r[0], r[1], r[2], r[3])) + '</div>'
@@ -147,10 +159,10 @@
           + (tp ? '<div class="sp-l"><span class="sp-k">消息主題</span>' + esc(tp) + '</div>' : '')
           + '</li>';
       }).join('');
-      const fig = pie(k, main, texts, { a: d.votes, b: d.of, hold })
+      const fig = pie(k, main, texts, { a: d.votes, b: d.of, hold }, '', tag)
         + (onMain !== +d.votes ? '<p class="small sp-note">中間的成立數以定案紀錄為準（見下方說明）；各塊是重算的逐項結果。</p>' : '')
-        + (extra.length ? '<p class="sp-x">另外判斷的條件（不算在 ' + of + ' 項裡）</p>' + pie(k, extra, texts, { a: onX, b: extra.length }, 'sp-mini') : '')
-        + '<p class="sp-leg"><span class="sp-sw on"></span>成立 ' + onAll + '<span class="sp-sw off"></span>不成立 ' + (rows.length - onAll) + '</p>';
+        + (extra.length ? '<p class="sp-x">另外判斷的條件（不算在 ' + of + ' 項裡）</p>' + pie(k, extra, texts, { a: onX, b: extra.length }, 'sp-mini', tag) : '')
+        + '<p class="sp-leg"><span class="sp-sw on"></span>成立 ' + onAll + '<span class="sp-sw off"></span>不成立 ' + (rows.length - onAll) + '</p>' + flt;
       return open + head
         + '<div class="sp-body"><div class="sp-fig">' + fig + '</div>'
         + '<ol class="sp-list">' + items + '</ol></div>'
@@ -174,6 +186,14 @@
     root.addEventListener('focusin', e => { const t = tgt(e); if (t) pick(t, true, true); });
     root.addEventListener('focusout', e => { const t = tgt(e); if (t) pick(t, false, false); });
     root.addEventListener('click', e => {
+      const fb = e.target && e.target.closest && e.target.closest('.sp-fb');
+      if (fb) {
+        const g = fb.closest('.sp-flt'), one = fb.closest('.sp-one'), f = fb.getAttribute('data-f'); if (!g || !one) return;
+        if (f === 'all') delete FLT[g.getAttribute('data-fk')]; else FLT[g.getAttribute('data-fk')] = f;
+        ['q', 's', 'fx'].forEach(c => one.classList.toggle('sp-f-' + c, f === c));
+        g.querySelectorAll('.sp-fb').forEach(b => { const c = b === fb; b.classList.toggle('cur', c); b.setAttribute('aria-pressed', String(c)); });
+        return;
+      }
       const f = e.target && e.target.closest && e.target.closest('.sp-ft');
       if (f) { const one = f.closest('.sp-one'); if (one) foldOne(one, !one.classList.contains('sp-off')); return; }
       const t = e.target && e.target.closest && e.target.closest('.sp-sl'); if (t) { root.querySelectorAll('.hl').forEach(x => x.classList.remove('hl')); pick(t, true, true); }
@@ -220,7 +240,11 @@
     const macro = cron ? '台北 ' + cron : fin;
     const relNext = code => { const r = cal && cal.releases && cal.releases[code]; if (!r) return ''; const t = (r.times || []).map(x => Date.parse(x.replace('Z', ':00Z'))).filter(x => x > now).sort((a, b) => a - b)[0]; return t ? (r.approx ? '約 ' : '') + '台北 ' + tpe(t) : ''; };
     const macroOf = label => { for (const t of tps) if (t.re.test(label)) { const v = relNext(t.rel); if (v) return v; } return macro; };
-    return { official: fin, price: fin, macro, macroOf, custom: '無（不會自動更新）' };
+    // 本月確定：那一類數據下一次官方公布在月底收盤之後，而且上一次公布已經過了 3 小時（網站已經抓到）
+    const closeMs = T ? (() => { const [y, mo, dd] = T.split('-').map(Number), g = Date.UTC(y, mo - 1, dd, 16); return g + etOffset(g) * 36e5; })() : 0;
+    const relFixed = code => { const r = cal && cal.releases && cal.releases[code]; if (!r || !closeMs) return false; const ts = (r.times || []).map(x => Date.parse(x.replace('Z', ':00Z'))); const nx = ts.filter(x => x > now).sort((a, b) => a - b)[0], pv = ts.filter(x => x <= now).sort((a, b) => b - a)[0]; return !!nx && nx > closeMs && !(pv && now - pv < 3 * 36e5); };
+    const fixedOf = label => { for (const t of tps) if (t.re.test(label)) return relFixed(t.rel); return false; };
+    return { official: fin, price: fin, macro, macroOf, fixedOf, custom: '無（不會自動更新）' };
   }
 
   BN.sigpie = { html, bind, how, next, foldAll, side, plainRows };

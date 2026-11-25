@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=1e97110e4e">
+<link rel="stylesheet" href="assets/site.css?v=6dff079e01">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2?v=a1038e59ac" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2?v=250c9c9193" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2?v=5339cee8cc" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
@@ -205,7 +205,7 @@
   window.BN=window.BN||{};window.BN.adminFold={reveal,all};
 })();
 </script>
-<script src="assets/site.js?v=c57986514d"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=06dfb00df6"></script>
+<script src="assets/site.js?v=c57986514d"></script><script src="assets/auth.js?v=10e63b39b4"></script><script src="assets/pwchange.js?v=93b3525f42"></script><script src="assets/liveq.js?v=ff877a6074"></script><script src="assets/sigpie.js?v=60285f6553"></script>
 <script>
 (async function(){
   const sess=BN.auth.require('admin'); if(!sess) return;
@@ -493,7 +493,7 @@
     const M=EXPL.models.find(x=>x&&x.id===st.id)||EXPL.models.find(x=>x&&x.ref&&x.ref===st.ref);
     return BN.sigpie.plainRows(M&&M.rows,rows).map(t=>t||EXPL_MSG.miss);}
   function condRows(e,kind,m){const N=BN.sigpie.next(rules,m||market,{cal:RCAL,topics:TOPICS});
-    const next=kind==='official'?{price:N.official,macro:N.official}:kind==='custom'?{custom:N.custom}:{price:N.price,macro:N.macro,macroOf:N.macroOf};
+    const next=kind==='official'?{price:N.official,macro:N.official}:kind==='custom'?{custom:N.custom,fixedOf:N.fixedOf}:{price:N.price,macro:N.macro,macroOf:N.macroOf,fixedOf:N.fixedOf};
     return BN.sigpie.html(STR().map(st=>({id:st.id,ref:st.ref,d:e.detail[st.id],plain:plainOf(st,e.detail[st.id])})),{kind,next,isMacro:l=>TOPRE.some(re=>re.test(l)),fold:'adm-'+kind});}
   const put=(sel,h)=>{const el=$(sel);el.innerHTML=h;BN.sigpie.bind(el);};
   async function loadSignals(){rules=await BN.auth.loadRules(sess);

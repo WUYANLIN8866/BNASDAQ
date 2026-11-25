@@ -203,7 +203,7 @@
         + '</td><td data-l="條件成立">' + (m.d ? m.d.votes + '／' + m.d.of : '—') + '</td><td class="l" data-l="翻轉價位（距最新價格）">' + flip(m) + '</td></tr>').join('')
       + '</tbody></table></div>';
     // 2026-11-24：全部判斷條件改成圓餅（assets/sigpie.js）：每一塊＝一項條件，藍＝成立、灰＝不成立；每塊旁邊寫目前數值、怎麼判斷、下次更新時間、對應的消息主題
-    const N = BN.sigpie ? BN.sigpie.next(R, A.market, { cal: RCAL, topics: RTOP }) : null, nx = N ? (A.prov ? { price: N.price, macro: N.macro, macroOf: N.macroOf } : { price: N.official, macro: N.official }) : {};
+    const N = BN.sigpie ? BN.sigpie.next(R, A.market, { cal: RCAL, topics: RTOP }) : null, nx = N ? (A.prov ? { price: N.price, macro: N.macro, macroOf: N.macroOf, fixedOf: N.fixedOf } : { price: N.official, macro: N.official }) : {};
     h += A.ms.map(m => '<details class="dm-all"><summary><span>' + esc(m.id) + '：全部 ' + m.rows.length + ' 項判斷條件（圓餅：藍＝成立、灰＝不成立）與對應的消息主題</span></summary><div class="ans">'
       + (BN.sigpie ? BN.sigpie.html([{ id: m.id, d: m.d, topics: m.rows.map(r => r.topics.length ? r.topics.map(x => A.byCode.get(x).name).join('、') : '—（依 QQQ 月線計算）') }],
           { kind: A.prov ? 'prov' : 'official', next: nx, isMacro: (l, j) => !!(m.rows[j] && m.rows[j].topics.length) })

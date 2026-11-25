@@ -804,3 +804,15 @@ ul.ind { max-width: none; }
 .mo-list li b{flex:1}.mo-list .mo-i{min-width:1.6em;color:var(--muted);font-variant-numeric:tabular-nums}
 .mo-list button{min-width:34px;padding:4px 8px}
 
+
+/* 2026-11-25：圓餅下方的條件篩選（全數／僅 QLD／僅 SHV／本月判斷確定） */
+.sp-flt{display:grid;gap:6px;margin:12px 0 0}
+.sp-fb{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;color:var(--ink-2);cursor:pointer;background:var(--paper)}
+.sp-fb b{font-weight:700;color:var(--muted)}
+.sp-fb:hover{border-color:var(--ink-2)}
+.sp-fb:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sp-fb.cur{border-color:var(--sig-on);color:var(--ink);box-shadow:inset 4px 0 0 var(--sig-on);font-weight:700}
+.sp-fb.cur b{color:var(--ink)}
+.sp-fnote{margin:2px 0 0;font-size:12px;line-height:1.5;color:var(--muted);max-width:none}
+.sp-f-q .sp-it:not(.sd-q),.sp-f-s .sp-it:not(.sd-s),.sp-f-fx .sp-it:not(.fx){display:none}
+.sp-f-q .sp-sl:not(.sd-q),.sp-f-s .sp-sl:not(.sd-s),.sp-f-fx .sp-sl:not(.fx){opacity:.22}
