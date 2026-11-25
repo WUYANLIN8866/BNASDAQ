@@ -99,7 +99,7 @@
   </details>
   <div id="mh-out"></div>
   <h2 id="hold">當前策略持有狀態</h2>
-  <div class="tblwrap"><table class="tbl" id="nowtbl"><thead><tr><th class="l">策略</th><th class="l" id="nowhd">本月持有</th><th class="l" id="prevhd">上月持有</th><th class="l">本月動作</th></tr></thead><tbody id="nowbody"><tr><td colspan="4">解密規則並計算中…</td></tr></tbody></table></div>
+  <div class="tblwrap"><table class="tbl" id="nowtbl"><thead><tr><th class="l">策略</th><th class="l" id="nowhd">本月持有</th><th class="l" id="nexthd">下月持有＆機率</th><th class="l">下個月是否需要操作</th></tr></thead><tbody id="nowbody"><tr><td colspan="4">解密規則並計算中…</td></tr></tbody></table></div>
   <p class="small" id="grant-note" hidden></p>
   <h2 id="prob">下月持有資產＆機率</h2>
   <p class="small" id="prob-head">計算中…</p>
@@ -133,16 +133,25 @@
     const VIS=BN.auth.sortModels(rules.STRATEGIES.filter(st=>BN.auth.allowed(G,st)),await BN.auth.modelOrder());   // 管理員設定的模型顯示順序（data/site.json 的 model_order）
     const sync=rs&&rs.b_ver===bv?'；每天自動比對專案 B 區兩次，有更新就自動重建 <span class="ok-dot"></span>':'';
     const T=rules.holdingText, L=rules.latest(market,tb), k=market.k;
-    const holdM=L.lastComplete.month?rules.nextMonth(L.lastComplete.month):'—', prevM=rules.nextMonth(L.prevComplete.month), nextM=c?rules.nextMonth(c.m):'—';
+    const holdM=L.lastComplete.month?rules.nextMonth(L.lastComplete.month):'—', nextM=c?rules.nextMonth(c.m):'—';
     const left=c?rules.tradingDaysLeft(market.asof,c.m):0;
     $('#status').innerHTML='市場資料截至 <b>'+esc(market.asof)+'</b>（QQQ 收盤 <b class="num">'+c.c.toFixed(2)+'</b>）｜來源：'+esc(market.source)+'｜更新 '+esc(market.updated.replace('T',' ').replace('Z',' UTC'))+'｜規則版本 <b>'+esc(rules.built)+'</b>'+(VIS.length?'（專案 B 區 '+VIS.map(st=>st.ref+'＝'+st.id).join('、')+sync+'）':'');
     // 目前持有
-    $('#nowhd').textContent='本月持有（'+holdM+'）'; $('#prevhd').textContent='上月持有（'+prevM+'）';
+    $('#nowhd').textContent='本月持有（'+holdM+'）'; $('#nexthd').textContent='下月持有＆機率（'+nextM+'）';
     if(!VIS.length){$('#nowbody').innerHTML='<tr><td colspan="4">這個帳號目前沒有開通任何模型；需要開通請聯絡管理員。</td></tr>';$('#cards').innerHTML='';$('#prob-head').textContent='—';
       window.BN.memberTargets={month:holdM,list:[]};document.dispatchEvent(new CustomEvent('bn:targets',{detail:window.BN.memberTargets}));return;}
     if(G.models!=='*'&&VIS.length<rules.STRATEGIES.length){const gn=$('#grant-note');gn.innerHTML='這個帳號已開通：'+VIS.map(st=>'<b>'+esc(st.id)+'</b>').join('、')+'。其他模型的開通方式請見<a href="plans.html">會員方案</a>，或聯絡管理員。';gn.hidden=false;}
-    $('#nowbody').innerHTML=VIS.map(st=>{const w=L.lastComplete.w[st.id], wp=L.prevComplete.w[st.id];
-      return '<tr><td class="l"><b>'+esc(st.id)+'</b></td><td class="l"><span class="badge '+cls(w)+'">'+T(w)+'</span></td><td class="l"><span class="badge '+cls(wp)+'">'+T(wp)+'</span></td><td class="l">'+(w==null||wp==null?'—':w!==wp?'<b style="color:var(--bad)">要換倉</b>（'+esc(L.lastComplete.month)+' 月底後的下一個交易日開盤）':'<span class="ok-dot"></span>不用動')+'</td></tr>';}).join('');
+    // 2026-11-25 站主：第三欄改成「下月持有＆機率」、第四欄改成「下個月是否需要操作」（原本是上月持有、本月動作）。
+    //   和下面「下月持有資產＆機率」用同一份結果（F）：模擬完成前先顯示用最新價格推算的結果；本月持有和下月不同＝要換倉。
+    const nowRows=(Lk,F,fin,m)=>{$('#nowbody').innerHTML=VIS.map(st=>{const w=L.lastComplete.w[st.id], pv=Lk.provisional.w[st.id], bd=x=>'<span class="badge '+cls(x)+'">'+T(x)+'</span>';
+      let nx, act;
+      if(!Lk.preps||!Lk.preps[st.id]) nx=act='—';
+      else if(!F){nx=bd(pv)+' <span class="small">機率計算中…</span>'; act=w==null?'—':'<span class="small">計算中…</span>';}
+      else{const ps=F.probs[st.id].filter(x=>x.p>0).sort((a,b)=>b.p-a.p), sure=F.n===1, pm=ps.reduce((a,x)=>a+(x.w!==w?x.p:0),0);   // pm＝下個月持有和本月不同的機率
+        nx=ps.map(x=>'<span style="white-space:nowrap">'+bd(x.w)+' '+(sure?'<span class="small">'+(fin?'正式判斷':'以最新價格推算')+'</span>':'<b>'+pc(x.p)+'</b>')+'</span>').join('<br>');
+        act=w==null?'—':sure?(pm>0?'<b style="color:var(--bad)">要換倉</b>（'+esc(m)+' 月底後的下一個交易日開盤'+(fin?'':'；收盤後才確定')+'）':'<span class="ok-dot"></span>不用操作'+(fin?'':'（收盤後才確定）'))
+          :pm>=0.5?'<b style="color:var(--bad)">可能要換倉</b>（機率 '+pc(pm)+'；'+esc(m)+' 月底後的下一個交易日開盤）':'<span class="ok-dot"></span>不用操作（機率 '+pc(1-pm)+'）';}
+      return '<tr><td class="l"><b>'+esc(st.id)+'</b></td><td class="l">'+bd(w)+'</td><td class="l">'+nx+'</td><td class="l">'+act+'</td></tr>';}).join('');};
     // 下個月機率：先畫「用最新價格推算」，再非同步跑模擬。
     // 2026-11-24 站主：所有股價計算都用最新的即時價格 → 開盤期間（含美股盤前盤後）用 QQQ 即時成交當作月底收盤（assets/liveq.js）：
     //   換法見 assets/liveq.js 的 qqqMarket（同一個月才換；還原價＝即時價 × market.json 的 k；本月最高／最低納入即時價）。
@@ -171,15 +180,15 @@
           +'<div class="next"><div class="small">用'+pxTxt+'當作 '+esc(cc.m)+' 月底收盤 → '+esc(nextM)+' 持有</div><div class="hold" style="font-size:20px">'+T(pv)+'</div>'
           +'<div class="small">翻轉價位：'+(parts.length?parts.join('；')+'（±40% 範圍內）':'±40% 範圍內結論不變')+'</div></div></div>';};
       const det={n:1,probs:Object.fromEntries(VIS.map(s=>[s.id,s.levels.map(w=>({w,p:w===Lk.provisional.w[s.id]?1:0}))]))};
-      if(left===0){$('#cards').innerHTML=VIS.map(st=>card(st,det)).join('');return;}
+      if(left===0){$('#cards').innerHTML=VIS.map(st=>card(st,det)).join('');nowRows(Lk,det,fin,cc.m);return;}
       // 機率模擬：價格和上次模擬差不到 1%、且 15 分鐘內算過，就沿用上次的結果（標明起算價）
       const px=cc.c, reuse=lastF&&lastF.asof===mk.asof&&Math.abs(px/lastF.from-1)<0.01&&Date.now()-lastF.at<15*60e3;   // 換了交易日（剩下的天數不同）一定重算
       const fHead=F=>'下個月＝<b>'+esc(nextM)+'</b>。'+esc(cc.m)+' 還有 <b>'+F.days+'</b> 個交易日。模擬方法：QQQ 自 '+esc(F.poolFrom)+' 起 '+F.poolN.toLocaleString('en-US')+' 個交易日的報酬與日內高低，依目前波動（EWMA λ＝'+F.lambda+'，日波動 '+(F.sigma*100).toFixed(2)+'%）重抽樣，從 '+esc(F.fromTxt)+' '+F.from.toFixed(2)+' 模擬到月底 '+F.n.toLocaleString('en-US')+' 次，再用規則判斷每一次的月底結果。月底收盤 90% 落在 '+F.price.p5.toFixed(2)+'～'+F.price.p95.toFixed(2)+'（中位數 '+F.price.p50.toFixed(2)+'）。這是估計，不是保證；同一份資料每次結果相同。'+(F!==lastF||px===F.from?'':'（價格和模擬起算價相差不到 1%，15 分鐘內沿用這次模擬；上面「用…當作月底收盤」與翻轉價位是用最新價格算的）');
-      $('#cards').innerHTML=VIS.map(st=>card(st,reuse?lastF:null)).join('');
+      $('#cards').innerHTML=VIS.map(st=>card(st,reuse?lastF:null)).join('');nowRows(Lk,reuse?lastF:null,fin,cc.m);
       if(reuse){$('#prob-head').innerHTML=fHead(lastF);return;}
       setTimeout(async()=>{try{const fhs=await fhsP; if(my!==seq)return; const F=rules.forecast(mk,fhs,{n:10000,preps:Object.fromEntries(VIS.map(st=>[st.id,Lk.preps[st.id]]))});   // 只模擬開通的模型（每條路徑的價格與模型無關，結果和全部一起算相同）
         if(my!==seq)return; F.from=px; F.fromTxt=lv&&lv.ph!=='close'?'即時價':'最新收盤'; F.at=Date.now(); F.asof=mk.asof; lastF=F;
-        $('#cards').innerHTML=VIS.map(st=>card(st,F)).join('');
+        $('#cards').innerHTML=VIS.map(st=>card(st,F)).join('');nowRows(Lk,F,fin,cc.m);
         $('#prob-head').innerHTML=fHead(F);
       }catch(e){$('#prob-head').innerHTML='<span class="msg err">機率計算失敗：'+esc(e.message||e)+'</span>';}},30);
     }
