@@ -1,0 +1,494 @@
+{
+ "fetched": "2026-11-25T14:51:31Z",
+ "landing": {
+  "status": 200,
+  "bytes": 212389
+ },
+ "n_ok": 58,
+ "n_items": 481,
+ "enc": {
+  "name": "fredmd",
+  "parts": 1,
+  "bytes": 4664368,
+  "all_sha": "9d80f181e8d0e92a505c55f69d49c6b94274e7ebf26acc472e8464b61ec0dab9",
+  "changed": true,
+  "files": [
+   {
+    "file": "fredmd.p00.enc.json",
+    "bytes": 6220137
+   }
+  ]
+ },
+ "files": [
+  {
+   "name": "fred-md_appendix0324.zip",
+   "status": 200,
+   "bytes": 247991,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "b51fd612fea7d067",
+   "members": 5
+  },
+  {
+   "name": "fredmdchanges0324.pdf",
+   "status": 200,
+   "bytes": 125157,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "caad71ec33ceb745"
+  },
+  {
+   "name": "historical_fred-md.zip",
+   "status": 200,
+   "bytes": 46664359,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "3434963f26fbf1aa",
+   "members": 187
+  },
+  {
+   "name": "historical-vintages-of-fred-md-2015-01-to-2025-12.zip",
+   "status": 200,
+   "bytes": 36321884,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "7cf486e5f7fe6142",
+   "members": 132
+  },
+  {
+   "name": "fred-qd_appendix0324.zip",
+   "status": 200,
+   "bytes": 291189,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "bf9d33733cef7c47",
+   "members": 5
+  },
+  {
+   "name": "fredqdchanges0324.pdf",
+   "status": 200,
+   "bytes": 116431,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "b2f03654e7796bd0"
+  },
+  {
+   "name": "historical-vintages-of-fred-qd-2018-05-to-2025-12.zip",
+   "status": 200,
+   "bytes": 19624235,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "56c5ff7ae60c9ed1",
+   "members": 92
+  },
+  {
+   "name": "fred-databases_code.zip",
+   "status": 200,
+   "bytes": 11052,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "cbb4b5f1e9549e50",
+   "members": 6
+  },
+  {
+   "name": "2026-10-md.csv",
+   "status": 200,
+   "bytes": 670470,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "56df9d964f9c846c"
+  },
+  {
+   "name": "2026-09-md.csv",
+   "status": 200,
+   "bytes": 669656,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "d6e239038afbdbf4"
+  },
+  {
+   "name": "2026-rev-08-md.csv",
+   "status": 200,
+   "bytes": 668731,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "412b5451f32321b5"
+  },
+  {
+   "name": "2026-07-md.csv",
+   "status": 200,
+   "bytes": 667882,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "cf4a3ea21d90ced6"
+  },
+  {
+   "name": "2026-06-md.csv",
+   "status": 200,
+   "bytes": 666999,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "0003e85e0bbf5653"
+  },
+  {
+   "name": "2026-05-md.csv",
+   "status": 200,
+   "bytes": 666138,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "2221763e2bac6995"
+  },
+  {
+   "name": "2026-04-md.csv",
+   "status": 200,
+   "bytes": 665271,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "5d1b4008d3b4d5cb"
+  },
+  {
+   "name": "2026-03-md.csv",
+   "status": 200,
+   "bytes": 664304,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "630110f3e4ab8a05"
+  },
+  {
+   "name": "2026-02-md.csv",
+   "status": 200,
+   "bytes": 663349,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "618fa325fdf4e2d8"
+  },
+  {
+   "name": "2026-01-md.csv",
+   "status": 200,
+   "bytes": 662494,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "c74addecd3279b92"
+  },
+  {
+   "name": "2026-10-qd.csv",
+   "status": 200,
+   "bytes": 531136,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "be618c35f2d321ec"
+  },
+  {
+   "name": "2026-09-qd.csv",
+   "status": 200,
+   "bytes": 529405,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "a144b1547ddbad5c"
+  },
+  {
+   "name": "2026-rev-08-qd.csv",
+   "status": 200,
+   "bytes": 529303,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "7471dd58bac00c59"
+  },
+  {
+   "name": "2026-07-qd.csv",
+   "status": 200,
+   "bytes": 529186,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "ebe32d30809b528b"
+  },
+  {
+   "name": "2026-06-qd.csv",
+   "status": 200,
+   "bytes": 527467,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "87393af18899155b"
+  },
+  {
+   "name": "2026-05-qd.csv",
+   "status": 200,
+   "bytes": 527253,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "c164f0796755d81c"
+  },
+  {
+   "name": "2026-04-qd.csv",
+   "status": 200,
+   "bytes": 527071,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "9915949df15a535f"
+  },
+  {
+   "name": "2026-03-qd.csv",
+   "status": 200,
+   "bytes": 525273,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "71a892f9f291451c"
+  },
+  {
+   "name": "2026-02-qd.csv",
+   "status": 200,
+   "bytes": 524993,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "c7b6ebf7fed23ba2"
+  },
+  {
+   "name": "2026-01-qd.csv",
+   "status": 200,
+   "bytes": 524615,
+   "from_page": true,
+   "last_modified": null,
+   "sha": "74409ab08a677044"
+  },
+  {
+   "name": "2026-08-md.csv",
+   "status": 200,
+   "bytes": 668717,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "32ee2e5d14e3ea6e"
+  },
+  {
+   "name": "2026-11-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-12-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-01-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-02-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-03-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-04-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-05-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-06-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-07-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-09-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-10-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-11-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-12-md.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-08-qd.csv",
+   "status": 200,
+   "bytes": 529301,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "de7f154d8db3a763"
+  },
+  {
+   "name": "2026-11-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-12-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-01-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-02-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-03-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-04-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-05-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-06-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-07-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-09-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-10-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-11-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "2026-rev-12-qd.csv",
+   "status": 200,
+   "bytes": 233742,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "e7065dfabf23217e"
+  },
+  {
+   "name": "current.csv",
+   "status": 200,
+   "bytes": 659945,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "b76d1c2edd1e50a3"
+  },
+  {
+   "name": "current.csv",
+   "status": 200,
+   "bytes": 514190,
+   "from_page": false,
+   "last_modified": null,
+   "sha": "d9ede94f40c116e8"
+  }
+ ]
+}

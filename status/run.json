@@ -3,7 +3,8 @@
  "jobs": {
   "key": "ok 0s",
   "yahoo": "ok 183s",
-  "fredgraph": "ok 132s"
+  "fredgraph": "ok 132s",
+  "fredmd": "ok 136s"
  },
- "finished": "2026-11-25T14:51:28Z"
+ "finished": "2026-11-25T14:53:46Z"
 }
