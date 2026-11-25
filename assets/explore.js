@@ -50,6 +50,27 @@
     }
     return HOME;
   }
+  // 2026-11-25 站主：「累計應該只會越來越多」「報酬只會越來越高」「為何會有8台機器」
+  // 快照的合計曾在 AI Server 做完一輪、改報下一輪時掉下去（已完成那一份沒被算進去）。已做過的回測不會消失、找到過的最佳值也不會變差，
+  // 所以畫面一律取「到目前為止的最大值」：兩條走勢線逐點取累計最大，兩個數字格不低於走勢線的最後一點。
+  // AI Server 台數以 tokens 裡實際有幾台（m1、m2…）為上限，避免同一台在兩輪各有一份任務時被算成兩台。
+  function applyMono(d) {
+    if (!d) return d;
+    if (Array.isArray(d.history) && d.history.length) {
+      let mt = -Infinity, mb = -Infinity;
+      d.history = d.history.map(h => {
+        if (!Array.isArray(h)) return h;
+        const t = typeof h[1] === 'number' && isFinite(h[1]) ? (mt = Math.max(mt, h[1])) : (isFinite(mt) ? mt : h[1]);
+        const b = typeof h[2] === 'number' && isFinite(h[2]) ? (mb = Math.max(mb, h[2])) : (isFinite(mb) ? mb : h[2]);
+        return [h[0], t, b];
+      });
+      if (isFinite(mt) && !(d.tested >= mt)) d.tested = mt;
+      if (isFinite(mb) && !(d.best >= mb)) d.best = mb;
+    }
+    const n = Object.keys(d.tokens || {}).filter(k => /^m\d+$/.test(k)).length;
+    if (n > 1 && d.machines_total > n) { d.machines_total = n; d.machines = Math.min(d.machines || 0, n); }
+    return d;
+  }
   function applyBase(d) {
     const h = d && homeBest();
     if (h) { d.base = h.cagr; d.base_mdd = h.mdd; d.base_name = h.name; }
@@ -313,7 +334,7 @@
 
   async function tick() {
     const d = await load();
-    if (d) { DATA = applyBase(applyBar(d)); render(); $('xp-err').hidden = true; }
+    if (d) { DATA = applyBase(applyBar(applyMono(d))); render(); $('xp-err').hidden = true; }
     else if (!DATA) { $('xp-err').hidden = false; }
   }
 
