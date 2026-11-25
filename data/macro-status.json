@@ -1,9 +1,9 @@
 {
  "schema": "bnasdaq-macro-status/1",
- "checked": "2026-11-24T21:13:14Z",
+ "checked": "2026-11-25T05:04:52Z",
  "ok": true,
  "n_series": 126,
  "failed": [],
- "last_ok": "2026-11-24T21:13:14Z",
+ "last_ok": "2026-11-25T05:04:52Z",
  "note": ""
 }
