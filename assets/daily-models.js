@@ -7,6 +7,7 @@
    本檔是公開的，不含任何策略規則、門檻，也沒有「哪個模型用哪些資料」的對照表。
    管理員看到的判斷條件全部來自登入後才解得開的會員規則（data/rules.enc.json，在瀏覽器解密、執行）；
    消息主題（data/daily-topics.json，通用的財經新聞分類）是在管理員的瀏覽器裡，和解密後的條件名稱逐一比對出來的。
+   2026-11-26 站主：原本報告中段的「消息對模型的影響」一節（說明＋四步驟流程圖）已移除；BN.dm.sect() 現在只替管理員輸出管理員專區。
    用法（daily.html）：BN.dm.ready() → 畫報告時 BN.dm.begin()、BN.dm.line(消息文字, 主題代碼)、BN.dm.sect() → 插進網頁後 BN.dm.mount(容器, 報告) */
 (function () {
   'use strict';
@@ -46,29 +47,17 @@
     return '<div class="dm ok" data-dm="' + i + '"><b class="dm-k">模型影響</b><span class="dm-s"><i aria-hidden="true">✓</i>' + esc(group()) + '：' + SAY + '</span></div>';
   }
 
-  // ---------- 「消息對模型的影響」這一節 ----------
-  const STEPS = [['消息發生', '國際大事與企業新聞'], ['模型自動處理', '不需要人工解讀'], ['月底自動判斷', '每月最後交易日收盤後'], ['次日開盤執行', '其餘交易日不操作']];
+  // ---------- 報告中段插入的區塊 ----------
+  // 2026-11-26 站主：「消息對模型的影響」這一節移除（標題、兩段說明、四步驟流程圖、會員專區連結；訪客與未開通帳號的「會員專屬」那一節也一併不顯示）。
+  //   每一則消息後面的「模型影響」那一行不變；管理員專區（只有管理員看得到）留在原位置。
   function sect() {
-    let h = '<h2 id="models">消息對模型的影響</h2>';
-    if (ST.who === 'visitor') return h + '<p class="dm-lockp">' + LOCK + '</p>';
-    if (none()) return h + '<p class="dm-lockp">' + NONE + '</p><p class="small">這個帳號目前沒有開通任何模型；需要開通請聯絡管理員。</p>';
-    const names = ST.codes && ST.codes.length ? ST.codes.join('、') : '各模型';
-    h += '<p class="lead">本頁每一則消息後面都標示「模型影響」。</p>';
-    h += '<p>' + esc(names) + ' 都不需要人工解讀消息：每一則消息造成的影響，' + SAY.replace('此訊息造成的影響', '') + '。模型在每月最後一個交易日收盤後自動完成判斷，次一交易日開盤執行，其餘交易日不操作。</p>';
-    h += '<div class="fig dm-fig"><div class="fsub">模型怎麼處理消息（四個步驟）</div><ol class="dm-flow">' + STEPS.map((s, i) => '<li><b>' + (i + 1) + '</b><span>' + s[0] + '</span><small>' + s[1] + '</small></li>').join('') + '</ol></div>';
-    h += '<p class="small">各模型目前的持有與下個月的機率，請看<a href="member.html">會員專區</a>。</p>';
-    if (ST.who === 'admin') h += '<div id="dm-admin" class="dm-admin"><p class="small">管理員專區載入中…</p></div>';
-    return h;
+    if (ST.who !== 'admin' || none()) return '';
+    return '<div id="dm-admin" class="dm-admin"><p class="small">管理員專區載入中…</p></div>';
   }
 
   function mount(root, report) {
     if (ST.who === 'visitor' || !root || none()) return;
     ST.session = (report && report.session) || '';
-    const fig = root.querySelector('.dm-fig');
-    if (fig && BN.play) {   // 動態走勢：四個步驟依序亮起
-      const lis = Array.from(fig.querySelectorAll('.dm-flow li')), paint = k => lis.forEach((li, j) => { li.classList.toggle('on', j === k); li.classList.toggle('wait', k >= 0 && j > k); });
-      try { BN.play.attach(fig, { n: lis.length, ms: 1100, frame: () => null, label: i => '第 ' + (i + 1) + '／' + lis.length + ' 步：' + STEPS[i][0], onFrame: paint, onEnd: () => paint(-1) }); } catch (e) { /* 播放功能出錯不影響內容 */ }
-    }
     if (ST.who === 'admin') setTimeout(() => adminInit(root), 60);
   }
 
