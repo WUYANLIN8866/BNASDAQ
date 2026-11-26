@@ -34,8 +34,8 @@ if (sw3) { set(/(id="ind-sw3">)[^<]*(<)/, sw3[0] + ' 次'); set(/(id="ind-sw3-s"
 const D4 = B.dca('sat3_30', s), sw4 = (B.T.sw || {}).sat3;
 HF('4', D4);
 if (sw4) { set(/(id="ind-sw4">)[^<]*(<)/, sw4[0] + ' 次'); set(/(id="ind-sw4-s">)[\s\S]*?(<\/small>)/, '<span data-mo>會員專屬</span> 平均每年 ' + (sw4[0] / B.yrs('2000-05-31', END)).toFixed(2) + ' 次，皆為全進全出（不設半倉）'); }
-// 四個模型的區間：期末價值最小～最大；「倍起」＝最小的本金倍數（都是公開數字：期末價值÷投入本金）
+// 四個模型的區間：期末價值最小～最大；「倍起」＝最小的本金倍數
 const ES = [D, D2, D3, D4].sort((p, q) => p.end - q.end);
-set(/(id="hero-lo">)[^<]*(<)/, (ES[0].end / 1e8).toFixed(1)); set(/(id="hero-hi">)[^<]*(<)/, (ES[3].end / 1e8).toFixed(1)); set(/(id="hero-lomult">)[^<]*(<)/, MX(ES[0]));
+set(/(id="hero-lo">)[^<]*(<)/, (ES[0].end / 1e8).toFixed(1)); set(/(id="hero-hi">)[^<]*(<)/, ES[3] === D4 ? '????' : (ES[3].end / 1e8).toFixed(1));   // 2026-11-26 站主：區間上限是旗艦模型時寫 ????（開通的會員由首頁程式填入數字） set(/(id="hero-lomult">)[^<]*(<)/, MX(ES[0]));
 if (h !== h0) fs.writeFileSync(path.join(ROOT, 'index.html'), h);
 console.log('首頁靜態數字：終點 ' + END + '｜' + big + '｜' + sub + (h !== h0 ? '（已更新）' : '（不需更新）'));
