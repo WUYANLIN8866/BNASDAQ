@@ -1,11 +1,14 @@
 {
- "id": "0b-20261126-full-a",
+ "id": "0b-20261126-asof",
  "jobs": [
-  "key",
-  "fredapi"
+  "fredasof"
  ],
  "opts": {
   "fredapi_batch": "a",
-  "fredapi_budget_s": 7200
+  "fredasof_dates": [
+   "2008-09-24",
+   "2015-08-06",
+   "2019-02-15"
+  ]
  }
 }
