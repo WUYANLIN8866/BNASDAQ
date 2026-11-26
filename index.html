@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=39edfd9378">
+<link rel="stylesheet" href="assets/site.css?v=caea5abbd5">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2?v=8ddfbd585e" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2?v=8f7f593d6d" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2?v=322c389431" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -36,7 +36,7 @@
     <div class="hd-lanes"><div class="hd-lane" style="--c:var(--s-fund)"><a class="hd-m" href="#m-26110" aria-label="查看 BNASDAQ-26110 的模型說明"><span class="hd-mt">入門 AI 模型</span><span class="hd-mc">BNASDAQ-26110</span></a><div class="hd-res"><span class="hd-rl">30 年後</span><div class="hd-end"><span id="hero-big">98.5</span><small>億</small></div></div></div>
     <div class="hd-lane" style="--c:var(--s-sat)"><a class="hd-m" href="#m-26111" aria-label="查看 BNASDAQ-26111 的模型說明"><span class="hd-mt">進階 AI 模型</span><span class="hd-mc">BNASDAQ-26111</span></a><div class="hd-res"><span class="hd-rl">30 年後</span><div class="hd-end"><span id="hero-big2">145.8</span><small>億</small></div></div></div>
     <div class="hd-lane" style="--c:var(--s-sat2)"><a class="hd-m" href="#m-26112" aria-label="查看 BNASDAQ-26112 的模型說明"><span class="hd-mt">專業 AI 模型</span><span class="hd-mc">BNASDAQ-26112</span></a><div class="hd-res"><span class="hd-rl">30 年後</span><div class="hd-end"><span id="hero-big3">343.7</span><small>億</small></div></div></div>
-    <div class="hd-lane hd-flag" style="--c:var(--s-sat3)"><a class="hd-m" href="#m-sat3" aria-label="查看 會員專屬 的模型說明"><span class="hd-mt">旗艦 AI 模型</span><span class="hd-mc"><span data-mo>會員專屬</span></span></a><div class="hd-res"><span class="hd-rl">30 年後</span><div class="hd-end hd-q"><span title="會員專屬" id="hero-big4">????</span><small id="hero-big4-u" hidden>億</small></div></div></div></div></div></div>
+    <div class="hd-lane hd-flag" style="--c:var(--s-sat3)"><a class="hd-m" href="#m-sat3" aria-label="查看 會員專屬 的模型說明"><span class="hd-mt">旗艦 AI 模型</span><span class="hd-mc"><span data-mo>會員專屬</span></span></a><div class="hd-res"><span class="hd-rl">30 年後</span><div class="hd-end hd-q"><span id="hero-big4">會員專屬</span><small id="hero-big4-u" hidden>億</small></div></div></div></div></div></div>
 </div></section>
 
 <section class="band" id="client" hidden><div class="wrap">
@@ -318,12 +318,12 @@ function renderInd(start){
     //   BNASDAQ-26111／26112／26113 的 30 年序列：2000-03 前接 bt-sat30.js、bt-sat2-30.js、bt-sat3-30.js 的延伸前段（同一走動式規則往前多訓練 1996-03、1998-03 兩次），2000-03 起即正式序列
     //   2026-11-26 站主圈改：金框拿掉「①讀進資料 ②模型共同判斷 ③輸出一個決定」三欄與「年化／回撤／本金倍數」一欄，每個模型只留名稱與 30 年後的期末價值；
     //   同日 09:03 站主：上方「AI 模型 98.5～608.7 億」的上限也改成「????」；10:45 再改成 343.7（＝不含旗艦模型的最高值）
-    //   旗艦模型（BNASDAQ-26113）的期末價值改顯示「????」：頁面原始碼就寫 ????，只有開通這個模型的會員與管理員由下面的程式填入數字（BN.canSee）
+    //   旗艦模型（BNASDAQ-26113）的期末價值不公開：頁面原始碼寫「會員專屬」（08:36 站主指定 ????，10:57 改成 會員專屬），只有開通這個模型的會員與管理員由下面的程式填入數字（BN.canSee）
     //   站主指定這一塊不放註記，也不放「定期定額回測／投入本金／資料日期」那一行（2026-11-24 15:10）：回測口徑寫在頁尾免責聲明與 data.html；靜態備用數字由 scripts/bt_live/patch_home.js 每月同步
     const f0=B.first('sat'),s0=f0>'2000-05'?f0:'2000-05',a=B.drawdown('fund','2000-05'),b=B.drawdown('sat',s0),c3=B.drawdown('sat2',s0),c4=B.drawdown('sat3',s0),qd=B.drawdown('qqq','2000-05');
     const neg=x=>'−'+pct(Math.abs(x)),zh=n=>n.toLocaleString('zh-Hant-TW'),mult=X=>{const v=X.end/X.principal;return (v>=100?zh(Math.round(v)):v.toFixed(1))+' 倍';},prin=zh(D.principal/1e4)+' 萬';
     const HR=[['',D,a],['2',B.dca('sat30',s),b],['3',B.T.eq.sat2_30?B.dca('sat2_30',s):null,c3],['4',B.T.eq.sat3_30?B.dca('sat3_30',s):null,c4]].filter(x=>x[1]);
-    HR.forEach(x=>{const k=x[0],X=x[1];if(k==='4'&&!(BN.canSee&&BN.canSee('BNASDAQ-26113')))return;$('hero-big'+k).textContent=(X.end/1e8).toFixed(1);if(k==='4'){const q=$('hero-big4');q.removeAttribute('title');q.parentNode.classList.remove('hd-q');$('hero-big4-u').hidden=false;}});
+    HR.forEach(x=>{const k=x[0],X=x[1];if(k==='4'&&!(BN.canSee&&BN.canSee('BNASDAQ-26113')))return;$('hero-big'+k).textContent=(X.end/1e8).toFixed(1);if(k==='4'){$('hero-big4').parentNode.classList.remove('hd-q');$('hero-big4-u').hidden=false;}});
     const ES=HR.map(x=>x[1]).sort((p,q)=>p.end-q.end),amt=v=>v>=1e8?[(v/1e8).toFixed(2),'億']:[zh(Math.round(v/1e4)),'萬'],qa=amt(Q.end);
     $('hero-lo').textContent=(ES[0].end/1e8).toFixed(1);$('hero-lomult').textContent=mult(ES[0]);
     // 區間上限（2026-11-26 10:45 站主：上限不寫 ????，改成 343.7）：不含旗艦模型（BNASDAQ-26113）的最高期末價值；開通旗艦模型的會員與管理員才把旗艦算進去（和下面旗艦卡同一個判斷）

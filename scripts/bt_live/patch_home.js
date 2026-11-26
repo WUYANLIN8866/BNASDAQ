@@ -14,9 +14,9 @@ const big = (D.end / 1e8).toFixed(1) + ' 億', sub = 'IRR 年化 ' + (D.irr * 10
 let h = A('index.html'); const h0 = h;
 const set = (re, val, all) => { const n = (h.match(new RegExp(re.source, 'g')) || []).length; if (!n || (!all && n !== 1)) throw new Error('找不到 ' + re); h = h.replace(new RegExp(re.source, all ? 'g' : ''), '$1' + val + '$2'); };
 // 2026-11-26 站主圈改：首頁金框拿掉「年化／回撤／本金倍數」一欄（hero-irr、hero-mult、hero-mdd 已不在頁面上），每個模型只同步期末價值；
-// BNASDAQ-26113（第 4 張卡）的期末價值改顯示「????」：靜態值固定寫 ????，開通這個模型的會員與管理員由首頁程式填入數字（index.html 的 BN.canSee）
+// BNASDAQ-26113（第 4 張卡）的期末價值不公開：靜態值固定寫「會員專屬」（原為 ????，同日 10:57 站主改），開通這個模型的會員與管理員由首頁程式填入數字（index.html 的 BN.canSee）
 const MOV = k => k === '4';
-const HF = (k, X) => { set(new RegExp('(id="hero-big' + k + '">)[^<]*(<)'), MOV(k) ? '????' : (X.end / 1e8).toFixed(1)); };
+const HF = (k, X) => { set(new RegExp('(id="hero-big' + k + '">)[^<]*(<)'), MOV(k) ? '會員專屬' : (X.end / 1e8).toFixed(1)); };
 HF('', D); set(/(id="hero-save">)[^<]*(<)/, nf(D.principal / 1e4));
 // 改放 QQQ（同一筆定期定額放 QQQ 長抱）：金額不到 1 億用「萬」，否則用「億」；倍數不到 100 取一位小數（和首頁程式同一套寫法）
 const Q = B.dca('qqq', s), MX = X => { const v = X.end / X.principal; return (v >= 100 ? nf(Math.round(v)) : v.toFixed(1)) + ' 倍'; }, qa = Q.end >= 1e8 ? [(Q.end / 1e8).toFixed(2), '億'] : [nf(Math.round(Q.end / 1e4)), '萬'];
