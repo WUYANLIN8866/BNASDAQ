@@ -1,0 +1,241 @@
+{
+ "checked": "2026-11-26T00:25:17Z",
+ "fred_api_key_present": true,
+ "batch": "p",
+ "n_ids": 10,
+ "n_done": 10,
+ "n_ok": 10,
+ "requests": 53,
+ "seconds": 42,
+ "enc": {
+  "name": "fredapi-p",
+  "parts": 1,
+  "bytes": 402856,
+  "all_sha": "f36e5351bdbe57e8b299e61135931d28cd60729f4e47e1b4adfc51d9cc35c3f9",
+  "changed": true,
+  "files": [
+   {
+    "file": "fredapi-p.p00.enc.json",
+    "bytes": 538128
+   }
+  ]
+ },
+ "releases": [
+  {
+   "release_id": 9,
+   "n": 758,
+   "first": "1966-01-10",
+   "last": "2026-11-17"
+  },
+  {
+   "release_id": 10,
+   "n": 951,
+   "first": "1949-03-24",
+   "last": "2026-11-10"
+  },
+  {
+   "release_id": 13,
+   "n": 1221,
+   "first": "1927-01-26",
+   "last": "2026-11-24"
+  },
+  {
+   "release_id": 17,
+   "n": 664,
+   "first": "1999-01-11",
+   "last": "2026-11-23"
+  },
+  {
+   "release_id": 18,
+   "n": 4051,
+   "first": "1996-12-09",
+   "last": "2026-11-25"
+  },
+  {
+   "release_id": 50,
+   "n": 865,
+   "first": "1955-05-06",
+   "last": "2026-11-06"
+  },
+  {
+   "release_id": 180,
+   "n": 913,
+   "first": "2009-05-28",
+   "last": "2026-11-25"
+  },
+  {
+   "release_id": 190,
+   "n": 859,
+   "first": "2010-06-17",
+   "last": "2026-11-25"
+  },
+  {
+   "release_id": 212,
+   "n": 812,
+   "first": "2011-04-06",
+   "last": "2026-11-25"
+  }
+ ],
+ "series": [
+  {
+   "id": "CPIAUCSL",
+   "ok": true,
+   "rows": 3364,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 671,
+   "first_vintage": "1972-07-21",
+   "last_vintage": "2026-11-10",
+   "frequency_short": "M",
+   "observation_start": "1947-01-01",
+   "observation_end": "2026-10-01",
+   "release_id": 10,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "PAYEMS",
+   "ok": true,
+   "rows": 13694,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 861,
+   "first_vintage": "1955-05-06",
+   "last_vintage": "2026-11-06",
+   "frequency_short": "M",
+   "observation_start": "1939-01-01",
+   "observation_end": "2026-10-01",
+   "release_id": 50,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "UNRATE",
+   "ok": true,
+   "rows": 2200,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 801,
+   "first_vintage": "1960-03-15",
+   "last_vintage": "2026-11-06",
+   "frequency_short": "M",
+   "observation_start": "1948-01-01",
+   "observation_end": "2026-10-01",
+   "release_id": 50,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "INDPRO",
+   "ok": true,
+   "rows": 40668,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 1226,
+   "first_vintage": "1927-01-26",
+   "last_vintage": "2026-11-24",
+   "frequency_short": "M",
+   "observation_start": "1919-01-01",
+   "observation_end": "2026-10-01",
+   "release_id": 13,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "RSAFS",
+   "ok": true,
+   "rows": 5571,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 327,
+   "first_vintage": "2001-06-13",
+   "last_vintage": "2026-11-17",
+   "frequency_short": "M",
+   "observation_start": "1992-01-01",
+   "observation_end": "2026-10-01",
+   "release_id": 9,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "ICSA",
+   "ok": true,
+   "rows": 7813,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 908,
+   "first_vintage": "2009-05-28",
+   "last_vintage": "2026-11-25",
+   "frequency_short": "W",
+   "observation_start": "1967-01-07",
+   "observation_end": "2026-11-21",
+   "release_id": 180,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "DGS10",
+   "ok": true,
+   "rows": 60890,
+   "mode": "chunked",
+   "first_status": 400,
+   "n_vintages": 5158,
+   "first_vintage": "2005-06-28",
+   "last_vintage": "2026-11-25",
+   "frequency_short": "D",
+   "observation_start": "1962-01-02",
+   "observation_end": "2026-11-24",
+   "release_id": 18,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "DEXJPUS",
+   "ok": true,
+   "rows": 14587,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 663,
+   "first_vintage": "2014-03-18",
+   "last_vintage": "2026-11-23",
+   "frequency_short": "D",
+   "observation_start": "1971-01-04",
+   "observation_end": "2026-11-20",
+   "release_id": 17,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "DCOILWTICO",
+   "ok": true,
+   "rows": 11508,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 808,
+   "first_vintage": "2011-04-06",
+   "last_vintage": "2026-11-25",
+   "frequency_short": "D",
+   "observation_start": "1986-01-02",
+   "observation_end": "2026-11-24",
+   "release_id": 212,
+   "series_status": 200,
+   "obs_status": null
+  },
+  {
+   "id": "MORTGAGE30US",
+   "ok": true,
+   "rows": 2905,
+   "mode": "all",
+   "first_status": null,
+   "n_vintages": 859,
+   "first_vintage": "2010-06-17",
+   "last_vintage": "2026-11-25",
+   "frequency_short": "W",
+   "observation_start": "1971-04-02",
+   "observation_end": "2026-11-25",
+   "release_id": 190,
+   "series_status": 200,
+   "obs_status": null
+  }
+ ]
+}
