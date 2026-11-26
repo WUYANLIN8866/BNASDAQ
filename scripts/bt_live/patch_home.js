@@ -33,7 +33,8 @@ if (sw3) { set(/(id="ind-sw3">)[^<]*(<)/, sw3[0] + ' 次'); set(/(id="ind-sw3-s"
 // BNASDAQ-26113：同一個 30 年起點（2000-03 前接 bt-sat3-30.js 延伸前段）
 const D4 = B.dca('sat3_30', s), sw4 = (B.T.sw || {}).sat3;
 HF('4', D4);
-if (sw4) { set(/(id="ind-sw4">)[^<]*(<)/, sw4[0] + ' 次'); set(/(id="ind-sw4-s">)[\s\S]*?(<\/small>)/, '<span data-mo>會員專屬</span> 平均每年 ' + (sw4[0] / B.yrs('2000-05-31', END)).toFixed(2) + ' 次，皆為全進全出（不設半倉）'); }
+// 2026-11-26 站主圈改：首頁「主要指標」旗艦模型這一欄與小字說明不公開，靜態值固定寫「會員專屬」、說明留空（開通的會員由首頁程式填入）
+if (sw4) { set(/(id="ind-sw4">)[^<]*(<)/, '會員專屬'); set(/(id="ind-sw4-s">)[\s\S]*?(<\/small>)/, ''); }
 // 四個模型的區間：期末價值最小～最大；「倍起」＝最小的本金倍數
 const ES = [D, D2, D3, D4].sort((p, q) => p.end - q.end);
 set(/(id="hero-lo">)[^<]*(<)/, (ES[0].end / 1e8).toFixed(1)); set(/(id="hero-hi">)[^<]*(<)/, (Math.max(D.end, D2.end, D3.end) / 1e8).toFixed(1));   // 2026-11-26 站主：區間上限＝不含旗艦模型（D4）的最高期末價值（開通旗艦模型的會員由首頁程式改成含旗艦的最高值） set(/(id="hero-lomult">)[^<]*(<)/, MX(ES[0]));

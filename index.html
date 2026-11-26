@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="stylesheet" href="assets/site.css?v=caea5abbd5">
+<link rel="stylesheet" href="assets/site.css?v=98386ae5d4">
 <link rel="preload" href="assets/fonts/bn-sans-400.woff2?v=8ddfbd585e" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-serif-600.woff2?v=8f7f593d6d" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/bn-sans-400-s123.woff2?v=322c389431" as="font" type="font/woff2" crossorigin>
 <script>try{var t=localStorage.getItem('bn-theme');if(t)document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 </head>
@@ -72,7 +72,7 @@
     <div class="card" id="m-26110"><h3><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-26110</h3><p>以 QQQ 月線判斷，在 QLD（2 倍那斯達克 100）與 SHV（短期美債）之間配置，可全倉、半倉或全數避險；只在走勢平穩向上時全額運用槓桿。本站入門商品。</p></div>
     <div class="card" id="m-26111"><h3><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-26111</h3><p>同樣以 QQQ 月線判斷、在 QLD 與 SHV 之間配置，但只有全倉或全數避險兩種狀態（不設半倉），由六個神經網路模型共同判斷；模型自 2000 年 3 月起每 24 個月只用當時已知的資料重新訓練，回測不使用未來資訊。</p></div>
     <div class="card" id="m-26112"><h3><span class="sw" style="background:var(--s-sat2)"></span>BNASDAQ-26112</h3><p>同樣以 QQQ 月線判斷、在 QLD 與 SHV 之間配置，只有全倉或全數避險兩種狀態（不設半倉），由六個神經網路模型共同判斷：除了價格走勢，也納入公開的金融環境數據；數據只用判斷當時已公布的數值，模型同樣每 24 個月只用當時已知的資料重新訓練。</p></div>
-    <div class="card" id="m-sat3"><h3><span class="sw" style="background:var(--s-sat3)"></span><span data-mo>會員專屬</span></h3><p>同樣以 QQQ 月線判斷、在 QLD 與 SHV 之間配置，只有全倉或全數避險兩種狀態（不設半倉），由二十個神經網路模型共同判斷：除了價格走勢，也納入公開的總體經濟與金融環境數據；數據只用判斷當時已公布的數值，官方日後修正也不回頭更改已做的判斷，模型同樣只用當時已知的資料定期重新訓練。</p></div>
+    <div class="card" id="m-sat3"><h3><span class="sw" style="background:var(--s-sat3)"></span><span data-mo>會員專屬</span></h3><p id="m-sat3-d">會員專屬</p></div>
   </div>
   <div id="t-cmp"></div>
   <div class="row2 cmp-figs"><div id="c-cmp-dd"></div><div id="c-cmp-cal"></div></div>
@@ -84,12 +84,12 @@
   <p class="small" id="ind-window"></p>
   <ul class="ind ind2 ind4" id="ind">
     <li class="ih" aria-hidden="true"><span class="label"></span><span class="val vh"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-26110</span><span class="val vh"><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-26111</span><span class="val vh"><span class="sw" style="background:var(--s-sat2)"></span>BNASDAQ-26112</span><span class="val vh"><span class="sw" style="background:var(--s-sat3)"></span><span data-mo>會員專屬</span></span></li>
-    <li><span class="label">年化報酬率（單筆 100 萬，<span data-k="w0">2000-05-31</span>～<span data-k="end">2026-10-30</span>）<small id="ind-cagr-s">QQQ 同期 9.1%、QLD 7.6%、SHV 1.7%</small></span><span class="val" data-c="BNASDAQ-26110" id="ind-cagr">37.3%</span><span class="val" data-c="BNASDAQ-26111" id="ind-cagr2">42.3%</span><span class="val" data-c="BNASDAQ-26112" id="ind-cagr3">47.9%</span><span class="val" data-c="會員專屬" id="ind-cagr4">51.9%</span></li>
-    <li><span class="label">合理預期區間（參數穩健性檢驗的第 5～95 百分位）<span class="tagfix">正式回測區間</span><small>BNASDAQ-26110：參數 ±10% 鄰域 78,732 種組合，中位數 29.5%，全部都贏 QQQ 與 QLD。BNASDAQ-26111：參數隨機抖動 300 組，中位數 31.6%，全部都贏 QQQ 與 QLD。BNASDAQ-26112：參數隨機抖動 300 組，中位數 34.5%，全部都贏 QQQ 與 QLD。<span data-mo>會員專屬</span>：參數隨機抖動 300 組，中位數 37.1%，全部都贏 QQQ 與 QLD</small></span><span class="val" data-c="BNASDAQ-26110">25.4%～33.8%</span><span class="val" data-c="BNASDAQ-26111">25.5%～37.2%</span><span class="val" data-c="BNASDAQ-26112">27.7%～40.0%</span><span class="val" data-c="會員專屬">30.9%～42.1%</span></li>
-    <li><span class="label">最大回撤<small id="ind-mdd-s">BNASDAQ-26110：2024-12-16 高點 → 2025-04-08 低點（2025 關稅衝擊），3 個月後回到原高點。BNASDAQ-26111：2006-01-11 高點 → 2006-07-21 低點，6 個月後回到原高點。BNASDAQ-26112：2006-01-11 高點 → 2006-07-21 低點，6 個月後回到原高點。<span data-mo>會員專屬</span>：2024-12-16 高點 → 2025-04-08 低點（2025 關稅衝擊），1 個月後回到原高點</small></span><span class="val neg" data-c="BNASDAQ-26110" id="ind-mdd">-42.3%</span><span class="val neg" data-c="BNASDAQ-26111" id="ind-mdd2">-34.7%</span><span class="val neg" data-c="BNASDAQ-26112" id="ind-mdd3">-31.6%</span><span class="val neg" data-c="會員專屬" id="ind-mdd4">-30.3%</span></li>
-    <li><span class="label">年化波動度<small id="ind-vol-s">QQQ 25.7%、QLD 51.5%</small></span><span class="val" data-c="BNASDAQ-26110" id="ind-vol">33.2%</span><span class="val" data-c="BNASDAQ-26111" id="ind-vol2">31.1%</span><span class="val" data-c="BNASDAQ-26112" id="ind-vol3">31.2%</span><span class="val" data-c="會員專屬" id="ind-vol4">30.5%</span></li>
-    <li><span class="label">配置調整次數（2000-05-31 起至 <span data-k="end">2026-10-30</span>）<small id="ind-sw-s">平均每年 2.23 次；17 次全進全出、42 次半倉進出（涉及逐月持倉，不隨起點重算）</small><small id="ind-sw2-s">BNASDAQ-26111 平均每年 2.76 次，皆為全進全出（不設半倉）</small><small id="ind-sw3-s">BNASDAQ-26112 平均每年 2.84 次，皆為全進全出（不設半倉）</small><small id="ind-sw4-s"><span data-mo>會員專屬</span> 平均每年 2.31 次，皆為全進全出（不設半倉）</small></span><span class="val" data-c="BNASDAQ-26110" id="ind-sw">59 次</span><span class="val" data-c="BNASDAQ-26111" id="ind-sw2">73 次</span><span class="val" data-c="BNASDAQ-26112" id="ind-sw3">75 次</span><span class="val" data-c="會員專屬" id="ind-sw4">61 次</span></li>
-    <li><span class="label">年度成績（完整曆年中正報酬的年數）<small id="ind-cal-s">25 個完整年度：BNASDAQ-26110 有 24 年正報酬、23 年高於 QQQ；BNASDAQ-26111 有 23 年正報酬、21 年高於 QQQ，BNASDAQ-26112 有 24 年正報酬、23 年高於 QQQ，<span data-mo>會員專屬</span> 有 25 年正報酬、25 年高於 QQQ。QQQ 下跌的年度：BNASDAQ-26110 有 4／5 年仍為正報酬，BNASDAQ-26111 有 4／5 年，BNASDAQ-26112 有 5／5 年，<span data-mo>會員專屬</span> 有 5／5 年</small></span><span class="val" data-c="BNASDAQ-26110" id="ind-cal">24／25</span><span class="val" data-c="BNASDAQ-26111" id="ind-cal2">23／25</span><span class="val" data-c="BNASDAQ-26112" id="ind-cal3">24／25</span><span class="val" data-c="會員專屬" id="ind-cal4">25／25</span></li>
+    <li><span class="label">年化報酬率（單筆 100 萬，<span data-k="w0">2000-05-31</span>～<span data-k="end">2026-10-30</span>）<small id="ind-cagr-s">QQQ 同期 9.1%、QLD 7.6%、SHV 1.7%</small></span><span class="val" data-c="BNASDAQ-26110" id="ind-cagr">37.3%</span><span class="val" data-c="BNASDAQ-26111" id="ind-cagr2">42.3%</span><span class="val" data-c="BNASDAQ-26112" id="ind-cagr3">47.9%</span><span class="val" data-c="會員專屬" data-mo-val id="ind-cagr4">會員專屬</span></li>
+    <li><span class="label">合理預期區間（參數穩健性檢驗的第 5～95 百分位）<span class="tagfix">正式回測區間</span><small id="ind-rob-s">BNASDAQ-26110：參數 ±10% 鄰域 78,732 種組合，中位數 29.5%，全部都贏 QQQ 與 QLD。BNASDAQ-26111：參數隨機抖動 300 組，中位數 31.6%，全部都贏 QQQ 與 QLD。BNASDAQ-26112：參數隨機抖動 300 組，中位數 34.5%，全部都贏 QQQ 與 QLD</small></span><span class="val" data-c="BNASDAQ-26110">25.4%～33.8%</span><span class="val" data-c="BNASDAQ-26111">25.5%～37.2%</span><span class="val" data-c="BNASDAQ-26112">27.7%～40.0%</span><span class="val" data-c="會員專屬" data-mo-val id="ind-rob4">會員專屬</span></li>
+    <li><span class="label">最大回撤<small id="ind-mdd-s">BNASDAQ-26110：2024-12-16 高點 → 2025-04-08 低點（2025 關稅衝擊），3 個月後回到原高點。BNASDAQ-26111：2006-01-11 高點 → 2006-07-21 低點，6 個月後回到原高點。BNASDAQ-26112：2006-01-11 高點 → 2006-07-21 低點，6 個月後回到原高點</small></span><span class="val neg" data-c="BNASDAQ-26110" id="ind-mdd">-42.3%</span><span class="val neg" data-c="BNASDAQ-26111" id="ind-mdd2">-34.7%</span><span class="val neg" data-c="BNASDAQ-26112" id="ind-mdd3">-31.6%</span><span class="val" data-c="會員專屬" data-mo-val id="ind-mdd4">會員專屬</span></li>
+    <li><span class="label">年化波動度<small id="ind-vol-s">QQQ 25.7%、QLD 51.5%</small></span><span class="val" data-c="BNASDAQ-26110" id="ind-vol">33.2%</span><span class="val" data-c="BNASDAQ-26111" id="ind-vol2">31.1%</span><span class="val" data-c="BNASDAQ-26112" id="ind-vol3">31.2%</span><span class="val" data-c="會員專屬" data-mo-val id="ind-vol4">會員專屬</span></li>
+    <li><span class="label">配置調整次數（2000-05-31 起至 <span data-k="end">2026-10-30</span>）<small id="ind-sw-s">平均每年 2.23 次；17 次全進全出、42 次半倉進出（涉及逐月持倉，不隨起點重算）</small><small id="ind-sw2-s">BNASDAQ-26111 平均每年 2.76 次，皆為全進全出（不設半倉）</small><small id="ind-sw3-s">BNASDAQ-26112 平均每年 2.84 次，皆為全進全出（不設半倉）</small><small id="ind-sw4-s"></small></span><span class="val" data-c="BNASDAQ-26110" id="ind-sw">59 次</span><span class="val" data-c="BNASDAQ-26111" id="ind-sw2">73 次</span><span class="val" data-c="BNASDAQ-26112" id="ind-sw3">75 次</span><span class="val" data-c="會員專屬" data-mo-val id="ind-sw4">會員專屬</span></li>
+    <li><span class="label">年度成績（完整曆年中正報酬的年數）<small id="ind-cal-s">25 個完整年度：BNASDAQ-26110 有 24 年正報酬、23 年高於 QQQ；BNASDAQ-26111 有 23 年正報酬、21 年高於 QQQ，BNASDAQ-26112 有 24 年正報酬、23 年高於 QQQ。QQQ 下跌的年度：BNASDAQ-26110 有 4／5 年仍為正報酬，BNASDAQ-26111 有 4／5 年，BNASDAQ-26112 有 5／5 年</small></span><span class="val" data-c="BNASDAQ-26110" id="ind-cal">24／25</span><span class="val" data-c="BNASDAQ-26111" id="ind-cal2">23／25</span><span class="val" data-c="BNASDAQ-26112" id="ind-cal3">24／25</span><span class="val" data-c="會員專屬" data-mo-val id="ind-cal4">會員專屬</span></li>
   </ul>
 </div></section>
 
@@ -206,6 +206,9 @@ function renderWorld(start){
 }
 
 function renderCmp(start){
+  // 2026-11-26 站主圈改：旗艦模型（BNASDAQ-26113）的說明與整欄數字只給開通這個模型的會員與管理員看，其他人顯示「會員專屬」；粗體改在看得到的策略裡比
+  const see4=!!(BN.canSee&&BN.canSee('BNASDAQ-26113'));
+  if(see4)$('m-sat3-d').textContent='同樣以 QQQ 月線判斷、在 QLD 與 SHV 之間配置，只有全倉或全數避險兩種狀態（不設半倉），由二十個神經網路模型共同判斷：除了價格走勢，也納入公開的總體經濟與金融環境數據；數據只用判斷當時已公布的數值，官方日後修正也不回頭更改已做的判斷，模型同樣只用當時已知的資料定期重新訓練。';
   // BNASDAQ-26111、26112、26113 的模型自 2000-03 起才有訊號：起點較早時，本區自動改從 2000-03 起比較（同站內「加入較晚上市標的」的規則）
   const f0=[B.first('sat'),B.first('sat2'),B.first('sat3')].sort()[2],s=start<f0?f0:start,w0=B.MED[BM.indexOf(s)],K=['fund','sat','sat2','sat3','qqq','qld'],ST=['fund','sat','sat2','sat3'];
   const L={},DW={},V={},D={};K.forEach(k=>{L[k]=B.lump(k,s);DW[k]=B.drawdown(k,s);V[k]=B.vol(k,s);D[k]=B.dca(k,s);});
@@ -227,11 +230,12 @@ function renderCmp(start){
   const head='<thead><tr><th class=l>指標</th><th><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-26110</th><th><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-26111</th><th><span class="sw" style="background:var(--s-sat2)"></span>BNASDAQ-26112</th><th><span class="sw" style="background:var(--s-sat3)"></span>BNASDAQ-26113</th><th>QQQ</th><th>QLD</th></tr></thead>';
   // 手機版表頭隱藏，改在每格上方顯示欄名（.mth；桌機不顯示）
   const MTH={fund:'<span class="mth"><span class="sw" style="background:var(--s-fund)"></span>BNASDAQ-<wbr>26110</span>',sat:'<span class="mth"><span class="sw" style="background:var(--s-sat)"></span>BNASDAQ-<wbr>26111</span>',sat2:'<span class="mth"><span class="sw" style="background:var(--s-sat2)"></span>BNASDAQ-<wbr>26112</span>',sat3:'<span class="mth"><span class="sw" style="background:var(--s-sat3)"></span>'+(BN.canSee&&BN.canSee('BNASDAQ-26113')?'BNASDAQ-<wbr>26113':'會員專屬')+'</span>',qqq:'<span class="mth">QQQ</span>',qld:'<span class="mth">QLD</span>'};
-  // 粗體＝四個策略中最佳者（同分不標）
-  const body=rows.map(r=>{const vv=ST.map(k=>r[1](k));let win=null;if(vv.every(v=>v!=null)){const b=r[3]>0?Math.max(...vv):Math.min(...vv);if(vv.filter(v=>v===b).length===1)win=ST[vv.indexOf(b)];}
-    return '<tr><td class=l>'+r[0]+'</td>'+K.map(k=>{const v=r[1](k),t=v==null?'—':r[2](v),sub=(r[4]&&v!=null)?'<small>'+r[4](k)+'</small>':'';return '<td>'+MTH[k]+(win===k?'<b>'+t+'</b>':t)+sub+'</td>';}).join('')+'</tr>';}).join('')
-    +(()=>{const sw=B.T.sw||{},a=sw.fund,b=sw.sat,c=sw.sat2,e=sw.sat3;if(!a||!b||!c||!e)return '';return '<tr><td class=l>配置調整次數<span class="tagfix">2000-05-31 起</span></td><td>'+MTH.fund+a[0]+' 次<small>'+a[1]+' 次全進全出、'+(a[0]-a[1])+' 次半倉進出</small></td><td>'+MTH.sat+b[0]+' 次<small>皆為全進全出</small></td><td>'+MTH.sat2+c[0]+' 次<small>皆為全進全出</small></td><td>'+MTH.sat3+e[0]+' 次<small>皆為全進全出</small></td><td>'+MTH.qqq+'—</td><td>'+MTH.qld+'—</td></tr>';})();
-  $('t-cmp').innerHTML='<div class="tblwrap"><table class="tbl cmp cmp6"><caption>'+w0+' 至 '+END+'（'+B.yrs(w0,END).toFixed(1)+' 年）；粗體為四個策略中最佳者</caption>'+head+'<tbody>'+body+'</tbody></table></div>';
+  // 粗體＝看得到的策略中最佳者（同分不標）
+  const STV=see4?ST:ST.filter(k=>k!=='sat3');
+  const body=rows.map(r=>{const vv=STV.map(k=>r[1](k));let win=null;if(vv.every(v=>v!=null)){const b=r[3]>0?Math.max(...vv):Math.min(...vv);if(vv.filter(v=>v===b).length===1)win=STV[vv.indexOf(b)];}
+    return '<tr><td class=l>'+r[0]+'</td>'+K.map(k=>{if(k==='sat3'&&!see4)return '<td>'+MTH[k]+'會員專屬</td>';const v=r[1](k),t=v==null?'—':r[2](v),sub=(r[4]&&v!=null)?'<small>'+r[4](k)+'</small>':'';return '<td>'+MTH[k]+(win===k?'<b>'+t+'</b>':t)+sub+'</td>';}).join('')+'</tr>';}).join('')
+    +(()=>{const sw=B.T.sw||{},a=sw.fund,b=sw.sat,c=sw.sat2,e=sw.sat3;if(!a||!b||!c||!e)return '';return '<tr><td class=l>配置調整次數<span class="tagfix">2000-05-31 起</span></td><td>'+MTH.fund+a[0]+' 次<small>'+a[1]+' 次全進全出、'+(a[0]-a[1])+' 次半倉進出</small></td><td>'+MTH.sat+b[0]+' 次<small>皆為全進全出</small></td><td>'+MTH.sat2+c[0]+' 次<small>皆為全進全出</small></td><td>'+MTH.sat3+(see4?e[0]+' 次<small>皆為全進全出</small>':'會員專屬')+'</td><td>'+MTH.qqq+'—</td><td>'+MTH.qld+'—</td></tr>';})();
+  $('t-cmp').innerHTML='<div class="tblwrap"><table class="tbl cmp cmp6"><caption>'+w0+' 至 '+END+'（'+B.yrs(w0,END).toFixed(1)+' 年）；'+(see4?'粗體為四個策略中最佳者':'粗體為前三個策略中最佳者')+'</caption>'+head+'<tbody>'+body+'</tbody></table></div>';
   // 回撤水位：四個策略各自抽樣（保留每段最低點）後取聯集，四條線在同一組日期上取值
   (()=>{const h=$('c-cmp-dd');h.innerHTML='';const a=DW.fund,b=DW.sat,c=DW.sat2,e=DW.sat3,ev=Math.max(2,Math.round(a.dates.length/900));
     const ix=new Map(a.dates.map((x,i)=>[x,i])),xs=Array.from(new Set(B.sample(a.dates,a.dd,ev).x.concat(B.sample(b.dates,b.dd,ev).x,B.sample(c.dates,c.dd,ev).x,B.sample(e.dates,e.dd,ev).x))).sort();
@@ -269,6 +273,9 @@ function renderMini(start){
 }
 
 function renderInd(start){
+  // 2026-11-26 站主圈改：旗艦模型（BNASDAQ-26113）這一欄的值與小字說明裡旗艦的句子，只給開通這個模型的會員與管理員看；其他人維持原始碼的「會員專屬」（值另有 data-mo-val 保底）
+  const see4=!!(BN.canSee&&BN.canSee('BNASDAQ-26113'));
+  if(see4&&!renderInd.once){renderInd.once=1;$('ind-rob4').textContent='30.9%～42.1%';$('ind-rob-s').textContent+='。BNASDAQ-26113：參數隨機抖動 300 組，中位數 37.1%，全部都贏 QQQ 與 QLD';}
   const f0=[B.first('sat'),B.first('sat2'),B.first('sat3')].sort()[2],s2=start<f0?f0:start;
   const L={fund:B.lump('fund',start),qqq:B.lump('qqq',start),qld:B.lump('qld',start),shv:B.lump('shv',start),sat:B.lump('sat',s2),sat2:B.lump('sat2',s2),sat3:B.lump('sat3',s2)};
   const d=B.drawdown('fund',start),d2=B.drawdown('sat',s2),d3=B.drawdown('sat2',s2),d4=B.drawdown('sat3',s2),C=B.cal(start).stats,w0=B.MED[B.M.indexOf(start)],w2=B.MED[B.M.indexOf(s2)];
@@ -277,20 +284,20 @@ function renderInd(start){
   if(sw){$('ind-sw').textContent=sw[0]+' 次';$('ind-sw-s').textContent='平均每年 '+(sw[0]/ys).toFixed(2)+' 次；'+sw[1]+' 次全進全出、'+(sw[0]-sw[1])+' 次半倉進出（涉及逐月持倉，不隨起點重算）';}
   if(sw2){$('ind-sw2').textContent=sw2[0]+' 次';$('ind-sw2-s').textContent='BNASDAQ-26111 平均每年 '+(sw2[0]/ys).toFixed(2)+' 次，皆為全進全出（不設半倉）';}
   if(sw3){$('ind-sw3').textContent=sw3[0]+' 次';$('ind-sw3-s').textContent='BNASDAQ-26112 平均每年 '+(sw3[0]/ys).toFixed(2)+' 次，皆為全進全出（不設半倉）';}
-  if(sw4){$('ind-sw4').textContent=sw4[0]+' 次';$('ind-sw4-s').textContent='BNASDAQ-26113 平均每年 '+(sw4[0]/ys).toFixed(2)+' 次，皆為全進全出（不設半倉）';}
+  if(sw4&&see4){$('ind-sw4').textContent=sw4[0]+' 次';$('ind-sw4-s').textContent='BNASDAQ-26113 平均每年 '+(sw4[0]/ys).toFixed(2)+' 次，皆為全進全出（不設半倉）';}
   $('ind-window').textContent='回測區間 '+w0+'～'+END+'（'+B.yrs(w0,END).toFixed(1)+' 年）'+(s2!==start?'；BNASDAQ-26111、BNASDAQ-26112、BNASDAQ-26113 的模型自 '+f0+' 起才有訊號，三者改自 '+w2+' 起計':'')+'；標示「正式回測區間」者固定為 2000-05-31～2026-09-30。'+(B.proxyNote(start)?' '+B.proxyNote(start):'');
-  $('ind-cagr').textContent=pct(L.fund.cagr);$('ind-cagr2').textContent=pct(L.sat.cagr);$('ind-cagr3').textContent=pct(L.sat2.cagr);$('ind-cagr4').textContent=pct(L.sat3.cagr);
+  $('ind-cagr').textContent=pct(L.fund.cagr);$('ind-cagr2').textContent=pct(L.sat.cagr);$('ind-cagr3').textContent=pct(L.sat2.cagr);if(see4)$('ind-cagr4').textContent=pct(L.sat3.cagr);
   $('ind-cagr-s').textContent='QQQ 同期 '+pct(L.qqq.cagr)+'、QLD '+pct(L.qld.cagr)+'、SHV '+pct(L.shv.cagr);
-  $('ind-mdd').textContent=pct(d.mdd);$('ind-mdd2').textContent=pct(d2.mdd);$('ind-mdd3').textContent=pct(d3.mdd);$('ind-mdd4').textContent=pct(d4.mdd);
+  $('ind-mdd').textContent=pct(d.mdd);$('ind-mdd2').textContent=pct(d2.mdd);$('ind-mdd3').textContent=pct(d3.mdd);if(see4){$('ind-mdd4').textContent=pct(d4.mdd);$('ind-mdd4').classList.add('neg');}
   const ev=B.crises(start).find(c=>c.trough===d.trough),ev2=B.crises(s2).find(c=>c.trough===d2.trough),ev3=B.crises(s2).find(c=>c.trough===d3.trough),ev4=B.crises(s2).find(c=>c.trough===d4.trough);
   const ddT=(x,e)=>x.peak+' 高點 → '+x.trough+' 低點'+(e?'（'+e.name+'）':'')+'，'+(x.recover?x.trough_to_recover_months.toFixed(0)+' 個月後回到原高點':'截至 '+END+' 尚未回到原高點');
-  $('ind-mdd-s').textContent='BNASDAQ-26110：'+ddT(d,ev)+'。BNASDAQ-26111：'+ddT(d2,ev2)+'。BNASDAQ-26112：'+ddT(d3,ev3)+'。BNASDAQ-26113：'+ddT(d4,ev4);
-  $('ind-vol').textContent=pct(B.vol('fund',start));$('ind-vol2').textContent=pct(B.vol('sat',s2));$('ind-vol3').textContent=pct(B.vol('sat2',s2));$('ind-vol4').textContent=pct(B.vol('sat3',s2));
+  $('ind-mdd-s').textContent='BNASDAQ-26110：'+ddT(d,ev)+'。BNASDAQ-26111：'+ddT(d2,ev2)+'。BNASDAQ-26112：'+ddT(d3,ev3)+(see4?'。BNASDAQ-26113：'+ddT(d4,ev4):'');
+  $('ind-vol').textContent=pct(B.vol('fund',start));$('ind-vol2').textContent=pct(B.vol('sat',s2));$('ind-vol3').textContent=pct(B.vol('sat2',s2));if(see4)$('ind-vol4').textContent=pct(B.vol('sat3',s2));
   $('ind-vol-s').textContent='QQQ '+pct(B.vol('qqq',start))+'、QLD '+pct(B.vol('qld',start));
   const CL=B.cal(s2,['fund','sat','sat2','sat3','qqq']).list.filter(r=>!r.partial),n2=CL.length,pos=CL.filter(r=>r.sat>0).length,bq=CL.filter(r=>r.sat>r.qqq).length,dn=CL.filter(r=>r.qqq<0);
   const pos3=CL.filter(r=>r.sat2>0).length,bq3=CL.filter(r=>r.sat2>r.qqq).length,pos4=CL.filter(r=>r.sat3>0).length,bq4=CL.filter(r=>r.sat3>r.qqq).length;
-  $('ind-cal').textContent=C.fund_pos+'／'+C.n;$('ind-cal2').textContent=pos+'／'+n2;$('ind-cal3').textContent=pos3+'／'+n2;$('ind-cal4').textContent=pos4+'／'+n2;
-  $('ind-cal-s').textContent=C.n+' 個完整年度：BNASDAQ-26110 有 '+C.fund_pos+' 年正報酬、'+C.beat_qqq+' 年高於 QQQ'+(n2!==C.n?'；自有訊號起 '+n2+' 個完整年度中，BNASDAQ-26111':'；BNASDAQ-26111')+' 有 '+pos+' 年正報酬、'+bq+' 年高於 QQQ，BNASDAQ-26112 有 '+pos3+' 年正報酬、'+bq3+' 年高於 QQQ，BNASDAQ-26113 有 '+pos4+' 年正報酬、'+bq4+' 年高於 QQQ。QQQ 下跌的年度：BNASDAQ-26110 有 '+C.fund_pos_when_qqq_down+'／'+C.qqq_down+' 年仍為正報酬，BNASDAQ-26111 有 '+dn.filter(r=>r.sat>0).length+'／'+dn.length+' 年，BNASDAQ-26112 有 '+dn.filter(r=>r.sat2>0).length+'／'+dn.length+' 年，BNASDAQ-26113 有 '+dn.filter(r=>r.sat3>0).length+'／'+dn.length+' 年';
+  $('ind-cal').textContent=C.fund_pos+'／'+C.n;$('ind-cal2').textContent=pos+'／'+n2;$('ind-cal3').textContent=pos3+'／'+n2;if(see4)$('ind-cal4').textContent=pos4+'／'+n2;
+  $('ind-cal-s').textContent=C.n+' 個完整年度：BNASDAQ-26110 有 '+C.fund_pos+' 年正報酬、'+C.beat_qqq+' 年高於 QQQ'+(n2!==C.n?'；自有訊號起 '+n2+' 個完整年度中，BNASDAQ-26111':'；BNASDAQ-26111')+' 有 '+pos+' 年正報酬、'+bq+' 年高於 QQQ，BNASDAQ-26112 有 '+pos3+' 年正報酬、'+bq3+' 年高於 QQQ'+(see4?'，BNASDAQ-26113 有 '+pos4+' 年正報酬、'+bq4+' 年高於 QQQ':'')+'。QQQ 下跌的年度：BNASDAQ-26110 有 '+C.fund_pos_when_qqq_down+'／'+C.qqq_down+' 年仍為正報酬，BNASDAQ-26111 有 '+dn.filter(r=>r.sat>0).length+'／'+dn.length+' 年，BNASDAQ-26112 有 '+dn.filter(r=>r.sat2>0).length+'／'+dn.length+' 年'+(see4?'，BNASDAQ-26113 有 '+dn.filter(r=>r.sat3>0).length+'／'+dn.length+' 年':'');
 }
 
 (async()=>{try{
