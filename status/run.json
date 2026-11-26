@@ -1,8 +1,7 @@
 {
- "request": "0b-20261126-pilot",
+ "request": "0b-20261126-full-a",
  "jobs": {
-  "key": "ok 0s",
-  "fredapi": "ok 42s"
+  "key": "ok 0s"
  },
- "finished": "2026-11-26T00:25:17Z"
+ "finished": "2026-11-26T00:26:13Z"
 }
