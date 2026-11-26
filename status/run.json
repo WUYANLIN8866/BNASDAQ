@@ -1,11 +1,7 @@
 {
- "request": "0a-20261125-2",
+ "request": "0b-20261126-keycheck",
  "jobs": {
-  "key": "ok 0s",
-  "yahoo": "ok 183s",
-  "fredgraph": "ok 132s",
-  "fredmd": "ok 136s",
-  "cboe": "ok 258s"
+  "key": "ok 0s"
  },
- "finished": "2026-11-25T14:58:07Z"
+ "finished": "2026-11-26T00:21:49Z"
 }
