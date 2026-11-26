@@ -52,17 +52,32 @@ def series_all(sid):
     st, j = api('series/vintagedates', series_id=sid, realtime_start='1776-07-04', realtime_end='9999-12-31', limit=10000)
     vd = (j or {}).get('vintage_dates') or []
     meta['n_vintages'] = len(vd); meta['first_vintage'] = vd[0] if vd else None; meta['last_vintage'] = vd[-1] if vd else None
-    lines = ['date,realtime_start,realtime_end,value']; off = 0; total = None; ok = True
-    while True:
-        st, j = api('series/observations', series_id=sid, realtime_start='1776-07-04', realtime_end='9999-12-31', limit=100000, offset=off, sort_order='asc')
-        if st != 200 or j is None:
-            ok = False; meta['obs_status'] = st; break
-        obs = j.get('observations') or []; total = j.get('count', len(obs))
-        for o in obs:
-            lines.append('%s,%s,%s,%s' % (o.get('date'), o.get('realtime_start'), o.get('realtime_end'), o.get('value')))
-        off += len(obs)
-        if not obs or off >= total:
-            break
+    lines = ['date,realtime_start,realtime_end,value']; ok = True
+
+    def pull(rs, re_):
+        """抓一段 real-time 區間的全部列（分頁）；回傳 (成功?, 狀態碼)。"""
+        off = 0
+        while True:
+            st, j = api('series/observations', series_id=sid, realtime_start=rs, realtime_end=re_, limit=100000, offset=off, sort_order='asc')
+            if st != 200 or j is None:
+                return False, st
+            obs = j.get('observations') or []; total = j.get('count', len(obs))
+            for o in obs:
+                lines.append('%s,%s,%s,%s' % (o.get('date'), o.get('realtime_start'), o.get('realtime_end'), o.get('value')))
+            off += len(obs)
+            if not obs or off >= total:
+                return True, 200
+    good, st = pull('1776-07-04', '9999-12-31'); meta['mode'] = 'all'
+    if not good and vd:
+        # 版本太多被拒絕時：把 real-time 區間依版本日期切成數段分別抓（同一筆觀測值會在相鄰區段各出現一次，解析時再合併）
+        del lines[1:]; meta['mode'] = 'chunked'; meta['first_status'] = st; step = 1500; good = True
+        for i in range(0, len(vd), step):
+            rs = vd[i]; re_ = '9999-12-31' if i + step >= len(vd) else vd[i + step - 1]
+            g, st = pull(rs, re_)
+            if not g:
+                good = False; break
+    if not good:
+        ok = False; meta['obs_status'] = st
     meta['rows'] = len(lines) - 1; meta['ok'] = ok and len(lines) > 1
     return '\n'.join(lines) + '\n', meta, vd
 
@@ -72,7 +87,7 @@ def run(opts):
         R.write_json(os.path.join(R.STAT, 'fredapi.json'), dict(checked=R.utc(), fred_api_key_present=False, note='no key; skipped'))
         R.log('fredapi: no key'); return
     batch = str(opts.get('fredapi_batch', 'a'))
-    ids = [x.strip() for x in open(os.path.join(R.ROOT, 'fetch', 'fredapi_ids_%s.txt' % batch), encoding='utf-8').read().split() if x.strip() and not x.startswith('#')]
+    ids = [ln.strip() for ln in open(os.path.join(R.ROOT, 'fetch', 'fredapi_ids_%s.txt' % batch), encoding='utf-8').read().splitlines() if ln.strip() and not ln.strip().startswith('#')]
     budget = float(opts.get('fredapi_budget_s', 18000)); t0 = time.time()
     items, metas, rel_ids = [], [], set()
     for i, sid in enumerate(ids):
@@ -113,6 +128,6 @@ def run(opts):
         summ = R.write_enc('fredapi-' + batch, lzma.compress(raw, preset=1), 'FRED API all real-time periods (ALFRED) per series + release dates')
     pub = dict(checked=R.utc(), fred_api_key_present=True, batch=batch, n_ids=len(ids), n_done=len(metas), n_ok=sum(1 for m in metas if m.get('ok')),
                requests=N_REQ[0], seconds=round(time.time() - t0), enc=summ, releases=rels,
-               series=[{k: m.get(k) for k in ('id', 'ok', 'rows', 'n_vintages', 'first_vintage', 'last_vintage', 'frequency_short', 'observation_start',
+               series=[{k: m.get(k) for k in ('id', 'ok', 'rows', 'mode', 'first_status', 'n_vintages', 'first_vintage', 'last_vintage', 'frequency_short', 'observation_start',
                                               'observation_end', 'release_id', 'series_status', 'obs_status')} for m in metas])
     R.write_json(os.path.join(R.STAT, 'fredapi-%s.json' % batch), pub)

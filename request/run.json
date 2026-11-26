@@ -1,5 +1,11 @@
 {
- "id": "0b-20261126-keycheck",
- "jobs": ["key"],
- "opts": {}
+ "id": "0b-20261126-pilot",
+ "jobs": [
+  "key",
+  "fredapi"
+ ],
+ "opts": {
+  "fredapi_batch": "p",
+  "fredapi_budget_s": 900
+ }
 }
