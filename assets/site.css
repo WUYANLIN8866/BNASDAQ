@@ -197,9 +197,9 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 @media (max-width: 860px) { .hero { padding: 48px 0 52px; } .hero .wrap { grid-template-columns: 1fr; gap: 28px; } .hero .stat { padding: 18px 16px 16px; } }
 /* 首頁四大模型區塊（2026-11-24 14:40 站主選定「方案 D」＋圈改；設計紀錄：專案文件 claude/home-hero-proposals-20261124.md）
    標題一句口號；一排三個數字（儲蓄 → 指數型基金 → AI 模型；2026-11-26 站主改名，原為 只存不投資 → 改放 QQQ → 交給四大 AI 模型）；
-   金框「AI 模型操盤」：每個模型一列＝模型名稱（連結，跳到下方該模型的說明卡）｜①讀進資料 → ②模型共同判斷 → ③輸出一個決定｜30 年後｜年化、回撤、本金倍數。
-   金色小圓點＝該模型的神經網路個數（固定同色，不代表任何訊號狀態）。站主指定這一塊不放註記（回測口徑在頁尾與 data.html）。
-   寬度：≥1280 欄位表格；1279 以下每個模型一張卡（700 以上兩欄）；三個數字 1100 以下改直排。
+   金框「AI 模型操盤」：每個模型一張卡＝模型名稱（連結，跳到下方該模型的說明卡）＋30 年後的期末價值（2026-11-26 站主圈改，見下方「金框」段）。
+   站主指定這一塊不放註記（回測口徑在頁尾與 data.html）。
+   寬度：≥1101 四張卡一排；1100 以下兩欄、三個數字改直排；640 以下一欄。
    首頁上半部在兩種主題都是深色底：策略色固定用深色主題那一組（淺色主題的紫、洋紅在深色底上太暗） */
 .hero { --s-fund: #3987e5; --s-sat: #e66767; --s-sat2: #6447b8; --s-sat3: #f410e0; }
 .hero { padding: 54px 0 60px; }
@@ -209,7 +209,7 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 .hero .hero-top .cta { margin-top: 0; }
 .hero .stat.hx { padding: 28px 28px 28px; }
 /* 三個數字（2026-11-24 站主：上方標題「月存萬元，堅持卅載，滿載而歸」移除，這一列成為區塊第一列，不再留標題下方的間距） */
-.hero .hd-beats { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 14px 26px; }
+.hero .hd-beats { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px 26px; padding: 0 28px; }   /* 2026-11-26：三個數字攤開到整個寬度，左右和下面金框裡的卡片對齊 */
 .hero .hd-ar { width: 22px; height: 22px; flex: none; fill: none; stroke: var(--gold-hi); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .hero .hd-beats > .hd-ar { width: 26px; height: 26px; margin-bottom: 30px; }
 .hero .hd-beat { flex: none; min-width: 0; }
@@ -226,60 +226,36 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
 .hero .hd-bn { margin-top: 3px; font-size: 13px; line-height: 1.6; color: #a9a59c; }
 .hero .hd-b2 .hd-bn > span { display: inline-block; margin-right: 14px; white-space: nowrap; }
 .hero .hd-b2 .hd-bn > span:last-child { margin-right: 0; }
-/* 金框：AI 模型操盤 */
-.hero .hd-ai { margin-top: 24px; border: 1px solid rgba(205, 174, 112, .7); border-top: 3px solid var(--gold-hi); background: rgba(205, 174, 112, .07); padding: 20px 28px 6px; }
-.hero .hd-title { margin: 0 0 14px; padding: 0; font-family: var(--serif); font-weight: 600; font-size: 24px; line-height: 1.4; letter-spacing: .02em; color: #fff; }
-.hero .hd-lane { display: grid; grid-template-columns: 190px minmax(180px, 1.2fr) 22px minmax(170px, 1.1fr) 22px minmax(130px, 1fr) minmax(115px, .8fr) 184px; column-gap: 14px; align-items: center; padding: 11px 0; border-top: 1px solid rgba(255, 255, 255, .12); }
-.hero .hd-th { border-top: 0; padding: 0 0 10px; font-size: 13px; line-height: 1.6; color: #a9a59c; }
-.hero .hd-the { text-align: right; }
-.hero .hd-k { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
-.hero .hd-k i { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--gold-hi); color: var(--gold-hi); font-style: normal; font-size: 13px; font-weight: 700; line-height: 1; flex: none; }
-.hero .hd-th .hd-k { font-size: 15px; font-weight: 700; color: #fff; }
-.hero .hd-lanes .hd-k { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }   /* 寬螢幕：步驟名稱在表頭，這裡只留給螢幕報讀 */
+/* 金框：AI 模型操盤（2026-11-26 站主圈改：拿掉三個步驟欄與「年化／回撤／本金倍數」欄；每個模型一張卡＝名稱（連結）＋30 年後的期末價值）
+   四張卡由左到右一階比一階高（--h：卡片底部那條模型色帶的高度），旗艦卡用金框與金色數字；旗艦的期末價值對訪客與沒開通的會員顯示「????」。
+   整張卡都可以點（.hd-m::after 鋪滿整張卡），跳到下方該模型的說明卡。 */
+.hero .hd-ai { margin-top: 26px; border: 1px solid rgba(205, 174, 112, .7); border-top: 3px solid var(--gold-hi); background: rgba(205, 174, 112, .07); padding: 20px 28px 28px; }
+.hero .hd-title { margin: 0 0 16px; padding: 0; font-family: var(--serif); font-weight: 600; font-size: 24px; line-height: 1.4; letter-spacing: .02em; color: #fff; }
+.hero .hd-lanes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.hero .hd-lane { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 26px; min-width: 0; padding: 18px 20px 20px; border: 1px solid rgba(255, 255, 255, .13); background: rgba(255, 255, 255, .035); overflow: hidden; transition: border-color .15s, background .15s; }
+.hero .hd-lane::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: var(--h, 3px); background: var(--c); opacity: .9; }
+.hero .hd-lane:nth-child(1) { --h: 3px; } .hero .hd-lane:nth-child(2) { --h: 5px; } .hero .hd-lane:nth-child(3) { --h: 7px; } .hero .hd-lane:nth-child(4) { --h: 9px; }
+.hero .hd-lane:hover, .hero .hd-lane:focus-within { border-color: rgba(255, 255, 255, .34); background: rgba(255, 255, 255, .06); }
+.hero .hd-flag { border-color: rgba(205, 174, 112, .8); background: linear-gradient(160deg, rgba(205, 174, 112, .24), rgba(205, 174, 112, .06) 62%); }
+.hero .hd-flag:hover, .hero .hd-flag:focus-within { border-color: var(--gold-hi); background: linear-gradient(160deg, rgba(205, 174, 112, .3), rgba(205, 174, 112, .1) 62%); }
+.hero .hd-flag::after { background: var(--gold-hi); }
 .hero .hd-m { display: block; min-width: 0; text-decoration: none; color: inherit; }
-.hero .hd-mt { display: flex; align-items: center; gap: 9px; font-size: 16px; font-weight: 700; line-height: 1.6; color: #fff; white-space: nowrap; }
+.hero .hd-m::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.hero .hd-mt { display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 700; line-height: 1.6; color: #fff; white-space: nowrap; }
 .hero .hd-mt::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--c); flex: none; }
 .hero .hd-mc { display: block; margin-left: 19px; font-size: 13px; line-height: 1.6; letter-spacing: .04em; color: #a9a59c; white-space: nowrap; }
-.hero .hd-m:hover .hd-mt, .hero .hd-m:focus-visible .hd-mt { color: var(--gold-hi); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
-.hero .hd-m:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 4px; }
-.hero .hd-c { position: relative; min-width: 0; font-size: 14px; line-height: 1.5; color: #d9d5cc; }
-.hero .hd-plus { display: block; }
-.hero .hd-c2 .hd-v { display: block; }
-.hero .hd-dots { display: grid; grid-template-columns: repeat(var(--n, 6), 6px); gap: 4px; height: 16px; align-content: center; margin-bottom: 3px; }
-.hero .hd-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-hi); }
-.hero .hd-end { text-align: right; font-family: var(--serif); font-weight: 700; font-size: 32px; line-height: 1.08; letter-spacing: -.01em; color: #fff; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.hero .hd-end small { font-size: .54em; font-weight: 600; margin-left: 3px; color: var(--gold-hi); }
-.hero .hd-st { margin: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 14px; font-size: 13px; line-height: 1.6; color: #a9a59c; }
-.hero .hd-st div { display: flex; gap: 4px; white-space: nowrap; }
-.hero .hd-st div:nth-child(3) { flex-basis: 100%; justify-content: flex-end; }
-.hero .hd-st dt { margin: 0; }
-.hero .hd-st dd { margin: 0; font-weight: 700; color: #f2f0eb; font-variant-numeric: tabular-nums; }
-/* 1279 以下：每個模型一張卡（名稱＋期末價值、三個步驟各一行、年化／回撤／倍數一行） */
-@media (max-width: 1279px) {
-  .hero .hd-th { display: none; }
-  .hero .hd-lanes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 36px; }
-  .hero .hd-lane { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "m e" "c1 c1" "c2 c2" "c3 c3" "s s"; column-gap: 10px; row-gap: 6px; align-items: start; padding: 13px 0 12px; }
-  .hero .hd-lane > .hd-ar { display: none; }
-  .hero .hd-m { grid-area: m; }
-  .hero .hd-end { grid-area: e; font-size: 26px; }
-  .hero .hd-c1 { grid-area: c1; margin-top: 3px; }
-  .hero .hd-c2 { grid-area: c2; }
-  .hero .hd-c3 { grid-area: c3; }
-  .hero .hd-st { grid-area: s; justify-content: flex-start; margin-top: 3px; font-size: 12.5px; }
-  .hero .hd-st div:nth-child(3) { flex-basis: auto; }
-  .hero .hd-c { display: grid; grid-template-columns: 106px minmax(0, 1fr); column-gap: 12px; align-items: center; font-size: 13px; }
-  .hero .hd-lanes .hd-k { position: static; width: auto; height: auto; overflow: visible; clip-path: none; gap: 7px; color: #a9a59c; }
-  .hero .hd-lanes .hd-k i { width: 18px; height: 18px; font-size: 11.5px; }
-  .hero .hd-plus { display: inline; }
-  .hero .hd-c2 .hd-v { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; }
-  .hero .hd-dots { grid-template-columns: repeat(var(--n, 6), 5px); gap: 3px; height: auto; margin: 0; }
-  .hero .hd-dots i { width: 5px; height: 5px; }
-  .hero .hd-mt { font-size: 15.5px; gap: 8px; }
-  .hero .hd-mc { margin-left: 18px; font-size: 12.5px; letter-spacing: .03em; }
-}
-/* 1100 以下：三個數字改直排（名稱在左、數字在右；第三個獨立一塊） */
+.hero .hd-m:hover .hd-mt, .hero .hd-m:focus-visible .hd-mt { color: var(--gold-hi); }
+.hero .hd-m:focus-visible { outline: none; }
+.hero .hd-lane:has(.hd-m:focus-visible) { outline: 2px solid var(--gold-hi); outline-offset: 3px; }
+.hero .hd-res { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hero .hd-rl { font-size: 13px; line-height: 1.6; color: #a9a59c; }
+.hero .hd-end { font-family: var(--serif); font-weight: 700; font-size: clamp(34px, 3.1vw, 44px); line-height: 1.08; letter-spacing: -.01em; color: #fff; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hero .hd-end small { font-size: .5em; font-weight: 600; margin-left: 4px; color: var(--gold-hi); }
+.hero .hd-flag .hd-end { color: var(--gold-hi); }
+.hero .hd-q { letter-spacing: .08em; }
+/* 1100 以下：三個數字改直排（名稱在左、數字在右；第三個獨立一塊）；模型卡兩欄 */
 @media (max-width: 1100px) {
-  .hero .hd-beats { display: block; }
+  .hero .hd-beats { display: block; padding: 0; }
   .hero .hd-beats > .hd-ar { display: none; }
   .hero .hd-beat { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t v" "n v"; column-gap: 10px; padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, .1); }
   .hero .hd-b1 { padding-top: 0; border-top: 0; }   /* 第一列上面已經沒有標題，不畫分隔線 */
@@ -292,18 +268,29 @@ small, .small { font-size: 13.5px; color: var(--ink-2); }
   .hero .hd-b3 .hd-bv { font-size: 56px; margin-top: 2px; }
   .hero .hd-b3 .hd-bn { margin-top: 3px; }
   .hero .hd-ai { margin-top: 14px; }
+  .hero .hd-lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .hero .hd-lane { gap: 18px; }
+  .hero .hd-end { font-size: 38px; }
 }
-@media (max-width: 860px) { .hero { padding: 40px 0 44px; } .hero .wrap { gap: 22px; } .hero .stat.hx { padding: 20px 16px 18px; } .hero .hd-ai { padding: 15px 16px 2px; } .hero .hd-title { font-size: 21px; margin-bottom: 12px; } .hero .hd-lanes { column-gap: 28px; } }
-@media (max-width: 699px) { .hero .hd-lanes { grid-template-columns: minmax(0, 1fr); } }
-/* 手機：三個數字縮小 */
+@media (max-width: 860px) { .hero { padding: 40px 0 44px; } .hero .wrap { gap: 22px; } .hero .stat.hx { padding: 20px 16px 18px; } .hero .hd-ai { padding: 15px 16px 18px; } .hero .hd-title { font-size: 21px; margin-bottom: 12px; } }
+/* 手機：三個數字縮小；模型卡一欄（名稱在左、期末價值在右） */
 @media (max-width: 640px) {
-  .hero .hd-sub { display: none; }
   .hero .hd-b2 .hd-bn > span:nth-child(n+2) { display: none; }
   .hero .hd-b1 .hd-bv { font-size: 26px; }
   .hero .hd-b2 .hd-bv { font-size: 32px; }
   .hero .hd-b3 .hd-bv { font-size: 42px; }
+  .hero .hd-lanes { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .hero .hd-lane { flex-direction: row; align-items: center; gap: 10px; padding: 13px 14px 15px; }
+  .hero .hd-lane:nth-child(1) { --h: 2px; } .hero .hd-lane:nth-child(2) { --h: 3px; } .hero .hd-lane:nth-child(3) { --h: 4px; } .hero .hd-lane:nth-child(4) { --h: 5px; }
+  .hero .hd-res { align-items: flex-end; flex: none; }
+  .hero .hd-rl { font-size: 12px; }
+  .hero .hd-end { font-size: 30px; }
+  .hero .hd-mt { font-size: 15.5px; gap: 8px; }
+  .hero .hd-mc { margin-left: 18px; font-size: 12.5px; letter-spacing: .03em; }
 }
-@media (max-width: 360px) { .hero .hd-b3 .hd-bv { font-size: 38px; } .hero .hd-c { column-gap: 8px; } }
+@media (max-width: 360px) { .hero .hd-b3 .hd-bv { font-size: 38px; } .hero .hd-end { font-size: 27px; } }
+/* 很窄的手機（359 以下）：名稱和期末價值放不進同一行，改成上下排（「30 年後」在左、數字在右） */
+@media (max-width: 359px) { .hero .hd-lane { flex-direction: column; align-items: stretch; gap: 6px; } .hero .hd-res { flex-direction: row; align-items: baseline; justify-content: space-between; margin-left: 18px; } }
 
 /* ---------- buttons ---------- */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; border-radius: 2px; text-decoration: none; font-weight: 600; font-size: 15px; letter-spacing: .05em; border: 1px solid transparent; cursor: pointer; font-family: inherit; line-height: 1.4; transition: background .15s, color .15s, border-color .15s; }
