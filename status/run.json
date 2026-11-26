@@ -1,7 +1,8 @@
 {
  "request": "0b-20261126-full-a",
  "jobs": {
-  "key": "ok 0s"
+  "key": "ok 0s",
+  "fredapi": "ok 648s"
  },
- "finished": "2026-11-26T00:26:13Z"
+ "finished": "2026-11-26T00:37:02Z"
 }
