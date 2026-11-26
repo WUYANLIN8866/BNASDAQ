@@ -1,0 +1,36 @@
+{
+ "checked": "2026-11-26T00:44:55Z",
+ "batch": "a",
+ "dates": [
+  {
+   "date": "2008-09-24",
+   "n_ids": 173,
+   "n_ok": 74
+  },
+  {
+   "date": "2015-08-06",
+   "n_ids": 173,
+   "n_ok": 170
+  },
+  {
+   "date": "2019-02-15",
+   "n_ids": 173,
+   "n_ok": 173
+  }
+ ],
+ "requests": 519,
+ "seconds": 421,
+ "enc": {
+  "name": "fredasof-a",
+  "parts": 1,
+  "bytes": 60532,
+  "all_sha": "fea68829e8f24bd44ca28e976de7b621d0265a2af907e4b8402ee7c4e43d85ce",
+  "changed": true,
+  "files": [
+   {
+    "file": "fredasof-a.p00.enc.json",
+    "bytes": 81670
+   }
+  ]
+ }
+}
