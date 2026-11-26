@@ -1,0 +1,885 @@
+{
+ "schema": "bnasdaq-daily/1",
+ "date": "2026-11-27",
+ "session": "2026-11-25",
+ "generated": "2026-11-26T22:50:44Z",
+ "headline": "早上版：美股 11/26 感恩節休市，今晚（11/27）黑色星期五美東 13:00 提早收盤；歐股全面反彈——STOXX 600 收 636.98（+1.8%）、DAX +2.08%，Altria 考慮全現金收購帝國品牌（Imperial +13.3%）；布蘭特原油結算 96.57（+1.2%），胡塞組織攻擊沙國煉油廠、荷莫茲油輪觸雷；西班牙前央行總裁德科斯獲提名接任 ECB 總裁；川普要求調查 Q3 GDP「破紀錄的錯誤」大幅上修",
+ "summary": "美股 11/26（週四）感恩節休市，五大指數仍以 11/25 收盤為準（本站即時快照停在 11/25 盤後）；11/27 股市美東 13:00、債市 14:00 提早收盤。本版整理台北 11/26 21:00（前一版）之後的消息，分析時間台北 11/27 06:46。①歐股收盤：STOXX 600 收 636.98（+1.8%），德、西、義都漲逾 2%，所有主要類股收紅，礦業、汽車、國防漲逾 3%，科技股連兩天賣壓後反彈（Soitec +7%、英飛凌 +3.6%）；推力是 USTR 表示新關稅將以貿易協議的較低稅率為上限、關稅疑慮降溫（QNC News 引路透）。DAX 收 25,215.52（+513.39 點、+2.08%，ad-hoc-news 引 TraderFox）；EverHint 報 FTSE 100 +1.88%、義大利 +2.47%、IBEX 35 +2.35%。②併購：Altria（萬寶路母公司）表示正考慮對英國帝國品牌（Imperial Brands）提出可能的收購要約、若提出「可能全部以現金支付」，並與第三方洽談收購帝國品牌部分業務，尚未達成協議（AJ Bell 引 Alliance News）；帝國品牌收盤 +13.3%（QNC News），EverHint 稱為 1999 年以來最大單日漲幅；PiQ 引彭博稱日本菸草也在與顧問研究潛在交易。③油價：布蘭特結算 96.57（+1.96、+1.2%），WTI 感恩節不結算、美東 13:21 報 84.84（+1.39%）（Longbridge 引路透）；起因是胡塞組織稱攻擊沙國煉油廠、伊朗革命衛隊稱 2 艘油輪在阿曼 Khasab 以北觸雷爆炸；彭博（Spokesman-Review 轉載）稱沙國紅海沿岸日煉 40 萬桶的 Jazan 煉油廠部分作業停擺（沙烏地通訊社引能源部消息人士），並稱伊朗無人機攻擊科威特造成 2 名 Rheinmetall 義大利籍員工死亡（ANSA）；OPEC+ 週日（11/29）開會，消息人士稱可能把現行產量目標至少延續到 2027 年第一季（路透）。④央行：CNBC 標題稱西班牙前央行總裁德科斯（Pablo Hernández de Cos）將接任 ECB 總裁；鉅亨網標題稱「Fed 傳聲筒」指 AI 股暴跌拉高升息門檻、主席華許陷政策兩難；英國央行金融穩定報告點名微軟服務中斷與 AI 風險，並把英國銀行逆週期資本緩衝調降 30 個基點（CMoney 標題）。⑤美國政治：CNBC 標題稱川普要求調查第三季 GDP 大幅上修這個「破紀錄的錯誤」；CNBC 標題稱川普與北約秘書長呂特在俄羅斯加強攻擊烏克蘭能源設施之際警告俄方。⑥科技：經濟日報標題稱 SpaceX 獲准部署百萬顆衛星組建 Starmind 太空算力星座、鴻海受惠（工商時報標題：SpaceX 百萬顆衛星獲准發射）；工商時報標題稱 Google 攜手藍色起源把 AI 運算衛星送上太空；鉅亨網標題稱 AI 吸乾全球記憶體產能、缺貨至少到 2028 年。⑦期貨：CME 股價指數期貨感恩節中午提早暫停、台北 07:00（美東 18:00）重新開盤；MarketWatch 標題稱期貨預示黑色星期五華爾街上漲；前一版已列美東 02:39 那指 100 期貨 +0.59%（JournalArta）。11/25 收盤回顧（本站即時報價）：那指 100 26,046.90（−0.64%）、費半 8,774.86（−0.65%）、標普 500 7,182.78（−0.25%）、道瓊 50,182.95（+0.33%）、羅素 2000 2,704.06（+0.71%）；本週（÷11/20）五大指數漲 3.9%～4.7%。本版指數表、週表仍為 11/25 收盤。",
+ "indices": [
+  {
+   "key": "NDX",
+   "name": "那斯達克 100",
+   "close": 26046.9,
+   "chg": -0.64,
+   "prev_week": 25028.98,
+   "wk": 4.07,
+   "note": "點位 26,046.90（−167.27 點；本站即時報價 heatmap-live，Yahoo Finance 收盤）；QQQ −0.65%（633.93÷638.10 現算）；依本站熱力圖 11/24 市值與每 15 分鐘報價估算，成分股開盤第一格（美東 09:30～09:45）一度 −4.88%，收盤收斂到 −0.83%（市值加權，與指數的修正市值加權不同）；本週（÷11/20 收盤 25,028.98）現算 +4.07%"
+  },
+  {
+   "key": "SOX",
+   "name": "費城半導體",
+   "close": 8774.86,
+   "chg": -0.65,
+   "prev_week": 8408.59,
+   "wk": 4.36,
+   "note": "點位 8,774.86（−57.64 點，本站即時）；SOXX −0.50%（127.98÷128.62 現算）；成分股市值加權盤中最低一格 −8.53%（美東 11:30～11:45）後收斂到 −2.14%（本站熱力圖估算）；科林研發 −5.68%、美光 −4.53%、輝達 −3.91%、應用材料 −3.89%，ADI +6.44%、德儀 +4.55% 逆勢上漲（本站即時）；SanDisk 73.61（−5.57%，依 11/24 收盤 77.95 現算，Yahoo 前收欄位有誤）"
+  },
+  {
+   "key": "SPX",
+   "name": "標普 500",
+   "close": 7182.78,
+   "chg": -0.25,
+   "prev_week": 6910.39,
+   "wk": 3.94,
+   "note": "點位 7,182.78（−18.31 點，本站即時）；SPY −0.29%（716.70÷718.78 現算）；500 檔成分股 371 檔漲、128 檔跌，11 個產業 7 個上漲：原物料 +1.84%、房地產 +0.85%、工業 +0.84%，資訊科技 −1.06%（本站熱力圖市值加權估算）"
+  },
+  {
+   "key": "DJI",
+   "name": "道瓊工業",
+   "close": 50182.95,
+   "chg": 0.33,
+   "prev_week": 48147.33,
+   "wk": 4.23,
+   "note": "點位 50,182.95（+164.25 點，本站即時；鉅亨網標題「道瓊驚天逆轉收紅164點」一致）；早段一度 −1,104 點（香港01）；DIA +0.31%（501.27÷499.74 現算）"
+  },
+  {
+   "key": "RUT",
+   "name": "羅素 2000",
+   "close": 2704.06,
+   "chg": 0.71,
+   "prev_week": 2581.79,
+   "wk": 4.74,
+   "note": "點位 2,704.06（+19.12 點，本站即時）；IWM +0.65%（268.87÷267.14 現算）；五大指數中當日表現最好"
+  },
+  {
+   "key": "IXIC",
+   "name": "那斯達克綜合",
+   "close": 23585.8,
+   "chg": -0.62,
+   "prev_week": 22617.73,
+   "wk": 4.28,
+   "note": "點位 23,585.80（−147.74 點，本站即時）；早盤一度 −4.63%（香港01）"
+  }
+ ],
+ "week_path": {
+  "dates": [
+   "11/20",
+   "11/23",
+   "11/24",
+   "11/25"
+  ],
+  "note": "11/20（上週五）為基期（＝100），呈現本週「週一黃仁勳回任報復性反彈 → 週二晶片股回吐 → 週三早盤重挫、午後收斂」。11/23、11/24 取前兩版收盤，11/25 取本版收盤。逐日漲跌累乘／收盤÷11/20 收盤現算：那斯達克 100 +4.06%／+4.07%、費城半導體 +4.36%／+4.36%、標普 500 +3.95%／+3.94%、道瓊 +4.23%／+4.23%、那斯達克綜合 +4.28%／+4.28%、羅素 2000 +4.73%／+4.74%（差異為逐日漲跌四捨五入）。",
+  "series": [
+   {
+    "name": "那斯達克 100",
+    "chg": [
+     0,
+     6.86,
+     -1.99,
+     -0.64
+    ]
+   },
+   {
+    "name": "費城半導體",
+    "chg": [
+     0,
+     14.03,
+     -7.88,
+     -0.65
+    ]
+   },
+   {
+    "name": "標普 500",
+    "chg": [
+     0,
+     4.73,
+     -0.5,
+     -0.25
+    ]
+   },
+   {
+    "name": "道瓊",
+    "chg": [
+     0,
+     3.01,
+     0.85,
+     0.33
+    ]
+   },
+   {
+    "name": "那斯達克綜合",
+    "chg": [
+     0,
+     6.51,
+     -1.48,
+     -0.62
+    ]
+   },
+   {
+    "name": "羅素 2000",
+    "chg": [
+     0,
+     3.4,
+     0.57,
+     0.71
+    ]
+   }
+  ]
+ },
+ "big_move": {
+  "triggered": false,
+  "threshold": 2,
+  "intro": "美股 11/26 感恩節休市，第 2 節仍以 11/25 收盤判斷：五大指數收盤漲跌皆未超過 ±2%（羅素 2000 +0.71%、道瓊 +0.33%、標普 500 −0.25%、那指 100 −0.64%、費半 −0.65%），本節不啟用。11/25 盤後追蹤 ETF 對收盤（本站快照）：SOXX +1.35%、IWM +0.54%、SPY +0.52%、DIA +0.51%、QQQ +0.42%，也都未超過 ±2%。11/25 盤中重挫、收盤收斂的主因機率已列在 11/25 盤中版。"
+ },
+ "weekly": {
+  "range": "2026-11-20 → 2026-11-25（本週一～週三；收盤÷上週五 11/20 收盤現算；11/26 感恩節休市）",
+  "cols": [
+   "11/20",
+   "11/25"
+  ],
+  "stock": {
+   "title": "股市：週三早盤重挫、午後收復大半，五大指數本週仍漲 3.9%～4.7%，小型股與道瓊領先、晶片股最弱",
+   "rows": [
+    [
+     "那斯達克 100",
+     "25,028.98",
+     "26,046.90",
+     "+4.07%（11/25 −0.64%）"
+    ],
+    [
+     "費城半導體",
+     "8,408.59",
+     "8,774.86",
+     "+4.36%（11/25 −0.65%）"
+    ],
+    [
+     "標普 500",
+     "6,910.39",
+     "7,182.78",
+     "+3.94%（11/25 −0.25%）"
+    ],
+    [
+     "道瓊工業",
+     "48,147.33",
+     "50,182.95",
+     "+4.23%（11/25 +0.33%）"
+    ],
+    [
+     "羅素 2000",
+     "2,581.79",
+     "2,704.06",
+     "+4.74%（11/25 +0.71%）"
+    ],
+    [
+     "VIX",
+     "35.89",
+     "28.29",
+     "−21.18%（28.29÷35.89 現算；11/25 +7.32%，本站即時）"
+    ]
+   ],
+   "text": "一週趨勢：上週（11/13→11/20）五大指數重挫；本週一黃仁勳回任輝達執行長帶動 AI 硬體報復性反彈（費半 +14.03%），週二晶片股回吐（費半 −7.88%）、資金轉向醫療與零售，週三早盤 AI 股與 301 關稅再度重挫、午後逢低買盤讓道瓊與羅素 2000 收紅。三天下來輪動很明顯：本週羅素 2000 +4.74%、道瓊 +4.23% 領先，費半雖仍 +4.36%，但週一以後兩天回吐約 69% 漲點（(9,588.05−8,774.86)÷(9,588.05−8,408.59) 現算；9,588.05＝11/24 收盤 8,832.50＋當日跌點 755.55）。MarketWatch 標題稱輝達已回吐週一一半以上漲幅，並將出現 2025 年 3 月以來首次「死亡交叉」。VIX 本週由 35.89 降到 28.29，但仍高。週五 11/27 提早收盤（美東 13:00）。"
+  },
+  "fx": {
+   "title": "匯市：美元本週大致持平，避險情緒推升日圓、瑞郎，USD/JPY 守在 159",
+   "rows": [
+    [
+     "美元指數 DXY",
+     "103.84",
+     "103.70",
+     "−0.14%（103.70÷103.84 現算；11/23 收 104.32 為 2026 年最高收盤，24/7 Wall St.；本站即時台北 06:30）"
+    ],
+    [
+     "USD/JPY",
+     "約 158.51",
+     "159.09",
+     "+0.36%（159.09÷158.51 現算；本站即時）"
+    ],
+    [
+     "EUR/USD",
+     "約 1.0970",
+     "1.0979",
+     "+0.08%（本站即時）"
+    ]
+   ],
+   "text": "一週趨勢：週一 DXY 收 104.32，為 2026 年最高收盤、2025 年 3 月以來最高（24/7 Wall St.），推力是 12/9 升息機率升到約 98%；週二、週三股市劇烈震盪、美債殖利率下滑，美元回落到 103.70。鉅亨網〈紐約匯市〉標題稱美元走弱、AI 股震盪引發避險情緒推升日圓與瑞郎；但 USD/JPY 仍在 159 上方，日圓弱勢格局未變。鉅亨網另一標題稱美股跌勢燒進匯市、套利交易利差縮水，華爾街提高警戒（CMoney 轉載）。"
+  },
+  "bond": {
+   "title": "債市：買債避險，殖利率本週全面下滑，10 年期 4.85%、30 年期 5.24%",
+   "rows": [
+    [
+     "2 年",
+     "4.63%",
+     "4.61%",
+     "−2 bp"
+    ],
+    [
+     "10 年",
+     "4.92%",
+     "4.85%",
+     "−7 bp"
+    ],
+    [
+     "30 年",
+     "5.31%",
+     "5.24%",
+     "−7 bp"
+    ]
+   ],
+   "text": "一週趨勢：財政部 Daily Treasury Par Yield 11/25：2 年 4.61%、10 年 4.85%、30 年 5.24%（11/24 為 4.63%、4.91%、5.30%；本站 data/treasury_curve.json），2s10s 約 24 bp。週三核心 PCE 高於預期，殖利率不升反降：CNBC 標題稱「儘管通膨數據黏著，投資人買債避險，10 年期殖利率下滑」。短端受升息預期支撐、跌幅小，曲線小幅變平。晚間褐皮書：鉅亨網標題稱通膨壓力難消、薪資漲幅擴大、企業預期續漲價，MarketWatch 標題稱 Fed 表示通膨沒有改善、12 月將投票升息。CNBC 的 Liesman 評論稱主席華許（Warsh）需要升息。債市 11/26 休市、11/27 美東 14:00 提早收盤。"
+  },
+  "other": {
+   "title": "商品與加密：波灣攻擊推升油價，布蘭特 11/26 結算 96.57；黃金回升，比特幣守 6 萬",
+   "rows": [
+    [
+     "WTI 原油",
+     "80.17（11/23）",
+     "84.15",
+     "+4.96%（84.15÷80.17 現算，1 月合約；11/25 +2.56%，本站即時）"
+    ],
+    [
+     "黃金",
+     "3,515.40",
+     "3,617.80",
+     "+2.91%（12 月期貨，本站即時美東 17:00；11/25 +1.57%）"
+    ],
+    [
+     "比特幣",
+     "約 59,100",
+     "約 60,130",
+     "約 +1.74%（60,129.68÷59,100 現算，本站即時）"
+    ]
+   ],
+   "text": "油價：布蘭特 11/26 結算 96.57（+1.2%），前兩個交易日已漲近 6%（Longbridge 引路透、彭博）；胡塞組織稱攻擊沙國煉油廠（路透稱 Ras Tanura、彭博稱 Jazan，兩者說法不同），伊朗革命衛隊稱 2 艘油輪在荷莫茲海峽觸雷；WTI 感恩節不結算，美東 13:21 報 84.84（+1.39%）。表內 WTI 為本站 11/25 報價（1 月合約）。黃金：本站報價 12 月期貨 11/25 收在 3,617.8。比特幣：本站 11/25 晚間約 60,546。"
+  }
+ },
+ "events": [
+  {
+   "cat": "科技與那斯達克",
+   "items": [
+    "經濟日報標題：馬斯克太空 AI 鳴槍，SpaceX 部署百萬顆衛星組建 Starmind 算力星座，鴻海跟著起飛；工商時報標題：SpaceX 百萬顆衛星獲准發射（以官方文件為準）",
+    "工商時報標題：Google 攜藍色起源送 AI 運算衛星上太空；BigGo 標題：Google 為 Gmail 與 Workspace 的 AI 代理加上傳送前審批機制",
+    "鉅亨網標題：AI 吸乾全球記憶體產能，缺貨至少到 2028 年，馬斯克搶貨也碰壁；CNBC 標題：半導體晶片是新的石油",
+    "MarketWatch 標題：輝達與整個 AI 交易還沒脫離險境；鉅亨網標題：耶魯學者稱輝達面臨的考題已經變了；UDN 標題：「大賣空」本尊改做多，盯輝達接近 200 美元再出手",
+    "商傳媒標題：Anthropic 砸 9,000 億美元押注算力，龐大合約恐步 90 年代電信業崩盤後塵；信報標題：Anthropic 否認倡議 AI 治理人類；BigGo 標題：Anthropic 重構核心 API、Claude 撰寫八成程式碼、CPU 消耗降七成",
+    "CMoney 標題：CoreWeave 擬以 Meta 合約 GPU 為抵押、出售 45 億美元貸款，債務陰影下股債雙殺"
+   ],
+   "tags": [
+    [
+     "tech",
+     "corp"
+    ],
+    [
+     "tech",
+     "corp"
+    ],
+    [
+     "tech",
+     "mkt"
+    ],
+    [
+     "mkt",
+     "tech",
+     "corp"
+    ],
+    [
+     "corp",
+     "tech"
+    ],
+    [
+     "corp",
+     "bond",
+     "tech"
+    ]
+   ]
+  },
+  {
+   "cat": "貨幣政策與央行",
+   "items": [
+    "CNBC 標題：西班牙前央行總裁德科斯（Pablo Hernández de Cos）將出任歐洲央行總裁；QNC News（引路透）同日報導其獲提名",
+    "英國央行金融穩定報告：CMoney 標題稱點名微軟服務中斷與 AI 風險，並把英國銀行資本要求（逆週期緩衝）調降 30 個基點",
+    "鉅亨網標題：別指望聯準會救市？Fed 傳聲筒稱 AI 股暴跌拉高升息門檻，主席華許陷政策兩難（市場預期 12/8～9 升息 1 碼，前一版引 CME FedWatch 約 94%～96%）",
+    "ECB 11/27 格林威治 09:00 公布消費者預期調查；美國 11/27 公布零售庫存與商品貿易收支（EverHint、Edge 行事曆）"
+   ],
+   "tags": [
+    [
+     "cb"
+    ],
+    [
+     "cb",
+     "tech",
+     "intl"
+    ],
+    [
+     "rate",
+     "mkt"
+    ],
+    [
+     "cb",
+     "intl",
+     "sentiment"
+    ]
+   ]
+  },
+  {
+   "cat": "美國政治與政策",
+   "items": [
+    "CNBC 標題：川普要求調查第三季 GDP 大幅上修這個「破紀錄的錯誤」",
+    "CNBC 標題：俄羅斯加強攻擊烏克蘭能源設施之際，川普與北約秘書長呂特警告俄方",
+    "QNC News（引路透）：USTR 表示新的 301 關稅將以貿易協議中的較低稅率為上限，歐洲關稅疑慮降溫；CNBC 標題：美國加稅威脅迫使夥伴加快簽協議",
+    "EverHint：巴西航空工業（Embraer）批評美國擬議的 10% 飛機關稅"
+   ],
+   "tags": [
+    [
+     "gdp",
+     "pol"
+    ],
+    [
+     "geo",
+     "pol"
+    ],
+    [
+     "trade",
+     "pol"
+    ],
+    [
+     "trade",
+     "corp"
+    ]
+   ]
+  },
+  {
+   "cat": "國際情勢",
+   "items": [
+    "歐股 11/26 收盤：STOXX 600 收 636.98（+1.8%），扭轉前一天逾 1% 的跌幅，所有主要類股收紅，礦業、汽車、國防漲逾 3%，Soitec +7%、英飛凌 +3.6%，Commerzbank −2.6%（UniCredit 計畫改組管理層）；今年以來 STOXX 600 +7.6%、標普 500 +5%（QNC News 引路透）；DAX 收 25,215.52（+2.08%，ad-hoc-news）；FTSE 100 +1.88%、義大利 +2.47%、IBEX 35 +2.35%（EverHint）",
+    "Altria 表示考慮對英國帝國品牌提出可能的全現金收購要約，並與第三方洽談收購部分業務，尚未達成協議；帝國品牌收盤 +13.3%（QNC News），盤中一度 +15% 至 3,422 便士、市值 256.2 億英鎊（AJ Bell）；PiQ 引彭博稱日本菸草也在研究潛在交易",
+    "Babcock 拿下英國核潛艦設施合約（路透稱 80 億英鎊），股價約 +5%（EverHint）；ams OSRAM 約 +10%",
+    "中東：胡塞組織稱攻擊沙國煉油廠，彭博稱紅海沿岸日煉 40 萬桶的 Jazan 煉油廠部分作業停擺（沙烏地通訊社）；伊朗革命衛隊稱 2 艘油輪在阿曼 Khasab 以北觸雷；ANSA 稱伊朗無人機攻擊科威特造成 2 名 Rheinmetall 義大利籍員工死亡（Spokesman-Review 轉載彭博）",
+    "台指期夜盤：鉅亨網標題稱美股感恩節休市，台指期夜盤開低震盪、一度翻紅後下探 39,008 點"
+   ],
+   "tags": [
+    [
+     "mkt",
+     "intl"
+    ],
+    [
+     "corp",
+     "intl"
+    ],
+    [
+     "corp",
+     "intl"
+    ],
+    [
+     "geo",
+     "oil"
+    ],
+    [
+     "mkt"
+    ]
+   ]
+  },
+  {
+   "cat": "金融環境",
+   "items": [
+    "原油（Longbridge 引路透）：布蘭特結算 96.57（+1.96 美元、+1.2%）；WTI 感恩節不結算，美東 13:21 報 84.84（+1.16、+1.39%）；EIA：截至 11/20 當週美國原油庫存 +110 萬桶至 4.189 億桶（預期 +150 萬桶）；OPEC+ 11/29 開會，消息人士稱可能把現行產量目標至少延續到 2027 年第一季；泰國 Bangchak 曼谷煉油廠失火、全部裝置停機",
+    "彭博（Spokesman-Review 轉載）：布蘭特前兩個交易日漲近 6%，感恩節成交清淡；Vortexa 稱本月荷莫茲海峽船運量回升，IEA 預估本季供給過剩；歐洲柴油期貨較伊朗戰爭高點跌近 30%",
+    "美債現貨 11/26 休市、11/27 美東 14:00 提早收盤；財政部 11/25 殖利率 2 年 4.61%、10 年 4.85%、30 年 5.24%（本站 treasury_curve）",
+    "匯市（本站 11/25 晚間即時）：美元指數 103.71、USD/JPY 158.99、EUR/USD 1.0976、USD/TWD 33.08"
+   ],
+   "tags": [
+    [
+     "oil",
+     "energy"
+    ],
+    [
+     "oil",
+     "geo"
+    ],
+    [
+     "bond",
+     "rate"
+    ],
+    [
+     "usd",
+     "jpy",
+     "eur",
+     "fx"
+    ]
+   ]
+  }
+ ],
+ "mega": {
+  "intro": "依 11/25 收盤市值排名（本站 data/heatmap/latest.json）；股價與單日漲跌為 11/25 收盤（本站即時報價），「盤後」是 11/25 盤後交易；美股 11/26 感恩節休市。新聞欄更新到台北 11/27 06:46，只引用標題時會註明「標題」；沙烏地阿美市值沿用 11/4。",
+  "wk_label": "11/25 單日",
+  "rows": [
+   {
+    "t": "AAPL",
+    "n": "Apple",
+    "cap": "5.17 兆",
+    "px": "355.58",
+    "wk": "+0.43%",
+    "news": "收 355.58（+0.43%），盤後 355.10（−0.13%）（本站快照，11/26 休市）；BigGo 標題：無風扇 MacBook Neo 亞馬遜黑五下殺 599 美元；Techritual 標題：iPhone Duo 新增 Laptop Mode；大紀元標題：Talkie 聊天機器人涉兒童安全問題遭蘋果下架。《巴隆》點名蘋果在 AI 風暴中抗跌（鉅亨網標題）。",
+    "impact": "黑五促銷檢驗硬體需求；屬例行消息，影響中性。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "MSFT",
+    "n": "Microsoft",
+    "cap": "3.64 兆",
+    "px": "489.93",
+    "wk": "−1.25%",
+    "news": "收 489.93（−1.25%），盤後 492.15（+0.45%）；CMoney 標題：英國央行金融穩定報告點名微軟斷線與 AI 風險，並調降英國銀行資本要求 30 個基點。",
+    "impact": "監管機關把雲端集中度列為系統風險，可能增加金融業客戶的備援要求與合規成本。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech",
+     "cb"
+    ]
+   },
+   {
+    "t": "NVDA",
+    "n": "Nvidia",
+    "cap": "3.60 兆",
+    "px": "149.30",
+    "wk": "−3.91%",
+    "news": "收 149.30（−3.91%），盤後 151.22（+1.29%）；MarketWatch 標題：輝達與 AI 交易還沒脫離險境；鉅亨網標題：耶魯學者稱輝達面臨的考題已經變了；EverHint：輝達暫停對馬來西亞、新加坡等東南亞國家出貨伺服器（前一版已列 FT 報導）；UDN 標題：「大賣空」本尊盯輝達接近 200 美元再出手。",
+    "impact": "東南亞出貨暫停與治理疑慮仍在，短線情緒偏弱；新消息以評論為主。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "DELL、SMCI：東南亞訂單遞延"
+    ],
+    "tags": [
+     "corp",
+     "trade",
+     "tech"
+    ]
+   },
+   {
+    "t": "GOOGL",
+    "n": "Alphabet",
+    "cap": "3.36 兆",
+    "px": "273.10",
+    "wk": "−2.13%",
+    "news": "收 273.10（−2.13%），盤後 274.89（+0.66%）；工商時報標題：Google 攜藍色起源送 AI 運算衛星上太空；BigGo 標題：Gmail 與 Workspace 的 AI 代理加上傳送前審批機制。",
+    "impact": "太空算力仍屬早期布局；AI 代理加審批機制有助企業採用。",
+    "win": [
+     "GOOGL"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "AMZN",
+    "n": "Amazon",
+    "cap": "2.64 兆",
+    "px": "244.43",
+    "wk": "−3.12%",
+    "news": "收 244.43（−3.12%），盤後 246.77（+0.96%）；BigGo 標題：高盛重申「買進」、目標價 370 美元（看好 46.7% 上漲空間）；黑五檔期亞馬遜大促（MacBook Neo 599 美元、AMD Ryzen 7 9800X3D 369.99 美元創新低，BigGo 標題）。",
+    "impact": "黑五銷售為短線焦點，券商維持看多。",
+    "win": [
+     "AMZN"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "TSM",
+    "n": "台積電",
+    "cap": "1.78 兆",
+    "px": "342.34",
+    "wk": "−1.96%",
+    "news": "ADR 收 342.34（−1.96%），盤後 347.39（+1.48%）；永豐金標題：德州廠細節曝光，擬砸 226 億美元建 2 奈米廠、10 年減稅是設廠關鍵；BigGo 標題：外媒點名台積電等三檔 AI 股為崩盤布局首選；CMoney 標題：投顧預估明年台股獲利成長 30%。",
+    "impact": "美國先進製程擴產加深在地供應鏈，長期利於設備與廠務供應商。",
+    "win": [
+     "AMAT、LRCX（設備需求）"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "SPCX",
+    "n": "SpaceX",
+    "cap": "1.73 兆",
+    "px": "127.44",
+    "wk": "+1.30%",
+    "news": "收 127.44（+1.30%），盤後 128.96（+1.19%）；經濟日報標題：SpaceX 部署百萬顆衛星組建 Starmind 算力星座，鴻海跟著起飛；工商時報標題：SpaceX 百萬顆衛星獲准發射、馬斯克贈全美兒童 SpaceX 股票。",
+    "impact": "太空算力題材擴大估值想像，代工與衛星零組件供應鏈受惠；監管細節以官方文件為準。",
+    "win": [
+     "SPCX",
+     "2317 鴻海（衛星代工）"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "META",
+    "n": "Meta",
+    "cap": "1.56 兆",
+    "px": "609.89",
+    "wk": "+3.40%",
+    "news": "收 609.89（+3.40%），盤後 612.39（+0.41%）；TradingView 標題：據悉與多州檢察長就天價訴訟討論庭審中和解；CMoney 標題：CoreWeave 擬以 Meta 合約 GPU 抵押出售 45 億美元貸款；中時標題：荷蘭民團要求全面停售雷朋 Meta 智慧眼鏡。",
+    "impact": "和解可降低訴訟不確定性；AI 算力夥伴的融資壓力是間接風險。",
+    "win": [
+     "META（訴訟風險下降）"
+    ],
+    "lose": [
+     "CRWV（債務壓力）"
+    ],
+    "tags": [
+     "corp",
+     "tech",
+     "bond"
+    ]
+   },
+   {
+    "t": "TSLA",
+    "n": "Tesla",
+    "cap": "1.50 兆",
+    "px": "380.14",
+    "wk": "−1.18%",
+    "news": "〔本版無新公司消息，沿用前一版〕收 380.14（−1.18%），盤後 383.23（+0.81%）；INSIDE 標題：歐盟再度推遲 FSD 審議會議至 12/15；INSIDE 標題：在德國工具機大廠 EMAG 總部成立新公司，可能瞄準 Optimus 人形機器人量產；Yahoo 新聞標題：Cybertruck 停產、台灣預訂全數取消（停產消息 11/6 已見報，WCAX、Fox 標題）。",
+    "impact": "FSD 在歐洲上路時程再延，短期壓抑；人形機器人布局是長期題材。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "AVGO",
+    "n": "Broadcom",
+    "cap": "1.44 兆",
+    "px": "300.86",
+    "wk": "−0.07%",
+    "news": "收 300.86（−0.07%），盤後 304.00（+1.04%）；Techritual 標題：Broadcom 公告 VMware 漏洞。",
+    "impact": "例行資安修補，影響中性。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "LLY",
+    "n": "禮來",
+    "cap": "1.31 兆",
+    "px": "1,392.22",
+    "wk": "−1.09%",
+    "news": "收 1,392.22（−1.09%），盤後 1,395.44（+0.23%）；BigGo 標題：禮來市值 1.2 兆美元、諾和諾德僅 1,725 億美元，GLP-1 差距擴大到七倍；BMO 維持買進、目標價 1,400 美元（富途標題）。",
+    "impact": "GLP-1 龍頭地位延續，對手市占壓力加大。",
+    "win": [
+     "LLY"
+    ],
+    "lose": [
+     "NVO（市占落後）"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "BRK.B",
+    "n": "波克夏",
+    "cap": "1.28 兆",
+    "px": "579.32",
+    "wk": "+0.37%",
+    "news": "〔本版無新公司消息，沿用前一版〕收 579.32（+0.37%），盤後 580.00（+0.12%）；鉅亨號標題：市場專家看好 Greg Abel 在波克夏的布局，稱對 Alphabet 的投資將帶來豐厚回報。",
+    "impact": "價值型股票在科技股震盪中相對抗跌，影響中性。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "ANT",
+    "n": "Anthropic",
+    "cap": "約 1.09 兆",
+    "px": "82.79",
+    "wk": "+1.07%",
+    "news": "收 82.79（+1.07%），盤後 84.25（+1.76%，回到 83 美元承銷價之上）；商傳媒標題：砸 9,000 億美元押注算力，龐大合約恐步 90 年代電信業崩盤後塵；信報標題：Anthropic 否認倡議 AI 治理人類；BigGo 標題：重構核心 API，Claude 撰寫八成程式碼、CPU 消耗降七成。",
+    "impact": "巨額算力承諾引發資本支出回報疑慮；工程效率提升有助降低營運成本。",
+    "win": [
+     "—"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp",
+     "tech"
+    ]
+   },
+   {
+    "t": "WMT",
+    "n": "沃爾瑪",
+    "cap": "1.05 兆",
+    "px": "131.94",
+    "wk": "−0.28%",
+    "news": "〔本版無新公司消息，沿用前一版〕收 131.94（−0.28%），盤後 131.89（−0.04%）；BigGo 標題：沃爾瑪投資的 PhonePe 重啟印度 IPO 計畫，目標 2027 年初掛牌、估值上看 150 億美元；聚財網標題：Meta Muse 攜手沃爾瑪做黑五 AI 購物；商傳媒標題：美股動盪資金湧向防禦龍頭，好市多逼近 1,100 美元壓力關卡。",
+    "impact": "PhonePe 上市可實現投資價值；黑五前資金偏好防禦型零售股。",
+    "win": [
+     "WMT（PhonePe 持股）"
+    ],
+    "lose": [
+     "—"
+    ],
+    "tags": [
+     "corp"
+    ]
+   },
+   {
+    "t": "2222.SR",
+    "n": "沙烏地阿美",
+    "cap": "約 1.69 兆（11/4）",
+    "px": "26.26",
+    "wk": "−0.15%",
+    "news": "11/25 收 26.26 里亞爾（−0.15%，本站即時；11/26 未取得報價）；彭博（Spokesman-Review 轉載）稱胡塞組織攻擊後 Jazan 煉油廠部分作業停擺（沙烏地通訊社）；民視標題：聯軍摧毀胡塞飛彈發射台；布蘭特 11/26 結算 96.57（+1.2%，路透）。",
+    "impact": "煉油設施受損推升風險溢價，但 OPEC+ 可能延續產量目標、IEA 預估過剩，上漲空間受限。",
+    "win": [
+     "XOM、CVX（油價）"
+    ],
+    "lose": [
+     "UAL、DAL（燃油成本）"
+    ],
+    "tags": [
+     "geo",
+     "oil",
+     "corp"
+    ]
+   }
+  ]
+ },
+ "sources": [
+  {
+   "t": "本站即時報價（Yahoo Finance）：heatmap-live 分支 us.json（11/25 收盤與盤後；11/26 休市）",
+   "u": "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/us.json"
+  },
+  {
+   "t": "本站新聞彙整 heatmap-live 分支 news.json（台北 11/27 03:31 更新：鉅亨網、Google 新聞、CNBC、MarketWatch 標題）",
+   "u": "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/heatmap-live/news.json"
+  },
+  {
+   "t": "本站市值熱力圖 data/heatmap/latest.json",
+   "u": "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/heatmap/latest.json"
+  },
+  {
+   "t": "QNC News（引路透，11/26 20:11 UTC）：European shares end 1.8% higher as tariff fears ease",
+   "u": "https://qncnews.com/2026/11/26/european-shares-end-1-8-per-cent-higher-as-tariff-fears-ease-and-banks-and-technology-stocks-rebound/"
+  },
+  {
+   "t": "ad-hoc-news：DAX closes 2.08% higher as tech and auto stocks rebound",
+   "u": "https://www.ad-hoc-news.de/boerse/news/marktberichte/dax-closes-2-08-prozent-higher-as-tech-and-auto-stocks-rebound/70559366"
+  },
+  {
+   "t": "EverHint：Global Stock Market News — November 26, 2026 — Midday Update",
+   "u": "https://www.everhint.com/global-stock-market-news-november-26-2026-midday-update-last-12-hours-pacific-time/"
+  },
+  {
+   "t": "AJ Bell（Alliance News）：Imperial Brands shares jump as Altria says considering cash bid",
+   "u": "https://www.ajbell.co.uk/news/articles/imperial-brands-shares-jump-altria-says-considering-cash-bid"
+  },
+  {
+   "t": "PiQ：Altria weighs all-cash Imperial Brands offer; Japan Tobacco also reported studying deal",
+   "u": "https://piqmarkets.com/story/altria-says-it-is-weighing-a-possible-cash-offer-for-imperial-brands"
+  },
+  {
+   "t": "Longbridge（引路透，11/26 21:56 UTC）：Brent settles higher as mine strikes, refinery attack stoke supply concerns",
+   "u": "https://longbridge.com/en/news/306942576"
+  },
+  {
+   "t": "Spokesman-Review（彭博）：Oil climbs as Yemen's Houthi rebels strike key Saudi refinery",
+   "u": "https://www.spokesman.com/stories/2026/nov/26/oil-climbs-as-yemens-houthi-rebels-strike-key-saud/"
+  },
+  {
+   "t": "Edge Consultancy：Europe Market Wrap 26 November（早盤快照與行事曆）",
+   "u": "https://edgeconsultancykw.com/europe-market-wrap-26-november-2026/"
+  },
+  {
+   "t": "CNBC 標題：Trump demands probe into ‘record setting error’ after third-quarter GDP data gets massive revision higher",
+   "u": "https://www.cnbc.com/2026/11/26/trump-gdp-revision-investigation.html"
+  },
+  {
+   "t": "CNBC 標題：Spain’s Pablo Hernández de Cos set to lead European Central Bank",
+   "u": "https://www.cnbc.com/2026/11/26/pablo-hernandez-de-cos-ecb-president.html"
+  },
+  {
+   "t": "CNBC 標題：Marlboro maker Altria explores takeover of UK's Imperial Brands",
+   "u": "https://www.cnbc.com/2026/11/26/marlboro-maker-altria-explores-takeover-of-uks-imperial-brands.html"
+  },
+  {
+   "t": "CNBC 標題：Trump, NATO chief caution Russia as attacks on Ukraine’s energy infrastructure intensify",
+   "u": "https://www.cnbc.com/2026/11/26/trump-nato-rutte-russia-ukraine-war.html"
+  },
+  {
+   "t": "CNBC 標題：Semiconductor chips are the new oil",
+   "u": "https://www.cnbc.com/2026/11/26/semiconductor-chips-are-the-new-oil-heres-why.html"
+  },
+  {
+   "t": "MarketWatch 標題：Futures point to Black Friday gains on Wall Street",
+   "u": "https://www.marketwatch.com/story/futures-point-to-black-friday-gains-for-wall-street-as-global-markets-welcome-u-s-resili"
+  },
+  {
+   "t": "MarketWatch 標題：Nvidia and the whole AI trade aren’t out of the woods",
+   "u": "https://www.marketwatch.com/story/nvidia-and-the-whole-ai-trade-arent-out-of-the-woods-not-by-a-long-shot-bccc0025"
+  },
+  {
+   "t": "鉅亨網標題：Fed 傳聲筒：AI 股暴跌拉高升息門檻 華許陷政策兩難",
+   "u": "https://news.cnyes.com/news/id/6671886"
+  },
+  {
+   "t": "鉅亨網標題：AI 吸乾全球記憶體產能 缺貨至少到 2028 年",
+   "u": "https://news.cnyes.com/news/id/6672128"
+  },
+  {
+   "t": "鉅亨網標題：黃仁勳還無可取代？耶魯學者：輝達面臨的考題已經變了",
+   "u": "https://news.cnyes.com/news/id/6671844"
+  },
+  {
+   "t": "財政部 Daily Treasury Par Yield（本站 data/treasury_curve.json）",
+   "u": "https://raw.githubusercontent.com/WUYANLIN8866/BNASDAQ/main/data/treasury_curve.json"
+  },
+  {
+   "t": "BigGo 財經 標題（AAPL）：蘋果無風扇MacBook Neo亞馬遜黑五下殺599美元",
+   "u": "https://news.google.com/rss/articles/CBMiekFVX3lxTE5Sa3BsQlpMV210WDB5emtrRU1KVXFGZmhTcnRUa01CaUJvN29hRFRoUFhWaktVaDV6Uk52QWRkdDFzcFdWMnVfMG5STTROTkJQYmpzX2NLc2p1Y3R6SzJacEFGMHN1ZFRjWEdjOElMVTN6UklVQURzR2tB?oc=5"
+  },
+  {
+   "t": "Techritual 標題（AAPL）：Apple iPhone Duo 新增 Laptop Mode 功能 轉變遠端工作方式",
+   "u": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE0zdXEtMW5kWTJkQ0l0MmpTdE01S3VOa2dvWTZmNEY2VVliU2tqSk94WTM2R1dHQ0VBa1dIX2dtdFV0bTNrSzRfbVlaTWVZRHRaazFiQzNKaFI?oc=5"
+  },
+  {
+   "t": "Martin Cid Magazine 標題（MSFT）：PS Plus 2026年12月會免：微軟旗下《Tony Hawk’s Pro Skater 3+4》領銜 – 馬丁西德雜誌",
+   "u": "https://news.google.com/rss/articles/CBMirgJBVV95cUxPLUdrZVR2T3lSc0RHWURnV3Y5N3cwR0VjX0RBYWFrZ1R4OU9iVlhacjZvUmhsc2tNOTE2MXgwQmdMVXFTWXpfelo3TWhvVUVSS0lEZTlhVkFPNmRqYmc1WTdLRy11bk55SGhsNjdfeGhJZTZuTFo5LUNrSzZwdjBTN00wY3pTVUtxcnRDNUQ4QWRUT0FsTWU3a2F4OXpOTUFDXzhldmIwY1VpWlVlWE5iV2xJOFJBUWV1MXoxYUVHWHNYN2FWX00yX3pxdkViQ2NwZ2I1Y0tNTFZNR0R5TkZHRUdtT0Y0Rnl6SjRMNmZuLU5vcnp2QjYtOGtRUFBTSEQ5cjFRLTVKcXZZUTh1S0ZIRkU3eWVtdkxySFVGOUZhM3c0dHpCOU5JVlRnajdzZw?oc=5"
+  },
+  {
+   "t": "CMoney投資網誌 標題（MSFT）：【即時新聞】英國央行警示微軟(MSFT)斷線與AI風險！進一步調降英國銀行資本要求30個基點",
+   "u": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNbXZNajUwWTdsM1NXdjd4bWdPeWFENEgwZ2lWRzF3RnRSWUpzcWUtNUFNd0dOdE5xeW9COExHWTBmdVliTTZnYWMtR2ZrM0VjdXZVbmZGbDVtOWUxcmxzSm9QR1E3V0thcnlTZGRPNzBuSEd6c1YtYmpER2pTT3B1NjllYlpnYlBXc3ZvOWtsbHk?oc=5"
+  },
+  {
+   "t": "工商時報 標題（GOOGL）：Google攜藍色起源送AI運算衛星上太空- 日報",
+   "u": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE0yZWE0SFV5dlIxaE5nNC0wVVRwM19uYnVBNTJKNzk2UlA0VlBVT3U4M1pQSzV6TEcwcXNBTWNKRkpyYXdkMTh1RkZNN3pNSUg4LWF6R1d5N3FqdTctNThr?oc=5"
+  },
+  {
+   "t": "BigGo 財經 標題（GOOGL）：Google為Gmail與Workspace的AI代理加上傳送前審批機制",
+   "u": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9nM3gwaXpaTEFjYWhJMkJHT011akJqY3dMVmtXWndlOVpCY29BODQwWkZnaExkVEF1NFV4R0VtUWd1ZW4zaUpXSU9OZXRxUFJ3YUt4Q0JWd043WmpEeG43di04SlctSVdrVGhRNzFvdnduWGdON0dYbHVn?oc=5"
+  },
+  {
+   "t": "BigGo 財經 標題（AMZN）：蘋果無風扇MacBook Neo亞馬遜黑五下殺599美元",
+   "u": "https://news.google.com/rss/articles/CBMiekFVX3lxTE5Sa3BsQlpMV210WDB5emtrRU1KVXFGZmhTcnRUa01CaUJvN29hRFRoUFhWaktVaDV6Uk52QWRkdDFzcFdWMnVfMG5STTROTkJQYmpzX2NLc2p1Y3R6SzJacEFGMHN1ZFRjWEdjOElMVTN6UklVQURzR2tB?oc=5"
+  },
+  {
+   "t": "BigGo 財經 標題（AMZN）：高盛重申亞馬遜「買進」評等，目標價370美元、看好46.7%上漲空間",
+   "u": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9CSWlKUkxoVm80bXVQSEMxcS1NQXdfTEJNUGpZR1M1X1pQNTEzbDAtWkJhY0RBQk1SVzdyamJVRkFralZoRUVSMFNRMmpzYzYwR01YMWM5WTFQM2VwcVo5aXA0SU00STdRX3U2N2Y1dkFpR3lFend1OS1n?oc=5"
+  },
+  {
+   "t": "BigGo 財經 標題（TSM）：美股回檔逾一成 外媒欽點台積電等三檔AI股為崩盤布局首選",
+   "u": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9FX1I5U0duRC1ucktuQklCQTgxNVZFb3pPMEU1N3cyZFJHaTIybXdOOF9wdXlIY3RtaTJLaEY0LWE4aU5ySExWbUZfMlAzMXJ0aW9MZFpaRkFFRi0wRlZoaXc3RGxxZVFneVU1bUNYWTVWS2dLSjhoQ0Nn?oc=5"
+  },
+  {
+   "t": "永豐金證券 標題（TSM）：台積電德州廠細節曝光！擬砸226 億美元建2 奈米廠，10年減稅成設廠關鍵｜股市話題｜豐雲學堂2026 年 11 月",
+   "u": "https://news.google.com/rss/articles/CBMiggRBVV95cUxQNll2dGVEVHBOSGJYTmNqNF9kSHRKZ3Q0b2l6NmFHdktMcmdtOWNwTW9HYzdITFNiOWFzeEFrdXY0M2V1RmZOdVBQLTZuaWJDZDRyNk84RGtHUkNxSG85REdYR3JRN2k5U01VRW1pdEE2TTJoZUhpU3RPcC1hbEtlTjlWV0VKR3lGMzJ4ZURvQVB0OFlySVBPUk5acndrT29YSXFTamI1TXl4RVVmMHBabXVPTGg2YUJMQXJJMXBFWktqM1FVa0xNYUk2alBkVElhbGtnZjdhcl9MSWpSU0tUdHhEeE9QeFFHUUk4WTBGU3hXYjZBUnRIbU1oNjdfMkFVRVFseHBNV1FJaWNWaFRhcXFEYjE5MG1HY2tGQnR4Wmo0V2sySjBPaFlOU1lVZXJMRjEtRU9BZ2NhVjlCdUV6TTVWMnkyLWota19XVkVRaUVrTUNoZEE2cUVxX0RneUJTMnNuckZ6YmVBbmVTb05kcjExMnc0bmd1bGRRYUd5NWM3SFYtbjkwUzRTeTNuUzE0NmN0UUp2bHoxQ09KdHFjckQ3Z1I5NUcyYWVGb2ZKem12VE5oSGNvX1l2dTZFdWxvV0xpemNXeWpTUWtzUHd1dExUNVZka3NDSlA1SGlueFlOYjU5VTZzSkM4bDZFcU41RWRYWms4a21KdFlHWENEWXV3?oc=5"
+  },
+  {
+   "t": "經濟日報 標題（SPCX）：馬斯克太空 AI 鳴槍 SpaceX 部署百萬顆衛星組建 Starmind 算力星座 鴻海跟著起飛",
+   "u": "https://news.google.com/rss/articles/CBMiekFVX3lxTFBIUVNHd2Vma0JaYlJIc0RsY29oS3NNeHhlNGVEckxVWUdPNVl4V196RHZxTEpIZjRmd2tyRlN2U0Q4amw1WXA2OXZkYnFHSU9QbmxEazZkeDJhRzlLTTZrR2RnUi1hOEEtbHdWWE82X1QzTEVvZ1c2TEl30gFfQVVfeXFMTUhET2hhNEJtWUt6LWkwa0pOUGxQZDY2Zk9GbU93SFVtMl9rYTlaQUNFWllyS2gxeVAtc2Rwd0cxN0tEdFNIa2t2S2RDdVE5MEZuakJEN1lkSFBXMTRsbmc?oc=5"
+  },
+  {
+   "t": "工商時報 標題（SPCX）：SpaceX百萬顆衛星獲准發射- 日報",
+   "u": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE5tY2dnZ1RWN0RPXy1JaXdaS01TeXdsVldCa1E4MjMwRlpuRnZaMjBHLUhyZ25jQ21nRGItaW85YnZXM2hsSUU5M29RTGNlZDhPZDFiNGpMeTR0LUhTYjFv?oc=5"
+  },
+  {
+   "t": "TradingView 標題（META）：Meta據悉與多州檢察長就天價訴訟討論庭審中和解",
+   "u": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBRQ1poUDEyVEk5LUJ0Tl9MVUlDUEtGTHgxX0dLb1h1al9fMnFBN1J2VTh4elFlZGU5a1NMcU1QaFJURU5Cek5TTGZGVXg4SUpWOGJxSktrc2sxMlgzcHJuRGdiRGlfVWhVb0E?oc=5"
+  },
+  {
+   "t": "CMoney投資網誌 標題（META）：CoreWeave擬以Meta合約GPU抵押售45億美元貸款 債務陰影下股債雙殺",
+   "u": "https://news.google.com/rss/articles/CBMijgFBVV95cUxOaHZLZlFqUXpaQ09UWGRLb25RU2pPdmx0OGpxQ0IzLWQ4dlUzR2lweUs1Yk9mV3ItWG9MUGNvblBIWVJvZUludkFubElhRlh5YnYzRTdMalIxTExGa2syM1d1ZDVUb0s4MjZ2WG9rSGtEc1Y1QnZmZzBCSnhPT2FMWnNxVDhTM3R5a2owM1hB?oc=5"
+  },
+  {
+   "t": "Techritual 標題（AVGO）：資安日報：Broadcom 公告 VMware 漏洞及多項資安警報更新",
+   "u": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBqWW9WYVROaUtVTHNKTnJvYWRlM3pzSFVteUFMWm9fUXdvNFVOWUotX28ySTRwNkZkLV9zNE9JWERXWWttb2N1ZUV1WUp1XzdjWTVNUEI0dlQ?oc=5"
+  },
+  {
+   "t": "Moomoo 標題（AVGO）：博通期權聚焦：11月25日成交38萬張，未平倉合約為243.53萬張",
+   "u": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOSjNaNVNfTHZxekdjVnptenVQY2xYLWtoRXB5Ujd3TXdTWmNVTnNSN2RldVMzakRQTmNyaDE1VEJpaGs5LXhmRXh3WHhHR2E0SEM0MU1kclkwa1VWRHVMRERmOGJaNF85aERmc3JsWDN2NnBueVdkNUs1cmQ1MXM0MmJzc2h1QUpHU2YtaW90VkE3bmZNcDZDdUozbndkcVA4bU5ROVd5eVhXb2lu?oc=5"
+  },
+  {
+   "t": "BigGo 財經 標題（LLY）：禮來市值1.2兆美元、諾和諾德僅1,725億美元，GLP-1爭霸差距擴大到七倍",
+   "u": "https://news.google.com/rss/articles/CBMiekFVX3lxTE93NXNlcmx4d19QTnEtaE5IZjVrdHg3ZTlidmM5SV81dk1TY19BWF9WTlQwc2lSYTJ5b2xYZXFTZjF0TUV5Z1pmSHBpakxZYzFORFRvY0RheExGR1MwSUpWQm5odHlTU25IaXBCTWotVU5DcF9semxMbTFR?oc=5"
+  },
+  {
+   "t": "富途牛牛 標題（LLY）：BMO資本市場維持禮來(LLY.US)買入評級，維持目標價1,400美元",
+   "u": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPek9CdmFnZm5FX0ZvWm9pbjRGMGcxNV8yTmpwbXpUNzc1MlhhYk5xLTQ5MnNkOWtiUUd0ZW82bmMwbzh5dENuVVlDckpYODRTcTRTdENNTGhHVE1Vaks3cDY2OUlIOWVjcHV0TWxZZEhwYnBzWFlwazQzd2lQdGd4YVdzZjJVOElRNjFlNmY1NklKRGZRN2g0bkx3?oc=5"
+  },
+  {
+   "t": "鉅亨號 標題（BRK.B）：獨家：市場專家看好Greg Abel在波克夏的舉措——「對Alphabet的投資將帶來豐厚回報」",
+   "u": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE5kdnFMRjl4TW0yODlGOS1FN2s3YUtTU1FvUUtSWmxmeHJhcXFDSG85OFFNakNRZi1leEp5YlZSemFtY3pYYTEzaA?oc=5"
+  },
+  {
+   "t": "信報網站 標題（ANT）：Anthropic否認倡AI治理人類",
+   "u": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOd256LXFFRndTaXlwM1NlNFZ6SUdXTE0wSVA2alNjNDRXREdBckFxR2NYUS1Id2ZvdTJkSWY4RjdsNExlcmZVTldxdlJDTlFYdFdPbzNlSXdja3o0RmxMREdtR1praVBOeXZLNnpqNXh4bVJSUlgyajIzMUh1QXRoQUZyNmJvdllNXzdTWmlvTUxYeWZ1MVNhZy1JZnZiLUtuOFIwT3ZZaDhoM2ZLb19VdEQzTzZJUExLdXdkQzJuSWRCd2hUNXc?oc=5"
+  },
+  {
+   "t": "商傳媒 標題（ANT）：砸9000億美元押注算力 Anthropic龐大合約恐步90年代電信業崩盤後塵",
+   "u": "https://news.google.com/rss/articles/CBMiiwNBVV95cUxPSTBCUkM0WXpoMW5OblF0WjlCWlNGSXNLa1QtXy1IeHMtVWUtYmZJV25hcl96VU1QQ3FLVTdaLVFqSlhwS2dHOVRSS09vYWMwTEhrLUtoNEc0YkQyazdrbDJ1c2dKRWEwcjJfRWVCTFo2UVh2UjVnWXZ0cWY5LUFHdEJZb3EwcG9tLUh0WFZqU2lIYUNSY2d2aXlRUjNDaVQzQ0dUV3Q3dmNEZFRJMjV1WmZDcTVsWXJyVl9MbjVGTDZPUU1SMjhDa0w3SkM2Tk9EVzdfb3FCUmFBODhENlhRTWdNM2FFRFlnMFNMcS11bndnam4tQjlqVU1uUnBiMVhodFV6VHNuT1B5X0x2UXB2d2t1a2QxQkl5NXAzQzN2bHF2N1hqT29qeTMtenFOUC1CdGRadS1JUzJBUzV5RW9NZ0xBOWhCUTlsNDhUWVdoUGFZY0RKUExpV2xWNTY5czJKRmVzSFhJaWNOY0gzelVPSnV2eVl1UEtEcHJwbFJaM2pPV05fRlI4M2pIYw?oc=5"
+  },
+  {
+   "t": "LINE TODAY 標題（2222.SR）：葉門青年運動再襲沙烏地煉油廠 聯軍摧毀飛彈發射台 | 民視新聞網",
+   "u": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE13TjJqeEZQWDJycFZfZjhvY2p1U01IY1ZCZy14b2s2ZU5aNThkLXlRVWNJUFVoOGZyZ1QyZURXMnZZRGQxREVsbEdvM0JjSl9Sc3YyUnhB?oc=5"
+  },
+  {
+   "t": "LINE TODAY 標題（2222.SR）：葉門青年運動襲擊沙國最大煉油廠 濃煙籠罩波及金融中心 | 民視新聞網",
+   "u": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFBTQUg4OEZ0ajFEWHJ0S3hPWVZESVV0OXhKTFdnTndWOXh1ZXVKYzZqTFFhaDEtOUhaakhPZHkxZnY5YmpWTFc1UEotdzJ4Zl9WZ3QwWkZB?oc=5"
+  }
+ ]
+}
