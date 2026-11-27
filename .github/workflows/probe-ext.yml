@@ -29,4 +29,6 @@ jobs:
             data/daily
             data/tw
       - name: What Yahoo returns right now
-        run: python3 scripts/probe_today.py
+        run: |
+          cp scripts/heatmap_live_new.py main/scripts/heatmap_live.py
+          python3 scripts/probe_today.py
