@@ -115,6 +115,12 @@
   const shownStages = d => {
     const st = (d.stages || []).filter(s => !HIDE_STAGES.some(re => re.test(String(s.name == null ? '' : s.name).trim())));
     if (!st.length) return st;   // 快照還沒讀到：不單獨列出規劃中的輪次
+    // 2026-11-27 20:13 使用者：「隱藏已經跑完的倒數3層以前的，比如在跑第10層 就把第七層前面的全部自動隱藏」。
+    // 目前這一輪＝狀態「進行中」的最大輪次（沒有就用已完成的最大輪次＋1）；輪次 < 目前−3 而且狀態是「完成」的列不列。
+    const rnd = s => { const m = /第\s*(\d+)\s*輪/.exec(String(s.name == null ? '' : s.name)); return m ? +m[1] : null; };
+    const run = st.filter(s => s.status === '進行中').map(rnd).filter(x => x != null), fin = st.filter(s => s.status === '完成').map(rnd).filter(x => x != null);
+    const cur = run.length ? Math.max(...run) : fin.length ? Math.max(...fin) + 1 : null;
+    if (cur != null) { const keep = st.filter(s => !(s.status === '完成' && rnd(s) != null && rnd(s) < cur - 3)); shownStages.hidden = st.length - keep.length; st.length = 0; keep.forEach(s => st.push(s)); }
     const have = new Set();
     (d.stages || []).forEach(s => { const m = /^第\s*(\d+)\s*輪/.exec(String(s.name == null ? '' : s.name).trim()); if (m) have.add(+m[1]); });
     PLAN_ROUNDS.forEach(([a, b, k]) => { for (let r = a; r <= b; r++) if (!have.has(r)) st.push({ name: `第 ${r} 輪：${4 * k} 個條件（四類各 ${k} 個）`, status: '等待中', pct: 0, tested: 0, best: null }); });
@@ -281,7 +287,7 @@
     if ($('xp-stages-count')) {
       const n = {}; ST.forEach(s => { n[s.status] = (n[s.status] || 0) + 1; });
       const order = ['完成', '進行中', '暫停', '等待中'], keys = order.filter(k => n[k]).concat(Object.keys(n).filter(k => !order.includes(k)));
-      $('xp-stages-count').textContent = keys.map(k => k + ' ' + n[k]).join('・');
+      $('xp-stages-count').textContent = keys.map(k => k + ' ' + n[k]).join('・') + (shownStages.hidden ? `（較早完成的 ${shownStages.hidden} 列已隱藏）` : '');
     }
     fold('xp-stages-box');
     // 2026-11-14 01:43 user: the whole section and every candidate's note can be collapsed; remember the choice
