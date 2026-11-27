@@ -2,7 +2,7 @@
  "schema": "bnasdaq-daily/1",
  "date": "2026-11-27",
  "session": "2026-11-25",
- "generated": "2026-11-27T13:20:17Z",
+ "generated": "2026-11-27T13:36:20Z",
  "indices": [
   {
    "key": "NDX",
@@ -1070,5 +1070,118 @@
    "t": "自由時報 標題：沙烏地阿拉伯煉油廠遇襲　1死多傷部分停工",
    "u": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9yWk9IQTFxZVd4bV9sNTZpNUJ3TFlhTU9rd2tQal9lSHNiNVhHMjJXUGZqMGJsUjItdFlQV0hadmt5RlowRThpc2JjSGowQUpMaHd5cGFiSUF6d1lJby14MWkxR0Q3d9IBa0FVX3lxTFBna2xMYUUxSWp5Q3NMMndSUDVSNGFPVXpzY3psTFpiVWhyVjFYZjNITVZsLXcyZ2o5SWFMUF9QLTBEZkpXd3VlUnlZc1ZhaGV3UlAybkRIaERYeDlWY0RNMTNHTm55cC1FNXo0?oc=5"
   }
- ]
+ ],
+ "fx": {
+  "scenario": "none",
+  "basis": [
+   "美股盤前上漲（以 QQQ、SPY 的盤前成交推估），沒有出現股票與原物料同時下跌",
+   "黃金與西德州原油單日也上漲，不符合「美元急拉」或「恐慌搶現金」的同跌條件",
+   "美元指數單日小漲，幅度不到急漲；美股沒有下跌，也不符合「資金撤離美元資產」"
+  ],
+  "twd_reasons": [
+   "外資今天賣超台股 296.28 億元、連續第 10 個交易日賣超（中央社，11/27）。外資賣股通常帶來資金匯出，和今天台幣升值的方向相反，所以今天台幣升值不是外資買股造成的",
+   "出口商拋匯、壽險避險、央行動向：目前沒有找到有來源的說明，不列入"
+  ],
+  "holders": {
+   "etf": "美股盤前上漲，但台幣同時升值，換算成台幣的漲幅會被匯率吃掉一部分。",
+   "usd": "美元兌台幣走低，手上的美元換回台幣會變少；還沒換匯的人，換美元的成本降低。",
+   "tw": "台股今天收漲，但外資已連續 10 個交易日賣超，籌碼面仍有壓力。"
+  },
+  "foreign": {
+   "net": "賣超 296.28 億元（連 10 賣）",
+   "date": "11/27",
+   "src": "中央社"
+  },
+  "asof": "2026-11-27T13:36:20Z",
+  "data": {
+   "dxy": {
+    "v": 103.953,
+    "prev": 103.67,
+    "wk": null,
+    "d1": 0.27,
+    "w1": null,
+    "t": "2026-11-27T13:26:01Z"
+   },
+   "usdtwd": {
+    "v": 32.969,
+    "prev": 33.189,
+    "wk": null,
+    "d1": -0.66,
+    "w1": null,
+    "t": "2026-11-27T13:36:01Z"
+   },
+   "us10y": {
+    "v": 4.9,
+    "prev": 4.848,
+    "wk": null,
+    "d1": 0.052,
+    "w1": null,
+    "t": "2026-11-27T13:20:54Z"
+   },
+   "gold": {
+    "v": 3677.7,
+    "prev": 3535.8,
+    "wk": null,
+    "d1": 4.01,
+    "w1": null,
+    "t": "2026-11-27T13:26:01Z"
+   },
+   "wti": {
+    "v": 84.78,
+    "prev": 83.68,
+    "wk": null,
+    "d1": 1.31,
+    "w1": null,
+    "t": "2026-11-27T13:25:59Z"
+   },
+   "ndx": {
+    "v": 26046.896,
+    "prev": 26214.17,
+    "wk": null,
+    "d1": -0.64,
+    "w1": null,
+    "t": "2026-11-25T22:15:59Z"
+   },
+   "spx": {
+    "v": 7182.78,
+    "prev": 7201.09,
+    "wk": null,
+    "d1": -0.25,
+    "w1": null,
+    "t": "2026-11-25T21:32:06Z"
+   },
+   "sox": {
+    "v": 8774.862,
+    "prev": 8832.5,
+    "wk": null,
+    "d1": -0.65,
+    "w1": null,
+    "t": "2026-11-25T22:15:59Z"
+   },
+   "twii": {
+    "v": 39308.08,
+    "prev": 39151.81,
+    "wk": null,
+    "d1": 0.4,
+    "w1": null,
+    "t": "2026-11-27T05:31:00Z"
+   },
+   "ndx_now": {
+    "d1": 2.34,
+    "etf": "QQQ",
+    "phase": "盤前",
+    "px": 648.74,
+    "base": 633.93,
+    "t": "2026-11-27T13:36:01Z"
+   },
+   "spx_now": {
+    "d1": 1.63,
+    "etf": "SPY",
+    "phase": "盤前",
+    "px": 728.41,
+    "base": 716.7,
+    "t": "2026-11-27T13:35:57Z"
+   }
+  }
+ }
 }
