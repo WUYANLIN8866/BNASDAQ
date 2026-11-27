@@ -43,7 +43,17 @@
                  → 盤後每分鐘更新到 20:00 → 再多抓幾分鐘，標成盤後結束（xstate＝closed）。
            台股：等到開盤 → 每一格更新一次 → 收盤後多抓幾分鐘（收盤價到齊）→ 標成 closed 結束。
            一個 job 最多跑 320 分鐘，超過就自己啟動下一棒接手（美股含盤前盤後約 16 小時，要四棒）。
-  開盤後 25 分鐘都沒有當天的報價＝休市，直接結束、不發布。美股從盤前算：盤前開始 25 分鐘，Yahoo 有回應、卻沒有任何一檔有當天的盤前成交＝休市。
+  開盤後 25 分鐘都沒有當天的報價＝休市，直接結束、不發布。美股從盤前算：盤前開始 25 分鐘，Yahoo 與 CNBC 都有回應、卻都沒有任何一檔有當天的盤前成交＝休市
+  （CNBC 讀不到時：Yahoo 的交易時段也不是今天才算休市；Yahoo 說今天有開盤就繼續等到開盤）。
+
+美股備援來源 CNBC（2026-11-27）：
+  2026-11-27（感恩節隔天、提早收盤日）盤前，Yahoo 的走勢 API 到 06:54 美東都沒有任何一根當天的 K 棒（spark／chart、query1／query2、1 分／5 分 K、
+  range 1d／2d／5d 全部停在 11-25 19:55；currentTradingPeriod 卻是當天 04:00 盤前、09:30～13:00 正規），程式照舊規則在 04:28 判成休市、整天不更新。
+  同一時間從 GitHub runner 實測 CNBC 公開報價（quote.cnbc.com，網站個股頁「即時資訊」同一個來源）：522 檔一輪 11 個請求約 0.5 秒、全部有回，
+  301 檔有當天盤前成交（AAPL 357.20，Nasdaq 官網同時 357.13）；連打 6 輪沒有被擋。
+  → 盤前盤後每一輪兩個來源都抓，同一檔用「成交時間較新」的那一個（一樣新用 Yahoo）；正規時段 Yahoo 過半代號沒有當天報價時用 CNBC 補。
+  CNBC 欄位：last＝正規時段最後價格（盤前＝前一交易日收盤）、ExtendedMktQuote.type＝PRE_MKT／POST_MKT（POST_MKT_PREV＝今天還沒有盤前成交）、
+  ExtendedMktQuote.last／last_time＝盤前盤後最新成交與時間。CNBC 只有最新一筆、沒有 K 棒：走勢由每一輪累積（交棒時從分支上的快照接回）。
   收盤後（台股 +150 秒、美股 +10 分鐘）session 會啟動 tw-latest.yml，把全站的最新收盤價更新到當天並重新部署；
   gate 被外部準時啟動時另外檢查一次：有市場已收盤但收盤價還落後，就補啟動 tw-latest.yml。
 
@@ -359,6 +369,70 @@ def yahoo_ext(batch, nonce=None):
                 pass
         return 200, out
     return last, {}
+
+
+# ---------- 美股備援來源：CNBC（2026-11-27；說明見檔頭） ----------
+CNBC_URL = 'https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json&symbols='
+CNBC_N = 50   # 一次幾檔（實測一次 200 檔 0.32 秒也可以；50 檔的網址長度安全）
+
+
+def cnbc_time(x):
+    """'2026-11-27T06:53:26.627-0500' → UNIX 秒；只有日期（'2026-11-25'，非當天的正規時段價格）或看不懂回 None。"""
+    m = re.match(r'^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)(?:\.\d+)?([+-]\d\d):?(\d\d)$', str(x or '').strip())
+    if not m:
+        return None
+    try:
+        return int(dt.datetime.strptime(m.group(1) + m.group(2) + m.group(3), '%Y-%m-%dT%H:%M:%S%z').timestamp())
+    except Exception:
+        return None
+
+
+def cnbc_num(x):
+    try:
+        v = float(str(x).replace(',', '').replace('%', '').replace('+', '').strip())
+        return v if v == v and abs(v) != float('inf') else None
+    except Exception:
+        return None
+
+
+def cnbc_ext(batch, nonce=None):
+    """回傳 (狀態碼, {代號: (last, last 的時間或 None, 前一交易日收盤或 None, 市場狀態, 盤前盤後類型 'pre'／'post'／None, 盤前盤後成交價, 成交時間)})。
+    代號：本站用 Yahoo 的寫法（BRK-B），CNBC 用 BRK.B。"""
+    back = {s_.replace('-', '.').upper(): s_ for s_ in batch}
+    url = CNBC_URL + urllib.parse.quote('|'.join(back), safe='|.') + (f'&_={nonce}' if nonce else '')
+    try:
+        st, body = http(url, timeout=10)
+        q = (json.loads(body).get('FormattedQuoteResult') or {}).get('FormattedQuote') or []
+    except urllib.error.HTTPError as e:
+        return e.code, {}
+    except Exception:
+        return 0, {}
+    out = {}
+    for a in (q if isinstance(q, list) else [q]):
+        try:
+            sym = back.get(str(a.get('symbol') or '').upper())
+            p = cnbc_num(a.get('last'))
+            if not sym or not p or p <= 0:
+                continue
+            x = a.get('ExtendedMktQuote') or {}
+            kind = {'PRE_MKT': 'pre', 'POST_MKT': 'post'}.get(str(x.get('type')))
+            xp, xt = cnbc_num(x.get('last')), cnbc_time(x.get('last_time'))
+            if not (kind and xp and xp > 0 and xt):
+                kind, xp, xt = None, None, None
+            out[sym] = (p, cnbc_time(a.get('last_time')), cnbc_num(a.get('previous_day_closing')), str(a.get('curmktstatus') or ''), kind, xp, xt)
+        except Exception:
+            pass
+    return 200, out
+
+
+def fetch_cnbc(syms, nonce=None):
+    batches = [syms[i:i + CNBC_N] for i in range(0, len(syms), CNBC_N)]
+    out, ok = {}, 0
+    with cf.ThreadPoolExecutor(4) as ex:
+        for st, got in ex.map(lambda b: cnbc_ext(b, nonce), batches):
+            ok += st == 200
+            out.update(got)
+    return out, ok
 
 
 # ---------- 每日市場分析頁：報價板與新聞（2026-11-23） ----------
@@ -894,6 +968,11 @@ class Session:
         self.xpath = {}      # 代號 → {時間格: 漲跌（0.01%）}；時間格＝(K 棒時間 − 該時段開始) ÷ xpstep
         self.xpstep = MARKETS[mk].get('xpstep') or 900
         self.xok = 0         # 盤前盤後抓到 Yahoo 正常回應的輪數（判斷休市用：有回應卻沒有當天成交＝休市）
+        self.cok = 0         # 同上，CNBC（2026-11-27 起；見檔頭「美股備援來源 CNBC」）
+        self.tday = 0        # Yahoo 的交易時段說「今天有開盤」的代號數（各輪最大值）
+        self.xfrom = {}      # 代號 → 這一份盤前盤後報價的來源（'Y'／'C'）
+        self.qfrom = {}      # 代號 → 正規時段報價的來源（只記 CNBC 補的）
+        self.prev = None     # 分支上同一個交易日的上一份快照（交棒時接回盤前盤後走勢用）
         # 每日市場分析頁（2026-11-23）：報價板（只有美股）與新聞（兩個市場的 session 都會順便更新，一小時一次）
         self.mb_q, self.mb_x = {}, {}   # 代號 → [現價, 前收, 時間]；盤前盤後 → [成交價, 基準價, 成交時間]
         self.news_at = 0     # 分支上的新聞是什麼時候抓的（UNIX 秒）
@@ -965,6 +1044,8 @@ class Session:
             if st != 200:
                 return
             j = json.loads(base64.b64decode(b.get('content') or '').decode('utf-8'))
+            if j.get('session') == self.sess['date']:
+                self.prev = j
             if j.get('session') != self.sess['date'] or j.get('ps') != self.pstep or not isinstance(j.get('pp'), dict):
                 return
             for s_, arr in j['pp'].items():
@@ -1001,19 +1082,40 @@ class Session:
     # --- 抓一輪 ---
     def poll_us(self):
         got, stat = fetch_us(self.syms, int(self.clock()))   # 每一輪不同的參數：避開 Yahoo 的 5 分鐘快取
-        lo, per = self.sess['open'] - 60, {}
+        lo, per, fresh = self.sess['open'] - 60, {}, 0
         for s, (p, prev, t, reg) in got.items():
             if t >= lo and t <= self.clock() + 300:
-                self.q[s] = [p, prev, t]
+                self.q[s] = [p, prev, t]; self.qfrom.pop(s, None); fresh += 1
                 if reg and reg[0] >= lo - 3600:
                     per[reg] = per.get(reg, 0) + 1
+            elif reg and reg[0] == self.sess['open']:   # 報價還不是當天的（2026-11-27 Yahoo 整天沒有當天資料），但交易時段是今天的：照樣採用它的收盤時間
+                per[reg] = per.get(reg, 0) + 1
         if per:   # 當天實際的正規時段（提早收盤日 Yahoo 會給 13:00）；多數決
             (start, end), n = max(per.items(), key=lambda kv: kv[1])
             if n >= 20 and end != self.sess['close'] and 3600 <= end - start <= 8 * 3600:
                 log('依行情來源調整收盤時間', self.sess['close'], '→', end)
                 self.sess['close'] = end
         self.pace(stat)
-        return stat['ok'] > 0
+        ok = stat['ok'] > 0
+        now = self.clock()
+        if now >= self.sess['open'] + 60 and fresh * 2 < len(self.syms):   # 這一輪 Yahoo 過半代號沒有當天報價（2026-11-27 Yahoo 走勢 API 整個盤前沒有當天資料）→ CNBC 補
+            cg, cok = fetch_cnbc(self.syms, int(now))
+            n = 0
+            for s, (p, t, prev, status, kind, xp, xt) in cg.items():
+                have = self.q.get(s)
+                if not t or not prev or prev <= 0 or not (lo <= t <= now + 300) or abs(p / prev - 1) > 0.6:
+                    continue
+                if have and have[2] >= t and self.qfrom.get(s) != 'C':
+                    continue   # Yahoo 有、而且不比 CNBC 舊
+                self.q[s] = [p, prev, t]; self.qfrom[s] = 'C'; n += 1
+            if self.poll_n % 10 == 1:
+                log(f'Yahoo 只有 {fresh}/{len(self.syms)} 檔有當天報價，CNBC 補 {n} 檔' + ('' if cok else '（CNBC 這一輪讀不到）'))
+            if n:
+                ok = True
+                self.src = 'CNBC' if fresh == 0 else 'Yahoo Finance＋CNBC'
+        elif self.qfrom and fresh * 2 >= len(self.syms):
+            self.qfrom = {}; self.src = MARKETS[self.mk]['src']
+        return ok
 
     def pace(self, stat):
         """Yahoo 回 429 → 發布間隔加倍（最多 5 分鐘）；連續 10 輪正常 → 減半，回到原本的間隔。"""
@@ -1035,8 +1137,10 @@ class Session:
         s = self.sess
         votes = {}
         for p, t, per, bars in got.values():   # 當天實際的時段（提早收盤日：正規到 13:00、盤後到 17:00）；正規開盤時間對得上才算，多數決
-            if per and per[1] == s['open'] and s['open'] - 6 * 3600 <= per[0] <= s['open'] and s['open'] + 3600 <= per[2] < per[3] <= per[2] + 5 * 3600:
+            # 盤後結束最晚到收盤後 8 小時：2026-11-27 提早收盤日 Yahoo 給的是正規 09:30～13:00、盤後到 20:00（原本只收 5 小時以內，那天整個不採用）
+            if per and per[1] == s['open'] and s['open'] - 6 * 3600 <= per[0] <= s['open'] and s['open'] + 3600 <= per[2] < per[3] <= per[2] + 8 * 3600:
                 votes[per] = votes.get(per, 0) + 1
+        self.tday = max(self.tday, sum(1 for p, t, per, bars in got.values() if per and per[1] == s['open']))
         if votes:
             per, n = max(votes.items(), key=lambda kv: kv[1])
             if n >= 20:
@@ -1053,7 +1157,7 @@ class Session:
                 continue   # 這個時段還沒有成交
             p = self.close_of(sym, self.q, kind, p)
             e, c = pts[-1]
-            self.x[sym] = [c, p, e]
+            self.x[sym] = [c, p, e]; self.xfrom[sym] = 'Y'
             if PATHSET is not None and sym not in PATHSET:
                 continue   # 多抓的代號（網站價格表）只要最新成交，不記走勢
             d = {}
@@ -1062,8 +1166,28 @@ class Session:
             self.xpath[sym] = d
         if stat['ok']:
             self.xok += 1
+        # 備援來源 CNBC（見檔頭）：同一檔用成交時間較新的那一個，一樣新用 Yahoo。CNBC 只有最新一筆，走勢逐輪累積。
+        now = self.clock()
+        cg, cok = fetch_cnbc(self.syms, int(now))
+        if cok:
+            self.cok += 1
+        for sym, (p, t, prev, status, ck, xp, xt) in cg.items():
+            if ck != kind or not (lo <= xt < hi + 60) or xt > now + 300:
+                continue   # 不是這個時段的成交（POST_MKT_PREV＝今天還沒有盤前成交，cnbc_ext 已濾掉）
+            if kind == 'pre' and t and t >= s['pre']:
+                continue   # 基準不是前一個交易日的收盤（last 已經是今天正規時段的價格）
+            have = self.x.get(sym)
+            if have and have[2] >= xt:
+                continue
+            base = have[1] if have else self.close_of(sym, self.q, kind, p)   # 這一檔 Yahoo 有基準就沿用（兩個來源的收盤價相同，沿用可避免走勢基準跳動）
+            if not base or base <= 0 or abs(xp / base - 1) > 0.6:
+                continue
+            self.x[sym] = [xp, base, xt]; self.xfrom[sym] = 'C'
+            if PATHSET is not None and sym not in PATHSET:
+                continue
+            self.xpath.setdefault(sym, {})[int((min(xt, hi - 1) - lo) // self.xpstep)] = int(round((xp / base - 1) * 10000))
         self.pace(stat)
-        return stat['ok'] > 0
+        return stat['ok'] > 0 or cok > 0
 
     def poll_board(self, kind=None):
         """每日市場分析頁的報價板（見 BOARD 的說明）。kind＝'pre'／'post'：另外抓 BOARD_EXT 的盤前／盤後成交（算法同 poll_ext）。
@@ -1088,6 +1212,17 @@ class Session:
                 pts = [(e, c) for e, c in bars if lo <= e < hi]
                 if pts:
                     self.mb_x[s] = [pts[-1][1], self.close_of(s, self.mb_q, kind, p), pts[-1][0]]
+            now = self.clock()
+            cg, cok = fetch_cnbc([s for s in BOARD_EXT if s.isalpha()], int(now))   # 備援來源 CNBC（見檔頭）：成交時間較新才換
+            for s, (p, t, prev, status, ck, xp, xt) in cg.items():
+                if ck != kind or not (lo <= xt < hi + 60) or xt > now + 300 or (kind == 'pre' and t and t >= s_['pre']):
+                    continue
+                have = self.mb_x.get(s)
+                if have and have[2] >= xt:
+                    continue
+                base = have[1] if have else self.close_of(s, self.mb_q, kind, p)
+                if base and base > 0 and abs(xp / base - 1) <= 0.6:
+                    self.mb_x[s] = [xp, base, xt]
         return stat['ok'] > 0
 
     def close_of(self, sym, qmap, kind, p):
@@ -1175,7 +1310,9 @@ class Session:
                 if v:
                     x[sym] = [round(v[0], 4), round((v[0] / v[1] - 1) * 100, 2), max(0, int(now - v[2]))]
             xpp = {sym: [d.get(k) for k in range(0, max(d) + 1)] for sym, d in self.xpath.items() if d and sym in x}
-            snap.update({'ext': self.xkind, 'xstate': self.xstate, 'xopen': lo, 'xclose': hi, 'xsrc': 'Yahoo Finance', 'xn': len(x), 'x': x,
+            fr = {self.xfrom.get(sym, 'Y') for sym in x}
+            xsrc = 'CNBC' if fr == {'C'} else 'Yahoo Finance＋CNBC' if 'C' in fr else 'Yahoo Finance'
+            snap.update({'ext': self.xkind, 'xstate': self.xstate, 'xopen': lo, 'xclose': hi, 'xsrc': xsrc, 'xn': len(x), 'x': x,
                          'xps': self.xpstep, 'xpn': max(1, int(-(-(hi - lo) // self.xpstep))), 'xpp': xpp})
         if self.mb_q:   # 每日市場分析頁的報價板（見 BOARD）
             r = lambda v: [round(v[0], 6), round(v[1], 6), int(v[2])]
@@ -1232,6 +1369,13 @@ class Session:
         if self.clock() >= stop():
             return 'done'
         self.xkind, self.xstate, self.x, self.xpath, self.xok, self.mb_x, fails = kind, 'open', {}, {}, 0, {}, 0
+        self.cok, self.tday, self.xfrom, waitlog = 0, 0, {}, 0
+        j = self.prev   # 交棒或重啟：同一個交易日、同一個時段已發布的走勢接著用（CNBC 只有最新一筆，補不回前段；Yahoo 有 K 棒的代號每輪會整段重算蓋掉）
+        if j and j.get('ext') == kind and j.get('xps') == self.xpstep and isinstance(j.get('xpp'), dict):
+            for s_, arr in j['xpp'].items():
+                if isinstance(arr, list):
+                    self.xpath[s_] = {k: int(v) for k, v in enumerate(arr) if isinstance(v, (int, float))}
+            log(f'接續{name}走勢：', len(self.xpath), '檔')
         if kind == 'post':
             self.every = step
             if self.poll_us():   # 正規時段的收盤價再抓一次：交棒、或上一棒沒發布到收盤那一份時，快照的 q 才會是當天收盤
@@ -1262,7 +1406,13 @@ class Session:
             fin = now >= stop()
             if not self.x:
                 if kind == 'pre' and now - lo() > HOLIDAY and self.xok >= 3:
-                    log('盤前開始後一直沒有任何一檔有當天的盤前成交（Yahoo 有正常回應）：休市，結束（不發布）'); return 'holiday'
+                    # 2026-11-27：Yahoo 整個盤前沒有當天的 K 棒，但那天有開盤 → 不能只憑 Yahoo 判休市。
+                    # CNBC 也有回應、也沒有當天成交 → 休市；CNBC 讀不到時，Yahoo 的交易時段也不是今天才算休市，否則繼續等（到開盤交給正規時段）。
+                    if self.cok >= 3 or self.tday < 20:
+                        log('盤前開始後一直沒有任何一檔有當天的盤前成交（Yahoo' + ('、CNBC 都' if self.cok >= 3 else '') + '有正常回應）：休市，結束（不發布）'); return 'holiday'
+                    if now - waitlog >= 1800:
+                        waitlog = now
+                        log(f'盤前還沒有任何成交資料（Yahoo 沒有當天 K 棒、CNBC 讀不到），但 Yahoo 的交易時段顯示今天有開盤（{self.tday} 檔）：不當成休市，繼續等')
                 if fin:
                     log(f'{name}一直沒有抓到成交，結束（不發布）'); return 'done'
                 if self.poll_n % 10 == 1:

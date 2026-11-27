@@ -32,6 +32,9 @@ ET, TPE = ZoneInfo('America/New_York'), ZoneInfo('Asia/Taipei')
 def load(path, name):
     spec = importlib.util.spec_from_file_location(name, path)
     m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+    if hasattr(m, 'cnbc_ext'):
+        m.cnbc_ext_real = m.cnbc_ext
+        m.cnbc_ext = lambda b, nonce=None: (0, {})   # 備援來源 CNBC（2026-11-27）：測試預設「讀不到」，要測的案例自己換成假的
     return m
 
 
@@ -93,8 +96,10 @@ class MemPub:
 
 class FakeUS:
     """假的美股行情：價格是時間的確定函數；流動性 0＝盤前盤後都沒成交、1＝盤前 07:00 後與盤後前 2 小時才有、2＝整段都有。"""
-    def __init__(self, day, syms, early=False, holiday=False):
+    def __init__(self, day, syms, early=False, holiday=False, ystale=False, ypost=None):
         self.day, self.syms, self.early, self.holiday = day, syms, early, holiday
+        self.ystale = ystale   # 2026-11-27 的實況：Yahoo 走勢 API 沒有當天的 K 棒、regularMarketPrice 停在前一個交易日（交易時段仍是當天）
+        self.ypost = ypost     # Yahoo 回報的盤後結束時間（2026-11-27 提早收盤日 Yahoo 給 20:00）
         self.pre, self.open = ts(day, 4, 0), ts(day, 9, 30)
         self.close, self.post = (ts(day, 13, 0), ts(day, 17, 0)) if early else (ts(day, 16, 0), ts(day, 20, 0))
         prev = day - dt.timedelta(days=3 if day.weekday() == 0 else 1)
@@ -127,7 +132,7 @@ class FakeUS:
         return None
 
     def reg(self, s, now):   # (regularMarketPrice, regularMarketTime)
-        if self.holiday or now < self.open:
+        if self.holiday or self.ystale or now < self.open:
             return self.P0[s], self.prev_t
         if now < self.close:
             return self.px(s, now), int(now)
@@ -151,8 +156,34 @@ class FakeUS:
                 if s not in self.P0:
                     continue
                 p, t = self.reg(s, now)
-                bars = [] if self.holiday else [(m, self.px(s, m)) for m in range(self.pre, int(now) // 60 * 60 + 1, 60) if self.traded(s, m) and m <= now]
-                out[s] = (p, t, (self.pre, self.open, self.close, self.post), bars)
+                bars = [] if (self.holiday or self.ystale) else [(m, self.px(s, m)) for m in range(self.pre, int(now) // 60 * 60 + 1, 60) if self.traded(s, m) and m <= now]
+                out[s] = (p, t, (self.pre, self.open, self.close, self.ypost or self.post), bars)
+            return 200, out
+        return f
+
+    def cnbc(self, clock, down=lambda now: False):
+        """假的 CNBC（欄位同 heatmap_live.cnbc_ext 的回傳）：只有最新一筆；down(now)＝這一刻讀不到。"""
+        def f(b, nonce=None):
+            now, out = clock(), {}
+            if down(now):
+                return 0, {}
+            for s in b:
+                if s not in self.P0:
+                    continue
+                if self.holiday or now < self.open:
+                    last, lt, status = self.P0[s], None, 'PRE_MKT'
+                elif now < self.close:
+                    last, lt, status = self.px(s, now), int(now), 'REG_MKT'
+                else:
+                    last, lt, status = self.px(s, self.close), self.close, 'POST_MKT'
+                kind = xp = xt = None
+                if not self.holiday:
+                    for k, lo, hi in (('pre', self.pre, self.open), ('post', self.close, self.post)):
+                        if lo <= now < hi + 600:
+                            r = self.last_trade(s, now, lo, hi)
+                            if r:
+                                kind, xt, xp = k, r[0], r[1]
+                out[s] = (last, lt, self.P0[s] * 0.99, status, kind, xp, xt)
             return 200, out
         return f
 
@@ -171,11 +202,13 @@ def fake_news(clock, fail_until=0):
     return f
 
 
-def run_day(hm, fake, start, syms, budget=None, news=None):
+def run_day(hm, fake, start, syms, budget=None, news=None, cnbc=None):
     clock = Clock(start)
     pub = MemPub(hm, clock)
     hm.PATHSET = None
     hm.yahoo_batch = fake.batch(clock); hm.yahoo_ext = fake.ext(clock); hm.yahoo_intraday = lambda b, ysym=None: {}
+    if cnbc:
+        hm.cnbc_ext = cnbc(clock)
     hm.fetch_news = news(clock) if news else (lambda now=None: None)
     if budget:
         os.environ['HM_BUDGET'] = str(budget)
@@ -279,8 +312,9 @@ def test_holiday(hm, fails):
     day = dt.date(2026, 11, 26)
     syms = [f'S{i:02d}' for i in range(30)]
     fake = FakeUS(day, syms, holiday=True)
-    res, runs, pub = run_day(hm, fake, ts(day, 2, 45), syms)
+    res, runs, pub = run_day(hm, fake, ts(day, 2, 45), syms, cnbc=fake.cnbc)   # CNBC 也有回應、也沒有當天成交
     check(res == 'holiday' and not pub.log, f'應為 holiday 且不發布，實際 {res}、{len(pub.log)} 份', fails)
+    check(pub.clock() < fake.pre + 40 * 60, f'盤前開始 25 分鐘左右就結束（實際 {(pub.clock() - fake.pre) / 60:.0f} 分鐘）', fails)
 
 
 def test_early_close(hm, fails):
@@ -297,6 +331,93 @@ def test_early_close(hm, fails):
     check(post and post[-1][1]['xpn'] == 16, '盤後走勢 16 點', fails)
     pre = [s for t, s in pub.log if s.get('ext') == 'pre']
     check(pre and pre[-1]['close'] == fake.close, '盤前就依行情來源把收盤改成 13:00', fails)
+
+
+def test_cnbc_backup(mk, fails):
+    """2026-11-27 的實況：Yahoo 走勢 API 整天沒有當天的 K 棒（交易時段是當天、提早收盤 13:00、盤後到 20:00），CNBC 有。"""
+    day = dt.date(2026, 11, 27)
+    syms = [f'S{i:02d}' for i in range(30)]
+    print('【9a】Yahoo 沒有當天資料、CNBC 正常：盤前照常發布（不可判成休市），正規時段與盤後用 CNBC')
+    hm = mk('hm_c1')
+    fake = FakeUS(day, syms, early=True, ystale=True, ypost=ts(day, 20, 0))
+    res, runs, pub = run_day(hm, fake, ts(day, 2, 10), syms, budget=3 * 3600, cnbc=fake.cnbc)
+    pre = [(t, s) for t, s in pub.log if s.get('ext') == 'pre']
+    reg = [(t, s) for t, s in pub.log if 'ext' not in s]
+    post = [(t, s) for t, s in pub.log if s.get('ext') == 'post']
+    check(res == 'done', f'結果 {res}', fails)
+    check(pre and pre[0][0] < fake.pre + 120, f'盤前 04:00 起 2 分鐘內就有第一份（實際 {(pre[0][0] - fake.pre) / 60 if pre else None} 分鐘）', fails)
+    check(pre and all(s['xsrc'] == 'CNBC' for t, s in pre), '盤前來源標示 CNBC', fails)
+    check(pre and pre[-1][1]['close'] == fake.close, '盤前就依 Yahoo 的交易時段把收盤改成 13:00（盤後到 20:00 也要採用）', fails)
+    bad = 0
+    for t, s in pre[:: max(1, len(pre) // 40)]:
+        for sym, (p, c, age) in s['x'].items():
+            r = fake.last_trade(sym, t, fake.pre, fake.open)
+            if not r or abs(p - r[1]) > 1e-3 or abs(c - round((r[1] / fake.P0[sym] - 1) * 100, 2)) > 0.011 or abs((t - age) - r[0]) > 1:
+                bad += 1
+    check(bad == 0, f'盤前價、漲跌（對前一交易日收盤）、成交時間逐檔逆算，{bad} 筆不符', fails)
+    liq = sum(1 for s_ in syms if fake.liq[s_] > 0)
+    check(pre and pre[-1][1]['xn'] == liq, f'盤前最後一份 {pre[-1][1]["xn"] if pre else None} 檔有成交（應 {liq}）', fails)
+    lastp = pre[-1][1]['xpp'] if pre else {}
+    full = [sym for sym in syms if fake.liq[sym] == 2]
+    check(full and all(len([v for v in lastp.get(sym, []) if v is not None]) >= 20 for sym in full), '整段都有成交的代號：盤前走勢 22 格幾乎都有點（跨交棒接回）', fails)
+    check(runs >= 3, f'有交棒（{runs} 棒）', fails)
+    check(reg and all(s['src'] == 'CNBC' for t, s in reg if s['state'] == 'open'), '正規時段來源標示 CNBC', fails)
+    opens = [(t, s) for t, s in reg if s['state'] == 'open']
+    check(opens and opens[0][0] < fake.open + 180 and opens[0][1]['have'] == len(syms), f'開盤 3 分鐘內就有 {len(syms)} 檔', fails)
+    bad = 0
+    for t, s in opens[:: max(1, len(opens) // 30)]:
+        for sym, (p, c, age) in s['q'].items():
+            if abs(c - round((p / (fake.P0[sym] * 0.99) - 1) * 100, 2)) > 0.011 or age > 200:
+                bad += 1
+    check(bad == 0, f'正規時段漲跌（對前收）逐檔逆算，{bad} 筆不符', fails)
+    closed = [t for t, s in reg if s['state'] == 'closed']
+    check(closed and abs(closed[0] - (fake.close + 600)) < 61, '13:10 發布正規時段 closed', fails)
+    check(post and all(s['xsrc'] == 'CNBC' for t, s in post) and post[-1][1]['xn'] > 0, '盤後用 CNBC', fails)
+    bad = 0
+    for t, s in post[:: max(1, len(post) // 30)]:
+        for sym, (p, c, age) in s['x'].items():
+            if abs(c - round((p / fake.px(sym, fake.close) - 1) * 100, 2)) > 0.011:
+                bad += 1
+    check(bad == 0, f'盤後漲跌（對當天收盤）逐檔逆算，{bad} 筆不符', fails)
+
+    print('【9b】Yahoo 沒有當天資料、CNBC 盤前也讀不到（開盤後恢復）：Yahoo 的交易時段是今天 → 不判休市，等到開盤')
+    hm = mk('hm_c2')
+    fake = FakeUS(day, syms, early=True, ystale=True, ypost=ts(day, 20, 0))
+    res, runs, pub = run_day(hm, fake, ts(day, 3, 30), syms, cnbc=lambda clock: fake.cnbc(clock, down=lambda now: now < fake.open))
+    reg = [(t, s) for t, s in pub.log if 'ext' not in s and s['state'] == 'open']
+    check(res == 'done' and reg and reg[0][0] < fake.open + 180, f'沒有判成休市，開盤後用 CNBC 發布（結果 {res}、正規時段 {len(reg)} 份）', fails)
+    check(not [1 for t, s in pub.log if s.get('ext') == 'pre'], '盤前沒有資料就不發布', fails)
+
+    print('【9c】兩個來源都正常：同一檔用成交時間較新的，一樣新用 Yahoo → 和只有 Yahoo 時逐份相同')
+    hm_a, hm_b = mk('hm_c3'), mk('hm_c4')
+    fa, fb = FakeUS(day, syms), FakeUS(day, syms)
+    ra = run_day(hm_a, fa, ts(day, 3, 30), syms)
+    rb = run_day(hm_b, fb, ts(day, 3, 30), syms, cnbc=fb.cnbc)
+    same = len(ra[2].log) == len(rb[2].log) and all(a[1] == b[1] for a, b in zip(ra[2].log, rb[2].log))
+    check(ra[0] == rb[0] == 'done' and same, f'快照逐份相同（{len(ra[2].log)} 對 {len(rb[2].log)} 份）', fails)
+
+    print('【9d】CNBC 欄位解析（2026-11-27 06:54 美東從 GitHub runner 抓到的實際值）')
+    hm = mk('hm_c5')
+    check(hm.cnbc_time('2026-11-27T06:53:26.627-0500') == ts(day, 6, 53) + 26, 'last_time 轉成 UNIX 秒', fails)
+    check(hm.cnbc_time('2026-11-25') is None and hm.cnbc_time(None) is None, '只有日期＝不是當天的成交', fails)
+    check(hm.cnbc_num('7,598,856') == 7598856 and hm.cnbc_num('+1.62') == 1.62 and hm.cnbc_num('+0.46%') == 0.46 and hm.cnbc_num('UNCH') is None, '數字欄位', fails)
+    body = json.dumps({'FormattedQuoteResult': {'FormattedQuote': [
+        {'symbol': 'AAPL', 'code': 0, 'curmktstatus': 'PRE_MKT', 'last': '355.58', 'last_time': '2026-11-25', 'previous_day_closing': '355.58',
+         'ExtendedMktQuote': {'type': 'PRE_MKT', 'last': '357.20', 'change': '+1.62', 'change_pct': '+0.46%', 'last_time': '2026-11-27T06:53:26.627-0500', 'volume': '215,447'}},
+        {'symbol': 'BRK.B', 'code': 0, 'curmktstatus': 'PRE_MKT', 'last': '579.32', 'last_time': '2026-11-25', 'previous_day_closing': '579.32',
+         'ExtendedMktQuote': {'type': 'PRE_MKT', 'last': '580.00', 'last_time': '2026-11-27T06:35:51.124-0500'}},
+        {'symbol': 'XYZ', 'code': 0, 'curmktstatus': 'REG_MKT', 'last': '10.00', 'last_time': '2026-11-25', 'previous_day_closing': '10.00',
+         'ExtendedMktQuote': {'type': 'POST_MKT_PREV', 'last': '10.10', 'last_time': '2026-11-25T19:55:00.000-0500'}}]}})
+    seen = {}
+    def fake_http(url, **kw):
+        seen['url'] = url
+        return 200, body
+    hm.http = fake_http
+    st, out = hm.__dict__['cnbc_ext_real'](['AAPL', 'BRK-B', 'XYZ'], 5)
+    check(st == 200 and 'AAPL|BRK.B|XYZ' in seen['url'], f'代號用 | 串、BRK-B 改 BRK.B（{seen.get("url", "")[-40:]}）', fails)
+    check(out.get('AAPL') == (355.58, None, 355.58, 'PRE_MKT', 'pre', 357.2, ts(day, 6, 53) + 26), f'AAPL {out.get("AAPL")}', fails)
+    check(out.get('BRK-B', (None,) * 7)[4:] == ('pre', 580.0, ts(day, 6, 35) + 51), f'BRK-B 對回本站代號 {out.get("BRK-B")}', fails)
+    check(out.get('XYZ', (0,) * 7)[4:] == (None, None, None), 'POST_MKT_PREV（今天還沒有盤前成交）不算', fails)
 
 
 def test_board_news(hm, fails):
@@ -532,6 +653,7 @@ def main():
     test_extras(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new7'), fails)
     test_news_co(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new8'), fails)
     test_post_base(load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), 'hm_new9'), fails)
+    test_cnbc_backup(lambda name: load(os.path.join(ROOT, 'scripts', 'heatmap_live.py'), name), fails)
     old = load(old_path, 'hm_old')
     if hasattr(old, 'yahoo_ext'):
         print('（--old 指的檔案已經是盤前盤後版，略過回歸比對）')
