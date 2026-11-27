@@ -299,3 +299,72 @@
     hide() { if (tip) tip.style.display = 'none'; }
   };
 })();
+
+// ---- 區塊全螢幕：每個區塊（section、h2 段落、.panel）右上角一顆按鈕，按下去只留那一塊並鋪滿整個畫面 ----
+// 做法：不搬動任何節點，只把「不是這一塊」的東西加上 .fs-hide 藏起來，離開時還原；所以圖表、表單、事件都照常運作。
+(function () {
+  'use strict';
+  const root = document.documentElement, NS = 'http://www.w3.org/2000/svg';
+  let active = null, bar = null, scrollY0 = 0, timer = 0;
+  const ICON = 'M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5';
+  function icon() { const s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true'); const p = document.createElementNS(NS, 'path'); p.setAttribute('d', ICON); s.appendChild(p); return s; }
+  function mkBtn(kind) { const b = document.createElement('button'); b.type = 'button'; b.className = 'fsbtn fsbtn-' + kind; b.title = '全螢幕'; b.setAttribute('aria-label', '這個區塊全螢幕'); b.appendChild(icon()); return b; }
+  function own(el, kind) { for (const c of el.children) if (c.classList && c.classList.contains('fsbtn-' + kind)) return c; return null; }
+  // h2 段落＝這個 h2 加上後面一直到下一個 h2 之前的兄弟節點
+  function group(h) { const g = [h]; for (let n = h.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) g.push(n); return g; }
+  function scan() {
+    const main = document.querySelector('main'); if (!main || /(^|\/)login\.html$/.test(location.pathname)) return;
+    main.querySelectorAll('section').forEach(s => { if (!own(s, 'sec')) { s.classList.add('fs-host'); s.appendChild(mkBtn('sec')); } });
+    main.querySelectorAll('.panel').forEach(p => { if (!own(p, 'pan')) p.insertBefore(mkBtn('pan'), p.firstChild); });
+    main.querySelectorAll('h2').forEach(h => {
+      if (own(h, 'h2')) return;
+      const p = h.parentElement, sec = h.closest('section');
+      let n = 0; for (const c of p.children) if (c.tagName === 'H2') n++;
+      if (n === 1 && sec && sec.querySelectorAll('h2').length === 1) return; // 整個 section 只有這一個標題：section 的按鈕就夠了
+      h.insertBefore(mkBtn('h2'), h.firstChild);
+    });
+  }
+  function blockOf(b) {
+    const host = b.parentElement;
+    return b.classList.contains('fsbtn-h2') ? group(host) : [host];
+  }
+  function floating(el) { const p = getComputedStyle(el).position; return p === 'fixed' || p === 'absolute'; }
+  function enter(keep) {
+    if (active) leave(true);
+    scrollY0 = window.scrollY; active = keep;
+    let set = new Set(keep), node = keep[0];
+    while (node && node !== document.body) {
+      const par = node.parentElement; if (!par) break;
+      for (const c of par.children) {
+        if (set.has(c) || c === bar) continue;
+        if (par === document.body && floating(c)) continue; // 提示框、對話框留著
+        c.classList.add('fs-hide');
+      }
+      par.classList.add('fs-path'); set = new Set([par]); node = par;
+    }
+    keep.forEach(k => k.classList.add('fs-keep'));
+    root.classList.add('fs-on');
+    if (!bar) { bar = document.createElement('button'); bar.type = 'button'; bar.className = 'fsexit'; bar.textContent = '離開全螢幕'; bar.addEventListener('click', () => leave()); document.body.appendChild(bar); }
+    bar.hidden = false;
+    window.scrollTo(0, 0);
+    try { const r = root.requestFullscreen || root.webkitRequestFullscreen; if (r) { const p = r.call(root); if (p && p.catch) p.catch(() => {}); } } catch (e) {}
+    window.dispatchEvent(new Event('resize'));
+  }
+  function leave(keepNative) {
+    if (!active) return;
+    document.querySelectorAll('.fs-hide,.fs-path,.fs-keep').forEach(e => e.classList.remove('fs-hide', 'fs-path', 'fs-keep'));
+    root.classList.remove('fs-on'); if (bar) bar.hidden = true; active = null;
+    if (!keepNative) { try { const fe = document.fullscreenElement || document.webkitFullscreenElement, x = document.exitFullscreen || document.webkitExitFullscreen; if (fe && x) { const p = x.call(document); if (p && p.catch) p.catch(() => {}); } } catch (e) {} }
+    window.scrollTo(0, scrollY0);
+    window.dispatchEvent(new Event('resize'));
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.fsbtn'); if (!b) return;
+    e.preventDefault(); e.stopPropagation(); enter(blockOf(b));
+  }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && active) leave(); });
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { if (active && !(document.fullscreenElement || document.webkitFullscreenElement)) leave(true); }));
+  function later() { clearTimeout(timer); timer = setTimeout(scan, 150); }
+  function start() { scan(); const main = document.querySelector('main'); if (main && window.MutationObserver) new MutationObserver(later).observe(main, { childList: true, subtree: true }); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
