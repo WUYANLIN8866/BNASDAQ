@@ -17,6 +17,27 @@
 .dl-head .tag{font-size:11.5px;letter-spacing:.08em;color:var(--gold);border:1px solid var(--line);padding:0 8px;border-radius:2px}
 .dl-head select{font:inherit;font-size:13.5px;padding:4px 26px 4px 8px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink)}
 .dl-sum{font-size:16.5px;color:var(--ink-2);max-width:78ch}
+/* 2026-11-27 站主：「新聞好難看，顯示方式都擠成一坨，幫我友善視覺」→ 標題拆成主標＋重點條列、摘要依 ①②… 拆成卡片、每一句一行；來源括號調淡、漲跌上色 */
+.dl-ed{display:inline-block;font-size:12.5px;letter-spacing:.08em;color:var(--gold);border:1px solid var(--gold-hi);padding:1px 8px;margin-right:10px;vertical-align:middle;font-family:var(--sans);font-weight:600}
+.dl-keys{list-style:none;margin:10px 0 16px;padding:0;display:grid;gap:6px;max-width:78ch}
+.dl-keys li{position:relative;padding:8px 12px 8px 26px;background:var(--band);border:1px solid var(--line-2);font-size:15.5px;line-height:1.6}
+.dl-keys li::before{content:"";position:absolute;left:11px;top:1.05em;width:6px;height:6px;background:var(--gold-hi);border-radius:50%}
+.dl-intro{font-size:15.5px;color:var(--ink-2);max-width:78ch;line-height:1.75;margin:0 0 12px}
+.dl-pts{display:grid;gap:10px;margin:0 0 18px;max-width:86ch}
+.dl-pt{display:grid;grid-template-columns:30px 1fr;gap:12px;background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--gold-hi);padding:12px 14px}
+.dl-pt .no{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.dl-pt h4{margin:2px 0 6px;font-size:16px;font-family:var(--sans);font-weight:700}
+.fx-l{list-style:none;margin:0;padding:0}
+.fx-l li{position:relative;padding:3px 0 3px 14px;font-size:15px;line-height:1.7;color:var(--ink-2)}
+.fx-l li::before{content:"";position:absolute;left:2px;top:.95em;width:4px;height:4px;background:var(--muted);border-radius:50%}
+.fx-s{color:var(--muted);font-size:.9em}
+.fx-p{color:var(--good);font-variant-numeric:tabular-nums;font-weight:600}.fx-n{color:var(--bad);font-variant-numeric:tabular-nums;font-weight:600}
+.evt>ul{list-style:none;padding:0;margin:8px 0 18px;display:grid;gap:8px;max-width:86ch}
+.evt>ul>li{background:var(--paper);border:1px solid var(--line-2);padding:10px 14px;line-height:1.7}
+.evt>ul>li::before{display:none}
+.evt>ul>li .fx-b+.fx-b{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line-2)}
+.mcard .mn-l{margin:0 0 8px}.mcard .mn-l li{font-size:14.5px;color:var(--ink)}
+@media(max-width:560px){.dl-pt{grid-template-columns:1fr;gap:6px}.dl-keys li{font-size:15px}}
 .kv .tile .v.pos{color:var(--good)}
 .kv .tile .k b{color:var(--ink);font-weight:600;letter-spacing:0}
 .cause{background:var(--paper);border:1px solid var(--line);border-top:2px solid var(--gold-hi);padding:16px 18px;margin:0 0 14px}
@@ -545,12 +566,27 @@ window.addEventListener('bn-live',e=>{if(!e.detail||e.detail.mk==='US')lvApply()
 setInterval(()=>{if(document.hidden)return;lvHead();document.querySelectorAll('[data-at]').forEach(el=>{el.textContent=relT(+el.dataset.at);});},60000);
 setInterval(()=>{if(!document.hidden)newsLoad();},600000);   // 新聞每小時更新一次；每 10 分鐘看有沒有新的一份
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&NEWS&&nowS()-NEWS.at>3900)newsLoad();});
+// ---- 版面：把長段文字拆成好讀的區塊（只改顯示，不改報告內容；2026-11-27）----
+// fx：跳脫後替「帶正負號的百分比」上色、把不是數字開頭的全形括號（多半是來源註記）調淡
+function fx(t){return esc(t).replace(/（([^（）]*)）/g,(m,a)=>/^[\s]*[+−\-\d]/.test(a)?m:`<span class="fx-s">${m}</span>`).replace(/([+−])(\d[\d,.]*\s?%)/g,(m,g,n)=>`<span class="${g==='+'?'fx-p':'fx-n'}">${m}</span>`);}
+// 依分隔符號切句；全形括號裡的分隔符號不切
+function fxSplit(t,seps){const out=[];let cur='',dep=0;for(const ch of String(t||'')){if(ch==='（')dep++;else if(ch==='）')dep=Math.max(0,dep-1);if(!dep&&seps.includes(ch)){if(cur.trim())out.push(cur.trim());cur='';}else cur+=ch;}if(cur.trim())out.push(cur.trim());return out;}
+const fxList=(t,seps,cls)=>{const a=fxSplit(t,seps);return a.length?`<ul class="fx-l${cls?' '+cls:''}">${a.map(x=>`<li>${fx(x)}</li>`).join('')}</ul>`:'';};
+function headHTML(t){let ed='';const m=/^([^：；，。]{1,8}版)：/.exec(t=String(t||''));if(m){ed=`<span class="dl-ed">${esc(m[1])}</span>`;t=t.slice(m[0].length);}
+  const a=fxSplit(t,'；');return `<h2 style="margin-top:.4em">${ed}${fx(a[0]||'')}</h2>`+(a.length>1?`<ul class="dl-keys">${a.slice(1).map(x=>`<li>${fx(x)}</li>`).join('')}</ul>`:'');}
+function sumHTML(t){t=String(t||'');const parts=t.split(/[\u2460-\u2473]/);
+  if(parts.length<2) return fxList(t,'。','dl-intro-l')||`<p class="dl-sum">${esc(t)}</p>`;
+  let h=parts[0].trim()?`<p class="dl-intro">${fx(parts[0].trim())}</p>`:'';h+='<div class="dl-pts">';
+  parts.slice(1).forEach((x,i)=>{x=x.trim();const k=x.indexOf('：'),has=k>0&&k<=14&&!/[，。；（]/.test(x.slice(0,k));
+    h+=`<div class="dl-pt"><span class="no">${i+1}</span><div>${has?`<h4>${esc(x.slice(0,k))}</h4>`:''}${fxList(has?x.slice(k+1):x,'。；')}</div></div>`;});
+  return h+'</div>';}
+const evtHTML=x=>fxSplit(x,'；').map(y=>`<div class="fx-b">${fx(y)}</div>`).join('');
 function render(d){
   const el=document.getElementById('report');
   let h='';
   if(DM) DM.begin();
   h+=`<div class="dl-head"><span class="date">${esc(d.date)}</span><span class="tag">美股 ${esc(d.session)} 收盤</span><span class="tag">台北 ${esc(tpeTime(d.generated))} 產出</span><span class="tag lvtag" id="lv-tag" hidden></span><span id="pick"></span></div>`;
-  h+=`<h2 style="margin-top:.4em">${esc(d.headline)}</h2><p class="dl-sum">${esc(d.summary)}</p>`;
+  h+=headHTML(d.headline)+sumHTML(d.summary);
   if(LVOK) h+=`<div class="news-top" id="news-top" hidden></div>`;
   // 1. indices（tiles／長條圖／表的內容由 ixTiles、ixBar、ixTbl 產生；有即時快照時 lvApply 換成最新數字）
   h+=`<h2 id="idx">1. 美股主要指數</h2><div class="kv" id="ix-tiles">${ixTiles(d,null)}</div>`;
@@ -578,12 +614,12 @@ function render(d){
   if(DM) h+=DM.sect();
   if(LVOK) h+=`<h2 id="news">即時新聞（每小時更新）</h2><div id="news-box" class="news-box"><p class="small" style="color:var(--muted)">即時新聞載入中…</p></div>`;
   h+=`<h2 id="events">4. 最近 24 小時國際大事</h2><div class="evt">`;
-  d.events.forEach(g=>{h+=`<h3>${esc(g.cat)}</h3><ul>${g.items.map((x,i)=>`<li>${esc(x)}${dmLine(x,g.tags&&g.tags[i])}</li>`).join('')}</ul>`;});
+  d.events.forEach(g=>{h+=`<h3>${esc(g.cat)}</h3><ul>${g.items.map((x,i)=>`<li>${evtHTML(x)}${dmLine(x,g.tags&&g.tags[i])}</li>`).join('')}</ul>`;});
   h+=`</div>`;
   // 5. mega
   h+=`<h2 id="mega">5. 市值逾一兆美元企業：新聞、影響、受惠／受害</h2><p class="lead">${esc(d.mega.intro)}</p>`;
   h+=`<div class="tblwrap" id="mega-tbl">${megaTbl(d,null)}</div><div class="mega">`;
-  d.mega.rows.forEach((r,i)=>{h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm" data-i="${i}">${mmHTML(d,r,null)}</div></div><p class="mn"><b>新聞</b>${esc(r.news)}</p>${LVOK?`<div class="mnews" data-t="${esc(r.t)}" hidden></div>`:''}<p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div>${dmLine(r.n+'：'+r.news+'；'+r.impact,r.tags)}</div>`;});
+  d.mega.rows.forEach((r,i)=>{h+=`<div class="mcard" id="m-${esc(r.t).replace(/\W/g,'')}"><div class="mh"><div><b>${esc(r.t)}</b> <span class="muted">${esc(r.n)}</span></div><div class="mm" data-i="${i}">${mmHTML(d,r,null)}</div></div><p class="mn" style="margin-bottom:2px"><b>新聞</b></p>${fxList(r.news,'。；','mn-l')}${LVOK?`<div class="mnews" data-t="${esc(r.t)}" hidden></div>`:''}<p class="mi"><b>可能影響</b>${esc(r.impact)}</p><div class="mw"><span class="lab">受惠</span>${r.win.map(t=>`<span class="tk w">${esc(t)}</span>`).join('')}<span class="lab" style="margin-left:14px">受害</span>${r.lose.map(t=>`<span class="tk l">${esc(t)}</span>`).join('')}</div>${dmLine(r.n+'：'+r.news+'；'+r.impact,r.tags)}</div>`;});
   h+=`</div><p class="small" style="color:var(--muted);font-size:13px">受惠／受害為依新聞內容推論的方向性判斷，不是投資建議；「—」代表無明確對象。</p>`;
   // sources
   h+=`<h2 id="src">資料來源</h2><ol class="src">${d.sources.map(s=>`<li><a href="${esc(s.u)}" rel="noopener" target="_blank">${esc(s.t)}</a></li>`).join('')}</ol>`;
