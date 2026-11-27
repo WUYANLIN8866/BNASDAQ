@@ -27,6 +27,7 @@ import argparse, datetime as dt, json, os, sys
 sys.dont_write_bytecode = True  # 不產生 scripts/__pycache__，排程提交前「只能有 data/daily 變更」的檢查才不會被擋
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import check_daily as cd  # noqa: E402
+import daily_fx as dfx  # noqa: E402
 
 SCHEMA = 'bnasdaq-daily/1'
 REQUIRED = ['session', 'headline', 'summary', 'indices', 'sources']
@@ -125,6 +126,22 @@ def main():
             print('  ❌ ' + e)
         sys.exit(1)
 
+    # 「美元與台幣視角」（2026-11-27 起每一版都要有；說明見 scripts/daily_fx.md）：數字由程式現抓現算後寫進 fx.asof、fx.data，
+    # 報告只提供情境判斷與說明文字；文字不齊或和現在的數字矛盾就不發布。
+    fxres = dfx.collect(now)
+    ferrs = dfx.validate(rep.get('fx'), fxres['data'])
+    if ferrs:
+        print('不發布：報告的 fx 欄位（「美元與台幣視角」）要補上或修正——')
+        for e in ferrs:
+            print('  ❌ ' + e)
+        print('做法：先看下面「現在的數字」，再照 scripts/daily_fx.md 在報告 JSON 加上 fx 欄位後重跑本程式。fx 只寫文字，不要自己填數字（asof、data 由本程式寫入）。格式：')
+        print('  "fx": {"scenario": "usd_spike｜cash_panic｜usd_exit｜none 四選一", "basis": ["判斷依據的數據 1", "依據 2"],')
+        print('         "twd_reasons": ["台幣今天升貶的可能原因（附來源；沒有新聞或數據佐證就給 []）"],')
+        print('         "holders": {"etf": "對持有美股 ETF 的人代表什麼（一句話）", "usd": "對美元存款的人（一句話）", "tw": "對持有台股的人（一句話）"},')
+        print('         "foreign": null 或 {"net": "賣超 123.4 億元", "date": "11/27", "src": "證交所"}}')
+        print(dfx.table(fxres))
+        sys.exit(1)
+    rep['fx'] = dict(rep['fx'], asof=fxres['asof'], data=fxres['data'])
     n_news, n_tagged, tag_warns = check_tags(rep)   # 可能拿掉對不上的 events tags，所以要在寫檔之前
     out = {'schema': SCHEMA, 'date': day, 'session': s, 'generated': now.strftime('%Y-%m-%dT%H:%M:%SZ')}
     out.update({k: v for k, v in rep.items() if k not in out})
@@ -150,6 +167,7 @@ def main():
         sys.exit(1)
     act = '更新' if old_raw is not None else '新增'
     print(f'已{act} data/daily/{day}.json（台北日期 {day}，美股 {s} 收盤，generated {out["generated"]}）；index.json latest＝{day}；檢查 0 問題')
+    print('美元與台幣視角：情境「%s」；數字已由程式寫入（%d 項有資料、%d 項資料暫缺）' % (dfx.SCENARIOS[rep['fx']['scenario']], sum(1 for v in fxres['data'].values() if v), sum(1 for v in fxres['data'].values() if not v)))
     print(f'主題標記：{n_tagged}／{n_news} 則消息有標記' + ('' if tag_warns else '，全部在代碼表內'))
     if tag_warns:
         for w in tag_warns[:40]:

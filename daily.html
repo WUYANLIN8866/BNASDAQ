@@ -18,6 +18,15 @@
 .dl-head select{font:inherit;font-size:13.5px;padding:4px 26px 4px 8px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink)}
 .dl-sum{font-size:16.5px;color:var(--ink-2);max-width:78ch}
 /* 2026-11-27 站主：「新聞好難看，顯示方式都擠成一坨，幫我友善視覺」→ 標題拆成主標＋重點條列、摘要依 ①②… 拆成卡片、每一句一行；來源括號調淡、漲跌上色 */
+.fxv-lead{font-size:17px;line-height:1.7;margin:8px 0 6px;max-width:78ch}.fxv-lead b{font-weight:700}
+.fxv-time{font-size:13px;color:var(--muted);margin:0 0 12px}
+.fxv h3{margin:20px 0 6px;font-size:16.5px}
+.fxv .tbl td,.fxv .tbl th{font-variant-numeric:tabular-nums}
+.fxv .pos{color:var(--good);font-weight:600}.fxv .neg{color:var(--bad);font-weight:600}.fxv .na{color:var(--muted)}
+.fxv-h{display:grid;gap:8px;margin:8px 0 0;max-width:86ch}
+.fxv-h div{background:var(--paper);border:1px solid var(--line-2);border-left:3px solid var(--gold-hi);padding:9px 14px;font-size:15px;line-height:1.7}
+.fxv-h b{display:inline-block;min-width:6.2em;font-size:13px;color:var(--gold);letter-spacing:.04em}
+.fxv-sub{font-size:13px;color:var(--muted);margin:6px 0 0;max-width:86ch}
 .dl-ed{display:inline-block;font-size:12.5px;letter-spacing:.08em;color:var(--gold);border:1px solid var(--gold-hi);padding:1px 8px;margin-right:10px;vertical-align:middle;font-family:var(--sans);font-weight:600}
 .dl-keys{list-style:none;margin:10px 0 16px;padding:0;display:grid;gap:6px;max-width:78ch}
 .dl-keys li{position:relative;padding:8px 12px 8px 26px;background:var(--band);border:1px solid var(--line-2);font-size:15.5px;line-height:1.6}
@@ -259,6 +268,7 @@ a.dm-mo:hover{border-color:var(--gold);color:var(--gold)}
     <li><a href="#idx">1. 美股主要指數</a></li>
     <li><a href="#why">2. 大漲大跌主因</a></li>
     <li><a href="#week">3. 股匯債一週趨勢</a></li>
+    <li><a href="#fx">美元與台幣視角</a></li>
     <li><a href="#news">即時新聞（每小時更新）</a></li>
     <li><a href="#events">4. 24 小時國際大事</a></li>
     <li><a href="#mega">5. 兆元企業新聞與影響</a></li>
@@ -580,6 +590,46 @@ function sumHTML(t){t=String(t||'');const parts=t.split(/[\u2460-\u2473]/);
   parts.slice(1).forEach((x,i)=>{x=x.trim();const k=x.indexOf('：'),has=k>0&&k<=14&&!/[，。；（]/.test(x.slice(0,k));
     h+=`<div class="dl-pt"><span class="no">${i+1}</span><div>${has?`<h4>${esc(x.slice(0,k))}</h4>`:''}${fxList(has?x.slice(k+1):x,'。；')}</div></div>`;});
   return h+'</div>';}
+// ---- 美元與台幣視角（2026-11-27 站主要求；數字由 scripts/daily_fx.py 在發布當下現抓寫進 d.fx.data，這裡只負責顯示與現算台幣報酬）----
+function fxHTML(d){
+  const f=d.fx;
+  if(!f||!f.data) return String(d.date||'')>='2026-11-27'?`<h2 id="fx">美元與台幣視角</h2><div class="fxv"><p class="fxv-lead">資料暫缺（這一版還沒有本節內容，下一版更新時補上）。</p></div>`:'';
+  const D=f.data,NA='<span class="na">資料暫缺</span>';
+  const sg=(x,u,dg)=>x==null?NA:`<span class="${x>0?'pos':x<0?'neg':''}">${x>0?'+':x<0?'−':''}${Math.abs(x).toFixed(dg==null?2:dg)}${u}</span>`;
+  const num=(x,dg)=>x==null?NA:Number(x).toLocaleString('en-US',{minimumFractionDigits:dg,maximumFractionDigits:dg});
+  const t8=iso=>{const t=new Date(iso);if(isNaN(t))return '';const z=new Date(t.getTime()+8*3600e3),p=n=>String(n).padStart(2,'0');return `${p(z.getUTCMonth()+1)}/${p(z.getUTCDate())} ${p(z.getUTCHours())}:${p(z.getUTCMinutes())}`;};
+  const ed=(()=>{const t=new Date(f.asof);if(isNaN(t))return '';const h=new Date(t.getTime()+8*3600e3+30*60e3).getUTCHours();return h>=4&&h<12?'早上版':h>=12&&h<20?'下午版':'晚上版';})();
+  const SC={usd_spike:'美元急拉',cash_panic:'恐慌搶現金',usd_exit:'資金撤離美元資產',none:'無明顯訊號'};
+  const v=k=>D[k]||null,d1=k=>v(k)?v(k).d1:null,w1=k=>v(k)?v(k).w1:null;
+  // 一句話結論：情境＋台幣是緩衝還是雙殺（用那指 100 的單日漲跌與美元兌台幣的單日漲跌判斷）
+  // 美股盤前盤後：指數停在最近一個交易日，「今天」改用追蹤 ETF 的盤前／盤後漲跌推估（D.ndx_now／D.spx_now），才和今天的匯率是同一天
+  const nowOf=k=>D[k+'_now']||null, day=k=>nowOf(k)?nowOf(k).d1:d1(k);
+  const stale=k=>!nowOf(k)&&v(k)&&f.asof&&(new Date(f.asof)-new Date(v(k).t))>12*3600e3;   // 指數報價超過 12 小時前＝不是今天的
+  const a=day('ndx'),x=d1('usdtwd');
+  const when=nowOf('ndx')?`（美股為${nowOf('ndx').phase}，以 ${nowOf('ndx').etf} 推估）`:stale('ndx')?`（美股為 ${t8(v('ndx').t).slice(0,5)} 收盤的漲跌，和今天的匯率不是同一天，僅供參考）`:'';
+  const twd=a==null||x==null?'台幣的影響：資料暫缺。':x===0?'台幣今天幾乎沒動，對換算後的報酬沒有影響。':
+    a<0&&x>0?'台幣貶值，幫你<b>緩衝</b>了一部分美股的跌幅。':a<0&&x<0?'美股跌、台幣又升值，是<b>雙殺</b>。':
+    a>0&&x>0?'美股漲、台幣又貶值，換算成台幣<b>賺更多</b>。':a>0&&x<0?'美股漲，但台幣升值<b>吃掉一部分</b>漲幅。':'美股持平，台幣報酬主要看匯率。';
+  const twd2=twd+(a==null||x==null?'':when);
+  const lead=(f.scenario==='none'||!SC[f.scenario]?'<b>今天不是美元主導。</b>':`今天的情境：<b>${SC[f.scenario]}</b>。`)+twd2;
+  const ROWS=[['dxy','美元指數（DXY）',2,'%'],['usdtwd','美元兌台幣',3,'%'],['us10y','美國 10 年期公債殖利率',3,' 個百分點'],['gold','黃金',1,'%'],['wti','西德州原油',2,'%'],['ndx','那斯達克 100',2,'%'],['spx','標普 500',2,'%'],['sox','費城半導體',2,'%'],['twii','台股加權指數',2,'%']];
+  let h=`<h2 id="fx">美元與台幣視角</h2><div class="fxv"><p class="fxv-lead">${lead}</p><p class="fxv-time">本節資料時間：台北 ${t8(f.asof)}${ed?'（'+ed+'）':''}；各項報價時間見表。美元兌台幣上漲＝台幣貶值。</p>`;
+  h+=`<div class="tblwrap"><table class="tbl"><thead><tr><th class="l">項目</th><th>最新</th><th>單日</th><th>近一週</th><th>報價時間（台北）</th></tr></thead><tbody>`;
+  ROWS.forEach(([k,n,dg,u])=>{const r=v(k);if(k==='twii'&&!r)return;const y=k==='us10y';
+    h+=`<tr><td class="l">${n}</td><td>${r?num(r.v,dg)+(y?'%':''):NA}</td><td>${r?sg(r.d1,u,y?3:2):NA}</td><td>${r?sg(r.w1,u,y?3:2):NA}</td><td>${r?t8(r.t):'—'}</td></tr>`;});
+  if(f.foreign&&f.foreign.net) h+=`<tr><td class="l">外資買賣超（台股）</td><td colspan="3" style="text-align:left">${esc(f.foreign.net)}</td><td>${esc(f.foreign.date||'')}<span class="fx-s">（${esc(f.foreign.src||'')}）</span></td></tr>`;
+  h+=`</tbody></table></div><p class="fxv-sub">單日＝最新價÷前一交易日收盤−1；近一週＝最新價÷上週最後一個交易日收盤−1；殖利率為相減。美股休市或盤前盤後時，指數是最近一個交易日的收盤與漲跌。</p>`;
+  // 台幣報酬：美元資產漲跌＋美元兌台幣漲跌（近似式），可逆向驗算
+  const sum=(p,q)=>p==null||q==null?null:Math.round((p+q)*100)/100;
+  const eq=(p,q)=>p==null||q==null?NA:`${sg(p,'%')} ＋ ${sg(q,'%')} ＝ <b>${sg(sum(p,q),'%')}</b>`;
+  h+=`<h3>換算成台幣，是賺還是賠？</h3><div class="tblwrap"><table class="tbl"><thead><tr><th class="l">持有</th><th>當日：美元漲跌 ＋ 匯率 ＝ 台幣報酬</th><th>近一週：美元漲跌 ＋ 匯率 ＝ 台幣報酬</th></tr></thead><tbody>`;
+  [['ndx','那斯達克 100'],['spx','標普 500']].forEach(([k,n])=>{const nw=nowOf(k);h+=`<tr><td class="l">${n}${nw?`<br><span class="fx-s">當日為${nw.phase}推估（${nw.etf}）</span>`:stale(k)?`<br><span class="fx-s">當日為 ${t8(v(k).t).slice(0,5)} 收盤</span>`:''}</td><td>${eq(day(k),x)}</td><td>${eq(w1(k),w1('usdtwd'))}</td></tr>`;});
+  h+=`</tbody></table></div><p class="fxv-sub">台幣報酬 ≈ 美元資產漲跌 ＋ 美元兌台幣漲跌（近似算法，沒有算兩者相乘的小數；不含手續費與配息）。</p>`;
+  h+=`<h3>為什麼這樣判斷</h3>`+((f.basis||[]).length?`<ul class="fx-l">${f.basis.map(y=>`<li>${fx(y)}</li>`).join('')}</ul>`:`<p>${NA}</p>`)+`<p class="fxv-sub">此為模型主觀評估，非統計結果。</p>`;
+  h+=`<h3>台幣今天為什麼升貶</h3>`+((f.twd_reasons||[]).length?`<ul class="fx-l">${f.twd_reasons.map(y=>`<li>${fx(y)}</li>`).join('')}</ul>`:`<p class="fxv-sub">目前沒有找到有來源的新聞或數據。</p>`);
+  const H=f.holders||{};
+  h+=`<h3>對你代表什麼</h3><div class="fxv-h">`+[['etf','持有美股 ETF'],['usd','美元存款'],['tw','持有台股']].map(([k,n])=>`<div><b>${n}</b>${H[k]?fx(H[k]):NA}</div>`).join('')+`</div></div>`;
+  return h;}
 const evtHTML=x=>fxSplit(x,'；').map(y=>`<div class="fx-b">${fx(y)}</div>`).join('');
 function render(d){
   const el=document.getElementById('report');
@@ -612,6 +662,7 @@ function render(d){
   h+=wkTable(d.weekly.other,WKH.other,'other');
   // 4. events
   if(DM) h+=DM.sect();
+  h+=fxHTML(d);
   if(LVOK) h+=`<h2 id="news">即時新聞（每小時更新）</h2><div id="news-box" class="news-box"><p class="small" style="color:var(--muted)">即時新聞載入中…</p></div>`;
   h+=`<h2 id="events">4. 最近 24 小時國際大事</h2><div class="evt">`;
   d.events.forEach(g=>{h+=`<h3>${esc(g.cat)}</h3><ul>${g.items.map((x,i)=>`<li>${evtHTML(x)}${dmLine(x,g.tags&&g.tags[i])}</li>`).join('')}</ul>`;});

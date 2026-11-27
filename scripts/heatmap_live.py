@@ -248,7 +248,7 @@ def num(x):
 
 
 # ---------- 美股：Yahoo spark ----------
-def yahoo_batch(batch, nonce=None):
+def yahoo_batch(batch, nonce=None, rng='5d', week=None):
     """回傳 (狀態碼, {代號: (現價, 上一個交易日收盤, 報價時間, (正規時段開始, 結束) 或 None)})
 
     兩件 2026-11-16 美股盤中實測才發現的事：
@@ -259,7 +259,7 @@ def yahoo_batch(batch, nonce=None):
        每一輪帶一個不同的參數（nonce）才拿得到當下的報價（實測 6 輪都在 4 秒內）。"""
     last = 0
     for host in ('query2', 'query1'):
-        url = f'https://{host}.finance.yahoo.com/v7/finance/spark?symbols={",".join(batch)}&range=5d&interval=1d' + (f'&_={nonce}' if nonce else '')
+        url = f'https://{host}.finance.yahoo.com/v7/finance/spark?symbols={",".join(batch)}&range={rng}&interval=1d' + (f'&_={nonce}' if nonce else '')
         try:
             st, body = http(url, timeout=10)
             j = json.loads(body)
@@ -285,6 +285,13 @@ def yahoo_batch(batch, nonce=None):
                 for e, c in zip(reversed(ts), reversed(cl)):   # 從最新往回找：日期早於「報價那一天」、而且有收盤價的第一根
                     if c is not None and num(e) is not None and day(e) < day(t):
                         prev = num(c); break
+                if week is not None:   # 上週最後一個交易日的收盤（每日市場分析「美元與台幣視角」算近一週漲跌用；要抓 10 天才夠）
+                    ws = day(t) - (day(t) + 3) % 7   # 報價那一週的星期一（1970-01-01 是星期四）
+                    for e, c in zip(reversed(ts), reversed(cl)):
+                        if c is not None and num(e) is not None and day(e) < ws:
+                            if num(c) and num(c) > 0:
+                                week[str(r['symbol']).upper()] = num(c)
+                            break
                 if prev and prev > 0:
                     reg = (m.get('currentTradingPeriod') or {}).get('regular') or {}
                     per = (int(reg['start']), int(reg['end'])) if num(reg.get('start')) and num(reg.get('end')) else None
@@ -448,7 +455,7 @@ def fetch_cnbc(syms, nonce=None):
 BOARD = ['^NDX', '^SOX', '^GSPC', '^DJI', '^RUT', '^IXIC', '^VIX', 'DX-Y.NYB', '^TNX', '^TYX', '^FVX', 'JPY=X', 'EURUSD=X', 'TWD=X',
          'CL=F', 'BZ=F', 'GC=F', 'BTC-USD', 'QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT', '2222.SR']
 BOARD_EXT = ['QQQ', 'SPY', 'DIA', 'IWM', 'SOXQ', 'SOXX', 'ONEQ', 'TSM', 'ANT']
-BOARDS = {'US': BOARD, 'TW': ['TWD=X']}   # 台股 session 也抓美元兌台幣（全站台幣換算用）；加權指數另外用 tw_index() 讀（見該函式）；2026-11-24 起   # 盤前盤後要看成交的：推估指數用的 ETF、熱力圖裡沒有的大型股
+BOARDS = {'US': BOARD, 'TW': ['TWD=X', 'DX-Y.NYB', '^TNX', 'GC=F', 'CL=F']}   # 2026-11-27 起台股時段也抓美元指數、10 年期殖利率、黃金、原油：12:00 的下午版「美元與台幣視角」要用（那時美股 session 沒在跑）   # 台股 session 也抓美元兌台幣（全站台幣換算用）；加權指數另外用 tw_index() 讀（見該函式）；2026-11-24 起   # 盤前盤後要看成交的：推估指數用的 ETF、熱力圖裡沒有的大型股
 NEWS_FILE, NEWS_EVERY = 'news.json', 3600   # 新聞一小時更新一次（交易時段內由 session 順便做；其他時間由 news.yml 補）
 NEWS_SRC = [   # (語言, 來源名稱, 格式, 網址)；2026-11-23 從 GitHub runner 實測都回 200
     ('zh', '鉅亨網', 'cnyes', 'https://api.cnyes.com/media/api/v1/newslist/category/us_stock?limit=30'),
@@ -974,6 +981,7 @@ class Session:
         self.qfrom = {}      # 代號 → 正規時段報價的來源（只記 CNBC 補的）
         self.prev = None     # 分支上同一個交易日的上一份快照（交棒時接回盤前盤後走勢用）
         # 每日市場分析頁（2026-11-23）：報價板（只有美股）與新聞（兩個市場的 session 都會順便更新，一小時一次）
+        self.mb_w = {}       # 代號 → 上週最後一個交易日的收盤（2026-11-27；每日市場分析「美元與台幣視角」的近一週漲跌用）
         self.mb_q, self.mb_x = {}, {}   # 代號 → [現價, 前收, 時間]；盤前盤後 → [成交價, 基準價, 成交時間]
         self.news_at = 0     # 分支上的新聞是什麼時候抓的（UNIX 秒）
         self.extra = {}      # 下一次發布要一起寫的其他檔案（news.json）
@@ -1196,7 +1204,15 @@ class Session:
         if not bl:
             return False
         nonce = int(self.clock())
-        got, stat = fetch_us([q_sym(s) for s in bl], nonce)
+        wk = {}
+        def bb(b, n):   # 報價板抓 10 天日 K，順便取上週最後一個交易日的收盤（mb.w）；測試用的假行情不收這兩個參數時照舊
+            try:
+                return yahoo_batch(b, n, rng='10d', week=wk)
+            except TypeError:
+                return yahoo_batch(b, n)
+        got, stat = fetch_us([q_sym(s) for s in bl], nonce, f=bb)
+        for s, v in wk.items():
+            self.mb_w[s] = v
         for s, v in got.items():
             self.mb_q[s] = [v[0], v[1], int(v[2])]
         if self.mk == 'TW':   # 加權指數：Yahoo奇摩股市（備援鉅亨網），即時、昨收正確
@@ -1317,6 +1333,8 @@ class Session:
         if self.mb_q:   # 每日市場分析頁的報價板（見 BOARD）
             r = lambda v: [round(v[0], 6), round(v[1], 6), int(v[2])]
             snap['mb'] = {'q': {s: r(v) for s, v in self.mb_q.items()}, 'x': {s: r(v) for s, v in self.mb_x.items()}}
+            if self.mb_w:
+                snap['mb']['w'] = {s: round(v, 6) for s, v in self.mb_w.items()}
         return snap
 
     def publish(self, state, slot, now):

@@ -492,7 +492,7 @@ def test_extras(hm, fails):
     s1 = [s for t_, s in pub.log if s['state'] == 'open'][5]
     check(s1['q'].get('0050', [0])[0] == 100.0 and s1.get('mb', {}).get('q', {}).get('TWD=X', [0])[0] == 32.5 and s1['mb']['q'].get('^TWII', [0, 0])[:2] == [23000.0, 22800.0],
           '台股盤中快照：0050 有報價、mb.q 有 TWD=X 與 ^TWII（加權指數來自 tw_index）', fails)
-    check(asked and all(a == ['TWD%3DX'] for a in asked), f'台股報價板向 Yahoo Finance 只問匯率（{len(asked)} 輪）；加權指數不再向它問', fails)
+    check(asked and all(a[0] == 'TWD%3DX' and not any('TWII' in y for y in a) for a in asked), f'台股報價板向 Yahoo Finance 問匯率與美元指數、殖利率、黃金、原油（{len(asked)} 輪；2026-11-27 起）；加權指數不向它問', fails)
     # 加權指數的來源（2026-11-24）：Yahoo奇摩股市 → 鉅亨網；用當天 09:34 實際抓到的回應格式
     hm.tw_index = real_index
     ytw_body = json.dumps([{'symbol': '^TWII', 'price': {'raw': '40143.85'}, 'change': {'raw': '3331.96'}, 'regularMarketPreviousClose': {'raw': '36811.89'}, 'regularMarketTime': '2026-11-24T01:34:50Z'},
