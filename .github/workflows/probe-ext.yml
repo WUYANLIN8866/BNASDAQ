@@ -18,7 +18,18 @@ jobs:
           fetch-depth: 1
           sparse-checkout: |
             scripts
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+          fetch-depth: 1
+          sparse-checkout: |
+            scripts
             data/heatmap
             data/daily
-      - name: Company news query variants
-        run: python3 scripts/probe_coq.py
+            data/tw
+      - name: What Yahoo returns right now
+        run: python3 scripts/probe_today.py
+      - name: Production code, one pre-market round
+        working-directory: main
+        run: python3 scripts/heatmap_live.py once --market US --ext pre || true
