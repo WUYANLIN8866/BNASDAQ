@@ -535,7 +535,7 @@ function bmLive(d,L){const th=+((d.big_move||{}).threshold)||2,bl=(d.big_move||{
     return `<div class="bm-live done"><b>下面是美股 ${esc(mdd(bl.session))} ${esc(bl.phase||'盤中')}的主因分析</b>${isFinite(at)?'（台北 '+esc(tpeAt(at/1000))+' 分析）':''}。最新漲跌：${list}（${esc(lvWhat(L))}）。</div>`;}
   if(!big.length) return '';
   const up=big.filter(o=>o.c>0).length*2>=big.length,nm=ph==='pre'?'盤前':ph==='open'||ph==='settle'?'盤中':'';
-  return `<div class="bm-live"><b>美股 ${esc(mdd(L.session))} ${nm}${up?'大漲':'大跌'}</b>：${list}（${esc(lvWhat(L))}，對前一交易日收盤${ph==='pre'||ph==='post'?'；盤前盤後的指數以追蹤 ETF 推估':''}）。<br>下面的主因分析還是美股 ${esc(mdd(d.session))} 收盤的；這個交易日的主因分析會自動更新（平日台北 20:46 盤前版；盤中台北 23:16、02:16 檢查漲跌是否超過 ±${th}%）。</div>`;}
+  return `<div class="bm-live"><b>美股 ${esc(mdd(L.session))} ${nm}${up?'大漲':'大跌'}</b>：${list}（${esc(lvWhat(L))}，對前一交易日收盤${ph==='pre'||ph==='post'?'；盤前盤後的指數以追蹤 ETF 推估':''}）。<br>下面的主因分析還是美股 ${esc(mdd(d.session))} 收盤的；這個交易日的主因分析會自動更新（每天台北 06:46 早上版、14:46 下午版、22:46 晚上版；盤中台北 23:16、02:16 檢查漲跌是否超過 ±${th}%）。</div>`;}
 function lvHead(){const el=document.getElementById('lv-tag');if(!el)return;const L=lvSnap();if(!L){el.hidden=true;return;}
   el.hidden=false;el.classList.toggle('on',lvActive(L)&&!lvStale(L));el.innerHTML='<i></i>即時報價：'+esc(lvWhat(L));}
 function lvApply(){if(!RPT)return;lvHead();const L=lvSnap(),d=RPT;if(!L)return;
