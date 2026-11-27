@@ -106,7 +106,20 @@
   // 這裡只管網站顯示：探索程式的排程不受影響（要連排程一起取消，得在探索程式那一端移除）。
   // 頁面其他數字（累計已回測組數、過關數、前 10 名、候選）直接取自快照，不是由這張表加總，所以不受影響。
   const HIDE_STAGES = [/^第\s*11\s*輪前\s*100\s*名/, /^第\s*12\s*輪前\s*1,?000\s*名/];
-  const shownStages = d => (d.stages || []).filter(s => !HIDE_STAGES.some(re => re.test(String(s.name == null ? '' : s.name).trim())));
+  // 2026-11-27 20:08 使用者：「為何沒有第21～40輪 我之前不是有安排嗎？」「我指的是網頁上」。
+  // 第 21～40 輪是 2026-11-26 排的（專案文件 claude/rounds-21-40-plan-20261126.md 第 5 節輪次表：排在第 20 輪後面自動接續），
+  // 但這張表的名單來自探索程式的快照，探索程式要等開跑前的準備與預演做完才會把新的輪次寫進快照，所以表上只列到第 20 輪。
+  // 快照裡還沒有的輪次由網頁補一列「等待中」；快照一出現「第 N 輪」開頭的列，那一輪就只用快照的（不會重複）。
+  // 只列輪次與條件個數（[起, 訖, 每類個數]，四類合計＝4 倍），不列方法、資料與參數。
+  const PLAN_ROUNDS = [[21, 24, 10], [25, 28, 12], [29, 32, 14], [33, 36, 16], [37, 40, 20]];
+  const shownStages = d => {
+    const st = (d.stages || []).filter(s => !HIDE_STAGES.some(re => re.test(String(s.name == null ? '' : s.name).trim())));
+    if (!st.length) return st;   // 快照還沒讀到：不單獨列出規劃中的輪次
+    const have = new Set();
+    (d.stages || []).forEach(s => { const m = /^第\s*(\d+)\s*輪/.exec(String(s.name == null ? '' : s.name).trim()); if (m) have.add(+m[1]); });
+    PLAN_ROUNDS.forEach(([a, b, k]) => { for (let r = a; r <= b; r++) if (!have.has(r)) st.push({ name: `第 ${r} 輪：${4 * k} 個條件（四類各 ${k} 個）`, status: '等待中', pct: 0, tested: 0, best: null }); });
+    return st;
+  };
 
   // 時間刻度（台北時間；台灣沒有夏令時間，固定 UTC+8）：每天 00:00 一個「月/日」；起點離第一個 00:00 超過半天時，起點也標日期；
   // 不到兩個刻度（資料不滿一天）改成每 6 小時；最多約 8 個標籤。charts.js 另有防重疊。
