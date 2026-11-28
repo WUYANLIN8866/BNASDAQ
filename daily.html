@@ -410,6 +410,7 @@ function ycWire(root,P){ // 滑過／點某個天期：十字線＋三條曲線�
   svg.addEventListener('mouseleave',()=>{cx.setAttribute('visibility','hidden');if(tip)tip.hidden=true;});
 }
 function bondPanel(sec,heads,session){ // 債市：標題 → 各天期殖利率曲線（財政部官方）→ 週表 → 說明
+  if(!sec||!Array.isArray(sec.rows))return '';   // 2026-11-28：報告缺這一節時只略過這一節，不讓整份報告畫不出來
   return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="yc" data-session="${esc(session)}"><p class="small" style="color:var(--muted)">殖利率曲線載入中…</p></div><div class="tblwrap" data-wk="bond">${wkTbl(sec,heads,null)}</div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
 }
 function ycLoad(){
@@ -423,6 +424,7 @@ function ycLoad(){
   }).catch(()=>{box.innerHTML='<p class="small" style="color:var(--muted)">殖利率曲線暫時無法載入。</p>';});
 }
 function wkTable(sec,heads,k){   // 表格內容由 wkTbl 產生（有即時快照時 lvApply 加「最新」欄）
+  if(!sec||!Array.isArray(sec.rows))return '';   // 2026-11-28：報告缺這一節（例：11/28 三版都沒有 weekly.other）時只略過這一節
   return `<div class="panel"><h3>${esc(sec.title)}</h3><div class="tblwrap" data-wk="${k}">${wkTbl(sec,heads,null)}</div><p style="margin:8px 0 0;font-size:15px">${esc(sec.text)}</p></div>`;
 }
 function pieChart(items,sw){ // items: [{p, t}]（p 為百分比，合計 100）→ 圓餅圖＋圖例（圖例同時是各主因的說明）；sw＝動態走勢的一格（0～1，自 12 點鐘方向順時針畫到哪裡）

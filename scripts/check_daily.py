@@ -83,6 +83,8 @@ def check(today=False, base=None, now=None):
             continue
         if tp != d:
             errs.append(f'{d}.json：generated {g} 是台北 {tp}，報告日期卻是 {d}（日期要用台北日期，請改用 scripts/publish_daily.py 發布）')
+    # 2026-11-28：最新一份缺 weekly.other，網頁整份報告畫不出來（顯示「目前沒有可顯示的市場分析」）→ 檢查網頁會用到的每一節都在
+    errs += structure(dates[0])
     if today and dates[0] != tday:
         errs.append(f'最新一份是 {dates[0]}，今天（台北）是 {tday}')
     if base:
@@ -101,6 +103,41 @@ def check(today=False, base=None, now=None):
                 elif cur[d] != s and not (d == tday and (cur[d] or '') > (s or '')):
                     errs.append(f'{d}：{base} 已發布美股 {s} 的報告，現在被改成美股 {cur[d]}（不得覆蓋舊報告；新報告用今天的台北日期另存）')
     return errs, idx, items
+
+
+def structure(day):
+    """最新一份報告的結構：daily.html 的 render() 會直接讀的欄位都要在。回傳問題清單。"""
+    p = os.path.join(DIR, day + '.json')
+    if not os.path.exists(p):
+        return []
+    r, errs, f = load(p), [], day + '.json'
+
+    def need(obj, key, kind, where):
+        v = obj.get(key) if isinstance(obj, dict) else None
+        if not isinstance(v, kind) or (isinstance(v, (list, str)) and not v):
+            errs.append(f'{f}：缺少 {where}{key}（網頁會整份或整節畫不出來）')
+            return None
+        return v
+
+    for k, kind in (('headline', str), ('summary', (str, list)), ('indices', list), ('big_move', dict),
+                    ('weekly', dict), ('events', list), ('mega', dict), ('sources', list)):
+        need(r, k, kind, '')
+    w = r.get('weekly') if isinstance(r.get('weekly'), dict) else {}
+    if w:
+        need(w, 'range', str, 'weekly.')
+        for k in ('stock', 'fx', 'bond', 'other'):
+            sec = need(w, k, dict, 'weekly.')
+            if sec:
+                need(sec, 'title', str, f'weekly.{k}.')
+                need(sec, 'rows', list, f'weekly.{k}.')
+                need(sec, 'text', str, f'weekly.{k}.')
+    m = r.get('mega') if isinstance(r.get('mega'), dict) else {}
+    if m:
+        need(m, 'rows', list, 'mega.')
+    bm = r.get('big_move') if isinstance(r.get('big_move'), dict) else {}
+    if bm.get('triggered'):
+        need(bm, 'causes', list, 'big_move.')
+    return errs
 
 
 def main():
