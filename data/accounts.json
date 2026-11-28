@@ -1,6 +1,6 @@
 {
  "schema": "bnasdaq-accounts/1",
- "updated": "2026-11-23T00:00:30.011Z",
+ "updated": "2026-11-28T16:41:15.927Z",
  "view": {
   "schema": "bnasdaq-pwview/1",
   "alg": "RSA-OAEP-3072-SHA256",
@@ -14,9 +14,9 @@
  },
  "adminPat": {
   "owner": "BNASDAQ",
-  "saved": "2026-11-23",
-  "iv": "n1bms9aAtLwhSLbK",
-  "ct": "fLoLp9kPE48uFM7aoUHSga8a/WsfIokpu04KLMdofYqMtlkbDr4CjiBcEa5hHd9Gk5pB0a8fRMHPSIz8hHSdc5Y71sLFTVrZVwvkKTIQ1BJj5pITYDva96jp4FYLYSc/mG/0MprNopzCh8PKtA=="
+  "saved": "2026-11-28",
+  "iv": "uc+JFzlGUORRQd8U",
+  "ct": "qeBDJ7flqxfkSt65QvUTsNhhBqqfr/sir8UcnOR0TWq58FaeNXQlOYpdFyV/INpZ+AZ+faf1JGgBK6ppe0nQdIz5OHkypQDvTuVIMu+/HOAajLiDfYS71avQEB6hNwS44af8gSEOP62EqViQaQ=="
  },
  "accounts": [
   {
@@ -79,6 +79,9 @@
    },
    "pv": "odM/RHK3LSNwYzp1fTy5bS9XJVkxHBKRxo2rt/X6rac6eNYmiTHeIzQsglO/IqoiCEEY5cgW+hWxwg1lAu8X1ydo3tEXwp5PLmly+UD35EyDGAlpWyC4+VsclVqJDcip3fCbuiGZYElxWkwjeCUu+1j5x+be8plE/gvCTVUKaWVQTF9D+xqoM87MbZuTGak+hs0pBkTDhUhJTmszwAMfIdxEWNAF51QLbUOYYl2P4460DcDpytdHvn68JMVSa4xVHN53zHrOPKU2hEC+lme3W+rVpRWnQeB7YYW77Kcq9GqkX8M2Bm4u0NvOhYqXyMR0BqJUF5jf18y147nSTGurgzR8+0JhQyn7gcjihbEs+sy4CO0pS7EXhCKoqQzZppyfpJ7uxl4IzTJRVfSaGUSK3QeaK0rHBdV7tAgwRRmuf7nnI0t0iKKIhOZA/XOYPmzZI+QxkbxwosiMBTLVDHklmCDbLIwEUvltAH9VHxTkcf1La5aGWmNi/wpYlBJxUmmv",
    "models": [
+    "sat3",
+    "sat2",
+    "sat",
     "fund"
    ]
   },
